@@ -1,21 +1,26 @@
 import React from 'react';
-import { Zap, ShieldCheck, BarChart3 } from 'lucide-react';
+import { Zap, ShieldCheck, BarChart3, Database } from 'lucide-react';
 
 const featureList = [
   {
     icon: <Zap size={24} />,
-    title: "Vite Powered",
-    description: "Instant server start and fast HMR for seamless frontend developer experience."
-  },
-  {
-    icon: <ShieldCheck size={24} />,
-    title: "Modular Component Architecture",
-    description: "Scalable folder structure with reusable React hooks and components."
+    title: "Tailwind CSS Enabled",
+    description: "Utility-first styling for rapid custom UI design and glassmorphism themes."
   },
   {
     icon: <BarChart3 size={24} />,
-    title: "Interactive Analytics",
-    description: "Live visual tracking, state synchronization, and REST/GraphQL ready endpoints."
+    title: "TanStack Query",
+    description: "Automatic server caching, background data refetching, and state management."
+  },
+  {
+    icon: <Database size={24} />,
+    title: "GraphQL Client",
+    description: "Lightweight, type-safe GraphQL queries integrated directly with React Query."
+  },
+  {
+    icon: <ShieldCheck size={24} />,
+    title: "Developer Standards (rule.md)",
+    description: "Enforced coding conventions and architectural patterns for SIH 2026."
   }
 ];
 
@@ -24,7 +29,7 @@ export default function Features() {
     <section id="features" className="features-section">
       <div className="section-container">
         <div className="section-header">
-          <h2>Key Features</h2>
+          <h2>Key Platform Stack</h2>
           <p>Designed for scalability, speed, and sleek visual appeal.</p>
         </div>
         

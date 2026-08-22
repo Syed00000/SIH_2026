@@ -12,7 +12,7 @@ export default function Hero() {
           Empowering Innovation with <span className="gradient-text">Smart React Apps</span>
         </h1>
         <p className="hero-subtitle">
-          A high-performance React application structure built with Vite, modular components, and real-time state management.
+          A high-performance React application structure built with Vite, Tailwind CSS, TanStack Query, and GraphQL.
         </p>
         <div className="hero-buttons">
           <a href="#dashboard" className="btn btn-lg btn-primary">

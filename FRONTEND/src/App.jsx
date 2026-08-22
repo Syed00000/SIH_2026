@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import Navbar from './components/Navbar';
-import Hero from './components/Hero';
-import Features from './components/Features';
-import Dashboard from './components/Dashboard';
-import Footer from './components/Footer';
+import Navbar from './components/Navbar.jsx';
+import Hero from './components/Hero.jsx';
+import Features from './components/Features.jsx';
+import Dashboard from './components/Dashboard.jsx';
+import Footer from './components/Footer.jsx';
 
 export default function App() {
   const [theme, setTheme] = useState('dark');

@@ -1,5 +1,7 @@
+@import "tailwindcss";
+
 /* -------------------------------------------------------------------------- */
-/* SIH 2026 - React App Styling & Design System                               */
+/* SIH 2026 - React App Styling & Custom Utilities                           */
 /* -------------------------------------------------------------------------- */
 
 :root {
@@ -55,8 +57,6 @@
 /* Reset & Base Styles */
 *, *::before, *::after {
     box-sizing: border-box;
-    margin: 0;
-    padding: 0;
 }
 
 html {
@@ -461,7 +461,6 @@ h1, h2, h3, h4 {
     background: var(--bg-secondary);
 }
 
-/* Spin animation */
 .spin {
     animation: spin 1s linear infinite;
 }
