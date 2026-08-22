@@ -22,6 +22,8 @@
    - Ensure responsive grid and flexbox layouts across mobile, tablet, and desktop views.
 
 ## ⚡ Performance & Quality Rules
+- **Maximum File Length**: No file should exceed **150 lines of code (LOC)**. If a component grows past 150 lines, split it into smaller, modular sub-components or custom hooks.
+- **Human-Readable Code**: All code must be clean, formatted, and easy for human developers to read, with meaningful variable and function names.
 - Maintain clean, type-friendly component interfaces.
 - Avoid duplicate network requests by enforcing `staleTime` policies in TanStack Query.
 - Ensure all interactive buttons and inputs have accessible focus states and loading feedback.
