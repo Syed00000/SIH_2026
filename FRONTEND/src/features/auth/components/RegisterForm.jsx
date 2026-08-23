@@ -2,13 +2,14 @@ import React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { registerSchema } from '../schemas.js';
-import { useRegister } from '../hooks.js';
+import { useRegister, useRedirectIfAuthenticated } from '../hooks.js';
 import { Input } from '../../../shared/components/ui/input.jsx';
 import { Button } from '../../../shared/components/ui/button.jsx';
 import { Alert } from '../../../shared/components/ui/alert.jsx';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../../../shared/components/ui/card.jsx';
 
 export function RegisterForm({ onSuccess }) {
+  const { isLoading: isAuthLoading, user } = useRedirectIfAuthenticated('/');
   const { mutate: registerUser, isPending, error, isSuccess } = useRegister();
 
   const {
@@ -24,6 +25,14 @@ export function RegisterForm({ onSuccess }) {
       lastName: '',
     },
   });
+
+  if (isAuthLoading) {
+    return <div className="text-center py-6 text-slate-500 text-sm">Checking session...</div>;
+  }
+
+  if (user) {
+    return null;
+  }
 
   const onSubmit = (data) => {
     registerUser(data, {

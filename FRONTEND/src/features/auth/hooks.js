@@ -1,4 +1,6 @@
+import { useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useNavigate } from '@tanstack/react-router';
 import { authApi } from './api.js';
 import { setAccessToken } from '../../infrastructure/api/client.js';
 
@@ -67,4 +69,17 @@ export function useLogout() {
       }
     },
   });
+}
+
+export function useRedirectIfAuthenticated(to = '/') {
+  const { data: user, isLoading } = useCurrentUser();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!isLoading && user) {
+      navigate({ to });
+    }
+  }, [user, isLoading, navigate, to]);
+
+  return { user, isLoading };
 }

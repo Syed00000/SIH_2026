@@ -14,6 +14,7 @@ Is document me abhi tak kiye gaye saare architectural changes, system configurat
 ## 2. Directory Restructuring (Hybrid Architecture)
 Humne puraane structure (jaise `src/components/` aur `src/lib/`) ko delete kar ke, requirements ke according modular domains me code divide kiya:
 - `src/app/`: Application bootstrap, routing (`router.jsx`), global layout (`layout.jsx`), aur global wrappers (`providers.jsx`).
+- `src/App.jsx`: Main root React component importing aur render karne wala context wrapper `AppProviders` setup kiya hai.
 - `src/features/`: Isolated modules jo use-cases handle karte hain. Abhi isme sirf `features/auth/` hai jiske andar api handlers, TanStack Query hooks, validation schemas, aur login/register forms hain. Ye features outer modules se index.js ke through hi communicate karte hain.
 - `src/entities/`: Domain models representation. Humne `entities/user/index.js` me user roles aur authorization check helpers (`hasRole`, `hasPermission`) place kiye hain.
 - `src/shared/`: Generic components jo bilkul business logic dependent nahi hain (jaise Buttons, Inputs, Alert screens).
@@ -27,7 +28,7 @@ Humne niche diye gaye files aur components scratch se build kiye hain:
 
 ### 1. App Composition Layer (`src/app/`)
 - `providers.jsx`: Global data-fetching context providers (`QueryClientProvider`, `RouterProvider`).
-- `router.jsx`: Code-based router mappings jo Dashboard screen, Login form screen aur Register form screen render karti hain.
+- `router.jsx`: Pure logic-free code-based routing tree map connecting paths to feature page views.
 - `layout.jsx`: Pure UI application wrapper frame (Header navbar, navigation active state links, aur current authenticated user identity tags).
 
 ### 2. Generic UI Primitives (`src/shared/components/ui/`)
@@ -50,7 +51,11 @@ Humne niche diye gaye files aur components scratch se build kiye hain:
 - `schemas.js`: Zod schema rules specifying fields boundaries aur limits.
 - `index.js`: Exposes only public API entry points.
 
-### 5. Infrastructure Integration Adapters (`src/infrastructure/`)
+### 5. Dashboard Module Feature (`src/features/dashboard/`)
+- `components/DashboardContainer.jsx`: Renders the index welcome page for guest users aur the main session dashboard cards for logged-in users.
+- `index.js`: Exposes only public API entry points.
+
+### 6. Infrastructure Integration Adapters (`src/infrastructure/`)
 - `api/client.js`: Axios wrapper for JWT storage, token headers authorization injection, aur silent token rotation queueing logic.
 - `api/errors.js`: Custom `ApiError` class converting network timeouts or server faults.
 - `ai/client.js`: Client adapters wrapping AI backend endpoints (`classify`, `detectDuplicates`, `getRecommendations`).
@@ -68,6 +73,11 @@ Humne niche diye gaye files aur components scratch se build kiye hain:
 - **Silent Token Rotation Queue**: API client `src/infrastructure/api/client.js` me interceptor setup kiya hai. Jab access token expire hota hai toh API server 401 response deta hai. Interceptor automatic `/auth/refresh` hit karta hai aur pending request calls ko `failedQueue` array me hold kar ke new token aane par repeat trigger karta hai.
 - **CORS Config**: Backend ke `.env` file me `CORS_ORIGINS=http://localhost:5173` whitelist kiya taaki security restrictions check bypass ho sakein.
 - **Base URL Slashes Alignment**: Base URL ko trailing slash ke sath sync kiya aur subroutes me leading slashes remove kiye taaki paths automatically resolve ho sakein.
+- **Protected Routing Guards**: `router.jsx` me security guards apply kiye hain. Agar user logged in hai aur manually browser search query ya browser back navigation se `/login` ya `/register` par jaane ki koshish karta hai, toh use automatically `/` (dashboard) par redirect kar diya jata hai. Aur agar guest user dashboard `/` par aane ki koshish karta hai, toh use automatically `/login` par redirect kar diya jata hai.
+- **DRY Refactoring (useRedirectIfAuthenticated)**: Duplicated redirection logic ko extract kar ke ek common custom hook `useRedirectIfAuthenticated` me merge kiya, jisse `LoginForm` aur `RegisterForm` ab clean hain aur code reuse optimized hai.
+- **Unit Test Coverage**: Critical path logic ke liye unit test files build kiye hain:
+  - `src/entities/user/index.test.js` (role and permissions logic checks).
+  - `src/infrastructure/api/errors.test.js` (axios request-response error normalization checks).
 
 ---
 
