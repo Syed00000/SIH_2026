@@ -18,21 +18,39 @@ export class UserService {
     return this.userRepository.findByEmail(email);
   }
 
-  async createUser({ email, passwordHash, firstName, lastName }) {
+  async getUserByMobile(mobileNumber) {
+    return this.userRepository.findByMobile(mobileNumber);
+  }
+
+  async createUser({
+    fullName,
+    mobileNumber,
+    email,
+    passwordHash,
+    role = 'CITIZEN',
+    profile = {},
+    accountStatus = 'PENDING_VERIFICATION',
+    emailVerification = { verified: false, verifiedAt: null },
+    emailVerificationCode = null,
+    emailVerificationExpires = null
+  }) {
     const user = new User({
+      fullName,
+      mobileNumber,
       email,
       passwordHash,
-      firstName,
-      lastName
+      role,
+      profile,
+      accountStatus,
+      emailVerification,
+      emailVerificationCode,
+      emailVerificationExpires
     });
     return this.userRepository.save(user);
   }
 
-  async updateResetCredentials(id, { tokenHash, expires }) {
-    return this.userRepository.update(id, {
-      passwordResetToken: tokenHash,
-      passwordResetExpires: expires
-    });
+  async updateResetCredentials(id, updateData) {
+    return this.userRepository.update(id, updateData);
   }
 }
 

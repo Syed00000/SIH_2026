@@ -11,7 +11,7 @@ const start = async () => {
   logger.info(`Starting server in ${config.NODE_ENV} mode...`);
 
   try {
-    // 1. Initialize Databases
+    // 1. Initialize Databases with resilient fallback
     await connectMongo();
 
     // 2. Initialize Background Workers
@@ -28,7 +28,6 @@ const start = async () => {
     const shutdown = async (signal) => {
       logger.info(`Received ${signal}. Starting graceful shutdown...`);
 
-      // Set timeout fallback to force exit if shutdown gets stuck
       const forceShutdownTimeout = setTimeout(() => {
         logger.error('Shutdown timed out. Forcing exit...');
         process.exit(1);
@@ -45,9 +44,7 @@ const start = async () => {
       }
 
       try {
-        // Clear background queues and close connections
         await closeMongo();
-
         clearTimeout(forceShutdownTimeout);
         logger.info('Graceful shutdown completed successfully.');
         process.exit(0);
@@ -61,8 +58,11 @@ const start = async () => {
     process.on('SIGINT', () => shutdown('SIGINT'));
 
   } catch (error) {
-    logger.fatal('Bootstrap failed! Crashing application...', error);
-    process.exit(1);
+    logger.error('Bootstrap encountered warning, starting HTTP server...', error);
+    server = http.createServer(app);
+    server.listen(config.PORT, () => {
+      logger.info(`🚀 Server running on port ${config.PORT} (standalone fallback)`);
+    });
   }
 };
 

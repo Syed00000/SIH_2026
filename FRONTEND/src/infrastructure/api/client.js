@@ -1,106 +1,74 @@
-import axios from 'axios';
 import { config } from '../config.js';
-import { normalizeError } from './errors.js';
 
-let accessToken = null;
+let accessToken = localStorage.getItem('joharsetu_token') || null;
 let onUnauthorizedCallback = null;
-let isRefreshing = false;
-let failedQueue = [];
-
-export const apiClient = axios.create({
-  baseURL: config.api.baseUrl,
-  timeout: config.api.timeout,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-  withCredentials: true,
-});
 
 export function setAccessToken(token) {
   accessToken = token;
+  if (token) {
+    localStorage.setItem('joharsetu_token', token);
+  } else {
+    localStorage.removeItem('joharsetu_token');
+  }
 }
 
 export function getAccessToken() {
-  return accessToken;
+  return accessToken || localStorage.getItem('joharsetu_token');
 }
 
 export function onUnauthorized(callback) {
   onUnauthorizedCallback = callback;
 }
 
-const processQueue = (error, token = null) => {
-  failedQueue.forEach((prom) => {
-    if (error) {
-      prom.reject(error);
-    } else {
-      prom.resolve(token);
-    }
-  });
-  failedQueue = [];
+const buildUrl = (endpoint) => {
+  const base = config.api.baseUrl.endsWith('/') ? config.api.baseUrl : `${config.api.baseUrl}/`;
+  const ep = endpoint.startsWith('/') ? endpoint.slice(1) : endpoint;
+  return `${base}${ep}`;
 };
 
-apiClient.interceptors.request.use(
-  (reqConfig) => {
-    if (accessToken && !reqConfig.headers.Authorization) {
-      reqConfig.headers.Authorization = `Bearer ${accessToken}`;
-    }
-    return reqConfig;
-  },
-  (error) => Promise.reject(error)
-);
+const request = async (endpoint, options = {}) => {
+  const url = buildUrl(endpoint);
+  const token = getAccessToken();
 
-apiClient.interceptors.response.use(
-  (response) => response.data,
-  async (error) => {
-    const originalRequest = error.config;
+  const headers = {
+    'Content-Type': 'application/json',
+    ...(token && { Authorization: `Bearer ${token}` }),
+    ...options.headers,
+  };
 
-    if (!error.response || originalRequest._retry) {
-      return Promise.reject(normalizeError(error));
-    }
+  try {
+    const response = await fetch(url, {
+      ...options,
+      headers,
+      credentials: 'include',
+    });
 
-    const isUnauthorized = error.response.status === 401;
-    const isAuthRoute = originalRequest.url.includes('auth/login') || originalRequest.url.includes('auth/refresh');
+    const data = await response.json().catch(() => ({}));
 
-    if (isUnauthorized && !isAuthRoute) {
-      if (isRefreshing) {
-        return new Promise((resolve, reject) => {
-          failedQueue.push({ resolve, reject });
-        })
-          .then((token) => {
-            originalRequest.headers.Authorization = `Bearer ${token}`;
-            return apiClient(originalRequest);
-          })
-          .catch((err) => Promise.reject(err));
+    if (!response.ok) {
+      if (response.status === 401 && onUnauthorizedCallback) {
+        onUnauthorizedCallback();
       }
-
-      originalRequest._retry = true;
-      isRefreshing = true;
-
-      try {
-        const refreshResponse = await axios.post(
-          `${config.api.baseUrl}auth/refresh`,
-          {},
-          { withCredentials: true }
-        );
-        
-        const newAccessToken = refreshResponse.data.data.accessToken;
-        setAccessToken(newAccessToken);
-        processQueue(null, newAccessToken);
-        
-        originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
-        return apiClient(originalRequest);
-      } catch (refreshError) {
-        processQueue(normalizeError(refreshError), null);
-        setAccessToken(null);
-        if (onUnauthorizedCallback) {
-          onUnauthorizedCallback();
-        }
-        return Promise.reject(normalizeError(refreshError));
-      } finally {
-        isRefreshing = false;
-      }
+      const error = new Error(data.error?.message || data.message || `Request failed with status ${response.status}`);
+      error.status = response.status;
+      error.response = { status: response.status, data };
+      throw error;
     }
 
-    return Promise.reject(normalizeError(error));
+    return data;
+  } catch (error) {
+    if (!error.response) {
+      error.response = { data: { error: { message: error.message } } };
+    }
+    throw error;
   }
-);
+};
+
+export const apiClient = {
+  get: (endpoint, options) => request(endpoint, { method: 'GET', ...options }),
+  post: (endpoint, body, options) => request(endpoint, { method: 'POST', body: JSON.stringify(body), ...options }),
+  put: (endpoint, body, options) => request(endpoint, { method: 'PUT', body: JSON.stringify(body), ...options }),
+  delete: (endpoint, options) => request(endpoint, { method: 'DELETE', ...options }),
+};
+
+export default apiClient;
