@@ -1,43 +1,55 @@
 export class User {
   constructor({
     id,
+    fullName,
+    mobileNumber,
     email,
     passwordHash,
-    firstName,
-    lastName,
-    role = 'customer',
-    isEmailVerified = false,
-    passwordResetToken = null,
+    role = 'CITIZEN',
+    profile = {},
+    accountStatus = 'PENDING_VERIFICATION',
+    emailVerification = { verified: false, verifiedAt: null },
+    emailVerificationCode = null,
+    emailVerificationExpires = null,
+    passwordResetOTP = null,
     passwordResetExpires = null,
+    lastLoginAt = null,
     createdAt = new Date(),
     updatedAt = new Date()
   }) {
     this.id = id;
+    this.fullName = fullName;
+    this.mobileNumber = mobileNumber;
     this.email = email;
     this.passwordHash = passwordHash;
-    this.firstName = firstName;
-    this.lastName = lastName;
     this.role = role;
-    this.isEmailVerified = isEmailVerified;
-    this.passwordResetToken = passwordResetToken;
+    this.profile = profile;
+    this.accountStatus = accountStatus;
+    this.emailVerification = emailVerification;
+    this.emailVerificationCode = emailVerificationCode;
+    this.emailVerificationExpires = emailVerificationExpires;
+    this.passwordResetOTP = passwordResetOTP;
     this.passwordResetExpires = passwordResetExpires;
+    this.lastLoginAt = lastLoginAt;
     this.createdAt = createdAt;
     this.updatedAt = updatedAt;
   }
 
-  get fullName() {
-    return `${this.firstName} ${this.lastName}`.trim();
+  get isEmailVerified() {
+    return !!(this.emailVerification && this.emailVerification.verified);
   }
 
   toSafeObject() {
     return {
       id: this.id,
-      email: this.email,
-      firstName: this.firstName,
-      lastName: this.lastName,
       fullName: this.fullName,
+      email: this.email,
+      mobileNumber: this.mobileNumber,
       role: this.role,
-      isEmailVerified: this.isEmailVerified,
+      profile: this.profile,
+      emailVerified: this.isEmailVerified,
+      accountStatus: this.accountStatus,
+      lastLoginAt: this.lastLoginAt,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt
     };

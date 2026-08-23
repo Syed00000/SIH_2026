@@ -1,6 +1,4 @@
-import { useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useNavigate } from '@tanstack/react-router';
 import { authApi } from './api.js';
 import { setAccessToken } from '../../infrastructure/api/client.js';
 
@@ -11,23 +9,14 @@ export function useCurrentUser() {
     queryKey: AUTH_QUERY_KEY,
     queryFn: async () => {
       try {
-        const response = await authApi.refresh();
-        const newAccessToken = response.data.accessToken;
-        setAccessToken(newAccessToken);
-        
-        // Since backend return format on /refresh is token only, we return a mock user profile 
-        // to verify UI authorization flows or mock representation.
-        // In full production this would call a separate profile endpoint.
-        return {
-          id: 'session-active',
-          role: 'user', // Default role for standard validation
-        };
+        const response = await authApi.getMe();
+        return response?.data || null;
       } catch {
         setAccessToken(null);
         return null;
       }
     },
-    staleTime: Infinity, // Avoid refreshing automatically in background
+    staleTime: 1000 * 60 * 5,
     retry: false,
   });
 }
@@ -69,17 +58,4 @@ export function useLogout() {
       }
     },
   });
-}
-
-export function useRedirectIfAuthenticated(to = '/') {
-  const { data: user, isLoading } = useCurrentUser();
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    if (!isLoading && user) {
-      navigate({ to });
-    }
-  }, [user, isLoading, navigate, to]);
-
-  return { user, isLoading };
 }

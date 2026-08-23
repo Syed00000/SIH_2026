@@ -9,11 +9,29 @@ export const authApi = {
     return apiClient.post('auth/register', userData);
   },
 
-  logout: async () => {
-    return apiClient.post('auth/logout');
+  verifyEmail: async (data) => {
+    return apiClient.post('auth/verify-email', data);
   },
 
-  refresh: async () => {
-    return apiClient.post('auth/refresh');
+  resendVerificationOtp: async (data) => {
+    return apiClient.post('auth/resend-verification-otp', data);
   },
+
+  forgotPassword: async (data) => {
+    return apiClient.post('auth/forgot-password', data);
+  },
+
+  resetPassword: async (data) => {
+    return apiClient.post('auth/reset-password', data);
+  },
+
+  getMe: async () => {
+    return apiClient.get('auth/me');
+  },
+
+  logout: async () => {
+    return apiClient.post('auth/logout');
+  }
 };
+
+export default authApi;
