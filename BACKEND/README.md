@@ -7,16 +7,7 @@ JoharSetu modular monolith backend framework hai. System Express, Mongoose, Node
 ## 1. Environment & Setup Guide
 
 ### Environment Configuration (`.env`)
-```env
-PORT=3000
-URL=mongodb+srv://officialsamadhan043_db_user:mtzjk9Brhkg6AWPc@samadhan043.uzxwt7j.mongodb.net/
-JWT_ACCESS_SECRET=d8a4362bca393c834a36f56477d9494ad6abce6279f187a552bfdb17cf5ad8d8
-JWT_REFRESH_SECRET=b6540bce32a39281a8fceaa7390df8ceb6238bfa7162bcbe6278ea1f4864a78c
-CORS_ORIGINS=http://localhost:5173
-EMAIL_USER=officialsamadhan043@gmail.com
-EMAIL_PASS=golq ocsq tcqk pcxg
-SMTP_HOST=smtp.gmail.com
-SMTP_PORT=587
+
 ```
 
 ### Installation & Commands
