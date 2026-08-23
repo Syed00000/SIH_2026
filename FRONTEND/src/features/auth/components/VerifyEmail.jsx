@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../AuthContext.jsx';
-import { Mail, ArrowRight, RefreshCw, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { Button } from '../../../shared/components/ui/button.jsx';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../../../shared/components/ui/card.jsx';
+import { Alert } from '../../../shared/components/ui/alert.jsx';
 
 export const VerifyEmail = ({ emailQuery, onNavigate }) => {
   const { verifyEmail, resendOtp } = useAuth();
@@ -21,7 +23,7 @@ export const VerifyEmail = ({ emailQuery, onNavigate }) => {
       const mailParam = params.get('email');
       if (mailParam) setEmail(mailParam);
     }
-  }, [emailQuery]);
+  }, [emailQuery, email]);
 
   useEffect(() => {
     let interval = null;
@@ -133,92 +135,79 @@ export const VerifyEmail = ({ emailQuery, onNavigate }) => {
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4 bg-slate-50">
-      <div className="w-full max-w-md bg-white p-8 rounded-3xl border border-slate-200 shadow-xl relative text-center">
-        <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-blue-600 mb-4 shadow-md shadow-blue-500/20">
-          <Mail className="w-7 h-7 text-white" />
-        </div>
-
-        <h2 className="text-2xl font-bold text-slate-900">Verify Your Email</h2>
-        <p className="text-slate-500 text-xs sm:text-sm mt-1 mb-2">
-          Enter the 6-digit OTP code sent to
-        </p>
-        <div className="inline-block bg-slate-100 border border-slate-200 rounded-lg px-3 py-1 text-blue-600 font-semibold text-xs mb-6">
-          {maskEmail(email)}
-        </div>
-
-        {errorMessage && (
-          <div className="mb-4 p-3 rounded-xl bg-red-50 border border-red-200 text-red-600 text-xs font-semibold flex items-center justify-center space-x-2">
-            <AlertCircle className="w-4 h-4 flex-shrink-0" />
-            <span>{errorMessage}</span>
+      <Card className="w-full max-w-md bg-white border border-slate-200 shadow-sm rounded-xl">
+        <CardHeader className="text-center pb-4">
+          <CardTitle className="text-2xl font-bold tracking-tight text-slate-900">Verify Your Email</CardTitle>
+          <CardDescription className="text-slate-500 text-sm mt-1">
+            Enter the 6-digit OTP code sent to
+          </CardDescription>
+          <div className="mt-2.5">
+            <span className="inline-block bg-slate-100 border border-slate-200 rounded px-2.5 py-1 text-slate-900 font-bold text-xs">
+              {maskEmail(email)}
+            </span>
           </div>
-        )}
+        </CardHeader>
 
-        {successMessage && (
-          <div className="mb-4 p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-600 text-xs font-semibold flex items-center justify-center space-x-2">
-            <CheckCircle2 className="w-4 h-4 flex-shrink-0" />
-            <span>{successMessage}</span>
+        <CardContent className="space-y-5">
+          {errorMessage && (
+            <Alert variant="error" title="Verification Error">
+              {errorMessage}
+            </Alert>
+          )}
+
+          {successMessage && (
+            <Alert variant="success" title="Success">
+              {successMessage}
+            </Alert>
+          )}
+
+          <form onSubmit={handleVerify} className="space-y-5">
+            <div className="flex justify-center space-x-2 sm:space-x-3" onPaste={handlePaste}>
+              {otpDigits.map((digit, idx) => (
+                <input
+                  key={idx}
+                  ref={(el) => (inputRefs.current[idx] = el)}
+                  type="text"
+                  maxLength={1}
+                  value={digit}
+                  onChange={(e) => handleOtpChange(idx, e.target.value)}
+                  onKeyDown={(e) => handleKeyDown(idx, e)}
+                  className="w-10 h-12 sm:w-12 sm:h-12 bg-white text-center text-lg font-bold text-slate-900 rounded-md border border-slate-200 focus:outline-none focus:border-slate-900 focus:ring-1 focus:ring-slate-900 transition-all"
+                />
+              ))}
+            </div>
+
+            <div className="text-center text-xs text-slate-500 font-medium">
+              {timer > 0 ? (
+                <span>OTP expires in <strong className="text-slate-950 font-mono">{formatTimer(timer)}</strong></span>
+              ) : (
+                <span className="text-slate-950 font-semibold">OTP expired. Click Resend.</span>
+              )}
+            </div>
+
+            <Button
+              type="submit"
+              isLoading={isVerifying}
+              disabled={otpDigits.join('').length !== 6}
+              className="w-full py-2.5 rounded-md text-sm font-semibold"
+            >
+              Verify Email Address
+            </Button>
+          </form>
+
+          <div className="mt-6 border-t border-slate-100 pt-4 flex items-center justify-between text-xs">
+            <span className="text-slate-500">Didn't receive code?</span>
+            <button
+              type="button"
+              onClick={handleResendOtp}
+              disabled={!canResend || isResending}
+              className="font-bold text-slate-900 hover:underline disabled:opacity-40"
+            >
+              {isResending ? 'Sending...' : 'Resend OTP'}
+            </button>
           </div>
-        )}
-
-        <form onSubmit={handleVerify} className="space-y-6">
-          <div className="flex justify-center space-x-2 sm:space-x-3" onPaste={handlePaste}>
-            {otpDigits.map((digit, idx) => (
-              <input
-                key={idx}
-                ref={(el) => (inputRefs.current[idx] = el)}
-                type="text"
-                maxLength={1}
-                value={digit}
-                onChange={(e) => handleOtpChange(idx, e.target.value)}
-                onKeyDown={(e) => handleKeyDown(idx, e)}
-                className="w-10 h-12 sm:w-12 sm:h-14 bg-slate-50 text-center text-xl font-bold text-slate-900 rounded-xl border border-slate-200 focus:bg-white focus:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100 transition-all"
-              />
-            ))}
-          </div>
-
-          <div className="text-xs text-slate-500 font-medium">
-            {timer > 0 ? (
-              <span>OTP expires in <strong className="text-blue-600 font-mono">{formatTimer(timer)}</strong></span>
-            ) : (
-              <span className="text-amber-600 font-semibold">OTP expired! Click Resend.</span>
-            )}
-          </div>
-
-          <button
-            type="submit"
-            disabled={isVerifying || otpDigits.join('').length !== 6}
-            className="w-full btn-primary font-semibold py-3.5 rounded-xl flex items-center justify-center space-x-2 shadow-sm disabled:opacity-50 text-sm"
-          >
-            {isVerifying ? (
-              <span className="flex items-center space-x-2">
-                <svg className="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                </svg>
-                <span>Verifying OTP...</span>
-              </span>
-            ) : (
-              <>
-                <span>Verify Email Address</span>
-                <ArrowRight className="w-4 h-4" />
-              </>
-            )}
-          </button>
-        </form>
-
-        <div className="mt-6 border-t border-slate-100 pt-4 flex items-center justify-between text-xs">
-          <span className="text-slate-500">Didn't receive code?</span>
-          <button
-            type="button"
-            onClick={handleResendOtp}
-            disabled={!canResend || isResending}
-            className="font-bold text-blue-600 hover:text-blue-700 disabled:opacity-40 flex items-center space-x-1"
-          >
-            <RefreshCw className={`w-3.5 h-3.5 ${isResending ? 'animate-spin' : ''}`} />
-            <span>{isResending ? 'Sending...' : 'Resend OTP'}</span>
-          </button>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
     </div>
   );
 };

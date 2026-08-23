@@ -7,10 +7,9 @@ import { VerifyEmail } from '../features/auth/components/VerifyEmail.jsx';
 import { ForgotPassword } from '../features/auth/components/ForgotPassword.jsx';
 import { ResetPassword } from '../features/auth/components/ResetPassword.jsx';
 import { DashboardContainer } from '../features/dashboard/components/DashboardContainer.jsx';
-import { ShieldCheck } from 'lucide-react';
 
 export function Router() {
-  const { user, isAuthenticated, loading } = useAuth();
+  const { isAuthenticated, loading } = useAuth();
   const [currentPath, setCurrentPath] = useState(window.location.pathname);
   const [queryParams, setQueryParams] = useState({});
 

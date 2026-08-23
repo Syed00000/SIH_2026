@@ -78,6 +78,17 @@ Humne niche diye gaye files aur components scratch se build kiye hain:
 - **Unit Test Coverage**: Critical path logic ke liye unit test files build kiye hain:
   - `src/entities/user/index.test.js` (role and permissions logic checks).
   - `src/infrastructure/api/errors.test.js` (axios request-response error normalization checks).
+- **Nodemailer Dependency Setup**: Backend SMTP email systems require `nodemailer` package, use install kar ke backend dev watch crash issue resolve kiya.
+- **Icon-Free and AI-Free UI Purge**: Codebase se saare SVG loaders, Lucide icons, aur unke relative backgrounds/borders wrappers ko remove kiya. Password inputs me show/hide eye icons ko simple 'SHOW'/'HIDE' text button buttons se replace kiya. AI sparkles logo aur AI classification texts ko overview settings se strip kiya.
+- **Shared UI Refactoring & Uniform Aesthetic**: Saare login, register, email verification, forgot password, aur settings pages ko refactor kiya taaki wo shared primitive UI components (`Input`, `Button`, `Card`, `Alert`, `Badge`) use karein. Isse poore project me ek unified, structured, aur minimal premium black & white theme implement ho gayi hai.
+- **Collapsible & Drawer Sidebar**: `DashboardContainer.jsx` me desktop aur mobile ke liye collapsible side navigation toggle (`[≡]` / `[X]`) add kiya. Mobile par ye drop-down drawer button ka kaam karta hai aur desktop par width collapse-expand custom format handle karta hai.
+- **Official Jharkhand Logo & Lucide Icons**: Sidebar header me official Government of Jharkhand emblem image (`https://www.jharkhand.gov.in/images/jhlogo55.PNG`) integrate kiya. Sidebar links me clean, professional outline Lucide icons add kiye jo collapse hone par grid me centered layout follow karte hain.
+- **Global Sticky Header**: Government of Rajasthan ke mockup format me, page ke sabse top par ek global sticky header diya hai. Isme official Government of Jharkhand emblem image aur "Department of Higher and Technical Education" subtext show kiya hai.
+- **Top Sidebar Logout & Independent Scroll**: Sidebar ko `h-full` height locks ke sath layout me sticky banaya hai taaki sidebar fixed rahe aur sirf right-side dashboard panels scroll hon.
+- **Sidebar-Header Toggle Alignment**: Global top header ko completely clean aur fixed rakha hai (koi menu button wahan nahi hai). Menu toggle close/expand buttons (`X` aur `Menu`) ko sidebar header me shift kiya hai, aur Logout button ko mockup sheet ke according sidebar ke bottom section me restyle kiya hai.
+- **Header Title Positioning**: Portal title text "JoharSetu" (bold tracking-widest format) ko global header ke top-right section me shift kar diya hai taaki sidebar display clean aur non-repetitive rahe.
+- **Unified Sidebar Header Card**: Blank vertical spacing aur duplicate lines ko eliminate karne ke liye, sidebar toggle close button aur User profile details container ko ek single top header card (`bg-slate-50 border border-slate-200`) me unify kar diya hai. Collapsed state me hamburger menu icon directly center me display hota hai.
+- **Registration Role Descriptions**: CITIZEN, UNIVERSITY, aur INDUSTRY roles ke descriptive text cards ko modify kiya hai taaki wo sab challenge submission roles ko explicitly state karein (local/community, educational/institutional, aur industrial/CSR challenges).
 
 ---
 

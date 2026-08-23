@@ -15,7 +15,7 @@ export const AuthProvider = ({ children }) => {
       if (response && response.data) {
         setUser(response.data);
       }
-    } catch (err) {
+    } catch {
       setUser(null);
       setAccessToken(null);
     } finally {
@@ -133,7 +133,7 @@ export const AuthProvider = ({ children }) => {
   const logout = async () => {
     try {
       await authApi.logout();
-    } catch (err) {
+    } catch {
       // Ignore logout API failure
     } finally {
       setUser(null);
