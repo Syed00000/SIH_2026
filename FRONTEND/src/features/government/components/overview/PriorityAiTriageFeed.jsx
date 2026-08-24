@@ -5,17 +5,17 @@ export const PriorityAiTriageFeed = ({ feed = [], onApprove, onReject, onViewAll
   const getCategoryVisuals = (category) => {
     switch (category) {
       case 'WATER':
-        return { icon: Droplet, bg: 'bg-blue-50 text-blue-500 border border-blue-100' };
+        return { icon: Droplet, bg: ' text-blue-500 ' };
       case 'ROAD':
-        return { icon: AlertTriangle, bg: 'bg-amber-50 text-amber-500 border border-amber-100', isLetterA: true };
+        return { icon: AlertTriangle, bg: ' text-amber-500 ', isLetterA: true };
       case 'GARBAGE':
-        return { icon: Trash2, bg: 'bg-emerald-50 text-emerald-500 border border-emerald-100' };
+        return { icon: Trash2, bg: ' text-emerald-500 ' };
       case 'SCHOOL':
-        return { icon: GraduationCap, bg: 'bg-purple-50 text-purple-500 border border-purple-100' };
+        return { icon: GraduationCap, bg: ' text-purple-500 ' };
       case 'HEALTH':
-        return { icon: Cross, bg: 'bg-red-50 text-red-500 border border-red-100' };
+        return { icon: Cross, bg: ' text-red-500 ' };
       default:
-        return { icon: Droplet, bg: 'bg-slate-50 text-slate-500 border border-slate-100' };
+        return { icon: Droplet, bg: ' text-slate-500 ' };
     }
   };
 
@@ -49,13 +49,12 @@ export const PriorityAiTriageFeed = ({ feed = [], onApprove, onReject, onViewAll
           return (
             <div
               key={item.id}
-              className={`p-2.5 rounded-xl border transition-all duration-150 flex items-center justify-between gap-3 ${
-                isApproved
-                  ? 'bg-emerald-50/40 border-emerald-200'
-                  : isRejected
+              className={`p-2.5 rounded-xl border transition-all duration-150 flex items-center justify-between gap-3 ${isApproved
+                ? 'bg-emerald-50/40 border-emerald-200'
+                : isRejected
                   ? 'bg-red-50/30 border-red-200 opacity-60'
                   : 'bg-white border-slate-100 hover:border-slate-200 hover:bg-slate-50/50'
-              }`}
+                }`}
             >
               {/* Left Details */}
               <div className="flex items-center space-x-3 min-w-0">
