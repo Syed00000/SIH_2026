@@ -1,1 +1,9 @@
 export { DashboardContainer } from './components/DashboardContainer.jsx';
+export { CitizenDashboard } from './components/citizen/CitizenDashboard.jsx';
+export { CitizenOverview } from './components/citizen/CitizenOverview.jsx';
+export { CitizenChallenges } from './components/citizen/CitizenChallenges.jsx';
+export { DashboardHeader } from './components/header/DashboardHeader.jsx';
+export { DashboardSidebar } from './components/sidebar/DashboardSidebar.jsx';
+export { DashboardFooter } from './components/footer/DashboardFooter.jsx';
+export { RoleProfile } from './components/RoleProfile.jsx';
+export { AccountSettings } from './components/AccountSettings.jsx';
