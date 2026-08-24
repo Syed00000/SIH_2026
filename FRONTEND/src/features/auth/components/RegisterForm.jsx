@@ -161,8 +161,10 @@ export const RegisterForm = ({ onNavigate }) => {
       const msg = err?.response?.data?.error?.message || err?.message || 'Registration failed';
       if (msg === 'EMAIL_ALREADY_EXISTS') {
         setErrorMessage('This email address is already registered.');
+        setStep(2); // Go back to Step 2 to correct the email
       } else if (msg === 'MOBILE_ALREADY_EXISTS') {
         setErrorMessage('This mobile number is already registered.');
+        setStep(2); // Go back to Step 2 to correct the mobile number
       } else {
         setErrorMessage(msg);
       }

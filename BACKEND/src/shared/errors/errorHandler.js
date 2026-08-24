@@ -26,6 +26,24 @@ export const errorHandler = (err, req, res, next) => {
     });
   }
 
+  // Handle Mongoose / MongoDB Duplicate Key Error (E11000)
+  if (err.code === 11000) {
+    const field = Object.keys(err.keyValue || {})[0];
+    const message = field === 'email' 
+      ? 'EMAIL_ALREADY_EXISTS' 
+      : field === 'mobileNumber' 
+        ? 'MOBILE_ALREADY_EXISTS' 
+        : 'Resource conflict';
+
+    return res.status(409).json({
+      success: false,
+      error: {
+        code: 'CONFLICT_ERROR',
+        message
+      }
+    });
+  }
+
   if (err instanceof SyntaxError && err.status === 400 && 'body' in err) {
     return res.status(400).json({
       success: false,

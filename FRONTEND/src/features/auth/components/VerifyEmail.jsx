@@ -18,12 +18,14 @@ export const VerifyEmail = ({ emailQuery, onNavigate }) => {
   const inputRefs = useRef([]);
 
   useEffect(() => {
-    if (!email && typeof window !== 'undefined') {
+    if (emailQuery) {
+      setEmail(emailQuery);
+    } else if (typeof window !== 'undefined') {
       const params = new URLSearchParams(window.location.search);
       const mailParam = params.get('email');
       if (mailParam) setEmail(mailParam);
     }
-  }, [emailQuery, email]);
+  }, [emailQuery]);
 
   useEffect(() => {
     let interval = null;
