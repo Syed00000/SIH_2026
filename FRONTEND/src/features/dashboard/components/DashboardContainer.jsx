@@ -4,6 +4,7 @@ import { DashboardHeader } from './header/DashboardHeader.jsx';
 import { DashboardSidebar } from './sidebar/DashboardSidebar.jsx';
 import { DashboardFooter } from './footer/DashboardFooter.jsx';
 import { CitizenDashboard } from './citizen/CitizenDashboard.jsx';
+import { GovernmentLayout } from '../../government/components/layout/GovernmentLayout.jsx';
 import { RoleProfile } from './RoleProfile.jsx';
 import { AccountSettings } from './AccountSettings.jsx';
 import { Button } from '../../../shared/components/ui/button.jsx';
@@ -61,6 +62,11 @@ export const DashboardContainer = ({ onNavigate }) => {
       window.location.href = '/login';
     }
   };
+
+  // Render Dedicated Government Admin Portal
+  if (role === 'GOVERNMENT' || role === 'ADMIN' || user.email === 'admin@dtejharkhand.gov.in') {
+    return <GovernmentLayout onLogout={handleLogout} />;
+  }
 
   return (
     <div
