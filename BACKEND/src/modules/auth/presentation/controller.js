@@ -99,12 +99,19 @@ export const verifyEmail = async (req, res, next) => {
   try {
     const { email, otp, code } = req.body;
     const result = await authService.verifyEmail({ email, otp, code });
+    
+    if (result.refreshToken) {
+      setRefreshTokenCookie(res, result.refreshToken);
+    }
+
     res.json({
       success: true,
       message: result.message,
       data: {
         emailVerified: result.emailVerified,
-        accountStatus: result.accountStatus
+        accountStatus: result.accountStatus,
+        accessToken: result.accessToken,
+        user: result.user
       }
     });
   } catch (error) {
