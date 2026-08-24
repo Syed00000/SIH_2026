@@ -34,13 +34,13 @@ export class AuthService {
     // 4. Duplicate checks
     const normalizedEmail = email.toLowerCase().trim();
     const existingEmail = await this.userService.getUserByEmail(normalizedEmail);
-    if (existingEmail) {
+    if (existingEmail && (existingEmail.isEmailVerified || existingEmail.accountStatus === 'ACTIVE')) {
       throw new ConflictError('EMAIL_ALREADY_EXISTS');
     }
 
     const normalizedMobile = mobileNumber.trim();
     const existingMobile = await this.userService.getUserByMobile(normalizedMobile);
-    if (existingMobile) {
+    if (existingMobile && existingMobile.id !== existingEmail?.id && (existingMobile.isEmailVerified || existingMobile.accountStatus === 'ACTIVE')) {
       throw new ConflictError('MOBILE_ALREADY_EXISTS');
     }
 
@@ -73,19 +73,34 @@ export class AuthService {
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
     const otpExpires = new Date(Date.now() + 5 * 60 * 1000); // 300 seconds TTL
 
-    // 8. Create User document in PENDING_VERIFICATION state in single users collection
-    const user = await this.userService.createUser({
-      fullName: fullName.trim(),
-      mobileNumber: normalizedMobile,
-      email: normalizedEmail,
-      passwordHash,
-      role: formattedRole,
-      profile: embeddedProfile,
-      accountStatus: 'PENDING_VERIFICATION',
-      emailVerification: { verified: false, verifiedAt: null },
-      emailVerificationCode: otp,
-      emailVerificationExpires: otpExpires
-    });
+    // 8. Create or Update User document in PENDING_VERIFICATION state in single users collection
+    let user;
+    if (existingEmail && existingEmail.accountStatus === 'PENDING_VERIFICATION') {
+      user = await this.userService.updateResetCredentials(existingEmail.id, {
+        fullName: fullName.trim(),
+        mobileNumber: normalizedMobile,
+        passwordHash,
+        role: formattedRole,
+        profile: embeddedProfile,
+        accountStatus: 'PENDING_VERIFICATION',
+        emailVerification: { verified: false, verifiedAt: null },
+        emailVerificationCode: otp,
+        emailVerificationExpires: otpExpires
+      });
+    } else {
+      user = await this.userService.createUser({
+        fullName: fullName.trim(),
+        mobileNumber: normalizedMobile,
+        email: normalizedEmail,
+        passwordHash,
+        role: formattedRole,
+        profile: embeddedProfile,
+        accountStatus: 'PENDING_VERIFICATION',
+        emailVerification: { verified: false, verifiedAt: null },
+        emailVerificationCode: otp,
+        emailVerificationExpires: otpExpires
+      });
+    }
 
     // 9. Enqueue background SMTP email dispatch
     await this.queue.add('sendEmailVerification', {
