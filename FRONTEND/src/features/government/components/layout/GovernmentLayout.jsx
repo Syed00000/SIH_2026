@@ -8,6 +8,7 @@ import { ComingSoonPanel } from '../common/ComingSoonPanel.jsx';
 import { HeiHubPanel } from '../heis/heiHubPanel.jsx';
 import { ManageUniversitiesDashboard } from '../universities/ManageUniversitiesDashboard.jsx';
 import { GovernmentGisDashboard } from '../gis/GovernmentGisDashboard.jsx';
+import { AdminManagement } from '../governance/AdminManagement.jsx';
 import { governmentDataService } from '../../services/governmentDataService.js';
 
 export const GovernmentLayout = ({ onLogout }) => {
@@ -142,10 +143,12 @@ export const GovernmentLayout = ({ onLogout }) => {
                 selectedDistrict={selectedDistrict}
                 onSelectDistrict={(dist) => setSelectedDistrict(dist)}
               />
-            ) : activeTab === 'governance_universities' || activeTab === 'manage_universities' || activeTab === 'user_governance' ? (
+            ) : activeTab === 'governance_universities' || activeTab === 'manage_universities' ? (
               <ManageUniversitiesDashboard initialMode="list" />
             ) : activeTab === 'gis' ? (
               <GovernmentGisDashboard />
+            ) : activeTab === 'users_admin' || activeTab === 'user_governance' ? (
+              <AdminManagement />
             ) : (
               <ComingSoonPanel
                 title={getTabTitle(activeTab)}
