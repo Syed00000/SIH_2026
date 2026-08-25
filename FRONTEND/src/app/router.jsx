@@ -60,7 +60,7 @@ export function Router() {
 
   const renderComponent = () => {
     // 1. PUBLIC GUEST ROUTES (Redirect to /dashboard if already logged in)
-    if (['/login', '/register', '/forgot-password', '/reset-password'].includes(currentPath)) {
+    if (['/login', '/register', '/forgot-password', '/reset-password', '/verify-email'].includes(currentPath)) {
       if (isAuthenticated) {
         return <DashboardContainer onNavigate={navigate} />;
       }
@@ -74,14 +74,11 @@ export function Router() {
           return <ForgotPassword onNavigate={navigate} />;
         case '/reset-password':
           return <ResetPassword emailQuery={queryParams.email} onNavigate={navigate} />;
+        case '/verify-email':
+          return <VerifyEmail emailQuery={queryParams.email} onNavigate={navigate} />;
         default:
           return <LoginForm onNavigate={navigate} />;
       }
-    }
-
-    // 2. EMAIL VERIFICATION ROUTE (Public)
-    if (currentPath === '/verify-email') {
-      return <VerifyEmail emailQuery={queryParams.email} onNavigate={navigate} />;
     }
 
     // 3. PROTECTED ROUTES (/dashboard, /profile, /settings, /)

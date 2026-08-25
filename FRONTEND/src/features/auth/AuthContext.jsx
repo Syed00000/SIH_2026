@@ -109,6 +109,13 @@ export const AuthProvider = ({ children }) => {
     setError(null);
     try {
       const response = await authApi.verifyEmail({ email, otp });
+      const { accessToken, user: userData } = response.data || {};
+      
+      if (accessToken && userData) {
+        setAccessToken(accessToken);
+        localStorage.setItem('joharsetu_token', accessToken);
+        setUser(userData);
+      }
       return response;
     } catch (err) {
       const message = err?.response?.data?.error?.message || err?.message || 'OTP verification failed';
