@@ -15,12 +15,12 @@ import {
 } from '../../data/jharkhandGisData.js';
 import {
   MapLayersCard,
-  ProblemCategoriesCard,
   HeatmapIntensityCard,
   DistrictOverviewPanel,
   LegendCard,
   MapScaleBar
 } from './GisOverlays.jsx';
+
 
 export const GisMapCanvas = ({
   viewType = 'heat_map',
@@ -453,85 +453,89 @@ export const GisMapCanvas = ({
   };
 
   return (
-    <div className="relative w-full h-[650px] rounded-3xl overflow-hidden border border-slate-200 shadow-xs bg-[#f8fafc] select-none">
-      {/* 1. Leaflet Canvas Viewport */}
-      <div ref={mapContainerRef} className="w-full h-full z-0" />
+    <div className="w-full select-none">
+      {/* Full-Width Map Canvas — all overlays float on top */}
+      <div className="relative w-full h-[680px] rounded-2xl overflow-visible border border-slate-200 shadow-sm bg-[#f0f4f8]">
 
-      {/* 2. Floating Map Action Buttons (Top Left Inside Map) */}
-      <div className="absolute top-4 left-64 z-[500] flex flex-col space-y-1.5 bg-white/95 backdrop-blur-md p-1 rounded-xl border border-slate-200 shadow-md">
-        <button
-          type="button"
-          onClick={handleZoomIn}
-          className="w-7 h-7 flex items-center justify-center text-slate-700 hover:bg-slate-100 hover:text-slate-900 rounded-lg text-xs font-bold transition-colors cursor-pointer"
-          title="Zoom In"
-        >
-          <Plus className="w-4 h-4" />
-        </button>
-        <button
-          type="button"
-          onClick={handleZoomOut}
-          className="w-7 h-7 flex items-center justify-center text-slate-700 hover:bg-slate-100 hover:text-slate-900 rounded-lg text-xs font-bold transition-colors cursor-pointer"
-          title="Zoom Out"
-        >
-          <Minus className="w-4 h-4" />
-        </button>
-        <div className="h-px bg-slate-200 my-0.5 mx-1" />
-        <button
-          type="button"
-          onClick={handleRecenter}
-          className="w-7 h-7 flex items-center justify-center text-slate-700 hover:bg-slate-100 hover:text-blue-600 rounded-lg text-xs font-bold transition-colors cursor-pointer"
-          title="Recenter Map View"
-        >
-          <Crosshair className="w-4 h-4" />
-        </button>
-        <button
-          type="button"
-          onClick={handleToggleTileMode}
-          className={`w-7 h-7 flex items-center justify-center rounded-lg text-xs font-bold transition-colors cursor-pointer ${
-            tileMode === 'satellite'
-              ? 'bg-blue-600 text-white'
-              : 'text-slate-700 hover:bg-slate-100'
-          }`}
-          title="Toggle Satellite / Canvas Basemap"
-        >
-          <Layers className="w-4 h-4" />
-        </button>
-      </div>
+        {/* Leaflet Canvas (clipped inside rounded box) */}
+        <div className="absolute inset-0 rounded-2xl overflow-hidden">
+          <div ref={mapContainerRef} className="w-full h-full z-0" />
+        </div>
 
-      {/* 3. Left Overlays Column (Map Layers, Problem Categories, Heatmap Intensity) */}
-      <div className="absolute top-4 left-4 z-[500] flex flex-col space-y-2.5 max-h-[610px] overflow-y-auto pr-1">
-        <MapLayersCard
-          layers={activeLayers}
-          onToggleLayer={onToggleLayer}
-        />
-        <ProblemCategoriesCard
-          selectedCategories={selectedCategoriesList}
-          onToggleCategory={(catId) => {
-            setSelectedCategoriesList((prev) =>
-              prev.includes(catId)
-                ? prev.filter((id) => id !== catId)
-                : [...prev, catId]
-            );
-          }}
-        />
-        <HeatmapIntensityCard />
-      </div>
+        {/* ── TOP-LEFT: Zoom Controls ── */}
+        <div className="absolute top-4 left-4 z-[500] flex flex-col gap-1 bg-white/95 backdrop-blur-md p-1 rounded-xl border border-slate-200 shadow-md">
+          <button
+            type="button"
+            onClick={handleZoomIn}
+            className="w-7 h-7 flex items-center justify-center text-slate-700 hover:bg-slate-100 hover:text-slate-900 rounded-lg transition-colors cursor-pointer"
+            title="Zoom In"
+          >
+            <Plus className="w-4 h-4" />
+          </button>
+          <button
+            type="button"
+            onClick={handleZoomOut}
+            className="w-7 h-7 flex items-center justify-center text-slate-700 hover:bg-slate-100 hover:text-slate-900 rounded-lg transition-colors cursor-pointer"
+            title="Zoom Out"
+          >
+            <Minus className="w-4 h-4" />
+          </button>
+          <div className="h-px bg-slate-200 mx-1" />
+          <button
+            type="button"
+            onClick={handleRecenter}
+            className="w-7 h-7 flex items-center justify-center text-slate-700 hover:bg-slate-100 hover:text-blue-600 rounded-lg transition-colors cursor-pointer"
+            title="Recenter Map"
+          >
+            <Crosshair className="w-4 h-4" />
+          </button>
+          <button
+            type="button"
+            onClick={handleToggleTileMode}
+            className={`w-7 h-7 flex items-center justify-center rounded-lg transition-colors cursor-pointer ${
+              tileMode === 'satellite'
+                ? 'bg-blue-600 text-white'
+                : 'text-slate-700 hover:bg-slate-100'
+            }`}
+            title="Toggle Satellite Basemap"
+          >
+            <Layers className="w-4 h-4" />
+          </button>
+        </div>
 
-      {/* 4. Right Overlays Column (District Overview, Legend) */}
-      <div className="absolute top-4 right-4 z-[500] flex flex-col space-y-2.5 max-h-[610px] overflow-y-auto pl-1">
-        <DistrictOverviewPanel
-          districtData={activeDistrictData}
-          onOpenDetailedReport={onOpenDetailedReport}
-        />
-        <LegendCard />
-      </div>
+        {/* ── TOP-LEFT: Layer + Heatmap pill overlays (below zoom controls) ── */}
+        <div className="absolute top-4 left-14 z-[500] flex flex-col gap-2">
+          <MapLayersCard layers={activeLayers} onToggleLayer={onToggleLayer} />
+          <HeatmapIntensityCard />
+        </div>
 
-      {/* 5. Bottom Scale Bar */}
-      <div className="absolute bottom-4 right-72 z-[500] hidden md:block">
-        <MapScaleBar />
+        {/* ── TOP-RIGHT: Overview + Legend pill overlays ── */}
+        <div className="absolute top-4 right-4 z-[500] flex flex-col items-end gap-2">
+          <DistrictOverviewPanel
+            districtData={activeDistrictData}
+            onOpenDetailedReport={onOpenDetailedReport}
+          />
+          <LegendCard />
+        </div>
+
+        {/* ── BOTTOM CENTER: Hovered District Tooltip ── */}
+        {hoveredDistrict && (
+          <div className="absolute bottom-16 left-1/2 -translate-x-1/2 z-[500] bg-slate-900/90 backdrop-blur-sm text-white text-xs font-semibold px-3 py-1.5 rounded-full shadow-lg pointer-events-none whitespace-nowrap">
+            {hoveredDistrict.name}
+            {hoveredDistrict.overallScore != null && (
+              <span className="ml-2 text-amber-300">Score: {hoveredDistrict.overallScore}/100</span>
+            )}
+          </div>
+        )}
+
+        {/* ── BOTTOM RIGHT: Scale Bar only ── */}
+        <div className="absolute bottom-4 right-4 z-[500]">
+          <MapScaleBar />
+        </div>
       </div>
     </div>
   );
 };
 
 export default GisMapCanvas;
+
