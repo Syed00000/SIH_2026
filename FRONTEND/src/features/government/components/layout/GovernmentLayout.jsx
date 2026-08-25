@@ -133,16 +133,13 @@ export const GovernmentLayout = ({ onLogout }) => {
                 onRejectTriage={handleRejectTriage}
                 onNavigateTab={(tab) => setActiveTab(tab)}
               />
-<<<<<<< HEAD
+            ) : activeTab === 'triage' || activeTab === 'ai-triage' ? (
+              <AITriageDashboard />
             ) : activeTab === 'heis' ? (
               <HeiHubPanel
                 selectedDistrict={selectedDistrict}
                 onSelectDistrict={(dist) => setSelectedDistrict(dist)}
               />
-=======
-            ) : activeTab === 'triage' || activeTab === 'ai-triage' ? (
-              <AITriageDashboard />
->>>>>>> 6b9d85661a707dab4a29e1fef069f572f05e5ba8
             ) : (
               <ComingSoonPanel
                 title={getTabTitle(activeTab)}

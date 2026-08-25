@@ -71,7 +71,8 @@ const setRefreshTokenCookie = (res, token) => {
   res.cookie('refreshToken', token, {
     httpOnly: true,
     secure: isProduction,
-    sameSite: 'strict',
+    sameSite: isProduction ? 'strict' : 'lax',
+    path: '/',
     maxAge: days * 24 * 60 * 60 * 1000
   });
 };
@@ -111,6 +112,7 @@ export const verifyEmail = async (req, res, next) => {
         emailVerified: result.emailVerified,
         accountStatus: result.accountStatus,
         accessToken: result.accessToken,
+        refreshToken: result.refreshToken,
         user: result.user
       }
     });
@@ -144,6 +146,7 @@ export const login = async (req, res, next) => {
       message: 'Login successful.',
       data: {
         accessToken: result.accessToken,
+        refreshToken: result.refreshToken,
         user: {
           id: result.user.id,
           fullName: result.user.fullName,
@@ -160,7 +163,13 @@ export const login = async (req, res, next) => {
 
 export const refresh = async (req, res, next) => {
   try {
-    const token = req.cookies?.refreshToken || req.body.refreshToken;
+    const token = req.cookies?.refreshToken || req.body?.refreshToken;
+    if (!token) {
+      return res.status(401).json({
+        success: false,
+        error: { message: 'Refresh token is required' }
+      });
+    }
     const result = await authService.refresh(token);
     
     setRefreshTokenCookie(res, result.refreshToken);
@@ -168,7 +177,8 @@ export const refresh = async (req, res, next) => {
     res.json({
       success: true,
       data: {
-        accessToken: result.accessToken
+        accessToken: result.accessToken,
+        refreshToken: result.refreshToken
       }
     });
   } catch (error) {

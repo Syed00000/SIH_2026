@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { authApi } from './api.js';
-import { setAccessToken, getAccessToken } from '../../infrastructure/api/client.js';
+import { setAccessToken, getAccessToken, setRefreshToken, clearTokens, onUnauthorized } from '../../infrastructure/api/client.js';
 
 const AuthContext = createContext(null);
 
@@ -17,16 +17,23 @@ export const AuthProvider = ({ children }) => {
       }
     } catch {
       setUser(null);
-      setAccessToken(null);
+      clearTokens();
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
+    onUnauthorized(() => {
+      setUser(null);
+    });
+
     const existingToken = getAccessToken() || localStorage.getItem('joharsetu_token');
-    if (existingToken) {
-      setAccessToken(existingToken);
+    const existingRefreshToken = localStorage.getItem('joharsetu_refresh_token');
+
+    if (existingToken || existingRefreshToken) {
+      if (existingToken) setAccessToken(existingToken);
+      if (existingRefreshToken) setRefreshToken(existingRefreshToken);
       fetchCurrentUser();
     } else {
       setLoading(false);
@@ -39,17 +46,13 @@ export const AuthProvider = ({ children }) => {
 
     try {
       const response = await authApi.login({ email: (email || '').toLowerCase().trim(), password });
-      const { accessToken, user: userData } = response.data;
+      const { accessToken, refreshToken, user: userData } = response.data;
       
-      setAccessToken(accessToken);
-      localStorage.setItem('joharsetu_token', accessToken);
+      if (accessToken) setAccessToken(accessToken);
+      if (refreshToken) setRefreshToken(refreshToken);
       
-      // Load full user profile from GET /api/v1/auth/me
-      const meResponse = await authApi.getMe();
-      const fullUser = meResponse?.data || userData;
-      setUser(fullUser);
-      
-      return { success: true, user: fullUser };
+      setUser(userData);
+      return { success: true, user: userData };
     } catch (err) {
       const message = err?.response?.data?.error?.message || err?.message || 'Login failed';
       setError(message);
@@ -79,13 +82,12 @@ export const AuthProvider = ({ children }) => {
     setError(null);
     try {
       const response = await authApi.verifyEmail({ email, otp });
-      const { accessToken, user: userData } = response.data || {};
+      const { accessToken, refreshToken, user: userData } = response.data || {};
       
-      if (accessToken && userData) {
-        setAccessToken(accessToken);
-        localStorage.setItem('joharsetu_token', accessToken);
-        setUser(userData);
-      }
+      if (accessToken) setAccessToken(accessToken);
+      if (refreshToken) setRefreshToken(refreshToken);
+      if (userData) setUser(userData);
+      
       return response;
     } catch (err) {
       const message = err?.response?.data?.error?.message || err?.message || 'OTP verification failed';
@@ -145,8 +147,7 @@ export const AuthProvider = ({ children }) => {
       // Ignore logout API failure
     } finally {
       setUser(null);
-      setAccessToken(null);
-      localStorage.removeItem('joharsetu_token');
+      clearTokens();
     }
   };
 
