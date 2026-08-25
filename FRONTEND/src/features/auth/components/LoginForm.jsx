@@ -82,28 +82,7 @@ export const LoginForm = ({ onNavigate }) => {
         </CardHeader>
 
         <CardContent className="space-y-4">
-          {/* Quick Demo Access Pills */}
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 p-2.5 rounded-md bg-slate-50 border border-slate-200 text-xs">
-            <span className="text-slate-500 font-semibold text-[11px]">Quick Demo Access:</span>
-            <div className="flex items-center gap-1.5">
-              <button
-                type="button"
-                onClick={fillAdminCredentials}
-                className="inline-flex items-center font-bold text-blue-700 bg-blue-50 border border-blue-200 px-2 py-1 rounded text-[11px] hover:bg-blue-100 transition-colors cursor-pointer"
-              >
-                <ShieldCheck className="w-3 h-3 mr-1" />
-                Admin
-              </button>
-              <button
-                type="button"
-                onClick={fillCitizenCredentials}
-                className="inline-flex items-center font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-1 rounded text-[11px] hover:bg-emerald-100 transition-colors cursor-pointer"
-              >
-                <User className="w-3 h-3 mr-1" />
-                Citizen
-              </button>
-            </div>
-          </div>
+
 
           {errorMessage && (
             <Alert variant="error" title="Login Failed">
@@ -123,7 +102,7 @@ export const LoginForm = ({ onNavigate }) => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="name@example.com"
-                className="w-full px-3 py-2 text-sm bg-white border border-slate-200 rounded-md transition-all focus:outline-none focus:ring-1 focus:border-slate-900 focus:ring-slate-900 font-medium"
+                className="w-full px-3 py-2 text-black text-sm bg-white border border-slate-200 rounded-md transition-all focus:outline-none focus:ring-1 focus:border-slate-900 focus:ring-slate-900 font-medium"
               />
             </div>
 
@@ -148,7 +127,7 @@ export const LoginForm = ({ onNavigate }) => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full px-3 py-2 text-sm bg-white border border-slate-200 rounded-md transition-all focus:outline-none focus:ring-1 focus:border-slate-900 focus:ring-slate-900 pr-12 font-medium"
+                  className="w-full px-3 py-2 text-black text-sm bg-white border border-slate-200 rounded-md transition-all focus:outline-none focus:ring-1 focus:border-slate-900 focus:ring-slate-900 pr-12 font-medium"
                 />
                 <button
                   type="button"
