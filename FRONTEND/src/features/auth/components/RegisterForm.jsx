@@ -4,6 +4,7 @@ import { Input } from '../../../shared/components/ui/input.jsx';
 import { Button } from '../../../shared/components/ui/button.jsx';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../../../shared/components/ui/card.jsx';
 import { Alert } from '../../../shared/components/ui/alert.jsx';
+import { Eye, EyeOff } from 'lucide-react';
 
 const JHARKHAND_DISTRICTS = {
   Ranchi: ['Kanke', 'Ratu', 'Namkum', 'Ormanjhi', 'Bero', 'Ranchi Municipal Corporation'],
@@ -320,9 +321,15 @@ export const RegisterForm = ({ onNavigate }) => {
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400 hover:text-slate-600 transition-colors"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-600 transition-colors focus:outline-none"
+                      title={showPassword ? 'Hide password' : 'Show password'}
+                      aria-label={showPassword ? 'Hide password' : 'Show password'}
                     >
-                      {showPassword ? 'HIDE' : 'SHOW'}
+                      {showPassword ? (
+                        <EyeOff className="w-4 h-4" />
+                      ) : (
+                        <Eye className="w-4 h-4" />
+                      )}
                     </button>
                   </div>
                   {/* Strength Bar */}

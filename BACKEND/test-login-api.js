@@ -5,8 +5,8 @@ const testLogin = async () => {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        email: 'shadanakram82@gmail.com',
-        password: '123456789'
+        email: 'citizen@joharsetu.gov.in',
+        password: 'Citizen@123456'
       })
     });
     const data = await res.json();
