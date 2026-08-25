@@ -7,13 +7,15 @@ import {
   MOCK_CSR_GRANTS,
   MOCK_AUDIT_LOGS
 } from '../data/mockGovernmentData.js';
+import { MOCK_ADMIN_RECORDS } from '../data/mockAdminData.js';
 import { JHARKHAND_GEOJSON } from '../data/jharkhandGeoJson.js';
 
 const STORAGE_KEYS = {
   TRIAGE: 'joharsetu_gov_triage',
   HEIS: 'joharsetu_gov_heis',
   AUDIT: 'joharsetu_gov_audit',
-  KPI: 'joharsetu_gov_kpis'
+  KPI: 'joharsetu_gov_kpis',
+  ADMINS: 'joharsetu_gov_admins'
 };
 
 class GovernmentDataService {
@@ -23,25 +25,20 @@ class GovernmentDataService {
 
   initStorage() {
     if (typeof window === 'undefined') return;
-    if (!localStorage.getItem(STORAGE_KEYS.TRIAGE)) {
-      localStorage.setItem(STORAGE_KEYS.TRIAGE, JSON.stringify(MOCK_AI_TRIAGE_FEED));
-    }
-    if (!localStorage.getItem(STORAGE_KEYS.AUDIT)) {
-      localStorage.setItem(STORAGE_KEYS.AUDIT, JSON.stringify(MOCK_AUDIT_LOGS));
-    }
-    if (!localStorage.getItem(STORAGE_KEYS.HEIS)) {
-      localStorage.setItem(STORAGE_KEYS.HEIS, JSON.stringify(MOCK_TOP_HEIS));
-    }
-    if (!localStorage.getItem(STORAGE_KEYS.KPI)) {
-      localStorage.setItem(STORAGE_KEYS.KPI, JSON.stringify(MOCK_KPI_SUMMARY));
-    }
+    const defaults = [
+      [STORAGE_KEYS.TRIAGE, MOCK_AI_TRIAGE_FEED],
+      [STORAGE_KEYS.AUDIT, MOCK_AUDIT_LOGS],
+      [STORAGE_KEYS.HEIS, MOCK_TOP_HEIS],
+      [STORAGE_KEYS.KPI, MOCK_KPI_SUMMARY],
+      [STORAGE_KEYS.ADMINS, MOCK_ADMIN_RECORDS]
+    ];
+    defaults.forEach(([k, v]) => {
+      if (!localStorage.getItem(k)) localStorage.setItem(k, JSON.stringify(v));
+    });
   }
 
-  // Dynamic KPI calculation based on District & Sector filters
   getFilteredKpis(district = 'All', sector = 'All') {
-    const rawTriage = this.getTriageFeed();
-    const approvedCount = rawTriage.filter(t => t.status === 'APPROVED').length;
-
+    const approvedCount = this.getTriageFeed().filter(t => t.status === 'APPROVED').length;
     if (district === 'All' && sector === 'All') {
       const baseSolved = 10850 + approvedCount;
       return {
@@ -52,11 +49,7 @@ class GovernmentDataService {
       };
     }
 
-    // Find district in GeoJSON
-    const feat = JHARKHAND_GEOJSON.features.find(
-      f => f.properties.name.toLowerCase() === district.toLowerCase()
-    );
-
+    const feat = JHARKHAND_GEOJSON.features.find(f => f.properties.name.toLowerCase() === district.toLowerCase());
     let baseProblems = feat ? feat.properties.problems : 12450;
     let baseSolved = feat ? feat.properties.solved + approvedCount : 10850 + approvedCount;
     let baseHeis = feat ? feat.properties.activeHeis : 340;
@@ -75,188 +68,153 @@ class GovernmentDataService {
     };
   }
 
-  // Dynamic Sector Distribution based on Timeframe and District
   getFilteredSectors(district = 'All', timeframe = 'This Month') {
-    let multiplier = 1;
-    if (timeframe === 'Last Month') multiplier = 0.74;
-    else if (timeframe === 'This Quarter') multiplier = 2.8;
-    else if (timeframe === 'Year 2026') multiplier = 5.2;
-    else if (timeframe === 'Today' || timeframe === 'Daily') multiplier = 0.035;
+    const multiMap = { 'Last Month': 0.74, 'This Quarter': 2.8, 'Year 2026': 5.2, 'Today': 0.035, 'Daily': 0.035 };
+    let multiplier = multiMap[timeframe] || 1;
 
     if (district !== 'All') {
-      const feat = JHARKHAND_GEOJSON.features.find(
-        f => f.properties.name.toLowerCase() === district.toLowerCase()
-      );
-      if (feat) {
-        multiplier *= (feat.properties.problems / 12450);
-      }
+      const feat = JHARKHAND_GEOJSON.features.find(f => f.properties.name.toLowerCase() === district.toLowerCase());
+      if (feat) multiplier *= (feat.properties.problems / 12450);
     }
 
     const baseData = [
-      { name: "Water Management", count: Math.round(2850 * multiplier), percentage: 22, color: "#3b82f6" },
-      { name: "Infrastructure", count: Math.round(2430 * multiplier), percentage: 20, color: "#f97316" },
-      { name: "Education", count: Math.round(1980 * multiplier), percentage: 16, color: "#a855f7" },
-      { name: "Health", count: Math.round(1560 * multiplier), percentage: 12, color: "#ef4444" },
-      { name: "Sanitation", count: Math.round(1350 * multiplier), percentage: 11, color: "#10b981" },
-      { name: "Agriculture", count: Math.round(1150 * multiplier), percentage: 9, color: "#eab308" },
-      { name: "Others", count: Math.round(1130 * multiplier), percentage: 9, color: "#64748b" }
+      { name: "Water Management", count: Math.round(2850 * multiplier), color: "#3b82f6" },
+      { name: "Infrastructure", count: Math.round(2430 * multiplier), color: "#f97316" },
+      { name: "Education", count: Math.round(1980 * multiplier), color: "#a855f7" },
+      { name: "Health", count: Math.round(1560 * multiplier), color: "#ef4444" },
+      { name: "Sanitation", count: Math.round(1350 * multiplier), color: "#10b981" },
+      { name: "Agriculture", count: Math.round(1150 * multiplier), color: "#eab308" },
+      { name: "Others", count: Math.round(1130 * multiplier), color: "#64748b" }
     ];
-
     const total = baseData.reduce((sum, s) => sum + s.count, 0) || 1;
-    return baseData.map(s => ({
-      ...s,
-      percentage: Math.round((s.count / total) * 100)
-    }));
+    return baseData.map(s => ({ ...s, percentage: Math.round((s.count / total) * 100) }));
   }
 
-  // Dynamic Trend Graph based on Interval (Monthly, Weekly, Daily) and Filters
   getFilteredTrend(district = 'All', sector = 'All', interval = 'Monthly') {
     let scale = 1;
     if (district !== 'All') {
-      const feat = JHARKHAND_GEOJSON.features.find(
-        f => f.properties.name.toLowerCase() === district.toLowerCase()
-      );
+      const feat = JHARKHAND_GEOJSON.features.find(f => f.properties.name.toLowerCase() === district.toLowerCase());
       if (feat) scale = feat.properties.problems / 12450;
     }
 
     if (interval === 'Daily') {
-      const dailyPoints = [
-        { month: "Mon", count: Math.round(380 * scale) },
-        { month: "Tue", count: Math.round(420 * scale) },
-        { month: "Wed", count: Math.round(410 * scale) },
-        { month: "Thu", count: Math.round(490 * scale) },
-        { month: "Fri", count: Math.round(540 * scale) },
-        { month: "Sat", count: Math.round(610 * scale) },
-        { month: "Sun", count: Math.round(680 * scale) }
-      ];
       return {
         interval: 'Daily',
-        points: dailyPoints,
+        points: ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"].map((d, i) => ({ month: d, count: Math.round([380,420,410,490,540,610,680][i] * scale) })),
         thisMonth: `${Math.round(680 * scale).toLocaleString()}`,
         lastMonth: `${Math.round(610 * scale).toLocaleString()}`,
-        growth: "11.47% ↑",
-        currentLabel: "Today",
-        prevLabel: "Yesterday"
+        growth: "11.47% ↑", currentLabel: "Today", prevLabel: "Yesterday"
       };
     }
-
     if (interval === 'Weekly') {
-      const weeklyPoints = [
-        { month: "Week 1", count: Math.round(2420 * scale) },
-        { month: "Week 2", count: Math.round(2780 * scale) },
-        { month: "Week 3", count: Math.round(3150 * scale) },
-        { month: "Week 4", count: Math.round(4100 * scale) }
-      ];
       return {
         interval: 'Weekly',
-        points: weeklyPoints,
+        points: ["Week 1","Week 2","Week 3","Week 4"].map((w, i) => ({ month: w, count: Math.round([2420,2780,3150,4100][i] * scale) })),
         thisMonth: `${Math.round(4100 * scale).toLocaleString()}`,
         lastMonth: `${Math.round(3150 * scale).toLocaleString()}`,
-        growth: "30.15% ↑",
-        currentLabel: "This Week",
-        prevLabel: "Last Week"
+        growth: "30.15% ↑", currentLabel: "This Week", prevLabel: "Last Week"
       };
     }
-
-    // Default: Monthly (Last 6 Months)
-    const monthlyPoints = [
-      { month: "Dec 2025", count: Math.round(6240 * scale) },
-      { month: "Jan 2026", count: Math.round(6980 * scale) },
-      { month: "Feb 2026", count: Math.round(7120 * scale) },
-      { month: "Mar 2026", count: Math.round(8050 * scale) },
-      { month: "Apr 2026", count: Math.round(9200 * scale) },
-      { month: "May 2026", count: Math.round(12450 * scale) }
-    ];
-
     return {
       interval: 'Monthly',
-      points: monthlyPoints,
+      points: ["Dec 2025","Jan 2026","Feb 2026","Mar 2026","Apr 2026","May 2026"].map((m, i) => ({ month: m, count: Math.round([6240,6980,7120,8050,9200,12450][i] * scale) })),
       thisMonth: `${Math.round(12450 * scale).toLocaleString()}`,
       lastMonth: `${Math.round(9200 * scale).toLocaleString()}`,
-      growth: "35.33% ↑",
-      currentLabel: "This Month",
-      prevLabel: "Last Month"
+      growth: "35.33% ↑", currentLabel: "This Month", prevLabel: "Last Month"
     };
   }
 
-  // Dynamic HEIs filtering
   getFilteredHeis(district = 'All') {
     const list = this.getTopHeis();
     if (district === 'All') return list;
-
-    // Put matching district HEIs at top
-    const matched = list.filter(h => h.leadDistrict?.toLowerCase().includes(district.toLowerCase()));
-    const rest = list.filter(h => !h.leadDistrict?.toLowerCase().includes(district.toLowerCase()));
-    return [...matched, ...rest];
+    return [...list.filter(h => h.leadDistrict?.toLowerCase().includes(district.toLowerCase())), ...list.filter(h => !h.leadDistrict?.toLowerCase().includes(district.toLowerCase()))];
   }
 
   getTriageFeed() {
-    if (typeof window === 'undefined') return MOCK_AI_TRIAGE_FEED;
-    try {
-      const data = localStorage.getItem(STORAGE_KEYS.TRIAGE);
-      return data ? JSON.parse(data) : MOCK_AI_TRIAGE_FEED;
-    } catch {
-      return MOCK_AI_TRIAGE_FEED;
-    }
+    try { return JSON.parse(localStorage.getItem(STORAGE_KEYS.TRIAGE)) || MOCK_AI_TRIAGE_FEED; } catch { return MOCK_AI_TRIAGE_FEED; }
   }
 
   approveTriage(id) {
-    const list = this.getTriageFeed();
-    const updated = list.map(item => {
-      if (item.id === id) {
-        return { ...item, status: 'APPROVED' };
-      }
-      return item;
-    });
+    const updated = this.getTriageFeed().map(item => item.id === id ? { ...item, status: 'APPROVED' } : item);
     localStorage.setItem(STORAGE_KEYS.TRIAGE, JSON.stringify(updated));
-    this.addAuditLog(`Approved AI Triage problem #${id} and matched with ${updated.find(x => x.id === id)?.recommendedHei || 'University'}`);
+    this.addAuditLog(`Approved AI Triage problem #${id}`);
     return updated;
   }
 
   rejectTriage(id) {
-    const list = this.getTriageFeed();
-    const updated = list.map(item => {
-      if (item.id === id) {
-        return { ...item, status: 'REJECTED' };
-      }
-      return item;
-    });
+    const updated = this.getTriageFeed().map(item => item.id === id ? { ...item, status: 'REJECTED' } : item);
     localStorage.setItem(STORAGE_KEYS.TRIAGE, JSON.stringify(updated));
-    this.addAuditLog(`Rejected AI Triage problem #${id} due to verification criteria mismatch`);
+    this.addAuditLog(`Rejected AI Triage problem #${id}`);
     return updated;
   }
 
   getTopHeis() {
-    if (typeof window === 'undefined') return MOCK_TOP_HEIS;
-    try {
-      const data = localStorage.getItem(STORAGE_KEYS.HEIS);
-      return data ? JSON.parse(data) : MOCK_TOP_HEIS;
-    } catch {
-      return MOCK_TOP_HEIS;
-    }
+    try { return JSON.parse(localStorage.getItem(STORAGE_KEYS.HEIS)) || MOCK_TOP_HEIS; } catch { return MOCK_TOP_HEIS; }
   }
 
   getAuditLogs() {
-    if (typeof window === 'undefined') return MOCK_AUDIT_LOGS;
-    try {
-      const data = localStorage.getItem(STORAGE_KEYS.AUDIT);
-      return data ? JSON.parse(data) : MOCK_AUDIT_LOGS;
-    } catch {
-      return MOCK_AUDIT_LOGS;
-    }
+    try { return JSON.parse(localStorage.getItem(STORAGE_KEYS.AUDIT)) || MOCK_AUDIT_LOGS; } catch { return MOCK_AUDIT_LOGS; }
   }
 
   addAuditLog(actionText) {
-    const logs = this.getAuditLogs();
-    const newEntry = {
-      id: `aud-${Date.now()}`,
-      timestamp: new Date().toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' }),
-      actor: 'Admin (Super Admin)',
-      action: actionText,
-      ip: '10.0.12.4'
-    };
-    const updated = [newEntry, ...logs.slice(0, 49)];
+    const newEntry = { id: `aud-${Date.now()}`, timestamp: new Date().toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' }), actor: 'Admin (Super Admin)', action: actionText, ip: '10.0.12.4' };
+    const updated = [newEntry, ...this.getAuditLogs().slice(0, 49)];
     localStorage.setItem(STORAGE_KEYS.AUDIT, JSON.stringify(updated));
+  }
+
+  // --- Admin Directory Management ---
+  getAdmins() {
+    try { return JSON.parse(localStorage.getItem(STORAGE_KEYS.ADMINS)) || MOCK_ADMIN_RECORDS; } catch { return MOCK_ADMIN_RECORDS; }
+  }
+
+  getAdminStats() {
+    const list = this.getAdmins();
+    return {
+      totalAdmins: list.length,
+      activeAdmins: list.filter(a => a.status === 'Active').length,
+      suspendedAdmins: list.filter(a => a.status === 'Suspended').length,
+      removedAdmins: list.filter(a => a.status === 'Removed').length
+    };
+  }
+
+  createAdmin(data) {
+    const newAdmin = {
+      id: `adm-${Date.now().toString().slice(-4)}`,
+      fullName: data.fullName.trim(),
+      mobileNumber: data.mobileNumber.startsWith('+91') ? data.mobileNumber.trim() : `+91 ${data.mobileNumber.trim()}`,
+      email: data.email.toLowerCase().trim(),
+      role: data.role || 'District Admin',
+      district: data.district || 'Ranchi',
+      lastLogin: 'Never logged in',
+      status: 'Active',
+      avatarColor: ['purple', 'green', 'orange', 'pink', 'teal', 'blue', 'cyan'][Math.floor(Math.random() * 7)]
+    };
+    const updated = [newAdmin, ...this.getAdmins()];
+    localStorage.setItem(STORAGE_KEYS.ADMINS, JSON.stringify(updated));
+    this.addAuditLog(`Created admin: ${newAdmin.fullName} (${newAdmin.role})`);
+    return updated;
+  }
+
+  updateAdmin(id, data) {
+    const updated = this.getAdmins().map(a => a.id === id ? { ...a, ...data, email: data.email ? data.email.toLowerCase().trim() : a.email } : a);
+    localStorage.setItem(STORAGE_KEYS.ADMINS, JSON.stringify(updated));
+    this.addAuditLog(`Updated admin #${id}`);
+    return updated;
+  }
+
+  toggleAdminStatus(id) {
+    const updated = this.getAdmins().map(a => a.id === id ? { ...a, status: a.status === 'Active' ? 'Suspended' : 'Active' } : a);
+    localStorage.setItem(STORAGE_KEYS.ADMINS, JSON.stringify(updated));
+    this.addAuditLog(`Toggled status for admin #${id}`);
+    return updated;
+  }
+
+  deleteAdmin(id) {
+    const target = this.getAdmins().find(a => a.id === id);
+    const updated = this.getAdmins().filter(a => a.id !== id);
+    localStorage.setItem(STORAGE_KEYS.ADMINS, JSON.stringify(updated));
+    if (target) this.addAuditLog(`Removed admin: ${target.fullName}`);
+    return updated;
   }
 }
 
