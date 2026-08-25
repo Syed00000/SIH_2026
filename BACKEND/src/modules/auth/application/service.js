@@ -196,31 +196,41 @@ export class AuthService {
   }
 
   async login({ email, password }) {
-    const normalizedEmail = email.toLowerCase().trim();
+    const normalizedEmail = (email || '').toLowerCase().trim();
+    logger.info(`🔍 Login attempt for email: "${normalizedEmail}"`);
+    
     const user = await this.userService.getUserByEmail(normalizedEmail);
 
     if (!user) {
+      logger.warn(`❌ Login failed: User not found in database for email "${normalizedEmail}"`);
       throw new AuthenticationError('INVALID_CREDENTIALS');
     }
 
+    logger.info(`👤 User found: ID=${user.id}, Role=${user.role}, Status=${user.accountStatus}, Verified=${user.emailVerification?.verified}`);
+
     if (!user.emailVerification || !user.emailVerification.verified) {
+      logger.warn(`❌ Login failed: Email not verified for "${normalizedEmail}"`);
       throw new AuthenticationError('EMAIL_NOT_VERIFIED');
     }
 
     if (user.accountStatus === 'SUSPENDED') {
+      logger.warn(`❌ Login failed: Account suspended for "${normalizedEmail}"`);
       throw new AuthenticationError('ACCOUNT_SUSPENDED');
     }
 
     if (user.accountStatus === 'BLOCKED') {
+      logger.warn(`❌ Login failed: Account blocked for "${normalizedEmail}"`);
       throw new AuthenticationError('ACCOUNT_BLOCKED');
     }
 
     if (user.accountStatus !== 'ACTIVE') {
+      logger.warn(`❌ Login failed: Account not active (${user.accountStatus}) for "${normalizedEmail}"`);
       throw new AuthenticationError('ACCOUNT_NOT_ACTIVE');
     }
 
     const isMatch = await bcrypt.compare(password, user.passwordHash);
     if (!isMatch) {
+      logger.warn(`❌ Login failed: Password mismatch for email "${normalizedEmail}"`);
       throw new AuthenticationError('INVALID_CREDENTIALS');
     }
 

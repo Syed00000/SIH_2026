@@ -1,8 +1,8 @@
 import React from 'react';
 import { AlertCircle, Clock } from 'lucide-react';
-import { Card, CardHeader, CardTitle, CardContent } from '../../../../../../shared/components/ui/card.jsx';
-import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from '../../../../../../shared/components/ui/table.jsx';
-import { Badge } from '../../../../../../shared/components/ui/badge.jsx';
+import { Card } from '../../../../shared/components/ui/card.jsx';
+import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from '../../../../shared/components/ui/table.jsx';
+import { Badge } from '../../../../shared/components/ui/badge.jsx';
 
 export const EscalationQueueTable = () => {
   const escalatedIssues = [

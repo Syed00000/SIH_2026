@@ -3,7 +3,7 @@ import { GovernmentHeader } from './GovernmentHeader.jsx';
 import { GovernmentSidebar } from './GovernmentSidebar.jsx';
 import { GovernmentFooter } from './GovernmentFooter.jsx';
 import { GovernmentOverview } from '../overview/GovernmentOverview.jsx';
-import { AITriageDashboard } from '../../../dashboard/components/admin/AITriageDashboard.jsx';
+import { AITriageDashboard } from '../triage/AITriageDashboard.jsx';
 import { ComingSoonPanel } from '../common/ComingSoonPanel.jsx';
 import { HeiHubPanel } from '../heis/heiHubPanel.jsx';
 import { governmentDataService } from '../../services/governmentDataService.js';
