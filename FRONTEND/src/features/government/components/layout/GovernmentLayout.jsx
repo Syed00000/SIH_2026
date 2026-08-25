@@ -5,6 +5,7 @@ import { GovernmentFooter } from './GovernmentFooter.jsx';
 import { GovernmentOverview } from '../overview/GovernmentOverview.jsx';
 import { AITriageDashboard } from '../triage/AITriageDashboard.jsx';
 import { ComingSoonPanel } from '../common/ComingSoonPanel.jsx';
+import { HeiHubPanel } from '../heis/heiHubPanel.jsx';
 import { governmentDataService } from '../../services/governmentDataService.js';
 
 export const GovernmentLayout = ({ onLogout }) => {
@@ -132,8 +133,16 @@ export const GovernmentLayout = ({ onLogout }) => {
                 onRejectTriage={handleRejectTriage}
                 onNavigateTab={(tab) => setActiveTab(tab)}
               />
+<<<<<<< HEAD
+            ) : activeTab === 'heis' ? (
+              <HeiHubPanel
+                selectedDistrict={selectedDistrict}
+                onSelectDistrict={(dist) => setSelectedDistrict(dist)}
+              />
+=======
             ) : activeTab === 'triage' || activeTab === 'ai-triage' ? (
               <AITriageDashboard />
+>>>>>>> 6b9d85661a707dab4a29e1fef069f572f05e5ba8
             ) : (
               <ComingSoonPanel
                 title={getTabTitle(activeTab)}
