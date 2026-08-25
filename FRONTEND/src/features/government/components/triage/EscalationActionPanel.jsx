@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { AlertTriangle, Check, User, MapPin } from 'lucide-react';
-import { Card, CardHeader, CardTitle, CardContent } from '../../../../../../shared/components/ui/card.jsx';
-import { Badge } from '../../../../../../shared/components/ui/badge.jsx';
-import { Button } from '../../../../../../shared/components/ui/button.jsx';
-import { Textarea } from '../../../../../../shared/components/ui/textarea.jsx';
+import { Card } from '../../../../shared/components/ui/card.jsx';
+import { Badge } from '../../../../shared/components/ui/badge.jsx';
+import { Button } from '../../../../shared/components/ui/button.jsx';
+import { Textarea } from '../../../../shared/components/ui/textarea.jsx';
 
 export const EscalationActionPanel = ({ selectedIssue }) => {
   const [priorityLevel, setPriorityLevel] = useState('Critical');
@@ -69,7 +69,7 @@ export const EscalationActionPanel = ({ selectedIssue }) => {
                     isSelected && opt.id === 'Critical' ? 'bg-red-600 hover:bg-red-700 border-red-600' : ''
                   }`}
                 >
-                  <span className={`w-2 h-2 rounded-full ${isSelected ? (opt.id === 'Critical' ? 'bg-white' : 'bg-white') : 'bg-slate-300'}`} />
+                  <span className={`w-2 h-2 rounded-full ${isSelected ? 'bg-white' : 'bg-slate-300'}`} />
                   <span className="text-[11px]">{opt.label}</span>
                 </Button>
               );

@@ -4,7 +4,7 @@ import { DashboardHeader } from './header/DashboardHeader.jsx';
 import { DashboardSidebar } from './sidebar/DashboardSidebar.jsx';
 import { DashboardFooter } from './footer/DashboardFooter.jsx';
 import { CitizenDashboard } from './citizen/CitizenDashboard.jsx';
-import { AITriageDashboard } from './admin/AITriageDashboard.jsx';
+import { AITriageDashboard } from '../../government/components/triage/AITriageDashboard.jsx';
 import { GovernmentLayout } from '../../government/components/layout/GovernmentLayout.jsx';
 import { RoleProfile } from './RoleProfile.jsx';
 import { AccountSettings } from './AccountSettings.jsx';
