@@ -7,4 +7,5 @@ export * from './components/triage/GovernmentTriage.jsx';
 export * from './components/triage/AITriageDashboard.jsx';
 export * from './components/common/ComingSoonPanel.jsx';
 export * from './components/heis/index.js';
+export * from './components/gis/index.js';
 export * from './services/governmentDataService.js';

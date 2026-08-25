@@ -41,7 +41,6 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const login = async (email, password) => {
-    setLoading(true);
     setError(null);
 
     try {
@@ -57,13 +56,10 @@ export const AuthProvider = ({ children }) => {
       const message = err?.response?.data?.error?.message || err?.message || 'Login failed';
       setError(message);
       throw err;
-    } finally {
-      setLoading(false);
     }
   };
 
   const register = async (payload) => {
-    setLoading(true);
     setError(null);
     try {
       const response = await authApi.register(payload);
@@ -72,13 +68,10 @@ export const AuthProvider = ({ children }) => {
       const message = err?.response?.data?.error?.message || err?.message || 'Registration failed';
       setError(message);
       throw err;
-    } finally {
-      setLoading(false);
     }
   };
 
   const verifyEmail = async (email, otp) => {
-    setLoading(true);
     setError(null);
     try {
       const response = await authApi.verifyEmail({ email, otp });
@@ -93,8 +86,6 @@ export const AuthProvider = ({ children }) => {
       const message = err?.response?.data?.error?.message || err?.message || 'OTP verification failed';
       setError(message);
       throw err;
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -111,7 +102,6 @@ export const AuthProvider = ({ children }) => {
   };
 
   const forgotPassword = async (email) => {
-    setLoading(true);
     setError(null);
     try {
       const response = await authApi.forgotPassword({ email });
@@ -120,13 +110,10 @@ export const AuthProvider = ({ children }) => {
       const message = err?.response?.data?.error?.message || err?.message || 'Failed to request password reset';
       setError(message);
       throw err;
-    } finally {
-      setLoading(false);
     }
   };
 
   const resetPassword = async (email, otp, newPassword) => {
-    setLoading(true);
     setError(null);
     try {
       const response = await authApi.resetPassword({ email, otp, newPassword });
@@ -135,8 +122,6 @@ export const AuthProvider = ({ children }) => {
       const message = err?.response?.data?.error?.message || err?.message || 'Password reset failed';
       setError(message);
       throw err;
-    } finally {
-      setLoading(false);
     }
   };
 

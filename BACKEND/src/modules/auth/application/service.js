@@ -203,7 +203,7 @@ export class AuthService {
 
     if (!user) {
       logger.warn(`❌ Login failed: User not found in database for email "${normalizedEmail}"`);
-      throw new AuthenticationError('INVALID_CREDENTIALS');
+      throw new AuthenticationError('USER_NOT_FOUND');
     }
 
     logger.info(`👤 User found: ID=${user.id}, Role=${user.role}, Status=${user.accountStatus}, Verified=${user.emailVerification?.verified}`);
