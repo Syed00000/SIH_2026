@@ -64,7 +64,7 @@ export const DashboardContainer = ({ onNavigate }) => {
   };
 
   // Render Dedicated Government Admin Portal
-  if (role === 'GOVERNMENT' || role === 'ADMIN' || user.email === 'admin@dtejharkhand.gov.in') {
+  if (role === 'GOVERNMENT' || role === 'ADMIN') {
     return <GovernmentLayout onLogout={handleLogout} />;
   }
 

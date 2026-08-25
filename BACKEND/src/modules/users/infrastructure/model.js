@@ -44,8 +44,8 @@ const userSchema = new mongoose.Schema(
     role: {
       type: String,
       enum: {
-        values: ['CITIZEN', 'UNIVERSITY', 'INDUSTRY'],
-        message: '{VALUE} is not a valid problem sender role'
+        values: ['CITIZEN', 'UNIVERSITY', 'INDUSTRY', 'GOVERNMENT', 'ADMIN'],
+        message: '{VALUE} is not a valid role'
       },
       default: 'CITIZEN',
       required: true,

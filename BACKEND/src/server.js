@@ -4,6 +4,7 @@ import config from './shared/config/index.js';
 import logger from './shared/logger/index.js';
 import { connectMongo, closeMongo } from './infrastructure/database/mongo/client.js';
 import { initializeWorkers } from './infrastructure/queue/workers/email.worker.js';
+import { seedGovtAdmin } from './infrastructure/database/mongo/seed.js';
 
 let server;
 
@@ -14,7 +15,10 @@ const start = async () => {
     // 1. Initialize Databases with resilient fallback
     await connectMongo();
 
-    // 2. Initialize Background Workers
+    // 2. Auto-seed Government Admin if configured
+    await seedGovtAdmin();
+
+    // 3. Initialize Background Workers
     initializeWorkers();
 
     // 3. Start HTTP Server
