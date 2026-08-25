@@ -4,6 +4,7 @@ import { GovernmentSidebar } from './GovernmentSidebar.jsx';
 import { GovernmentFooter } from './GovernmentFooter.jsx';
 import { GovernmentOverview } from '../overview/GovernmentOverview.jsx';
 import { ComingSoonPanel } from '../common/ComingSoonPanel.jsx';
+import { HeiHubPanel } from '../heis/heiHubPanel.jsx';
 import { governmentDataService } from '../../services/governmentDataService.js';
 
 export const GovernmentLayout = ({ onLogout }) => {
@@ -130,6 +131,11 @@ export const GovernmentLayout = ({ onLogout }) => {
                 onApproveTriage={handleApproveTriage}
                 onRejectTriage={handleRejectTriage}
                 onNavigateTab={(tab) => setActiveTab(tab)}
+              />
+            ) : activeTab === 'heis' ? (
+              <HeiHubPanel
+                selectedDistrict={selectedDistrict}
+                onSelectDistrict={(dist) => setSelectedDistrict(dist)}
               />
             ) : (
               <ComingSoonPanel
