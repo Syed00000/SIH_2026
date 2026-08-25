@@ -1,157 +1,131 @@
-import React, { useState, useEffect } from 'react';
-import { Plus } from 'lucide-react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { Plus, RefreshCw, AlertCircle } from 'lucide-react';
 import { AdminSummaryCards } from './AdminSummaryCards.jsx';
 import { AdminDirectoryTable } from './AdminDirectoryTable.jsx';
 import { AdminFormModal } from './AdminFormModal.jsx';
 import { AdminViewModal } from './AdminViewModal.jsx';
-import { governmentDataService } from '../../services/governmentDataService.js';
 import axios from 'axios';
 
+const API_BASE = 'http://localhost:3000/api/v1/government/admins';
+
 export const AdminManagement = () => {
-  const [admins, setAdmins] = useState(governmentDataService.getAdmins());
-  const [stats, setStats] = useState(governmentDataService.getAdminStats());
+  const [admins, setAdmins] = useState([]);
+  const [stats, setStats] = useState({ totalAdmins: 0, activeAdmins: 0, suspendedAdmins: 0, removedAdmins: 0 });
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingAdmin, setEditingAdmin] = useState(null);
   const [viewingAdmin, setViewingAdmin] = useState(null);
 
-  // Sync with Backend API on mount
+  // Clear any legacy mock data from browser localStorage
   useEffect(() => {
-    const fetchBackendAdmins = async () => {
-      try {
-        const res = await axios.get('http://localhost:3000/api/v1/government/admins?limit=100');
-        if (res.data?.success && res.data?.data) {
-          setAdmins(res.data.data);
-          if (res.data.stats) {
-            setStats(res.data.stats);
-          }
-        }
-      } catch {
-        // Fallback to local storage / mock data
-        setAdmins(governmentDataService.getAdmins());
-        setStats(governmentDataService.getAdminStats());
-      }
-    };
-
-    fetchBackendAdmins();
+    localStorage.removeItem('joharsetu_gov_admins');
   }, []);
 
-  // Handler: Add or Update Admin
-  const handleFormSubmit = async (adminData) => {
-    if (editingAdmin) {
-      // Update existing admin
-      const updated = governmentDataService.updateAdmin(editingAdmin.id, adminData);
-      setAdmins(updated);
-      setStats(governmentDataService.getAdminStats());
-
-      // Sync backend
-      try {
-        await axios.put(`http://localhost:3000/api/v1/government/admins/${editingAdmin.id}`, adminData);
-      } catch (err) {
-        console.warn('Backend update failed, kept local change:', err.message);
+  const fetchAdmins = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      const res = await axios.get(`${API_BASE}?limit=100`);
+      if (res.data?.success) {
+        setAdmins(res.data.data || []);
+        if (res.data.stats) setStats(res.data.stats);
       }
-    } else {
-      // Create new admin
-      const updated = governmentDataService.createAdmin(adminData);
-      setAdmins(updated);
-      setStats(governmentDataService.getAdminStats());
-
-      // Sync backend
-      try {
-        await axios.post('http://localhost:3000/api/v1/government/admins', adminData);
-      } catch (err) {
-        console.warn('Backend create failed, kept local change:', err.message);
-      }
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to connect to database');
+    } finally {
+      setIsLoading(false);
     }
+  }, []);
 
-    setIsFormOpen(false);
-    setEditingAdmin(null);
+  useEffect(() => {
+    fetchAdmins();
+  }, [fetchAdmins]);
+
+  const handleFormSubmit = async (formData) => {
+    try {
+      if (editingAdmin) {
+        await axios.put(`${API_BASE}/${editingAdmin.id}`, formData);
+      } else {
+        await axios.post(API_BASE, formData);
+      }
+      setIsFormOpen(false);
+      setEditingAdmin(null);
+      await fetchAdmins();
+    } catch (err) {
+      alert(err.response?.data?.message || 'Error saving administrator');
+    }
   };
 
-  // Handler: Toggle Status (Active / Suspended)
   const handleToggleStatus = async (id) => {
-    const updated = governmentDataService.toggleAdminStatus(id);
-    setAdmins(updated);
-    setStats(governmentDataService.getAdminStats());
-
-    const target = updated.find((a) => a.id === id);
-    if (target) {
-      try {
-        await axios.patch(`http://localhost:3000/api/v1/government/admins/${id}/status`, {
-          status: target.status
-        });
-      } catch (err) {
-        console.warn('Backend status toggle failed, kept local change:', err.message);
-      }
+    const target = admins.find(a => a.id === id);
+    if (!target) return;
+    const nextStatus = target.status === 'Active' ? 'Suspended' : 'Active';
+    try {
+      await axios.patch(`${API_BASE}/${id}/status`, { status: nextStatus });
+      await fetchAdmins();
+    } catch (err) {
+      alert(err.response?.data?.message || 'Error updating status');
     }
   };
 
-  // Handler: Delete Admin
   const handleDeleteAdmin = async (id) => {
-    if (window.confirm('Are you sure you want to remove this administrator?')) {
-      const updated = governmentDataService.deleteAdmin(id);
-      setAdmins(updated);
-      setStats(governmentDataService.getAdminStats());
-
-      try {
-        await axios.delete(`http://localhost:3000/api/v1/government/admins/${id}`);
-      } catch (err) {
-        console.warn('Backend delete failed, kept local change:', err.message);
-      }
+    if (!window.confirm('Are you sure you want to permanently delete this administrator from the database?')) return;
+    try {
+      await axios.delete(`${API_BASE}/${id}`);
+      await fetchAdmins();
+    } catch (err) {
+      alert(err.response?.data?.message || 'Error removing administrator');
     }
   };
 
   return (
     <div className="space-y-5 pb-8 max-w-[1600px] mx-auto">
-      {/* 1. Main Header Title & Top-Right Action Button */}
+      {/* Top Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pt-1">
         <div>
-          <h1 className="text-xl md:text-2xl font-black text-slate-900 tracking-tight">
-            Admin Management
-          </h1>
-          <p className="text-xs md:text-sm text-slate-500 font-medium mt-0.5">
-            Manage system administrators and their access privileges.
-          </p>
+          <h1 className="text-xl md:text-2xl font-black text-slate-900 tracking-tight">Admin Management</h1>
+          <p className="text-xs md:text-sm text-slate-500 font-medium mt-0.5">Manage system administrators directly from MongoDB database.</p>
         </div>
-
-        <button
-          onClick={() => {
-            setEditingAdmin(null);
-            setIsFormOpen(true);
-          }}
-          className="inline-flex items-center justify-center space-x-2 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-bold px-4 py-2.5 rounded-xl text-xs shadow-xs transition-all cursor-pointer hover:shadow-sm self-start sm:self-auto"
-        >
-          <Plus className="w-4 h-4" />
-          <span>Add New Admin</span>
-        </button>
+        <div className="flex items-center space-x-2">
+          <button onClick={fetchAdmins} className="p-2 border border-slate-200 rounded-xl hover:bg-slate-50 text-slate-600 cursor-pointer" title="Refresh from Database">
+            <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin text-blue-600' : ''}`} />
+          </button>
+          <button onClick={() => { setEditingAdmin(null); setIsFormOpen(true); }} className="inline-flex items-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white font-bold px-4 py-2.5 rounded-xl text-xs shadow-xs cursor-pointer">
+            <Plus className="w-4 h-4" />
+            <span>Add New Admin</span>
+          </button>
+        </div>
       </div>
 
-      {/* 2. Top 4 Summary / KPI Stat Cards */}
+      {error && (
+        <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-xs text-red-700 font-semibold flex items-center space-x-2">
+          <AlertCircle className="w-4 h-4 shrink-0" />
+          <span>{error}</span>
+        </div>
+      )}
+
+      {/* KPI Stat Cards */}
       <AdminSummaryCards stats={stats} />
 
-      {/* 3. Main Admin Directory Table with Filters and Pagination */}
+      {/* Admin Directory Table */}
       <AdminDirectoryTable
         admins={admins}
         onViewAdmin={(admin) => setViewingAdmin(admin)}
-        onEditAdmin={(admin) => {
-          setEditingAdmin(admin);
-          setIsFormOpen(true);
-        }}
+        onEditAdmin={(admin) => { setEditingAdmin(admin); setIsFormOpen(true); }}
         onToggleStatus={handleToggleStatus}
         onDeleteAdmin={handleDeleteAdmin}
       />
 
-      {/* 4. Add / Edit Admin Modal */}
+      {/* Add / Edit Admin Modal */}
       <AdminFormModal
         isOpen={isFormOpen}
-        onClose={() => {
-          setIsFormOpen(false);
-          setEditingAdmin(null);
-        }}
+        onClose={() => { setIsFormOpen(false); setEditingAdmin(null); }}
         onSubmit={handleFormSubmit}
         initialData={editingAdmin}
       />
 
-      {/* 5. View Admin Details Modal */}
+      {/* View Admin Details Modal */}
       <AdminViewModal
         isOpen={Boolean(viewingAdmin)}
         onClose={() => setViewingAdmin(null)}

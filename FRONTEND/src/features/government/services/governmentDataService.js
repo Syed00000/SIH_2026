@@ -7,7 +7,6 @@ import {
   MOCK_CSR_GRANTS,
   MOCK_AUDIT_LOGS
 } from '../data/mockGovernmentData.js';
-import { MOCK_ADMIN_RECORDS } from '../data/mockAdminData.js';
 import { JHARKHAND_GEOJSON } from '../data/jharkhandGeoJson.js';
 
 const STORAGE_KEYS = {
@@ -29,8 +28,7 @@ class GovernmentDataService {
       [STORAGE_KEYS.TRIAGE, MOCK_AI_TRIAGE_FEED],
       [STORAGE_KEYS.AUDIT, MOCK_AUDIT_LOGS],
       [STORAGE_KEYS.HEIS, MOCK_TOP_HEIS],
-      [STORAGE_KEYS.KPI, MOCK_KPI_SUMMARY],
-      [STORAGE_KEYS.ADMINS, MOCK_ADMIN_RECORDS]
+      [STORAGE_KEYS.KPI, MOCK_KPI_SUMMARY]
     ];
     defaults.forEach(([k, v]) => {
       if (!localStorage.getItem(k)) localStorage.setItem(k, JSON.stringify(v));
