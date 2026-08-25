@@ -1,6 +1,6 @@
-import React from 'react';
 import { CitizenOverview } from './CitizenOverview.jsx';
 import { CitizenChallenges } from './CitizenChallenges.jsx';
+import { AITriageDashboard } from '../admin/AITriageDashboard.jsx';
 import { RoleProfile } from '../RoleProfile.jsx';
 import { AccountSettings } from '../AccountSettings.jsx';
 import { Card, CardHeader, CardTitle, CardDescription } from '../../../../shared/components/ui/card.jsx';
@@ -12,6 +12,10 @@ export const CitizenDashboard = ({ activeTab, setActiveTab, user, role }) => {
 
   if (activeTab === 'challenges') {
     return <CitizenChallenges user={user} setActiveTab={setActiveTab} />;
+  }
+
+  if (activeTab === 'ai-triage') {
+    return <AITriageDashboard />;
   }
 
   if (activeTab === 'profile') {

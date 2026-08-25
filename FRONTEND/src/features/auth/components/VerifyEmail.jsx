@@ -89,14 +89,12 @@ export const VerifyEmail = ({ emailQuery, onNavigate }) => {
 
     try {
       await verifyEmail(email, fullOtp);
-      setSuccessMessage('Email verified successfully! Redirecting to login...');
-      setTimeout(() => {
-        if (onNavigate) {
-          onNavigate('/login');
-        } else {
-          window.location.href = '/login';
-        }
-      }, 1500);
+      // Immediately navigate to dashboard with zero lag
+      if (onNavigate) {
+        onNavigate('/dashboard');
+      } else {
+        window.location.href = '/dashboard';
+      }
     } catch (err) {
       const msg = err?.response?.data?.error?.message || err?.message || 'Invalid or expired OTP';
       if (msg === 'INVALID_OTP') {
