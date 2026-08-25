@@ -80,56 +80,54 @@ export const LoginForm = ({ onNavigate }) => {
       const errData = error?.response?.data?.error || error?.response?.data || {};
       const rawMsg = (errData?.message || error?.message || '').toString();
 
-      // 1. User does not exist in DB
+      // 1. User does not exist in DB or invalid credentials
       if (
         rawMsg === 'USER_NOT_FOUND' ||
         rawMsg.toLowerCase().includes('user not found') ||
-        rawMsg.toLowerCase().includes('not exist')
-      ) {
-        setErrorMessage('User does not exist with this email. Please create an account.');
-      }
-      // 2. Invalid password / credentials mismatch
-      else if (
+        rawMsg.toLowerCase().includes('not exist') ||
         rawMsg === 'INVALID_CREDENTIALS' ||
         rawMsg.toLowerCase().includes('credential') ||
-        rawMsg.toLowerCase().includes('password mismatch')
+        rawMsg.toLowerCase().includes('password mismatch') ||
+        status === 401
       ) {
-        setErrorMessage('Invalid email or password. Please check your credentials.');
+        setErrorMessage('Invalid email or password. Please verify your credentials or create a new account.');
       }
-      // 3. Email not verified
+      // 2. Email not verified
       else if (rawMsg === 'EMAIL_NOT_VERIFIED' || rawMsg.toLowerCase().includes('verify')) {
-        setErrorMessage('Email is not verified yet. Redirecting to verification...');
+        setErrorMessage('Your email address is not verified yet. Redirecting to email verification...');
         setTimeout(() => {
           if (onNavigate) {
             onNavigate('/verify-email', { email: email.trim() });
           } else {
             window.location.href = `/verify-email?email=${encodeURIComponent(email.trim())}`;
           }
-        }, 1200);
+        }, 1500);
       }
-      // 4. Account restricted / suspended
+      // 3. Account restricted / suspended
       else if (rawMsg === 'ACCOUNT_SUSPENDED' || rawMsg === 'ACCOUNT_BLOCKED') {
-        setErrorMessage('This account is suspended or blocked. Please contact support.');
+        setErrorMessage('This account is suspended or blocked. Please contact the administrator.');
       }
-      // 5. Account inactive
+      // 4. Account inactive
       else if (rawMsg === 'ACCOUNT_NOT_ACTIVE') {
         setErrorMessage('This account is inactive. Please contact support.');
       }
-      // 6. Generic 401 Unauthorized
-      else if (status === 401) {
-        setErrorMessage('Invalid email or password. Please check your credentials.');
-      }
-      // 7. Rate limit (429)
+      // 5. Rate limit (429)
       else if (status === 429 || rawMsg.includes('RATE_LIMIT')) {
         setErrorMessage('Too many failed attempts. Please wait a minute before retrying.');
       }
-      // 8. Network / Server connection error
-      else if (error.name === 'TypeError' || rawMsg.toLowerCase().includes('failed to fetch') || rawMsg.toLowerCase().includes('network')) {
-        setErrorMessage('Unable to connect to server. Please check your network.');
+      // 6. Network / Server connection error
+      else if (
+        error.name === 'TypeError' ||
+        rawMsg.toLowerCase().includes('failed to fetch') ||
+        rawMsg.toLowerCase().includes('network') ||
+        error?.code === 'ERR_NETWORK' ||
+        rawMsg.includes('ERR_CONNECTION_REFUSED')
+      ) {
+        setErrorMessage('Unable to connect to backend server. Please make sure the server is active on port 3000.');
       }
-      // 9. General fallback
+      // 7. General fallback
       else {
-        setErrorMessage(rawMsg || 'Login failed. Please try again.');
+        setErrorMessage(rawMsg || 'Login failed. Please check your credentials and try again.');
       }
     } finally {
       setIsSubmitting(false);
@@ -154,14 +152,17 @@ export const LoginForm = ({ onNavigate }) => {
         </CardHeader>
 
         <CardContent className="space-y-4 px-6 pb-6">
-          {/* Single-line sleek error banner */}
+          {/* Alert Message */}
           {errorMessage && (
             <div
               role="alert"
-              className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-lg bg-red-50 border border-red-200 text-red-700 text-xs font-medium transition-all animate-fadeIn"
+              className="flex items-start gap-2.5 p-3 rounded-lg bg-red-50 border border-red-200 text-red-800 text-xs font-medium transition-all animate-fadeIn"
             >
-              <AlertCircle className="w-4 h-4 text-red-600 shrink-0" />
-              <span className="leading-snug">{errorMessage}</span>
+              <AlertCircle className="w-4 h-4 text-red-600 shrink-0 mt-0.5" />
+              <div className="space-y-0.5">
+                <p className="font-semibold text-xs uppercase tracking-wider text-red-900">Login Failed</p>
+                <p className="text-xs text-red-700 leading-relaxed">{errorMessage}</p>
+              </div>
             </div>
           )}
 
@@ -241,8 +242,9 @@ export const LoginForm = ({ onNavigate }) => {
                 <button
                   type="button"
                   aria-label={showPassword ? 'Hide password' : 'Show password'}
+                  title={showPassword ? 'Hide password' : 'Show password'}
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-600 transition-colors focus:outline-none"
                 >
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
@@ -264,7 +266,7 @@ export const LoginForm = ({ onNavigate }) => {
                   onChange={(e) => setRememberMe(e.target.checked)}
                   className="w-4 h-4 rounded border-slate-300 text-slate-900 focus:ring-slate-900"
                 />
-                <span className="text-xs text-slate-600 font-medium">Remember me for 30 days</span>
+                <span className="text-xs text-slate-600 font-medium">Stay signed in for 30 days</span>
               </label>
             </div>
 

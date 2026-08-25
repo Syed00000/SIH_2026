@@ -5,7 +5,9 @@ import {
   ChevronDown,
   Layers,
   Check,
-  AlertTriangle
+  AlertTriangle,
+  FileDown,
+  ArrowRight
 } from 'lucide-react';
 import {
   JHARKHAND_DISTRICTS_LIST,
@@ -24,7 +26,8 @@ export const GisFilterBar = ({
   setSelectedSeverity,
   searchQuery,
   setSearchQuery,
-  onResetFilters
+  onResetFilters,
+  onOpenDetailedReport
 }) => {
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const searchContainerRef = useRef(null);
@@ -60,16 +63,28 @@ export const GisFilterBar = ({
 
   return (
     <div className="w-full bg-white rounded-2xl border border-slate-200/90 shadow-2xs p-3.5 mb-3">
-      {/* Top Title & Subtitle */}
-      <div className="mb-3.5 flex flex-col md:flex-row md:items-center md:justify-between gap-1">
+      {/* Top Title & Subtitle + Report Button */}
+      <div className="mb-3.5 flex flex-col md:flex-row md:items-center md:justify-between gap-2">
         <div>
-          <h2 className="text-xl font-black text-slate-900 tracking-tight flex items-center gap-2">
+          <h2 className="text-xl font-black text-slate-900 tracking-tight">
             GIS Map – Problem Region Analysis
           </h2>
           <p className="text-xs text-slate-500 font-medium">
             Visualize and analyze problem regions across Jharkhand
           </p>
         </div>
+
+        {/* Generate / Download Report — professional CTA */}
+        <button
+          type="button"
+          onClick={onOpenDetailedReport}
+          className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white rounded-xl px-4 py-2.5 text-xs font-bold shadow-md hover:shadow-lg transition-all cursor-pointer group shrink-0 select-none"
+          title="Open detailed district report (printable / downloadable)"
+        >
+          <FileDown className="w-4 h-4" />
+          <span>Generate Report</span>
+          <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+        </button>
       </div>
 
       {/* Filter Row with 5 Controls */}

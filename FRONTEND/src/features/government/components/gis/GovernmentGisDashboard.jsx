@@ -84,6 +84,7 @@ export const GovernmentGisDashboard = () => {
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
         onResetFilters={handleResetFilters}
+        onOpenDetailedReport={() => setIsReportModalOpen(true)}
       />
 
       {/* 2. Interactive Leaflet GIS Map Canvas with Overlays */}
