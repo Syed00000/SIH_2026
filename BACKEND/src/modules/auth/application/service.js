@@ -145,13 +145,23 @@ export class AuthService {
       accountStatus: 'ACTIVE',
       emailVerification: { verified: true, verifiedAt: new Date() },
       emailVerificationCode: null,
-      emailVerificationExpires: null
+      emailVerificationExpires: null,
+      lastLoginAt: new Date()
     });
+
+    user.accountStatus = 'ACTIVE';
+    user.emailVerification = { verified: true, verifiedAt: new Date() };
+
+    const accessToken = this._generateAccessToken(user);
+    const refreshToken = await this._generateAndSaveRefreshToken(user.id);
 
     return {
       emailVerified: true,
       accountStatus: 'ACTIVE',
-      message: 'Email verified successfully. You can now login.'
+      message: 'Email verified successfully.',
+      accessToken,
+      refreshToken: refreshToken.token,
+      user: user.toSafeObject()
     };
   }
 

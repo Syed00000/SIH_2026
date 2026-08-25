@@ -12,7 +12,11 @@ const configSchema = z.object({
   JWT_ACCESS_EXPIRY: z.string().default('15m'),
   JWT_REFRESH_EXPIRY: z.string().default('7d'),
   CORS_ORIGINS: z.string().transform((val) => val.split(',')).default('*'),
-  LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace']).default('info')
+  LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace']).default('info'),
+  GOVT_ADMIN_NAME: z.string().default('Government Admin'),
+  GOVT_ADMIN_EMAIL: z.string().email().optional(),
+  GOVT_ADMIN_PASSWORD: z.string().min(6).optional(),
+  GOVT_ADMIN_MOBILE: z.string().default('9876543210')
 });
 
 const parseConfig = () => {
@@ -25,7 +29,11 @@ const parseConfig = () => {
     JWT_ACCESS_EXPIRY: process.env.JWT_ACCESS_EXPIRY,
     JWT_REFRESH_EXPIRY: process.env.JWT_REFRESH_EXPIRY,
     CORS_ORIGINS: process.env.CORS_ORIGINS,
-    LOG_LEVEL: process.env.LOG_LEVEL
+    LOG_LEVEL: process.env.LOG_LEVEL,
+    GOVT_ADMIN_NAME: process.env.GOVT_ADMIN_NAME,
+    GOVT_ADMIN_EMAIL: process.env.GOVT_ADMIN_EMAIL,
+    GOVT_ADMIN_PASSWORD: process.env.GOVT_ADMIN_PASSWORD,
+    GOVT_ADMIN_MOBILE: process.env.GOVT_ADMIN_MOBILE
   });
 
   if (!result.success) {
