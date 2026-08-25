@@ -4,6 +4,7 @@ import { DashboardHeader } from './header/DashboardHeader.jsx';
 import { DashboardSidebar } from './sidebar/DashboardSidebar.jsx';
 import { DashboardFooter } from './footer/DashboardFooter.jsx';
 import { CitizenDashboard } from './citizen/CitizenDashboard.jsx';
+import { AITriageDashboard } from './admin/AITriageDashboard.jsx';
 import { GovernmentLayout } from '../../government/components/layout/GovernmentLayout.jsx';
 import { RoleProfile } from './RoleProfile.jsx';
 import { AccountSettings } from './AccountSettings.jsx';
@@ -78,6 +79,7 @@ export const DashboardContainer = ({ onNavigate }) => {
       <DashboardHeader
         user={user}
         role={role}
+        activeTab={activeTab}
         selectedLanguage={selectedLanguage}
         setSelectedLanguage={setSelectedLanguage}
         fontSize={fontSize}
@@ -91,6 +93,7 @@ export const DashboardContainer = ({ onNavigate }) => {
       <div className="flex-1 flex flex-col md:flex-row overflow-hidden relative min-h-0">
         {/* Navigation Sidebar */}
         <DashboardSidebar
+          role={role}
           activeTab={activeTab}
           setActiveTab={setActiveTab}
           isSidebarExpanded={isSidebarExpanded}
