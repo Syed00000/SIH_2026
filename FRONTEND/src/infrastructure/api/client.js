@@ -165,6 +165,7 @@ export const apiClient = {
   get: (endpoint, options) => request(endpoint, { method: 'GET', ...options }),
   post: (endpoint, body, options) => request(endpoint, { method: 'POST', body: JSON.stringify(body), ...options }),
   put: (endpoint, body, options) => request(endpoint, { method: 'PUT', body: JSON.stringify(body), ...options }),
+  patch: (endpoint, body, options) => request(endpoint, { method: 'PATCH', body: body ? JSON.stringify(body) : undefined, ...options }),
   delete: (endpoint, options) => request(endpoint, { method: 'DELETE', ...options }),
 };
 
