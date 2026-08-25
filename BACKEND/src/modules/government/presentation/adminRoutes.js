@@ -28,3 +28,4 @@ router.patch('/:id/status', adminLimiter, updateAdminStatus);
 router.delete('/:id', adminLimiter, deleteAdmin);
 
 export default router;
+
