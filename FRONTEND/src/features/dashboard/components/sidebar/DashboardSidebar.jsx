@@ -10,10 +10,18 @@ import {
   Settings,
   LogOut,
   X,
-  Menu
+  Menu,
+  Cpu,
+  GraduationCap,
+  Landmark,
+  Map,
+  Users,
+  BarChart2,
+  Sliders
 } from 'lucide-react';
 
 export const DashboardSidebar = ({
+  role,
   activeTab,
   setActiveTab,
   isSidebarExpanded,
@@ -22,7 +30,9 @@ export const DashboardSidebar = ({
   setIsMobileMenuOpen,
   handleLogout
 }) => {
-  const navItems = [
+  const isAdmin = role === 'ADMIN' || activeTab === 'ai-triage' || activeTab === 'overview_admin';
+
+  const citizenNavItems = [
     { id: 'overview', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'submit-challenge', label: 'Submit Challenge', icon: Plus },
     { id: 'challenges', label: 'My Challenges', icon: FileText },
@@ -33,11 +43,29 @@ export const DashboardSidebar = ({
     { id: 'settings', label: 'Settings', icon: Settings }
   ];
 
+  const adminNavItems = [
+    { id: 'overview_admin', label: 'Overview', icon: LayoutDashboard },
+    { id: 'ai-triage', label: 'AI Triage & Override', icon: Cpu },
+    { id: 'hei-hub', label: 'HEI Hub', icon: GraduationCap },
+    { id: 'csr-grants', label: 'CSR Grants', icon: Landmark },
+    { id: 'gis-map', label: 'GIS Map', icon: Map },
+    { id: 'user-admin', label: 'User Admin', icon: Users },
+    { id: 'audit-logs', label: 'Audit Logs', icon: FileText },
+    { id: 'reports', label: 'Reports', icon: BarChart2 },
+    { id: 'settings', label: 'Settings', icon: Settings }
+  ];
+
+  const navItems = isAdmin ? adminNavItems : citizenNavItems;
+
   return (
     <aside
-      className={`bg-white border-r border-slate-200 px-3 pt-3.5 pb-4 flex flex-col justify-between flex-shrink-0 transition-all duration-200 h-full z-20 ${
+      className={`border-r px-3 pt-3.5 pb-4 flex flex-col justify-between flex-shrink-0 transition-all duration-200 h-full z-20 ${
+        isAdmin
+          ? 'bg-[#0f172a] border-slate-800 text-slate-300'
+          : 'bg-white border-slate-200 text-slate-700'
+      } ${
         isMobileMenuOpen
-          ? 'absolute inset-y-0 left-0 w-60 shadow-xl bg-white md:relative md:shadow-none'
+          ? `absolute inset-y-0 left-0 w-60 shadow-xl ${isAdmin ? 'bg-[#0f172a]' : 'bg-white'} md:relative md:shadow-none`
           : 'hidden md:flex'
       } ${isSidebarExpanded ? 'w-60' : 'w-16'}`}
     >
@@ -45,17 +73,23 @@ export const DashboardSidebar = ({
         {/* Navigation label & collapse toggle */}
         <div className="flex items-center justify-between pb-1 px-1">
           {isSidebarExpanded && (
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-              Navigation
+            <span
+              className={`text-[10px] font-bold uppercase tracking-widest ${
+                isAdmin ? 'text-slate-400' : 'text-slate-400'
+              }`}
+            >
+              {isAdmin ? 'Admin Console' : 'Navigation'}
             </span>
           )}
           <button
             onClick={() =>
               isMobileMenuOpen ? setIsMobileMenuOpen(false) : setIsSidebarExpanded(!isSidebarExpanded)
             }
-            className={`p-1 border border-slate-200 rounded-md hover:bg-slate-50 text-slate-500 hover:text-slate-900 transition-colors bg-white ${
-              !isSidebarExpanded ? 'mx-auto' : ''
-            }`}
+            className={`p-1 border rounded-md transition-colors ${
+              isAdmin
+                ? 'border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white'
+                : 'border-slate-200 bg-white hover:bg-slate-50 text-slate-500 hover:text-slate-900'
+            } ${!isSidebarExpanded ? 'mx-auto' : ''}`}
             title={isSidebarExpanded ? 'Collapse' : 'Expand'}
           >
             {isSidebarExpanded ? <X className="w-3.5 h-3.5" /> : <Menu className="w-3.5 h-3.5" />}
@@ -68,7 +102,8 @@ export const DashboardSidebar = ({
             const IconComponent = item.icon;
             const isActive =
               activeTab === item.id ||
-              (item.id === 'submit-challenge' && activeTab === 'challenges_submit');
+              (item.id === 'submit-challenge' && activeTab === 'challenges_submit') ||
+              (isAdmin && item.id === 'ai-triage' && activeTab === 'ai-triage');
 
             return (
               <button
@@ -84,14 +119,20 @@ export const DashboardSidebar = ({
                 className={`w-full flex items-center rounded-md text-xs font-semibold transition-all relative ${
                   isSidebarExpanded ? 'px-3 py-2 space-x-2.5 text-left' : 'p-2 justify-center'
                 } ${
-                  isActive
-                    ? 'bg-slate-900 text-white shadow-xs'
+                  isAdmin
+                    ? isActive
+                      ? 'bg-blue-600 text-white shadow-xs font-bold'
+                      : 'text-slate-300 hover:bg-slate-800 hover:text-white'
+                    : isActive
+                    ? 'bg-slate-900 text-white shadow-xs font-bold'
                     : 'text-slate-600 hover:bg-slate-100/70 hover:text-slate-900'
                 }`}
                 title={item.label}
               >
                 <IconComponent
-                  className={`w-4 h-4 flex-shrink-0 ${isActive ? 'text-white' : 'text-slate-500'}`}
+                  className={`w-4 h-4 flex-shrink-0 ${
+                    isActive ? 'text-white' : isAdmin ? 'text-slate-400' : 'text-slate-500'
+                  }`}
                 />
                 {isSidebarExpanded && (
                   <span className={`truncate ${isActive ? 'text-white font-bold' : ''}`}>
@@ -110,10 +151,10 @@ export const DashboardSidebar = ({
       </div>
 
       {/* Logout Action */}
-      <div className="pt-2 border-t border-slate-200">
+      <div className={`pt-2 border-t ${isAdmin ? 'border-slate-800' : 'border-slate-200'}`}>
         <button
           onClick={handleLogout}
-          className={`w-full flex items-center rounded-md text-xs font-bold text-red-600 hover:bg-red-50 transition-all ${
+          className={`w-full flex items-center rounded-md text-xs font-bold text-red-500 hover:bg-red-500/10 transition-all ${
             isSidebarExpanded ? 'px-3 py-2 space-x-2.5 text-left' : 'p-2 justify-center'
           }`}
           title="Logout"

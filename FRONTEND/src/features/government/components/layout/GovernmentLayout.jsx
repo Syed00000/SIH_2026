@@ -3,6 +3,7 @@ import { GovernmentHeader } from './GovernmentHeader.jsx';
 import { GovernmentSidebar } from './GovernmentSidebar.jsx';
 import { GovernmentFooter } from './GovernmentFooter.jsx';
 import { GovernmentOverview } from '../overview/GovernmentOverview.jsx';
+import { AITriageDashboard } from '../../../dashboard/components/admin/AITriageDashboard.jsx';
 import { ComingSoonPanel } from '../common/ComingSoonPanel.jsx';
 import { governmentDataService } from '../../services/governmentDataService.js';
 
@@ -131,6 +132,8 @@ export const GovernmentLayout = ({ onLogout }) => {
                 onRejectTriage={handleRejectTriage}
                 onNavigateTab={(tab) => setActiveTab(tab)}
               />
+            ) : activeTab === 'triage' || activeTab === 'ai-triage' ? (
+              <AITriageDashboard />
             ) : (
               <ComingSoonPanel
                 title={getTabTitle(activeTab)}

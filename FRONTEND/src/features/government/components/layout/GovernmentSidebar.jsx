@@ -43,7 +43,7 @@ export const GovernmentSidebar = ({
 
   const mainNavItems = [
     { id: 'overview', label: 'Overview', icon: LayoutDashboard },
-    { id: 'triage', label: 'AI Triage', icon: Bot, isAi: true },
+    { id: 'triage', label: 'AI Triage & Override', icon: Bot, isAi: true },
     { id: 'heis', label: 'HEI Hub', icon: GraduationCap },
     { id: 'csr', label: 'CSR Grants', icon: IndianRupee },
     { id: 'gis', label: 'GIS Map', icon: Map },
