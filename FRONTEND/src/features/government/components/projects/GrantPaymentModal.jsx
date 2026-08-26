@@ -7,43 +7,90 @@ import {
   CreditCard,
   FileCheck,
   Send,
-  AlertCircle
+  AlertCircle,
+  Clock
 } from 'lucide-react';
 
+export const parseGrantLakhs = (grantStr) => {
+  if (typeof grantStr === 'number') return grantStr;
+  if (!grantStr) return 0;
+  const match = String(grantStr).replace(/,/g, '').match(/[\d.]+/);
+  return match ? parseFloat(match[0]) : 0;
+};
+
+export const formatGrantLakhs = (num) => {
+  const n = parseFloat(num);
+  if (isNaN(n)) return '₹ 0.00 Lakhs';
+  return `₹ ${n.toFixed(2)} Lakhs`;
+};
+
+export const getGrantFinancials = (sanctioned, disbursed) => {
+  const sNum = parseGrantLakhs(sanctioned);
+  const dNum = parseGrantLakhs(disbursed);
+  const pNum = Math.max(0, sNum - dNum);
+  const percentage = sNum > 0 ? Math.min(100, Math.round((dNum / sNum) * 100)) : 0;
+  const isFullyPaid = sNum > 0 && dNum >= sNum;
+
+  return {
+    sanctionedLakhs: sNum,
+    disbursedLakhs: dNum,
+    pendingLakhs: pNum,
+    percentage,
+    isFullyPaid,
+    sanctionedStr: formatGrantLakhs(sNum),
+    disbursedStr: formatGrantLakhs(dNum),
+    pendingStr: formatGrantLakhs(pNum),
+    statusText: isFullyPaid
+      ? 'Fully Paid ✓'
+      : dNum > 0
+      ? `Partially Paid (${percentage}%)`
+      : 'Unpaid (0%)'
+  };
+};
+
 export const GrantPaymentModal = ({ project, isOpen, onClose, onConfirmPayment }) => {
-  const [paymentAmount, setPaymentAmount] = useState('5.00'); // in Lakhs
-  const [trancheName, setTrancheName] = useState('Tranche 2: Field Trial & Equipment');
+  if (!isOpen || !project) return null;
+
+  const currentFinancials = getGrantFinancials(project.sanctionedGrant, project.disbursedAmount);
+  const defaultPayAmount = currentFinancials.pendingLakhs > 0
+    ? (currentFinancials.pendingLakhs >= 5 ? '5.00' : currentFinancials.pendingLakhs.toFixed(2))
+    : '0.00';
+
+  const [paymentAmount, setPaymentAmount] = useState(defaultPayAmount);
+  const [trancheName, setTrancheName] = useState(
+    currentFinancials.disbursedLakhs === 0
+      ? 'Tranche 1: Equipment & Prototype Start'
+      : 'Tranche 2: Field Trial & Equipment'
+  );
   const [paymentMode, setPaymentMode] = useState('PFMS Direct Treasury Transfer');
   const [voucherRef, setVoucherRef] = useState(`JH-TR-${Math.floor(1000 + Math.random() * 9000)}`);
   const [remarks, setRemarks] = useState('Milestone deliverables verified. Releasing grant payment from State Innovation Fund.');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  if (!isOpen || !project) return null;
-
-  // Parse amounts
-  const parseLakhs = (str) => {
-    if (!str) return 0;
-    const match = str.match(/[\d.]+/);
-    return match ? parseFloat(match[0]) : 0;
-  };
-
-  const sanctionedLakhs = parseLakhs(project.sanctionedGrant);
-  const disbursedLakhs = parseLakhs(project.disbursedAmount);
-  const pendingLakhs = Math.max(0, sanctionedLakhs - disbursedLakhs).toFixed(2);
+  // Live calculation of preview after this payment
+  const payingNum = parseFloat(paymentAmount) || 0;
+  const projectedDisbursed = currentFinancials.disbursedLakhs + payingNum;
+  const projectedPending = Math.max(0, currentFinancials.sanctionedLakhs - projectedDisbursed);
+  const projectedPercentage = currentFinancials.sanctionedLakhs > 0
+    ? Math.min(100, Math.round((projectedDisbursed / currentFinancials.sanctionedLakhs) * 100))
+    : 0;
+  const isProjectedFullyPaid = currentFinancials.sanctionedLakhs > 0 && projectedDisbursed >= currentFinancials.sanctionedLakhs;
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    if (payingNum <= 0) {
+      alert('Please enter a valid payment amount greater than 0.');
+      return;
+    }
+
     setIsSubmitting(true);
 
-    const paidNum = parseFloat(paymentAmount) || 0;
-    const newDisbursed = (disbursedLakhs + paidNum).toFixed(2);
-    const newDisbursedStr = `₹ ${newDisbursed} Lakhs`;
-    const newPercent = Math.min(100, Math.round((parseFloat(newDisbursed) / sanctionedLakhs) * 100));
+    const newDisbursedStr = formatGrantLakhs(projectedDisbursed);
 
     const paymentRecord = {
       id: voucherRef,
       trancheName,
-      amount: `₹ ${paidNum.toFixed(2)} Lakhs`,
+      amount: formatGrantLakhs(payingNum),
       date: new Date().toISOString().split('T')[0],
       paymentMode,
       remarks,
@@ -53,7 +100,7 @@ export const GrantPaymentModal = ({ project, isOpen, onClose, onConfirmPayment }
     setTimeout(() => {
       onConfirmPayment(project.id, {
         newDisbursedStr,
-        newPercent,
+        newPercent: projectedPercentage,
         paymentRecord
       });
       setIsSubmitting(false);
@@ -75,7 +122,7 @@ export const GrantPaymentModal = ({ project, isOpen, onClose, onConfirmPayment }
                 Release Grant Payment
               </h2>
               <p className="text-[11px] text-slate-500 font-medium">
-                Disburse pending funding for {project.id} ({project.hei})
+                Disburse approved funding for {project.id} ({project.hei})
               </p>
             </div>
           </div>
@@ -91,19 +138,22 @@ export const GrantPaymentModal = ({ project, isOpen, onClose, onConfirmPayment }
 
         {/* Form Body */}
         <form onSubmit={handleSubmit} className="p-6 space-y-4 text-xs">
-          {/* Grant Financial Summary Box */}
+          {/* Current Financial Status Breakdown */}
           <div className="grid grid-cols-3 gap-2 p-3 bg-slate-50 rounded-xl border border-slate-200 text-center">
             <div>
-              <span className="text-[10px] font-bold text-slate-400 uppercase block">Sanctioned Grant</span>
-              <span className="text-sm font-black text-slate-900 block mt-0.5">{project.sanctionedGrant}</span>
+              <span className="text-[10px] font-bold text-slate-400 uppercase block">1. Sanctioned Total</span>
+              <span className="text-sm font-black text-slate-900 block mt-0.5">{currentFinancials.sanctionedStr}</span>
+              <span className="text-[10px] text-slate-500">Approved Grant</span>
             </div>
             <div>
-              <span className="text-[10px] font-bold text-slate-400 uppercase block">Already Paid</span>
-              <span className="text-sm font-black text-emerald-700 block mt-0.5">{project.disbursedAmount}</span>
+              <span className="text-[10px] font-bold text-slate-400 uppercase block">2. Already Paid</span>
+              <span className="text-sm font-black text-emerald-700 block mt-0.5">{currentFinancials.disbursedStr}</span>
+              <span className="text-[10px] text-slate-500">Paid ({currentFinancials.percentage}%)</span>
             </div>
             <div>
-              <span className="text-[10px] font-bold text-slate-400 uppercase block">Pending to Pay</span>
-              <span className="text-sm font-black text-amber-700 block mt-0.5">₹ {pendingLakhs} Lakhs</span>
+              <span className="text-[10px] font-bold text-slate-400 uppercase block">3. Currently Pending</span>
+              <span className="text-sm font-black text-amber-700 block mt-0.5">{currentFinancials.pendingStr}</span>
+              <span className="text-[10px] text-amber-800 font-semibold">To be Disbursed</span>
             </div>
           </div>
 
@@ -118,25 +168,36 @@ export const GrantPaymentModal = ({ project, isOpen, onClose, onConfirmPayment }
               className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-bold text-slate-800 focus:bg-white focus:border-slate-800 focus:outline-hidden cursor-pointer"
             >
               <option value="Tranche 1: Equipment & Prototype Start">Tranche 1: Equipment & Prototype Start</option>
-              <option value="Tranche 2: Field Trial & Testing">Tranche 2: Field Trial & Testing</option>
+              <option value="Tranche 2: Field Trial & Equipment">Tranche 2: Field Trial & Testing</option>
               <option value="Tranche 3: Final District Handover & Scaling">Tranche 3: Final District Handover & Scaling</option>
-              <option value="Special Grant Release: Hardware Expansion">Special Grant Release: Hardware Expansion</option>
+              <option value="Custom Disbursal Release">Custom Disbursal Release</option>
             </select>
           </div>
 
           {/* Amount to Release & Voucher Ref */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="text-[11px] font-bold text-slate-700 block mb-1">
-                Amount to Release (in Lakhs ₹) *
-              </label>
+              <div className="flex items-center justify-between mb-1">
+                <label className="text-[11px] font-bold text-slate-700">
+                  Amount to Release (in Lakhs ₹) *
+                </label>
+                {currentFinancials.pendingLakhs > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => setPaymentAmount(currentFinancials.pendingLakhs.toFixed(2))}
+                    className="text-[10px] font-bold text-emerald-700 hover:underline cursor-pointer"
+                  >
+                    Pay Full Pending
+                  </button>
+                )}
+              </div>
               <div className="relative">
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 font-bold text-slate-400">₹</span>
                 <input
                   type="number"
-                  step="0.1"
-                  min="0.1"
-                  max={pendingLakhs > 0 ? pendingLakhs : 50}
+                  step="0.01"
+                  min="0.01"
+                  max={currentFinancials.pendingLakhs > 0 ? currentFinancials.pendingLakhs : 100}
                   required
                   value={paymentAmount}
                   onChange={(e) => setPaymentAmount(e.target.value)}
@@ -159,6 +220,24 @@ export const GrantPaymentModal = ({ project, isOpen, onClose, onConfirmPayment }
             </div>
           </div>
 
+          {/* Live Dynamic Calculation Box */}
+          <div className="p-3 bg-blue-50/70 border border-blue-200 rounded-xl space-y-1.5 text-xs text-blue-950">
+            <div className="flex items-center justify-between font-bold">
+              <span>After Releasing ₹ {payingNum.toFixed(2)} Lakhs:</span>
+              <span className={`px-2 py-0.5 rounded text-[10px] font-black ${
+                isProjectedFullyPaid ? 'bg-emerald-600 text-white' : 'bg-amber-100 text-amber-900'
+              }`}>
+                {isProjectedFullyPaid ? 'Will be Fully Paid (100%) ✓' : `Will be Partially Paid (${projectedPercentage}%)`}
+              </span>
+            </div>
+            <div className="flex items-center justify-between text-[11px] pt-1 border-t border-blue-200/60">
+              <span>New Total Disbursed: <strong>₹ {projectedDisbursed.toFixed(2)} Lakhs</strong></span>
+              <span>Remaining Pending: <strong className={projectedPending > 0 ? 'text-amber-800' : 'text-emerald-700'}>
+                ₹ {projectedPending.toFixed(2)} Lakhs
+              </strong></span>
+            </div>
+          </div>
+
           {/* Payment Method */}
           <div>
             <label className="text-[11px] font-bold text-slate-700 block mb-1">
@@ -169,23 +248,10 @@ export const GrantPaymentModal = ({ project, isOpen, onClose, onConfirmPayment }
               onChange={(e) => setPaymentMode(e.target.value)}
               className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-bold text-slate-800 focus:bg-white focus:border-slate-800 focus:outline-hidden cursor-pointer"
             >
-              <option value="PFMS Direct Treasury Transfer">PFMS Direct Treasury Transfer (State Bank)</option>
+              <option value="PFMS Direct Treasury Transfer">PFMS Direct Treasury Transfer (State Bank of India)</option>
               <option value="State Innovation Fund DBT">State Innovation Fund DBT</option>
               <option value="Higher Education Grant Account">Higher Education Grant Account Transfer</option>
             </select>
-          </div>
-
-          {/* Remarks */}
-          <div>
-            <label className="text-[11px] font-bold text-slate-700 block mb-1">
-              Disbursal Order Notes / Approval Remarks
-            </label>
-            <textarea
-              rows={2}
-              value={remarks}
-              onChange={(e) => setRemarks(e.target.value)}
-              className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg text-xs text-slate-900 focus:bg-white focus:border-slate-800 focus:outline-hidden"
-            />
           </div>
 
           {/* Modal Actions */}
@@ -199,11 +265,11 @@ export const GrantPaymentModal = ({ project, isOpen, onClose, onConfirmPayment }
             </button>
             <button
               type="submit"
-              disabled={isSubmitting}
+              disabled={isSubmitting || payingNum <= 0}
               className="px-4 py-2 text-xs font-bold text-white bg-slate-900 hover:bg-slate-800 rounded-lg transition-colors cursor-pointer flex items-center space-x-1.5 shadow-2xs disabled:opacity-50"
             >
               <IndianRupee className="w-3.5 h-3.5 text-emerald-400" />
-              <span>Confirm & Release ₹ {paymentAmount} Lakhs</span>
+              <span>Confirm & Release ₹ {payingNum.toFixed(2)} Lakhs</span>
             </button>
           </div>
         </form>

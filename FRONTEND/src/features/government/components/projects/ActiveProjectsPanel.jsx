@@ -28,7 +28,7 @@ import {
 import { ActiveProjectDetailView } from './ActiveProjectDetailView.jsx';
 import { AddProjectModal } from './AddProjectModal.jsx';
 import { EditProjectModal } from './EditProjectModal.jsx';
-import { GrantPaymentModal } from './GrantPaymentModal.jsx';
+import { GrantPaymentModal, getGrantFinancials, formatGrantLakhs } from './GrantPaymentModal.jsx';
 import { ProjectCertificateModal } from './ProjectCertificateModal.jsx';
 import { ValidationEmailModal } from './ValidationEmailModal.jsx';
 import { FinalProjectCompletionModal } from './FinalProjectCompletionModal.jsx';
@@ -46,7 +46,7 @@ export const ActiveProjectsPanel = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedSector, setSelectedSector] = useState('All Sectors');
   const [selectedDistrict, setSelectedDistrict] = useState('All Districts');
-  const [selectedStatusTab, setSelectedStatusTab] = useState('All Projects'); // 'All Projects' | 'In Progress' | 'Completed'
+  const [selectedStatusTab, setSelectedStatusTab] = useState('All Projects'); // 'All Projects' | 'In Progress' | 'Completed' | 'Pending Payment'
   const [viewMode, setViewMode] = useState('table'); // 'table' | 'grid'
 
   // Full Page Detail View State
@@ -73,12 +73,27 @@ export const ActiveProjectsPanel = () => {
     } catch {}
   };
 
-  // Parse pending amount
-  const parseLakhs = (str) => {
-    if (!str) return 0;
-    const match = str.match(/[\d.]+/);
-    return match ? parseFloat(match[0]) : 0;
-  };
+  // Aggregate Financial Statistics across all projects
+  const financialTotals = useMemo(() => {
+    let totalSanctioned = 0;
+    let totalDisbursed = 0;
+
+    projects.forEach((p) => {
+      const f = getGrantFinancials(p.sanctionedGrant, p.disbursedAmount);
+      totalSanctioned += f.sanctionedLakhs;
+      totalDisbursed += f.disbursedLakhs;
+    });
+
+    const totalPending = Math.max(0, totalSanctioned - totalDisbursed);
+    const overallPercentage = totalSanctioned > 0 ? Math.round((totalDisbursed / totalSanctioned) * 100) : 0;
+
+    return {
+      totalSanctionedLakhs: totalSanctioned,
+      totalDisbursedLakhs: totalDisbursed,
+      totalPendingLakhs: totalPending,
+      overallPercentage
+    };
+  }, [projects]);
 
   const completedProjectsCount = useMemo(() => {
     return projects.filter((p) => {
@@ -105,11 +120,13 @@ export const ActiveProjectsPanel = () => {
 
       const mList = item.milestones || [];
       const isDone = item.isCompleted || (mList.length > 0 && mList.every((m) => m.status === 'Completed'));
+      const financials = getGrantFinancials(item.sanctionedGrant, item.disbursedAmount);
 
       const matchesStatus =
         selectedStatusTab === 'All Projects' ||
         (selectedStatusTab === 'Completed' && isDone) ||
-        (selectedStatusTab === 'In Progress' && !isDone);
+        (selectedStatusTab === 'In Progress' && !isDone) ||
+        (selectedStatusTab === 'Pending Payment' && !financials.isFullyPaid);
 
       return matchesSearch && matchesSector && matchesDistrict && matchesStatus;
     });
@@ -309,7 +326,7 @@ export const ActiveProjectsPanel = () => {
         </div>
       </div>
 
-      {/* Top Metric Summary Cards */}
+      {/* Top Metric Summary Cards with Exact Financial Breakdown */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
         <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-2xs">
           <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">
@@ -343,31 +360,31 @@ export const ActiveProjectsPanel = () => {
 
         <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-2xs">
           <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">
-            Avg Readiness
+            Total Sanctioned
           </span>
-          <div className="text-2xl font-bold text-slate-900 mt-1">TRL-6.4</div>
+          <div className="text-xl font-black text-slate-900 mt-1">₹ {financialTotals.totalSanctionedLakhs.toFixed(1)}L</div>
           <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-slate-100 text-slate-700 mt-1 inline-block">
-            Tested
+            Approved Grant
           </span>
         </div>
 
         <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-2xs">
           <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">
-            Sanctioned Grants
+            Total Paid
           </span>
-          <div className="text-2xl font-bold text-slate-900 mt-1">₹ 2.5 Cr</div>
-          <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-slate-100 text-slate-700 mt-1 inline-block">
-            Allocated Pool
-          </span>
-        </div>
-
-        <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-2xs">
-          <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">
-            Disbursed
-          </span>
-          <div className="text-2xl font-bold text-emerald-700 mt-1">₹ 1.8 Cr</div>
+          <div className="text-xl font-black text-emerald-700 mt-1">₹ {financialTotals.totalDisbursedLakhs.toFixed(1)}L</div>
           <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-emerald-50 text-emerald-700 mt-1 inline-block">
-            72% Paid
+            {financialTotals.overallPercentage}% Paid
+          </span>
+        </div>
+
+        <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-2xs">
+          <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">
+            Total Pending
+          </span>
+          <div className="text-xl font-black text-amber-700 mt-1">₹ {financialTotals.totalPendingLakhs.toFixed(1)}L</div>
+          <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-amber-50 text-amber-700 mt-1 inline-block">
+            To Disburse
           </span>
         </div>
       </div>
@@ -375,13 +392,13 @@ export const ActiveProjectsPanel = () => {
       {/* Filter Toolbar & Status Filter Tabs */}
       <div className="bg-white border border-slate-200 rounded-xl p-3.5 shadow-2xs space-y-3">
         <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-2.5">
-          <div className="flex items-center space-x-1.5">
-            {['All Projects', 'In Progress', 'Completed'].map((tab) => (
+          <div className="flex items-center space-x-1.5 overflow-x-auto">
+            {['All Projects', 'In Progress', 'Completed', 'Pending Payment'].map((tab) => (
               <button
                 key={tab}
                 type="button"
                 onClick={() => setSelectedStatusTab(tab)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors cursor-pointer ${
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors cursor-pointer whitespace-nowrap ${
                   selectedStatusTab === tab
                     ? 'bg-slate-900 text-white shadow-2xs'
                     : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
@@ -472,9 +489,8 @@ export const ActiveProjectsPanel = () => {
                 <tr className="border-b border-slate-200 bg-slate-50 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
                   <th className="py-3 px-4">Project & Institution</th>
                   <th className="py-3 px-4">Delivery Stage</th>
-                  <th className="py-3 px-4">Prototype Type</th>
                   <th className="py-3 px-4">Current Status</th>
-                  <th className="py-3 px-4">Grant Funding</th>
+                  <th className="py-3 px-4">Grant Funding (Mila / Diya / Pending)</th>
                   <th className="py-3 px-4 text-center">Actions</th>
                 </tr>
               </thead>
@@ -482,9 +498,7 @@ export const ActiveProjectsPanel = () => {
                 {filteredProjects.map((prj) => {
                   const mList = prj.milestones || [];
                   const isDone = prj.isCompleted || (mList.length > 0 && mList.every((m) => m.status === 'Completed'));
-                  const sLakhs = parseLakhs(prj.sanctionedGrant);
-                  const dLakhs = parseLakhs(prj.disbursedAmount);
-                  const pLakhs = Math.max(0, sLakhs - dLakhs).toFixed(2);
+                  const fin = getGrantFinancials(prj.sanctionedGrant, prj.disbursedAmount);
 
                   return (
                     <tr key={prj.id} className="hover:bg-slate-50/60 transition-colors group cursor-default">
@@ -526,14 +540,6 @@ export const ActiveProjectsPanel = () => {
                       </td>
 
                       <td className="py-3.5 px-4">
-                        <span className="px-2.5 py-1 rounded-lg text-xs font-mono font-bold bg-slate-100 text-slate-800 border border-slate-200 inline-flex items-center space-x-1">
-                          <span>{prj.prototypeType}</span>
-                          <span className="text-slate-400">|</span>
-                          <span className="font-bold text-slate-900">{prj.trlLevel}</span>
-                        </span>
-                      </td>
-
-                      <td className="py-3.5 px-4">
                         <span
                           className={`inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-bold border ${
                             isDone || prj.deploymentStatus?.includes('Completed')
@@ -547,22 +553,32 @@ export const ActiveProjectsPanel = () => {
                         </span>
                       </td>
 
+                      {/* Explicit 3-Way Financial Column */}
                       <td className="py-3.5 px-4">
-                        <div className="font-mono font-bold text-slate-900">
-                          {prj.disbursedAmount}{' '}
-                          <span className="text-[10px] font-normal text-slate-500">
-                            of {prj.sanctionedGrant}
-                          </span>
+                        <div className="space-y-0.5">
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="text-slate-500 font-medium text-[11px]">Sanctioned Total:</span>
+                            <span className="font-mono font-bold text-slate-900">{fin.sanctionedStr}</span>
+                          </div>
+
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="text-slate-500 font-medium text-[11px]">Paid / Disbursed:</span>
+                            <span className="font-mono font-bold text-emerald-700">{fin.disbursedStr} ({fin.percentage}%)</span>
+                          </div>
+
+                          <div className="flex items-center justify-between gap-2 pt-0.5 border-t border-slate-100">
+                            <span className="text-slate-500 font-medium text-[11px]">Pending Balance:</span>
+                            {fin.isFullyPaid ? (
+                              <span className="font-bold text-[10px] text-emerald-700 bg-emerald-50 px-1.5 py-0.2 rounded">
+                                Fully Paid (100%) ✓
+                              </span>
+                            ) : (
+                              <span className="font-mono font-bold text-amber-700 bg-amber-50 px-1.5 py-0.2 rounded border border-amber-200">
+                                {fin.pendingStr} Pending
+                              </span>
+                            )}
+                          </div>
                         </div>
-                        {parseFloat(pLakhs) > 0 ? (
-                          <div className="text-[10px] font-bold text-amber-700">
-                            Pending: ₹ {pLakhs}L
-                          </div>
-                        ) : (
-                          <div className="text-[10px] font-bold text-emerald-700">
-                            Fully Paid ✓
-                          </div>
-                        )}
                       </td>
 
                       <td className="py-3.5 px-4 text-center">
@@ -575,12 +591,12 @@ export const ActiveProjectsPanel = () => {
                             Manage
                           </button>
 
-                          {parseFloat(pLakhs) > 0 && (
+                          {!fin.isFullyPaid && (
                             <button
                               type="button"
                               onClick={() => setPayingProject(prj)}
                               className="px-2.5 py-1 text-xs font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-lg transition-colors cursor-pointer"
-                              title="Release Grant Payment"
+                              title="Release Pending Payment"
                             >
                               Pay Grant
                             </button>
@@ -617,9 +633,7 @@ export const ActiveProjectsPanel = () => {
           {filteredProjects.map((prj) => {
             const mList = prj.milestones || [];
             const isDone = prj.isCompleted || (mList.length > 0 && mList.every((m) => m.status === 'Completed'));
-            const sLakhs = parseLakhs(prj.sanctionedGrant);
-            const dLakhs = parseLakhs(prj.disbursedAmount);
-            const pLakhs = Math.max(0, sLakhs - dLakhs).toFixed(2);
+            const fin = getGrantFinancials(prj.sanctionedGrant, prj.disbursedAmount);
 
             return (
               <div
@@ -648,7 +662,7 @@ export const ActiveProjectsPanel = () => {
                     </div>
                     <div>
                       <div className="flex justify-between text-[10px] font-bold text-slate-600 mb-1">
-                        <span>Progress</span>
+                        <span>Milestone Progress</span>
                         <span>{prj.milestoneProgress || 50}%</span>
                       </div>
                       <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
@@ -658,34 +672,46 @@ export const ActiveProjectsPanel = () => {
                   </div>
                 </div>
 
-                <div className="pt-3 border-t border-slate-100 flex items-center justify-between">
-                  <div>
-                    <span className="text-[11px] font-mono font-bold text-slate-800 block">{prj.disbursedAmount}</span>
-                    {parseFloat(pLakhs) > 0 ? (
-                      <span className="text-[10px] text-amber-700 font-semibold">Pending: ₹{pLakhs}L</span>
+                {/* Financial 3-Way Box in Card */}
+                <div className="p-3 bg-slate-50 rounded-lg border border-slate-100 space-y-1 text-xs">
+                  <div className="flex justify-between items-center text-[11px]">
+                    <span className="text-slate-500">Total Sanctioned:</span>
+                    <strong className="text-slate-900 font-mono">{fin.sanctionedStr}</strong>
+                  </div>
+                  <div className="flex justify-between items-center text-[11px]">
+                    <span className="text-slate-500">Paid so far:</span>
+                    <strong className="text-emerald-700 font-mono">{fin.disbursedStr} ({fin.percentage}%)</strong>
+                  </div>
+                  <div className="flex justify-between items-center text-[11px] pt-1 border-t border-slate-200">
+                    <span className="text-slate-600 font-bold">Pending:</span>
+                    {fin.isFullyPaid ? (
+                      <span className="text-emerald-700 font-bold text-[10px]">Fully Paid (100%) ✓</span>
                     ) : (
-                      <span className="text-[10px] text-emerald-700 font-semibold">Fully Paid ✓</span>
+                      <span className="text-amber-800 font-bold font-mono">{fin.pendingStr}</span>
                     )}
                   </div>
+                </div>
 
-                  <div className="flex items-center space-x-1.5">
-                    {parseFloat(pLakhs) > 0 && (
-                      <button
-                        type="button"
-                        onClick={() => setPayingProject(prj)}
-                        className="px-2.5 py-1 text-xs font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-lg transition-colors cursor-pointer"
-                      >
-                        Pay
-                      </button>
-                    )}
+                <div className="pt-3 border-t border-slate-100 flex items-center justify-between">
+                  {!fin.isFullyPaid ? (
                     <button
                       type="button"
-                      onClick={() => setViewingProject(prj)}
-                      className="px-3.5 py-1 text-xs font-bold text-white bg-slate-900 hover:bg-slate-800 rounded-lg transition-colors cursor-pointer shadow-2xs"
+                      onClick={() => setPayingProject(prj)}
+                      className="px-3 py-1 text-xs font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-lg transition-colors cursor-pointer"
                     >
-                      Manage
+                      Pay Grant
                     </button>
-                  </div>
+                  ) : (
+                    <span className="text-[11px] font-bold text-emerald-700">100% Paid ✓</span>
+                  )}
+
+                  <button
+                    type="button"
+                    onClick={() => setViewingProject(prj)}
+                    className="px-3.5 py-1 text-xs font-bold text-white bg-slate-900 hover:bg-slate-800 rounded-lg transition-colors cursor-pointer shadow-2xs"
+                  >
+                    Manage Details
+                  </button>
                 </div>
               </div>
             );

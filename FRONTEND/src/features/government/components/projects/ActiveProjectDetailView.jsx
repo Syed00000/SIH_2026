@@ -26,7 +26,7 @@ import ProjectTelemetryCharts from './ProjectTelemetryCharts.jsx';
 import ProjectCertificateModal from './ProjectCertificateModal.jsx';
 import ValidationEmailModal from './ValidationEmailModal.jsx';
 import FinalProjectCompletionModal from './FinalProjectCompletionModal.jsx';
-import GrantPaymentModal from './GrantPaymentModal.jsx';
+import { GrantPaymentModal, getGrantFinancials, formatGrantLakhs } from './GrantPaymentModal.jsx';
 import EditProjectModal from './EditProjectModal.jsx';
 
 export const ActiveProjectDetailView = ({
@@ -52,16 +52,8 @@ export const ActiveProjectDetailView = ({
   const completedMilestones = milestonesList.filter((m) => m.status === 'Completed').length;
   const isCompleted = project.isCompleted || (milestonesList.length > 0 && completedMilestones === milestonesList.length);
 
-  // Parse pending amount
-  const parseLakhs = (str) => {
-    if (!str) return 0;
-    const match = str.match(/[\d.]+/);
-    return match ? parseFloat(match[0]) : 0;
-  };
-
-  const sanctionedLakhs = parseLakhs(project.sanctionedGrant);
-  const disbursedLakhs = parseLakhs(project.disbursedAmount);
-  const pendingLakhs = Math.max(0, sanctionedLakhs - disbursedLakhs).toFixed(2);
+  // Exact 3-Way Financial Status
+  const fin = getGrantFinancials(project.sanctionedGrant, project.disbursedAmount);
 
   const handleValidate = () => {
     if (onValidateDeployment) {
@@ -101,14 +93,14 @@ export const ActiveProjectDetailView = ({
 
         <div className="flex flex-wrap items-center gap-2">
           {/* Pay Grant Button */}
-          {parseFloat(pendingLakhs) > 0 && (
+          {!fin.isFullyPaid && (
             <button
               type="button"
               onClick={() => setIsPaymentModalOpen(true)}
               className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition-colors cursor-pointer flex items-center space-x-1.5 shadow-2xs"
             >
               <IndianRupee className="w-3.5 h-3.5" />
-              <span>Pay Pending Grant (₹ {pendingLakhs}L)</span>
+              <span>Release Grant Payment ({fin.pendingStr} Pending)</span>
             </button>
           )}
 
@@ -179,6 +171,12 @@ export const ActiveProjectDetailView = ({
           <span className="px-2 py-0.5 rounded-md bg-slate-100 text-slate-800 border border-slate-200">
             {project.trlLevel} ({project.prototypeType})
           </span>
+          <span>•</span>
+          <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold ${
+            fin.isFullyPaid ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-amber-50 text-amber-800 border border-amber-200'
+          }`}>
+            {fin.isFullyPaid ? 'Grant Fully Paid (100%) ✓' : `Grant Partially Paid (${fin.percentage}% Disbursed)`}
+          </span>
         </div>
 
         <h1 className="text-lg sm:text-xl font-bold text-slate-900">{project.title}</h1>
@@ -210,10 +208,10 @@ export const ActiveProjectDetailView = ({
           </div>
         )}
 
-        {/* Quick Stats Grid */}
+        {/* Quick Stats Grid with Exact 3-Way Financials */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-3 border-t border-slate-100 text-xs">
           <div className="p-3 bg-slate-50 rounded-lg border border-slate-100">
-            <span className="text-[10px] font-bold text-slate-400 uppercase block">Institution</span>
+            <span className="text-[10px] font-bold text-slate-400 uppercase block">Executing Institution</span>
             <span className="font-bold text-slate-900 block mt-0.5">{project.hei}</span>
             <span className="text-[11px] text-slate-500">{project.teamLead}</span>
           </div>
@@ -225,15 +223,19 @@ export const ActiveProjectDetailView = ({
           </div>
 
           <div className="p-3 bg-slate-50 rounded-lg border border-slate-100">
-            <span className="text-[10px] font-bold text-slate-400 uppercase block">Grant Disbursed</span>
-            <span className="font-bold text-emerald-700 text-sm block mt-0.5">{project.disbursedAmount}</span>
-            <span className="text-[11px] text-slate-500">Pending: ₹ {pendingLakhs}L</span>
+            <span className="text-[10px] font-bold text-slate-400 uppercase block">Approved Grant</span>
+            <span className="font-bold text-slate-900 text-sm block mt-0.5">{fin.sanctionedStr}</span>
+            <span className="text-[11px] text-emerald-700 font-semibold">Paid: {fin.disbursedStr}</span>
           </div>
 
           <div className="p-3 bg-slate-50 rounded-lg border border-slate-100">
-            <span className="text-[10px] font-bold text-slate-400 uppercase block">Active Devices</span>
-            <span className="font-bold text-slate-900 block mt-0.5">{project.liveSensorsCount || 12} Active Sensors</span>
-            <span className="text-[11px] text-emerald-700 font-semibold">{project.telemetryUptime || '99.4%'} Working</span>
+            <span className="text-[10px] font-bold text-slate-400 uppercase block">Pending Payment</span>
+            {fin.isFullyPaid ? (
+              <span className="font-bold text-emerald-700 text-sm block mt-0.5">Fully Paid (100%) ✓</span>
+            ) : (
+              <span className="font-bold text-amber-700 text-sm block mt-0.5">{fin.pendingStr}</span>
+            )}
+            <span className="text-[11px] text-slate-500">{fin.percentage}% Disbursed</span>
           </div>
         </div>
       </div>
@@ -244,7 +246,7 @@ export const ActiveProjectDetailView = ({
           { id: 'overview', label: '1. Project Overview & System Details', icon: Cpu },
           { id: 'milestones', label: '2. Project Steps & Verification', icon: CheckCircle2 },
           { id: 'telemetry', label: '3. Map & Live Device Status', icon: Activity },
-          { id: 'finances', label: '4. Grant Payments & Tranches', icon: IndianRupee }
+          { id: 'finances', label: '4. Grant Funding & Payments', icon: IndianRupee }
         ].map((tab) => {
           const TabIcon = tab.icon;
           const isActive = activeSubTab === tab.id;
@@ -376,46 +378,65 @@ export const ActiveProjectDetailView = ({
         </div>
       )}
 
-      {/* TAB 4: FINANCIALS & GRANT PAYMENTS */}
+      {/* TAB 4: FINANCIALS & GRANT PAYMENTS (100% RIGOROUS & ACCURATE) */}
       {activeSubTab === 'finances' && (
         <div className="space-y-4">
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-white p-5 rounded-xl border border-slate-200 text-center text-xs">
-            <div>
-              <span className="text-[10px] font-bold text-slate-400 uppercase block">Total Sanctioned Grant</span>
-              <span className="text-base font-black text-slate-900 mt-1 block">{project.sanctionedGrant}</span>
+          <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 bg-white p-5 rounded-xl border border-slate-200 text-center text-xs">
+            <div className="p-3 bg-slate-50 rounded-lg border border-slate-100">
+              <span className="text-[10px] font-bold text-slate-400 uppercase block">1. Total Sanctioned</span>
+              <span className="text-base font-black text-slate-900 mt-1 block">{fin.sanctionedStr}</span>
+              <span className="text-[10px] text-slate-500">Total Approved Pool</span>
             </div>
-            <div>
-              <span className="text-[10px] font-bold text-slate-400 uppercase block">Total Disbursed</span>
-              <span className="text-base font-black text-emerald-700 mt-1 block">{project.disbursedAmount}</span>
+
+            <div className="p-3 bg-slate-50 rounded-lg border border-slate-100">
+              <span className="text-[10px] font-bold text-slate-400 uppercase block">2. Already Paid</span>
+              <span className="text-base font-black text-emerald-700 mt-1 block">{fin.disbursedStr}</span>
+              <span className="text-[10px] text-slate-500">{fin.percentage}% Disbursed</span>
             </div>
-            <div>
-              <span className="text-[10px] font-bold text-slate-400 uppercase block">Pending to Disburse</span>
-              <span className="text-base font-black text-amber-700 mt-1 block">₹ {pendingLakhs} Lakhs</span>
+
+            <div className="p-3 bg-slate-50 rounded-lg border border-slate-100">
+              <span className="text-[10px] font-bold text-slate-400 uppercase block">3. Pending to Disburse</span>
+              {fin.isFullyPaid ? (
+                <span className="text-sm font-black text-emerald-700 mt-1 block">₹ 0.00 Lakhs</span>
+              ) : (
+                <span className="text-base font-black text-amber-700 mt-1 block">{fin.pendingStr}</span>
+              )}
+              <span className="text-[10px] text-slate-500">
+                {fin.isFullyPaid ? '100% Fully Paid ✓' : 'Remaining Balance'}
+              </span>
             </div>
-            <div className="flex flex-col items-center justify-center">
-              {parseFloat(pendingLakhs) > 0 ? (
+
+            <div className="flex flex-col items-center justify-center p-3 bg-slate-50 rounded-lg border border-slate-100">
+              {!fin.isFullyPaid ? (
                 <button
                   type="button"
                   onClick={() => setIsPaymentModalOpen(true)}
-                  className="w-full py-2 px-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-bold text-xs shadow-2xs transition-colors cursor-pointer flex items-center justify-center space-x-1"
+                  className="w-full py-2.5 px-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-bold text-xs shadow-2xs transition-colors cursor-pointer flex items-center justify-center space-x-1"
                 >
                   <IndianRupee className="w-3.5 h-3.5" />
                   <span>Release Payment</span>
                 </button>
               ) : (
-                <span className="text-xs font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1.5 rounded-lg border border-emerald-200 inline-block">
-                  100% Fully Paid ✓
-                </span>
+                <div className="text-center">
+                  <span className="text-xs font-bold text-emerald-700 bg-emerald-100 px-3 py-1.5 rounded-lg border border-emerald-300 inline-block">
+                    Fully Paid (100%) ✓
+                  </span>
+                  <span className="text-[10px] text-slate-500 block mt-1">No pending dues</span>
+                </div>
               )}
             </div>
           </div>
 
           <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-2xs space-y-3 text-xs">
             <div className="flex items-center justify-between">
-              <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
-                Grant Payment Schedule & Vouchers
-              </h3>
-              {parseFloat(pendingLakhs) > 0 && (
+              <div>
+                <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
+                  Grant Payment Vouchers & Disbursal Ledger
+                </h3>
+                <p className="text-[11px] text-slate-500">Record of all treasury tranches released for this project</p>
+              </div>
+
+              {!fin.isFullyPaid && (
                 <button
                   type="button"
                   onClick={() => setIsPaymentModalOpen(true)}
