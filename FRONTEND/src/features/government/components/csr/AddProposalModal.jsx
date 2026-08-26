@@ -1,16 +1,19 @@
 import React, { useState } from 'react';
-import { X, Plus, FileSpreadsheet } from 'lucide-react';
+import { X, FileSpreadsheet } from 'lucide-react';
 
 export const AddProposalModal = ({ isOpen, onClose, onAddProposal }) => {
   const [form, setForm] = useState({
     id: `PROP-0${Math.floor(10 + Math.random() * 90)}`,
+    projectId: 'PRJ-101',
+    projectTitle: 'Smart Dam Water Quality IoT',
     institutionName: '',
     sourceScheme: 'Corporate CSR (Tata)',
     dueDiligence: 'Passed (All Checks)',
     dueDiligenceStatus: 'passed',
     boardApproval: 'Approved (A-Grade)',
     mouExecution: 'Signed & Active',
-    allocatedAmount: '₹3.50 Cr'
+    allocatedAmount: '₹3.50 Cr',
+    dprBudget: '₹18.50 Lakhs'
   });
 
   if (!isOpen) return null;
@@ -31,8 +34,8 @@ export const AddProposalModal = ({ isOpen, onClose, onAddProposal }) => {
               <FileSpreadsheet className="w-4 h-4" />
             </div>
             <div>
-              <h3 className="text-sm font-bold text-slate-900">Add Proposal Entry</h3>
-              <p className="text-[11px] text-slate-500 font-medium">Add new CSR / Grant proposal to verification pipeline</p>
+              <h3 className="text-sm font-bold text-slate-900">Add CSR Proposal Entry</h3>
+              <p className="text-[11px] text-slate-500 font-medium">Link with Project DPR & Statutory Verification</p>
             </div>
           </div>
           <button onClick={onClose} className="w-7 h-7 rounded-lg border border-slate-200 flex items-center justify-center text-slate-400 hover:text-slate-700 cursor-pointer">
@@ -40,16 +43,21 @@ export const AddProposalModal = ({ isOpen, onClose, onAddProposal }) => {
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6 space-y-4 text-xs">
+        <form onSubmit={handleSubmit} className="p-6 space-y-3.5 text-xs">
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block text-[11px] font-semibold text-slate-700 mb-1">Proposal Code *</label>
               <input type="text" value={form.id} onChange={e => setForm({...form, id: e.target.value})} required className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none font-mono" />
             </div>
             <div>
-              <label className="block text-[11px] font-semibold text-slate-700 mb-1">Allocated Amount *</label>
+              <label className="block text-[11px] font-semibold text-slate-700 mb-1">Allocated Grant *</label>
               <input type="text" placeholder="e.g. ₹4.50 Cr" value={form.allocatedAmount} onChange={e => setForm({...form, allocatedAmount: e.target.value})} required className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none" />
             </div>
+          </div>
+
+          <div>
+            <label className="block text-[11px] font-semibold text-slate-700 mb-1">Linked Project / Solution Title *</label>
+            <input type="text" placeholder="e.g. Smart Dam Water IoT System" value={form.projectTitle} onChange={e => setForm({...form, projectTitle: e.target.value})} required className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none" />
           </div>
 
           <div>
@@ -63,10 +71,8 @@ export const AddProposalModal = ({ isOpen, onClose, onAddProposal }) => {
               <select value={form.sourceScheme} onChange={e => setForm({...form, sourceScheme: e.target.value})} className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none">
                 <option value="Corporate CSR (Tata)">Corporate CSR (Tata)</option>
                 <option value="Corporate CSR (ONGC)">Corporate CSR (ONGC)</option>
-                <option value="Corporate CSR (BCCL)">Corporate CSR (BCCL)</option>
                 <option value="Govt Grant (State)">Govt Grant (State)</option>
                 <option value="Joint (CCL + State)">Joint (CCL + State)</option>
-                <option value="Joint (Tata Steel + State)">Joint (Tata Steel + State)</option>
               </select>
             </div>
             <div>
@@ -80,7 +86,7 @@ export const AddProposalModal = ({ isOpen, onClose, onAddProposal }) => {
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-[11px] font-semibold text-slate-700 mb-1">Board Approval Committee</label>
+              <label className="block text-[11px] font-semibold text-slate-700 mb-1">Board Committee</label>
               <select value={form.boardApproval} onChange={e => setForm({...form, boardApproval: e.target.value})} className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none">
                 <option value="Approved (A-Grade)">Approved (A-Grade)</option>
                 <option value="Sanctioned Board">Sanctioned Board</option>
