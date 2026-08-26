@@ -113,6 +113,7 @@ export const AdminManagement = () => {
 
       <AdminDirectoryTable
         admins={admins}
+        isLoading={isLoading}
         onViewAdmin={(admin) => setViewingAdmin(admin)}
         onEditAdmin={(admin) => { setEditingAdmin(admin); setIsFormOpen(true); }}
         onToggleStatus={handleToggleStatus}

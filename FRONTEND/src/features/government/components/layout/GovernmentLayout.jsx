@@ -7,14 +7,56 @@ import { AITriageDashboard } from '../triage/AITriageDashboard.jsx';
 import { ComingSoonPanel } from '../common/ComingSoonPanel.jsx';
 import { HeiHubPanel } from '../heis/heiHubPanel.jsx';
 import { ManageUniversitiesDashboard } from '../universities/ManageUniversitiesDashboard.jsx';
+import { ManageIndustriesDashboard } from '../industries/ManageIndustriesDashboard.jsx';
 import { GovernmentGisDashboard } from '../gis/GovernmentGisDashboard.jsx';
 import { AdminManagement } from '../governance/AdminManagement.jsx';
 import { governmentDataService } from '../../services/governmentDataService.js';
 
 export const GovernmentLayout = ({ onLogout }) => {
-  const [activeTab, setActiveTab] = useState('overview');
+  const getInitialTab = () => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const urlTab = params.get('tab');
+      if (urlTab) return urlTab;
+      const stored = localStorage.getItem('joharsetu_gov_active_tab');
+      if (stored) return stored;
+    } catch {
+      // fallback
+    }
+    return 'overview';
+  };
+
+  const [activeTab, setActiveTab] = useState(getInitialTab);
   const [isSidebarExpanded, setIsSidebarExpanded] = useState(true);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  const handleSetActiveTab = (tab) => {
+    setActiveTab(tab);
+    try {
+      localStorage.setItem('joharsetu_gov_active_tab', tab);
+      const url = new URL(window.location.href);
+      url.searchParams.set('tab', tab);
+      window.history.replaceState({}, '', url.toString());
+    } catch {
+      // ignore
+    }
+  };
+
+  useEffect(() => {
+    const handlePopState = () => {
+      try {
+        const params = new URLSearchParams(window.location.search);
+        const urlTab = params.get('tab');
+        if (urlTab) {
+          setActiveTab(urlTab);
+        }
+      } catch {
+        // ignore
+      }
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
 
   // Reactive Global Filters
   const [selectedDistrict, setSelectedDistrict] = useState('All');
@@ -70,11 +112,14 @@ export const GovernmentLayout = ({ onLogout }) => {
 
   const getTabTitle = (tab) => {
     switch (tab) {
-      case 'triage': return 'AI Problem Triage Queue';
+      case 'triage': return 'Problem Triage & Verification';
       case 'heis': return 'HEI Hub & University Directory';
       case 'csr': return 'CSR Grants & Corporate Partnerships';
       case 'gis': return 'Jharkhand Geospatial Information System (GIS)';
       case 'user_governance':
+      case 'governance_industries':
+      case 'manage_industries':
+      case 'industries': return 'Industry & Partner Directory';
       case 'users_admin': return 'User Admin & Departmental Governance';
       case 'users_audit': return 'System & Compliance Audit Trail';
       case 'reports':
@@ -83,7 +128,7 @@ export const GovernmentLayout = ({ onLogout }) => {
       case 'reports_custom': return 'Custom Reports';
       case 'reports_scheduled': return 'Scheduled Reports';
       case 'reports_history': return 'Report History';
-      case 'settings': return 'Government Portal Settings & AI Controls';
+      case 'settings': return 'Government Portal Settings';
       default: return 'Innovation Module';
     }
   };
@@ -107,7 +152,7 @@ export const GovernmentLayout = ({ onLogout }) => {
         {/* Navigation Sidebar */}
         <GovernmentSidebar
           activeTab={activeTab}
-          setActiveTab={setActiveTab}
+          setActiveTab={handleSetActiveTab}
           isSidebarExpanded={isSidebarExpanded}
           setIsSidebarExpanded={setIsSidebarExpanded}
           isMobileMenuOpen={isMobileMenuOpen}
@@ -117,7 +162,7 @@ export const GovernmentLayout = ({ onLogout }) => {
 
         {/* Content Area with Independent Scrolling & Bottom Footer */}
         <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden bg-white">
-          <main className="flex-1 p-2.5 md:p-3.5 overflow-y-auto min-h-0 bg-white">
+          <main className="flex-1 p-3 md:p-4 overflow-y-auto min-h-0 bg-slate-50">
             {activeTab === 'overview' ? (
               <GovernmentOverview
                 kpis={kpis}
@@ -134,7 +179,7 @@ export const GovernmentLayout = ({ onLogout }) => {
                 onSelectSector={(sec) => setSelectedSector(sec)}
                 onApproveTriage={handleApproveTriage}
                 onRejectTriage={handleRejectTriage}
-                onNavigateTab={(tab) => setActiveTab(tab)}
+                onNavigateTab={(tab) => handleSetActiveTab(tab)}
               />
             ) : activeTab === 'triage' || activeTab === 'ai-triage' ? (
               <AITriageDashboard />
@@ -145,6 +190,8 @@ export const GovernmentLayout = ({ onLogout }) => {
               />
             ) : activeTab === 'governance_universities' || activeTab === 'manage_universities' ? (
               <ManageUniversitiesDashboard initialMode="list" />
+            ) : activeTab === 'governance_industries' || activeTab === 'manage_industries' || activeTab === 'industries' ? (
+              <ManageIndustriesDashboard />
             ) : activeTab === 'gis' ? (
               <GovernmentGisDashboard />
             ) : activeTab === 'users_admin' || activeTab === 'user_governance' ? (
@@ -152,7 +199,7 @@ export const GovernmentLayout = ({ onLogout }) => {
             ) : (
               <ComingSoonPanel
                 title={getTabTitle(activeTab)}
-                onBackToOverview={() => setActiveTab('overview')}
+                onBackToOverview={() => handleSetActiveTab('overview')}
               />
             )}
           </main>

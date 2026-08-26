@@ -1,7 +1,7 @@
 import { connectMongo } from '../src/infrastructure/database/mongo/client.js';
-import MongooseUniversity from '../src/modules/heis/infrastructure/model.js';
+import MongooseUniversity from '../src/modules/government/heis/infrastructure/model.js';
 import MongooseUser from '../src/modules/users/infrastructure/model.js';
-import { universityService } from '../src/modules/heis/application/service.js';
+import { universityService } from '../src/modules/government/heis/application/service.js';
 
 async function run() {
   try {
