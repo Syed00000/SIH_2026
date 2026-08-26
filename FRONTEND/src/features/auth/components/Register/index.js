@@ -1,0 +1,11 @@
+export { RegisterForm, default } from './RegisterForm.jsx';
+export { RegisterStepper } from './RegisterStepper.jsx';
+export { RegisterStepRole } from './RegisterStepRole.jsx';
+export { RegisterStepAccount } from './RegisterStepAccount.jsx';
+export { RegisterStepRoleDetails } from './RegisterStepRoleDetails.jsx';
+export { RegisterCitizenFields } from './RegisterCitizenFields.jsx';
+export { RegisterUniversityFields } from './RegisterUniversityFields.jsx';
+export { RegisterIndustryFields } from './RegisterIndustryFields.jsx';
+export { RegisterStepReview } from './RegisterStepReview.jsx';
+export { RegisterStepTerms } from './RegisterStepTerms.jsx';
+export * from './registerConstants.js';
