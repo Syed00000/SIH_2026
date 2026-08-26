@@ -23,7 +23,7 @@ import {
 } from 'lucide-react';
 import ProjectSpecificLocationMap from './ProjectSpecificLocationMap.jsx';
 import ProjectLeafletMap from './ProjectLeafletMap.jsx';
-import ProjectTelemetryCharts from './ProjectTelemetryCharts.jsx';
+import AreaProblemProfile from './AreaProblemProfile.jsx';
 import ProjectCertificateModal from './ProjectCertificateModal.jsx';
 import ValidationEmailModal from './ValidationEmailModal.jsx';
 import FinalProjectCompletionModal from './FinalProjectCompletionModal.jsx';
@@ -246,7 +246,7 @@ export const ActiveProjectDetailView = ({
         {[
           { id: 'overview', label: '1. Project Overview & System Details', icon: Cpu },
           { id: 'milestones', label: '2. Project Steps & Verification', icon: CheckCircle2 },
-          { id: 'telemetry', label: '3. Map & Live Device Status', icon: Activity },
+          { id: 'telemetry', label: '3. Location Map & Area Ground Data', icon: MapPin },
           { id: 'finances', label: '4. Grant Funding & Payments', icon: IndianRupee }
         ].map((tab) => {
           const TabIcon = tab.icon;
@@ -390,7 +390,7 @@ export const ActiveProjectDetailView = ({
         </div>
       )}
 
-      {/* TAB 3: EXACT LOCATION MAP & LIVE DEVICE STATUS */}
+      {/* TAB 3: EXACT LOCATION MAP & DETAILED AREA GROUND DATA */}
       {activeSubTab === 'telemetry' && (
         <div className="space-y-5">
           {/* Specific Project Location Map */}
@@ -399,8 +399,8 @@ export const ActiveProjectDetailView = ({
             height="360px"
           />
 
-          {/* Sensor Graphs */}
-          <ProjectTelemetryCharts project={project} />
+          {/* Area Ground Challenges & Socio-Economic Demographics */}
+          <AreaProblemProfile project={project} />
         </div>
       )}
 
