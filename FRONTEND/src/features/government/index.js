@@ -9,6 +9,7 @@ export * from './components/common/ComingSoonPanel.jsx';
 export * from './components/heis/index.js';
 export * from './components/universities/index.js';
 export * from './components/industries/index.js';
+export * from './components/projects/index.js';
 export * from './components/gis/index.js';
 export * from './services/governmentDataService.js';
 export * from './services/universityService.js';

@@ -1,279 +1,88 @@
-import React, { useState } from 'react';
-import {
-  X,
-  Building2,
-  Mail,
-  Phone,
-  User,
-  ShieldCheck,
-  Award,
-  Globe,
-  MapPin,
-  Calendar,
-  Layers,
-  CheckCircle2,
-  Copy,
-  Check,
-  Eye,
-  EyeOff,
-  KeyRound,
-  ExternalLink,
-  BookOpen,
-  FlaskConical,
-  GraduationCap
-} from 'lucide-react';
+import React from 'react';
+import { X, MapPin, Layers } from 'lucide-react';
+import { UniversityCredentialsCard } from './UniversityCredentialsCard.jsx';
+import { UniversityCapacityStats } from './UniversityCapacityStats.jsx';
+import { UniversityInfoSection } from './UniversityInfoSection.jsx';
 
 export const UniversityDetailsModal = ({ university, isOpen, onClose }) => {
-  const [copiedField, setCopiedField] = useState(null);
-  const [showPassword, setShowPassword] = useState(false);
-
   if (!isOpen || !university) return null;
 
-  const handleCopy = (text, field) => {
-    navigator.clipboard.writeText(text);
-    setCopiedField(field);
-    setTimeout(() => setCopiedField(null), 2000);
-  };
+  const loginEmail =
+    university.credentials?.loginEmail ||
+    university.nodalOfficer?.email ||
+    university.universityEmail ||
+    'nodal@university.ac.in';
 
-  const loginEmail = university.credentials?.loginEmail || university.nodalOfficer?.email || university.universityEmail;
-  const loginPassword = university.credentials?.generatedPassword || 'HEI@Jharkhand2026!';
+  const loginPassword =
+    university.credentials?.generatedPassword || 'HEI@Jharkhand2026!';
 
-  // First letter avatar
   const firstLetter = university.name ? university.name.charAt(0).toUpperCase() : 'U';
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs overflow-y-auto animate-fadeIn">
-      <div className="bg-white border border-slate-200 rounded-3xl shadow-2xl w-full max-w-3xl overflow-hidden my-8">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 bg-slate-900/40 backdrop-blur-xs overflow-y-auto animate-fadeIn select-none">
+      <div className="bg-white border border-slate-200 rounded-lg shadow-2xl w-full max-w-3xl overflow-hidden my-6">
         {/* Modal Header */}
-        <div className="relative bg-gradient-to-r from-slate-900 via-slate-800 to-blue-950 p-6 text-white flex items-start justify-between">
-          <div className="flex items-center space-x-4">
-            <div className="w-14 h-14 rounded-2xl bg-blue-600/90 border border-blue-400/40 text-white flex items-center justify-center text-2xl font-black shadow-lg">
+        <div className="px-5 py-3.5 border-b border-slate-200 flex items-center justify-between bg-white">
+          <div className="flex items-center space-x-3">
+            <div className="w-9 h-9 rounded-md bg-slate-900 text-white flex items-center justify-center text-sm font-black shadow-2xs border border-slate-700">
               {firstLetter}
             </div>
             <div>
               <div className="flex items-center space-x-2">
-                <h2 className="text-xl font-bold tracking-tight">{university.name}</h2>
-                <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-500/20 text-blue-200 border border-blue-400/30">
+                <h2 className="text-sm font-bold text-slate-900 leading-tight">{university.name}</h2>
+                <span className="px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-slate-100 text-slate-700 border border-slate-200">
                   {university.code}
                 </span>
               </div>
-              <p className="text-xs text-slate-300 mt-1 flex items-center space-x-3">
-                <span className="flex items-center space-x-1">
-                  <MapPin className="w-3.5 h-3.5 text-blue-400" />
-                  <span>{university.district}, Jharkhand</span>
-                </span>
-                <span>•</span>
+              <p className="text-[11px] text-slate-400 mt-0.5 flex items-center space-x-1.5">
+                <MapPin className="w-3 h-3 text-slate-400" />
+                <span>{university.district}, Jharkhand</span>
+                <span>&bull;</span>
                 <span>{university.universityType}</span>
-                <span>•</span>
-                <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                  university.accessStatus === 'Enabled' ? 'bg-emerald-500/20 text-emerald-300' : 'bg-red-500/20 text-red-300'
-                }`}>
-                  Access: {university.accessStatus}
+                <span>&bull;</span>
+                <span className={university.accessStatus === 'Enabled' ? 'text-emerald-600 font-semibold' : 'text-red-600 font-semibold'}>
+                  {university.accessStatus || 'Enabled'}
                 </span>
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors cursor-pointer"
+            className="text-slate-400 hover:text-red-600 hover:bg-red-50 p-1.5 rounded-md transition-colors cursor-pointer"
+            title="Close"
           >
             <X className="w-4 h-4" />
           </button>
         </div>
 
         {/* Modal Body */}
-        <div className="p-6 max-h-[75vh] overflow-y-auto space-y-6">
+        <div className="p-5 max-h-[75vh] overflow-y-auto space-y-4 text-xs">
           {/* 1. Official HEI Login Credentials Box */}
-          <div className="bg-gradient-to-br from-blue-50 via-indigo-50/40 to-slate-50 border border-blue-200/80 rounded-2xl p-5 shadow-xs">
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center space-x-2">
-                <div className="p-1.5 bg-blue-600 text-white rounded-lg">
-                  <KeyRound className="w-4 h-4" />
-                </div>
-                <div>
-                  <h4 className="text-sm font-bold text-slate-900">Official HEI Login Credentials</h4>
-                  <p className="text-xs text-slate-600">Generated by Government Admin for University Portal Login</p>
-                </div>
-              </div>
-              <span className="px-2 py-0.5 bg-blue-100 text-blue-700 text-[11px] font-bold rounded-md">
-                Role: UNIVERSITY
-              </span>
-            </div>
+          <UniversityCredentialsCard
+            universityName={university.name}
+            loginEmail={loginEmail}
+            loginPassword={loginPassword}
+          />
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-2">
-              {/* Login Email */}
-              <div className="bg-white border border-slate-200 rounded-xl p-3 flex items-center justify-between">
-                <div>
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-600 block">Login Email ID</span>
-                  <span className="text-xs font-bold text-slate-900 select-all">{loginEmail}</span>
-                </div>
-                <button
-                  onClick={() => handleCopy(loginEmail, 'email')}
-                  className="p-1.5 text-slate-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors cursor-pointer"
-                  title="Copy Email"
-                >
-                  {copiedField === 'email' ? <Check className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4" />}
-                </button>
-              </div>
+          {/* 2. Capacity & Resource Statistics */}
+          <UniversityCapacityStats quickSummary={university.quickSummary} />
 
-              {/* Login Password */}
-              <div className="bg-white border border-slate-200 rounded-xl p-3 flex items-center justify-between">
-                <div>
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-600 block">Initial Password</span>
-                  <span className="text-xs font-mono font-bold text-slate-900 select-all">
-                    {showPassword ? loginPassword : '••••••••••••'}
-                  </span>
-                </div>
-                <div className="flex items-center space-x-1">
-                  <button
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="p-1.5 text-slate-500 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer"
-                    title={showPassword ? 'Hide Password' : 'Show Password'}
-                  >
-                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                  </button>
-                  <button
-                    onClick={() => handleCopy(loginPassword, 'password')}
-                    className="p-1.5 text-slate-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors cursor-pointer"
-                    title="Copy Password"
-                  >
-                    {copiedField === 'password' ? <Check className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4" />}
-                  </button>
-                </div>
-              </div>
-            </div>
+          {/* 3. Detailed Data Sections Grid */}
+          <UniversityInfoSection university={university} />
 
-            <div className="mt-3 flex items-center justify-between text-[11px] text-slate-600 pt-1">
-              <span>Institution representatives can use these credentials on the <strong>/login</strong> page.</span>
-              <button
-                onClick={() => {
-                  const creds = `University: ${university.name}\nLogin Email: ${loginEmail}\nPassword: ${loginPassword}\nPortal URL: ${window.location.origin}/login`;
-                  handleCopy(creds, 'all');
-                }}
-                className="font-bold text-blue-600 hover:text-blue-700 hover:underline flex items-center space-x-1 cursor-pointer"
-              >
-                {copiedField === 'all' ? (
-                  <>
-                    <Check className="w-3.5 h-3.5 text-emerald-600" />
-                    <span>Credentials Copied!</span>
-                  </>
-                ) : (
-                  <>
-                    <Copy className="w-3.5 h-3.5" />
-                    <span>Copy All Credentials</span>
-                  </>
-                )}
-              </button>
-            </div>
-          </div>
+          {/* 4. Focus Areas */}
+          <div className="bg-white p-4 rounded-lg border border-slate-200/90 shadow-2xs space-y-2.5">
+            <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider flex items-center space-x-1.5 pb-1.5 border-b border-slate-100">
+              <Layers className="w-3.5 h-3.5 text-blue-600" />
+              <span>Research Focus Areas</span>
+            </h3>
 
-          {/* 2. Institutional Overview & Demographics */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            <div className="bg-slate-50 border border-slate-200 rounded-2xl p-3 text-center">
-              <BookOpen className="w-4 h-4 text-blue-600 mx-auto mb-1" />
-              <div className="text-base font-bold text-slate-900">{university.quickSummary?.departments || 18}</div>
-              <div className="text-[10px] text-slate-600 font-medium">Departments</div>
-            </div>
-            <div className="bg-slate-50 border border-slate-200 rounded-2xl p-3 text-center">
-              <GraduationCap className="w-4 h-4 text-purple-600 mx-auto mb-1" />
-              <div className="text-base font-bold text-slate-900">{university.quickSummary?.totalFaculty || 120}</div>
-              <div className="text-[10px] text-slate-600 font-medium">Total Faculty</div>
-            </div>
-            <div className="bg-slate-50 border border-slate-200 rounded-2xl p-3 text-center">
-              <FlaskConical className="w-4 h-4 text-cyan-600 mx-auto mb-1" />
-              <div className="text-base font-bold text-slate-900">{university.quickSummary?.labsAndFacilities || 32}</div>
-              <div className="text-[10px] text-slate-600 font-medium">Labs & Facilities</div>
-            </div>
-            <div className="bg-slate-50 border border-slate-200 rounded-2xl p-3 text-center">
-              <Layers className="w-4 h-4 text-emerald-600 mx-auto mb-1" />
-              <div className="text-base font-bold text-slate-900">{university.quickSummary?.activeProjects || 18}</div>
-              <div className="text-[10px] text-slate-600 font-medium">Active Projects</div>
-            </div>
-          </div>
-
-          {/* 3. Nodal Officer Details & Accreditation */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Nodal Officer Card */}
-            <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-2xs">
-              <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider mb-3 flex items-center space-x-1.5">
-                <User className="w-3.5 h-3.5 text-blue-600" />
-                <span>Nodal Officer Details</span>
-              </h4>
-              <div className="space-y-2 text-xs">
-                <div className="flex justify-between py-1 border-b border-slate-100">
-                  <span className="text-slate-600">Officer Name:</span>
-                  <span className="font-bold text-slate-900">{university.nodalOfficer?.name}</span>
-                </div>
-                <div className="flex justify-between py-1 border-b border-slate-100">
-                  <span className="text-slate-600">Designation:</span>
-                  <span className="font-medium text-slate-800">{university.nodalOfficer?.designation || 'Registrar'}</span>
-                </div>
-                <div className="flex justify-between py-1 border-b border-slate-100">
-                  <span className="text-slate-600">Email:</span>
-                  <span className="font-medium text-slate-800">{university.nodalOfficer?.email}</span>
-                </div>
-                <div className="flex justify-between py-1">
-                  <span className="text-slate-600">Phone:</span>
-                  <span className="font-medium text-slate-800">{university.nodalOfficer?.phone}</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Accreditation Card */}
-            <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-2xs">
-              <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider mb-3 flex items-center space-x-1.5">
-                <Award className="w-3.5 h-3.5 text-purple-600" />
-                <span>Accreditation & Rankings</span>
-              </h4>
-              <div className="space-y-2 text-xs">
-                <div className="flex justify-between py-1 border-b border-slate-100">
-                  <span className="text-slate-600">NAAC Grade:</span>
-                  <span className="px-2 py-0.5 rounded-md font-bold text-xs bg-purple-50 text-purple-700 border border-purple-200">
-                    {university.accreditation?.naacGrade || 'A'}
-                  </span>
-                </div>
-                <div className="flex justify-between py-1 border-b border-slate-100">
-                  <span className="text-slate-600">NIRF Ranking:</span>
-                  <span className="font-bold text-slate-900">
-                    {university.accreditation?.nirfRanking ? `#${university.accreditation.nirfRanking}` : 'Unranked / State Grade'}
-                  </span>
-                </div>
-                <div className="flex justify-between py-1 border-b border-slate-100">
-                  <span className="text-slate-600">Established Year:</span>
-                  <span className="font-medium text-slate-800">{university.establishmentYear || '2009'}</span>
-                </div>
-                <div className="flex justify-between py-1">
-                  <span className="text-slate-600">Official Website:</span>
-                  {university.website ? (
-                    <a
-                      href={university.website}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="font-medium text-blue-600 hover:underline flex items-center space-x-1"
-                    >
-                      <span>Visit Site</span>
-                      <ExternalLink className="w-3 h-3" />
-                    </a>
-                  ) : (
-                    <span className="text-slate-600">N/A</span>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* 4. Focus Areas & Expertise Domains */}
-          <div>
-            <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider mb-2 flex items-center space-x-1.5">
-              <Layers className="w-3.5 h-3.5 text-indigo-600" />
-              <span>Research & Focus Areas</span>
-            </h4>
             <div className="flex flex-wrap gap-1.5">
-              {(university.focusAreas || ['Infrastructure', 'Water Management', 'Public Health', 'Education']).map(
+              {(university.focusAreas || ['Water Management', 'Infrastructure', 'Education', 'Public Health']).map(
                 (area, idx) => (
                   <span
                     key={idx}
-                    className="px-2.5 py-1 rounded-lg text-xs font-semibold bg-slate-100 text-slate-700 border border-slate-200"
+                    className="px-2 py-0.5 rounded-md text-xs font-medium bg-slate-100 text-slate-700 border border-slate-200/80"
                   >
                     {area}
                   </span>
@@ -283,11 +92,12 @@ export const UniversityDetailsModal = ({ university, isOpen, onClose }) => {
           </div>
         </div>
 
-        {/* Modal Footer */}
-        <div className="p-4 bg-slate-50 border-t border-slate-200 flex justify-end space-x-2">
+        {/* Footer */}
+        <div className="px-5 py-3 border-t border-slate-100 bg-slate-50/60 flex items-center justify-end">
           <button
+            type="button"
             onClick={onClose}
-            className="px-5 py-2 text-xs font-bold bg-white text-slate-700 hover:bg-slate-100 border border-slate-300 rounded-xl transition-colors cursor-pointer"
+            className="px-3.5 py-1.5 text-xs font-semibold text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 rounded-md transition-colors cursor-pointer shadow-2xs"
           >
             Close Details
           </button>
