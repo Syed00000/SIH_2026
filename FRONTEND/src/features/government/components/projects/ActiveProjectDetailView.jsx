@@ -10,38 +10,48 @@ import {
   Cpu,
   MapPin,
   ShieldCheck,
-  Zap,
   Activity,
   Award,
   FileText,
   Printer,
   Mail,
-  Send
+  Send,
+  UserCheck
 } from 'lucide-react';
 import ProjectLeafletMap from './ProjectLeafletMap.jsx';
 import ProjectTelemetryCharts from './ProjectTelemetryCharts.jsx';
 import ProjectCertificateModal from './ProjectCertificateModal.jsx';
 import ValidationEmailModal from './ValidationEmailModal.jsx';
+import FinalProjectCompletionModal from './FinalProjectCompletionModal.jsx';
 
 export const ActiveProjectDetailView = ({
   project,
   onBack,
   onUpdateMilestoneStatus,
-  onValidateDeployment
+  onValidateDeployment,
+  onApproveCompletion
 }) => {
   const [activeSubTab, setActiveSubTab] = useState('overview'); // 'overview' | 'milestones' | 'telemetry' | 'finances'
   const [isCertificateOpen, setIsCertificateOpen] = useState(false);
   const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
+  const [isCompletionModalOpen, setIsCompletionModalOpen] = useState(false);
 
   if (!project) return null;
 
   const milestonesList = project.milestones || [];
   const completedMilestones = milestonesList.filter((m) => m.status === 'Completed').length;
-  const isAllMilestonesDone = milestonesList.length > 0 && completedMilestones === milestonesList.length;
+  const isCompleted = project.isCompleted || (milestonesList.length > 0 && completedMilestones === milestonesList.length);
 
   const handleValidate = () => {
     if (onValidateDeployment) {
       onValidateDeployment(project.id);
+    }
+    setIsEmailModalOpen(true);
+  };
+
+  const handleConfirmCompletion = (prjId, completionData) => {
+    if (onApproveCompletion) {
+      onApproveCompletion(prjId, completionData);
     }
     setIsEmailModalOpen(true);
   };
@@ -66,7 +76,7 @@ export const ActiveProjectDetailView = ({
             className="px-3 py-1.5 bg-white text-slate-700 hover:bg-slate-50 border border-slate-300 rounded-lg text-xs font-bold transition-colors cursor-pointer flex items-center space-x-1.5"
           >
             <Mail className="w-3.5 h-3.5 text-slate-500" />
-            <span>Send Email Notification</span>
+            <span>Send Email</span>
           </button>
 
           <button
@@ -78,20 +88,31 @@ export const ActiveProjectDetailView = ({
             <span>View Certificate</span>
           </button>
 
-          {!project.deploymentStatus?.includes('Validated') ? (
+          {!isCompleted ? (
+            <button
+              type="button"
+              onClick={() => setIsCompletionModalOpen(true)}
+              className="px-4 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition-colors cursor-pointer flex items-center space-x-1.5 shadow-2xs"
+            >
+              <Award className="w-4 h-4" />
+              <span>Final Government Approval: Mark Completed</span>
+            </button>
+          ) : (
+            <span className="px-3.5 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center space-x-1.5">
+              <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+              <span>Government Approved & Completed ✓</span>
+            </span>
+          )}
+
+          {!project.deploymentStatus?.includes('Validated') && (
             <button
               type="button"
               onClick={handleValidate}
               className="px-4 py-1.5 bg-slate-900 hover:bg-slate-800 text-white rounded-lg text-xs font-bold transition-colors cursor-pointer flex items-center space-x-1.5 shadow-2xs"
             >
               <ShieldCheck className="w-4 h-4 text-emerald-400" />
-              <span>Validate & Issue Certificate</span>
+              <span>Validate District Deployment</span>
             </button>
-          ) : (
-            <span className="px-3.5 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center space-x-1">
-              <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-              <span>State Validated ✓</span>
-            </span>
           )}
         </div>
       </div>
@@ -106,53 +127,64 @@ export const ActiveProjectDetailView = ({
           <span>•</span>
           <span className="text-slate-700">{project.district} District</span>
           <span>•</span>
-          <span className="px-2 py-0.5 rounded-md bg-slate-100 text-slate-800 border border-slate-200 font-mono">
+          <span className="px-2 py-0.5 rounded-md bg-slate-100 text-slate-800 border border-slate-200">
             {project.trlLevel} ({project.prototypeType})
           </span>
         </div>
 
         <h1 className="text-lg sm:text-xl font-bold text-slate-900">{project.title}</h1>
 
-        {/* Project Completed Banner if 100% done */}
-        {isAllMilestonesDone && (
-          <div className="p-3.5 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center justify-between text-emerald-900 text-xs">
-            <div className="flex items-center space-x-2">
-              <Award className="w-5 h-5 text-emerald-600" />
+        {/* Project Completed Banner if done */}
+        {isCompleted && (
+          <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center justify-between text-emerald-950 text-xs">
+            <div className="flex items-center space-x-3">
+              <div className="w-9 h-9 rounded-lg bg-emerald-600 text-white flex items-center justify-center font-bold">
+                <Award className="w-5 h-5" />
+              </div>
               <div>
-                <span className="font-bold block">All Project Milestones Completed (100% Done)!</span>
-                <span className="text-[11px] text-emerald-700">Project ready for state-wide public deployment and scaling.</span>
+                <span className="font-bold text-sm block">Project Officially Completed & Approved by Government!</span>
+                <span className="text-xs text-emerald-800">All milestones verified and field deployment successfully handed over.</span>
+                {project.completedByOfficer && (
+                  <span className="block text-[11px] text-emerald-700 mt-0.5 font-medium">
+                    Signed off by: {project.completedByOfficer} ({project.officerDesignation})
+                  </span>
+                )}
               </div>
             </div>
-            <span className="px-3 py-1 rounded-lg bg-emerald-600 text-white font-bold text-xs shadow-2xs">
-              Project Completed ✓
-            </span>
+            <button
+              type="button"
+              onClick={() => setIsCertificateOpen(true)}
+              className="px-3.5 py-2 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs shadow-2xs cursor-pointer"
+            >
+              Download Final Handover Certificate
+            </button>
           </div>
         )}
 
         {/* Quick Stats Grid */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-3 border-t border-slate-100 text-xs">
           <div className="p-3 bg-slate-50 rounded-lg border border-slate-100">
-            <span className="text-[10px] font-bold text-slate-400 uppercase block">Executing HEI</span>
+            <span className="text-[10px] font-bold text-slate-400 uppercase block">Institution</span>
             <span className="font-bold text-slate-900 block mt-0.5">{project.hei}</span>
             <span className="text-[11px] text-slate-500">{project.teamLead}</span>
           </div>
 
           <div className="p-3 bg-slate-50 rounded-lg border border-slate-100">
-            <span className="text-[10px] font-bold text-slate-400 uppercase block">Milestone Stage</span>
+            <span className="text-[10px] font-bold text-slate-400 uppercase block">Current Stage</span>
             <span className="font-bold text-slate-900 block mt-0.5">{project.milestonePhase}</span>
             <span className="text-[11px] text-slate-500 font-semibold">{project.milestoneProgress || 50}% Done</span>
           </div>
 
           <div className="p-3 bg-slate-50 rounded-lg border border-slate-100">
-            <span className="text-[10px] font-bold text-slate-400 uppercase block">Funding Disbursed</span>
+            <span className="text-[10px] font-bold text-slate-400 uppercase block">Grant Disbursed</span>
             <span className="font-bold text-emerald-700 text-sm block mt-0.5">{project.disbursedAmount}</span>
             <span className="text-[11px] text-slate-500">of {project.sanctionedGrant}</span>
           </div>
 
           <div className="p-3 bg-slate-50 rounded-lg border border-slate-100">
-            <span className="text-[10px] font-bold text-slate-400 uppercase block">Telemetry Health</span>
-            <span className="font-bold text-slate-900 block mt-0.5">{project.telemetryUptime || '99.4%'} Uptime</span>
-            <span className="text-[11px] text-slate-500">{project.liveSensorsCount || 12} Active Nodes</span>
+            <span className="text-[10px] font-bold text-slate-400 uppercase block">Live Devices</span>
+            <span className="font-bold text-slate-900 block mt-0.5">{project.liveSensorsCount || 12} Active Sensors</span>
+            <span className="text-[11px] text-emerald-700 font-semibold">{project.telemetryUptime || '99.4%'} Working</span>
           </div>
         </div>
       </div>
@@ -160,10 +192,10 @@ export const ActiveProjectDetailView = ({
       {/* Sub-Tabs */}
       <div className="flex items-center space-x-2 border-b border-slate-200 pb-2 overflow-x-auto">
         {[
-          { id: 'overview', label: '1. Overview & Hardware Specs', icon: Cpu },
-          { id: 'milestones', label: '2. Stage-Gate Milestones & Steps', icon: CheckCircle2 },
-          { id: 'telemetry', label: '3. Real-time Map & Sensor Graphs', icon: Activity },
-          { id: 'finances', label: '4. Financials & Grant Ledger', icon: IndianRupee }
+          { id: 'overview', label: '1. Project Overview & System Details', icon: Cpu },
+          { id: 'milestones', label: '2. Project Steps & Verification', icon: CheckCircle2 },
+          { id: 'telemetry', label: '3. Map & Live Device Status', icon: Activity },
+          { id: 'finances', label: '4. Grant Disbursal & Payments', icon: IndianRupee }
         ].map((tab) => {
           const TabIcon = tab.icon;
           const isActive = activeSubTab === tab.id;
@@ -190,14 +222,14 @@ export const ActiveProjectDetailView = ({
         <div className="space-y-4">
           <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-2xs space-y-3">
             <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
-              Technical Specifications & Hardware Components
+              System Specifications & Solution Details
             </h3>
-            <div className="p-3.5 bg-slate-50 rounded-lg border border-slate-100 font-mono text-xs text-slate-800 leading-relaxed">
+            <div className="p-3.5 bg-slate-50 rounded-lg border border-slate-100 text-xs text-slate-800 leading-relaxed font-sans">
               {project.hardwareSpecs || 'Industrial Grade Embedded Microcontroller, Sub-GHz Transceiver, Integrated Solar Harvester.'}
             </div>
-            <div className="flex items-center justify-between text-xs text-slate-500 pt-2 border-t border-slate-100">
+            <div className="flex flex-wrap items-center justify-between text-xs text-slate-500 pt-2 border-t border-slate-100 gap-2">
               <span><strong>Testing Lab:</strong> {project.labsAndFacilities}</span>
-              <span><strong>Field Deployment:</strong> {project.deploymentLocation}</span>
+              <span><strong>Field Deployment Area:</strong> {project.deploymentLocation}</span>
             </div>
           </div>
         </div>
@@ -210,11 +242,11 @@ export const ActiveProjectDetailView = ({
             <div className="flex items-center justify-between">
               <div>
                 <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
-                  Project Milestone Verification Steps
+                  Project Delivery Steps & Approvals
                 </h3>
-                <p className="text-[11px] text-slate-500 font-medium">Verify each deliverable stage to progress the project</p>
+                <p className="text-[11px] text-slate-500 font-medium">Verify each deliverable step to complete the project</p>
               </div>
-              <span className="text-xs font-mono font-bold text-slate-800">
+              <span className="text-xs font-bold text-slate-800 bg-slate-100 px-2.5 py-1 rounded-lg">
                 {completedMilestones} of {milestonesList.length} Steps Verified
               </span>
             </div>
@@ -265,12 +297,12 @@ export const ActiveProjectDetailView = ({
                         className="px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-white rounded-lg text-xs font-bold transition-colors cursor-pointer flex items-center space-x-1 shadow-2xs self-end sm:self-center"
                       >
                         <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-                        <span>Verify & Approve Step</span>
+                        <span>Verify Step</span>
                       </button>
                     ) : (
-                      <span className="text-emerald-700 font-bold text-xs flex items-center space-x-1">
+                      <span className="text-emerald-700 font-bold text-xs flex items-center space-x-1 self-end sm:self-center">
                         <CheckCircle2 className="w-4 h-4" />
-                        <span>Verified Step</span>
+                        <span>Step Verified</span>
                       </span>
                     )}
                   </div>
@@ -281,10 +313,10 @@ export const ActiveProjectDetailView = ({
         </div>
       )}
 
-      {/* TAB 3: REAL-TIME LEAFLET MAP & SENSOR CHARTS */}
+      {/* TAB 3: REAL-TIME MAP & SENSOR GRAPHS */}
       {activeSubTab === 'telemetry' && (
         <div className="space-y-5">
-          {/* Real Leaflet Map */}
+          {/* Leaflet Map */}
           <ProjectLeafletMap
             selectedDistrict={project.district}
             height="360px"
@@ -295,12 +327,12 @@ export const ActiveProjectDetailView = ({
         </div>
       )}
 
-      {/* TAB 4: FINANCIALS & GRANT LEDGER */}
+      {/* TAB 4: FINANCIALS & GRANT DISBURSAL */}
       {activeSubTab === 'finances' && (
         <div className="space-y-4">
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-white p-5 rounded-xl border border-slate-200 text-center text-xs">
             <div>
-              <span className="text-[10px] font-bold text-slate-400 uppercase block">Total Sanctioned</span>
+              <span className="text-[10px] font-bold text-slate-400 uppercase block">Total Sanctioned Grant</span>
               <span className="text-base font-black text-slate-900 mt-1 block">{project.sanctionedGrant}</span>
             </div>
             <div>
@@ -314,19 +346,19 @@ export const ActiveProjectDetailView = ({
             <div>
               <span className="text-[10px] font-bold text-slate-400 uppercase block">Audit Verification</span>
               <span className="text-xs font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md inline-block mt-1">
-                UC Verified ✓
+                Verified & Clear ✓
               </span>
             </div>
           </div>
 
           <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-2xs space-y-3 text-xs">
             <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
-              Grant Tranches & Audit Ledger
+              Payment Schedule & Tranches
             </h3>
             <div className="space-y-2">
               <div className="p-3 bg-slate-50 rounded-lg border border-slate-100 flex items-center justify-between">
                 <div>
-                  <span className="font-bold text-slate-900">Tranche 1 (Project Start & Equipment)</span>
+                  <span className="font-bold text-slate-900">Payment 1 (Equipment & Project Start)</span>
                   <span className="text-slate-500 block text-[11px]">Voucher #JH-GR-0981 • Disbursed</span>
                 </div>
                 <span className="font-mono font-bold text-emerald-700">₹ 8.00 Lakhs [Paid]</span>
@@ -334,7 +366,7 @@ export const ActiveProjectDetailView = ({
 
               <div className="p-3 bg-slate-50 rounded-lg border border-slate-100 flex items-center justify-between">
                 <div>
-                  <span className="font-bold text-slate-900">Tranche 2 (Lab Validation & NABL)</span>
+                  <span className="font-bold text-slate-900">Payment 2 (Lab Testing & Prototype)</span>
                   <span className="text-slate-500 block text-[11px]">Voucher #JH-GR-1042 • Disbursed</span>
                 </div>
                 <span className="font-mono font-bold text-emerald-700">₹ 5.50 Lakhs [Paid]</span>
@@ -342,8 +374,8 @@ export const ActiveProjectDetailView = ({
 
               <div className="p-3 bg-slate-50 rounded-lg border border-slate-100 flex items-center justify-between">
                 <div>
-                  <span className="font-bold text-slate-900">Tranche 3 (Field Deployment & Validation)</span>
-                  <span className="text-slate-500 block text-[11px]">Pending final scaling audit</span>
+                  <span className="font-bold text-slate-900">Payment 3 (Field Deployment & Handover)</span>
+                  <span className="text-slate-500 block text-[11px]">Final release upon project completion</span>
                 </div>
                 <span className="font-mono font-bold text-amber-700">₹ 5.00 Lakhs [Pending]</span>
               </div>
@@ -364,6 +396,14 @@ export const ActiveProjectDetailView = ({
         project={project}
         isOpen={isEmailModalOpen}
         onClose={() => setIsEmailModalOpen(false)}
+      />
+
+      {/* Final Completion Modal */}
+      <FinalProjectCompletionModal
+        project={project}
+        isOpen={isCompletionModalOpen}
+        onClose={() => setIsCompletionModalOpen(false)}
+        onConfirmCompletion={handleConfirmCompletion}
       />
     </div>
   );

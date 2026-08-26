@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   PlayCircle,
   Search,
@@ -16,7 +16,6 @@ import {
   Table,
   Grid,
   ShieldCheck,
-  Zap,
   IndianRupee,
   Layers,
   Award,
@@ -28,6 +27,7 @@ import { ActiveProjectDetailView } from './ActiveProjectDetailView.jsx';
 import { AddProjectModal } from './AddProjectModal.jsx';
 import { ProjectCertificateModal } from './ProjectCertificateModal.jsx';
 import { ValidationEmailModal } from './ValidationEmailModal.jsx';
+import { FinalProjectCompletionModal } from './FinalProjectCompletionModal.jsx';
 import { SECTOR_OPTIONS, DISTRICT_OPTIONS, INITIAL_ACTIVE_PROJECTS } from '../../data/projectsSolutionsData.js';
 
 export const ActiveProjectsPanel = () => {
@@ -42,7 +42,7 @@ export const ActiveProjectsPanel = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedSector, setSelectedSector] = useState('All Sectors');
   const [selectedDistrict, setSelectedDistrict] = useState('All Districts');
-  const [selectedTrl, setSelectedTrl] = useState('All TRL');
+  const [selectedStatusTab, setSelectedStatusTab] = useState('All Projects'); // 'All Projects' | 'In Progress' | 'Completed'
   const [viewMode, setViewMode] = useState('table'); // 'table' | 'grid'
 
   // Full Page Detail View State
@@ -52,6 +52,7 @@ export const ActiveProjectsPanel = () => {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [certificateProject, setCertificateProject] = useState(null);
   const [emailProject, setEmailProject] = useState(null);
+  const [completionModalProject, setCompletionModalProject] = useState(null);
   const [notification, setNotification] = useState(null);
 
   const showToast = (msg, type = 'success') => {
@@ -68,6 +69,7 @@ export const ActiveProjectsPanel = () => {
 
   const completedProjectsCount = useMemo(() => {
     return projects.filter((p) => {
+      if (p.isCompleted) return true;
       const mList = p.milestones || [];
       return mList.length > 0 && mList.every((m) => m.status === 'Completed');
     }).length;
@@ -88,18 +90,23 @@ export const ActiveProjectsPanel = () => {
       const matchesDistrict =
         selectedDistrict === 'All Districts' || item.district === selectedDistrict;
 
-      const matchesTrl =
-        selectedTrl === 'All TRL' || item.trlLevel === selectedTrl;
+      const mList = item.milestones || [];
+      const isDone = item.isCompleted || (mList.length > 0 && mList.every((m) => m.status === 'Completed'));
 
-      return matchesSearch && matchesSector && matchesDistrict && matchesTrl;
+      const matchesStatus =
+        selectedStatusTab === 'All Projects' ||
+        (selectedStatusTab === 'Completed' && isDone) ||
+        (selectedStatusTab === 'In Progress' && !isDone);
+
+      return matchesSearch && matchesSector && matchesDistrict && matchesStatus;
     });
-  }, [projects, searchQuery, selectedSector, selectedDistrict, selectedTrl]);
+  }, [projects, searchQuery, selectedSector, selectedDistrict, selectedStatusTab]);
 
   const handleResetFilters = () => {
     setSearchQuery('');
     setSelectedSector('All Sectors');
     setSelectedDistrict('All Districts');
-    setSelectedTrl('All TRL');
+    setSelectedStatusTab('All Projects');
   };
 
   // Update Milestone Status
@@ -117,7 +124,8 @@ export const ActiveProjectsPanel = () => {
           ...prj,
           milestones: updatedMilestones,
           milestoneProgress: newProgress,
-          deploymentStatus: isDone ? 'Validated ✓' : prj.deploymentStatus,
+          isCompleted: isDone ? true : prj.isCompleted,
+          deploymentStatus: isDone ? 'Completed ✓' : prj.deploymentStatus,
           milestonePhase: isDone ? 'Phase 4: Completed' : prj.milestonePhase
         };
       }
@@ -128,10 +136,44 @@ export const ActiveProjectsPanel = () => {
     if (viewingProject && viewingProject.id === projectId) {
       setViewingProject(updated.find((p) => p.id === projectId));
     }
-    showToast(`Milestone ${milestoneId} marked as completed.`);
+    showToast(`Step ${milestoneId} marked as completed.`);
   };
 
-  // Validate Project & Issue Certificate
+  // Final Government Approval: Mark Completed
+  const handleApproveCompletion = (projectId, { officerName, designation, remarks }) => {
+    const updated = projects.map((p) => {
+      if (p.id === projectId) {
+        const completedMilestones = (p.milestones || []).map((m) => ({
+          ...m,
+          status: 'Completed',
+          progress: 100
+        }));
+        return {
+          ...p,
+          isCompleted: true,
+          milestones: completedMilestones,
+          milestoneProgress: 100,
+          milestonePhase: 'Phase 4: Completed',
+          deploymentStatus: 'Completed ✓',
+          completedByOfficer: officerName,
+          officerDesignation: designation,
+          officerRemarks: remarks,
+          completionDate: new Date().toISOString().split('T')[0]
+        };
+      }
+      return p;
+    });
+
+    saveProjects(updated);
+    const target = updated.find((p) => p.id === projectId);
+    if (viewingProject && viewingProject.id === projectId) {
+      setViewingProject(target);
+    }
+    setEmailProject(target);
+    showToast(`Project ${projectId} officially marked as Completed & Approved.`);
+  };
+
+  // Validate Project
   const handleValidateDeployment = (projectId) => {
     const updated = projects.map((p) =>
       p.id === projectId ? { ...p, deploymentStatus: 'Validated ✓' } : p
@@ -142,14 +184,14 @@ export const ActiveProjectsPanel = () => {
       setViewingProject(target);
     }
     setEmailProject(target);
-    showToast(`Project ${projectId} validated and State Certificate issued.`);
+    showToast(`Project ${projectId} validated.`);
   };
 
   // Add New Project
   const handleAddNewProject = (newPrj) => {
     const updated = [newPrj, ...projects];
     saveProjects(updated);
-    showToast(`New innovation project "${newPrj.title}" sanctioned successfully.`);
+    showToast(`New project "${newPrj.title}" sanctioned successfully.`);
   };
 
   // If viewing detailed full-page project view
@@ -160,6 +202,7 @@ export const ActiveProjectsPanel = () => {
         onBack={() => setViewingProject(null)}
         onUpdateMilestoneStatus={handleUpdateMilestoneStatus}
         onValidateDeployment={handleValidateDeployment}
+        onApproveCompletion={handleApproveCompletion}
       />
     );
   }
@@ -189,7 +232,7 @@ export const ActiveProjectsPanel = () => {
             ACTIVE PROJECTS IN PROGRESS
           </h1>
           <p className="text-xs text-slate-500 font-medium">
-            Stage gates, milestone completion, and TRL monitoring across funded innovations
+            Stage gates, milestone completion, and final government handover
           </p>
         </div>
 
@@ -209,10 +252,10 @@ export const ActiveProjectsPanel = () => {
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
         <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-2xs">
           <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">
-            Active Projects
+            Total Projects
           </span>
           <div className="text-2xl font-bold text-slate-900 mt-1">{projects.length}</div>
-          <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-emerald-50 text-emerald-700 mt-1 inline-block">
+          <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-slate-100 text-slate-700 mt-1 inline-block">
             In Pipeline
           </span>
         </div>
@@ -229,21 +272,21 @@ export const ActiveProjectsPanel = () => {
 
         <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-2xs">
           <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">
-            Delayed Milestones
+            In Progress
           </span>
-          <div className="text-2xl font-bold text-rose-700 mt-1">4</div>
-          <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-rose-50 text-rose-700 mt-1 inline-block">
-            Audit Required
+          <div className="text-2xl font-bold text-slate-900 mt-1">{projects.length - completedProjectsCount}</div>
+          <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-blue-50 text-blue-700 mt-1 inline-block">
+            Active Work
           </span>
         </div>
 
         <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-2xs">
           <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">
-            Avg TRL Level
+            Avg Readiness
           </span>
           <div className="text-2xl font-bold text-slate-900 mt-1">TRL-6.4</div>
-          <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-blue-50 text-blue-700 mt-1 inline-block">
-            System Validated
+          <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-slate-100 text-slate-700 mt-1 inline-block">
+            Tested
           </span>
         </div>
 
@@ -263,61 +306,30 @@ export const ActiveProjectsPanel = () => {
           </span>
           <div className="text-2xl font-bold text-emerald-700 mt-1">₹ 1.8 Cr</div>
           <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-emerald-50 text-emerald-700 mt-1 inline-block">
-            72% Disbursed
+            72% Paid
           </span>
         </div>
       </div>
 
-      {/* Filter Toolbar */}
-      <div className="bg-white border border-slate-200 rounded-xl p-3.5 shadow-2xs flex flex-col md:flex-row items-center gap-3">
-        <div className="relative flex-1 w-full">
-          <Search className="w-4 h-4 absolute left-3.5 top-1/2 transform -translate-y-1/2 text-slate-400" />
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search project title, ID, team lead, or university..."
-            className="w-full pl-9 pr-3.5 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-medium text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-slate-800 focus:outline-hidden"
-          />
-        </div>
-
-        <div className="w-full md:w-48">
-          <select
-            value={selectedSector}
-            onChange={(e) => setSelectedSector(e.target.value)}
-            className="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-bold text-slate-800 focus:bg-white focus:border-slate-800 focus:outline-hidden cursor-pointer"
-          >
-            {SECTOR_OPTIONS.map((sec) => (
-              <option key={sec} value={sec}>
-                {sec}
-              </option>
+      {/* Filter Toolbar & Status Filter Tabs */}
+      <div className="bg-white border border-slate-200 rounded-xl p-3.5 shadow-2xs space-y-3">
+        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-2.5">
+          <div className="flex items-center space-x-1.5">
+            {['All Projects', 'In Progress', 'Completed'].map((tab) => (
+              <button
+                key={tab}
+                type="button"
+                onClick={() => setSelectedStatusTab(tab)}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors cursor-pointer ${
+                  selectedStatusTab === tab
+                    ? 'bg-slate-900 text-white shadow-2xs'
+                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                }`}
+              >
+                {tab} {tab === 'Completed' ? `(${completedProjectsCount})` : ''}
+              </button>
             ))}
-          </select>
-        </div>
-
-        <div className="w-full md:w-44">
-          <select
-            value={selectedDistrict}
-            onChange={(e) => setSelectedDistrict(e.target.value)}
-            className="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-bold text-slate-800 focus:bg-white focus:border-slate-800 focus:outline-hidden cursor-pointer"
-          >
-            {DISTRICT_OPTIONS.map((dist) => (
-              <option key={dist} value={dist}>
-                {dist}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div className="flex items-center space-x-1.5 shrink-0">
-          <button
-            type="button"
-            onClick={handleResetFilters}
-            className="p-2 text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer border border-slate-200"
-            title="Reset Filters"
-          >
-            <RotateCcw className="w-4 h-4" />
-          </button>
+          </div>
 
           <div className="border border-slate-200 rounded-lg p-0.5 bg-slate-50 flex items-center">
             <button
@@ -342,6 +354,52 @@ export const ActiveProjectsPanel = () => {
             </button>
           </div>
         </div>
+
+        <div className="flex flex-col md:flex-row items-center gap-3">
+          <div className="relative flex-1 w-full">
+            <Search className="w-4 h-4 absolute left-3.5 top-1/2 transform -translate-y-1/2 text-slate-400" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search project title, ID, team lead, or university..."
+              className="w-full pl-9 pr-3.5 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-medium text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-slate-800 focus:outline-hidden"
+            />
+          </div>
+
+          <div className="w-full md:w-48">
+            <select
+              value={selectedSector}
+              onChange={(e) => setSelectedSector(e.target.value)}
+              className="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-bold text-slate-800 focus:bg-white focus:border-slate-800 focus:outline-hidden cursor-pointer"
+            >
+              {SECTOR_OPTIONS.map((sec) => (
+                <option key={sec} value={sec}>{sec}</option>
+              ))}
+            </select>
+          </div>
+
+          <div className="w-full md:w-44">
+            <select
+              value={selectedDistrict}
+              onChange={(e) => setSelectedDistrict(e.target.value)}
+              className="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-bold text-slate-800 focus:bg-white focus:border-slate-800 focus:outline-hidden cursor-pointer"
+            >
+              {DISTRICT_OPTIONS.map((dist) => (
+                <option key={dist} value={dist}>{dist}</option>
+              ))}
+            </select>
+          </div>
+
+          <button
+            type="button"
+            onClick={handleResetFilters}
+            className="p-2 text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer border border-slate-200"
+            title="Reset Filters"
+          >
+            <RotateCcw className="w-4 h-4" />
+          </button>
+        </div>
       </div>
 
       {/* Main Content: Table or Grid */}
@@ -352,9 +410,9 @@ export const ActiveProjectsPanel = () => {
               <thead>
                 <tr className="border-b border-slate-200 bg-slate-50 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
                   <th className="py-3 px-4">Project & Institution</th>
-                  <th className="py-3 px-4">Milestone Progress</th>
-                  <th className="py-3 px-4">TRL & Prototype</th>
-                  <th className="py-3 px-4">Deployment Status</th>
+                  <th className="py-3 px-4">Delivery Stage</th>
+                  <th className="py-3 px-4">Prototype Type</th>
+                  <th className="py-3 px-4">Current Status</th>
                   <th className="py-3 px-4">Grant Disbursed</th>
                   <th className="py-3 px-4 text-center">Actions</th>
                 </tr>
@@ -362,7 +420,7 @@ export const ActiveProjectsPanel = () => {
               <tbody className="divide-y divide-slate-100 text-xs">
                 {filteredProjects.map((prj) => {
                   const mList = prj.milestones || [];
-                  const isDone = mList.length > 0 && mList.every((m) => m.status === 'Completed');
+                  const isDone = prj.isCompleted || (mList.length > 0 && mList.every((m) => m.status === 'Completed'));
 
                   return (
                     <tr key={prj.id} className="hover:bg-slate-50/60 transition-colors group cursor-default">
@@ -414,12 +472,14 @@ export const ActiveProjectsPanel = () => {
                       <td className="py-3.5 px-4">
                         <span
                           className={`inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-bold border ${
-                            prj.deploymentStatus?.includes('Validated') || prj.deploymentStatus?.includes('Active')
+                            isDone || prj.deploymentStatus?.includes('Completed')
+                              ? 'bg-emerald-50 text-emerald-800 border-emerald-300 font-black'
+                              : prj.deploymentStatus?.includes('Validated')
                               ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
                               : 'bg-slate-100 text-slate-700 border-slate-200'
                           }`}
                         >
-                          {prj.deploymentStatus}
+                          {isDone ? 'Completed ✓' : prj.deploymentStatus}
                         </span>
                       </td>
 
@@ -437,14 +497,26 @@ export const ActiveProjectsPanel = () => {
                           >
                             Manage
                           </button>
-                          <button
-                            type="button"
-                            onClick={() => setCertificateProject(prj)}
-                            className="p-1 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer border border-slate-200"
-                            title="Print Certificate"
-                          >
-                            <Printer className="w-3.5 h-3.5" />
-                          </button>
+
+                          {!isDone ? (
+                            <button
+                              type="button"
+                              onClick={() => setCompletionModalProject(prj)}
+                              className="px-2.5 py-1 text-xs font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-lg transition-colors cursor-pointer"
+                              title="Mark as Completed"
+                            >
+                              Approve Done
+                            </button>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={() => setCertificateProject(prj)}
+                              className="p-1 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer border border-slate-200"
+                              title="Download Certificate"
+                            >
+                              <Printer className="w-3.5 h-3.5" />
+                            </button>
+                          )}
                         </div>
                       </td>
                     </tr>
@@ -456,55 +528,60 @@ export const ActiveProjectsPanel = () => {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filteredProjects.map((prj) => (
-            <div
-              key={prj.id}
-              className="bg-white border border-slate-200 rounded-xl p-5 shadow-2xs hover:shadow-xs transition-all flex flex-col justify-between space-y-4"
-            >
-              <div>
-                <div className="flex items-start justify-between gap-2">
-                  <div>
-                    <span className="px-2 py-0.5 rounded font-mono text-[10px] font-black bg-slate-900 text-white">
-                      {prj.id}
-                    </span>
-                    <span className="text-xs font-bold text-slate-500 ml-2">{prj.sector}</span>
-                    <h3 className="text-sm font-bold text-slate-900 mt-2">{prj.title}</h3>
+          {filteredProjects.map((prj) => {
+            const mList = prj.milestones || [];
+            const isDone = prj.isCompleted || (mList.length > 0 && mList.every((m) => m.status === 'Completed'));
+
+            return (
+              <div
+                key={prj.id}
+                className="bg-white border border-slate-200 rounded-xl p-5 shadow-2xs hover:shadow-xs transition-all flex flex-col justify-between space-y-4"
+              >
+                <div>
+                  <div className="flex items-start justify-between gap-2">
+                    <div>
+                      <span className="px-2 py-0.5 rounded font-mono text-[10px] font-black bg-slate-900 text-white">
+                        {prj.id}
+                      </span>
+                      <span className="text-xs font-bold text-slate-500 ml-2">{prj.sector}</span>
+                      <h3 className="text-sm font-bold text-slate-900 mt-2">{prj.title}</h3>
+                    </div>
+                  </div>
+
+                  <div className="mt-3 space-y-2 text-xs">
+                    <div className="flex justify-between items-center text-[11px]">
+                      <span className="text-slate-500">Institution:</span>
+                      <span className="font-semibold text-slate-800">{prj.hei}</span>
+                    </div>
+                    <div className="flex justify-between items-center text-[11px]">
+                      <span className="text-slate-500">Stage:</span>
+                      <span className="font-semibold text-slate-900">{prj.milestonePhase}</span>
+                    </div>
+                    <div>
+                      <div className="flex justify-between text-[10px] font-bold text-slate-600 mb-1">
+                        <span>Progress</span>
+                        <span>{prj.milestoneProgress || 50}%</span>
+                      </div>
+                      <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
+                        <div className="bg-slate-900 h-full rounded-full" style={{ width: `${prj.milestoneProgress || 50}%` }} />
+                      </div>
+                    </div>
                   </div>
                 </div>
 
-                <div className="mt-3 space-y-2 text-xs">
-                  <div className="flex justify-between items-center text-[11px]">
-                    <span className="text-slate-500">Institution:</span>
-                    <span className="font-semibold text-slate-800">{prj.hei}</span>
-                  </div>
-                  <div className="flex justify-between items-center text-[11px]">
-                    <span className="text-slate-500">Stage:</span>
-                    <span className="font-semibold text-slate-900">{prj.milestonePhase}</span>
-                  </div>
-                  <div>
-                    <div className="flex justify-between text-[10px] font-bold text-slate-600 mb-1">
-                      <span>Progress</span>
-                      <span>{prj.milestoneProgress || 50}%</span>
-                    </div>
-                    <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
-                      <div className="bg-slate-900 h-full rounded-full" style={{ width: `${prj.milestoneProgress || 50}%` }} />
-                    </div>
-                  </div>
+                <div className="pt-3 border-t border-slate-100 flex items-center justify-between">
+                  <span className="text-[11px] font-mono font-bold text-slate-800">{prj.disbursedAmount}</span>
+                  <button
+                    type="button"
+                    onClick={() => setViewingProject(prj)}
+                    className="px-3.5 py-1 text-xs font-bold text-white bg-slate-900 hover:bg-slate-800 rounded-lg transition-colors cursor-pointer shadow-2xs"
+                  >
+                    Manage Details
+                  </button>
                 </div>
               </div>
-
-              <div className="pt-3 border-t border-slate-100 flex items-center justify-between">
-                <span className="text-[11px] font-mono font-bold text-slate-800">{prj.disbursedAmount}</span>
-                <button
-                  type="button"
-                  onClick={() => setViewingProject(prj)}
-                  className="px-3.5 py-1 text-xs font-bold text-white bg-slate-900 hover:bg-slate-800 rounded-lg transition-colors cursor-pointer shadow-2xs"
-                >
-                  Manage Details
-                </button>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
 
@@ -527,6 +604,14 @@ export const ActiveProjectsPanel = () => {
         project={emailProject}
         isOpen={Boolean(emailProject)}
         onClose={() => setEmailProject(null)}
+      />
+
+      {/* Final Completion Modal */}
+      <FinalProjectCompletionModal
+        project={completionModalProject}
+        isOpen={Boolean(completionModalProject)}
+        onClose={() => setCompletionModalProject(null)}
+        onConfirmCompletion={handleApproveCompletion}
       />
     </div>
   );
