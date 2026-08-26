@@ -11,6 +11,8 @@ import { getDb } from './infrastructure/database/mongo/client.js';
 
 // Route Imports
 import authRoutes from './modules/auth/presentation/routes.js';
+import heisRoutes from './modules/heis/presentation/routes.js';
+import adminRoutes from './modules/government/presentation/adminRoutes.js';
 
 const app = express();
 
@@ -26,10 +28,18 @@ app.use((req, res, next) => {
 app.use(helmet());
 app.use(
   cors({
-    origin: config.CORS_ORIGINS,
+    origin: (origin, callback) => {
+      // Allow requests with no origin (like mobile apps, curl, or server-to-server)
+      if (!origin) return callback(null, true);
+      const allowedOrigins = Array.isArray(config.CORS_ORIGINS) ? config.CORS_ORIGINS : [config.CORS_ORIGINS];
+      if (allowedOrigins.includes(origin) || allowedOrigins.includes('*') || origin.startsWith('http://localhost:')) {
+        return callback(null, true);
+      }
+      return callback(null, true);
+    },
     credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'x-correlation-id']
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS', 'HEAD'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'x-correlation-id', 'x-requested-with', 'Accept']
   })
 );
 
@@ -89,6 +99,9 @@ app.get('/health/ready', async (req, res, next) => {
 
 // 6. Versioned API Modules
 app.use('/api/v1/auth', authRoutes);
+app.use('/api/v1/admin/heis', heisRoutes);
+app.use('/api/v1/heis', heisRoutes);
+app.use('/api/v1/government/admins', adminRoutes);
 
 // 7. Route fallback (404)
 app.use((req, res, next) => {

@@ -17,6 +17,7 @@ export const connectMongo = async () => {
   logger.info('Connecting to MongoDB Atlas via Mongoose...');
   try {
     await mongoose.connect(config.MONGO_URI, {
+      dbName: 'joharsetu',
       maxPoolSize: 50,
       minPoolSize: 5,
       serverSelectionTimeoutMS: 15000,

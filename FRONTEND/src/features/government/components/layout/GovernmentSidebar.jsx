@@ -17,7 +17,11 @@ import {
   Sliders,
   Calendar,
   History,
-  ShieldCheck
+  ShieldCheck,
+  Building2,
+  Plus,
+  Award,
+  Layers
 } from 'lucide-react';
 
 export const GovernmentSidebar = ({
@@ -31,7 +35,7 @@ export const GovernmentSidebar = ({
 }) => {
   const [openDropdowns, setOpenDropdowns] = useState({
     user_governance: true,
-    reports: true
+    reports: false
   });
 
   const toggleDropdown = (id) => {
@@ -52,6 +56,7 @@ export const GovernmentSidebar = ({
       label: 'User Governance',
       icon: Users,
       subItems: [
+        { id: 'governance_universities', label: 'Manage Universities', icon: Building2 },
         { id: 'users_admin', label: 'User Admin', icon: ShieldCheck },
         { id: 'users_audit', label: 'Audit Logs', icon: FileText }
       ]
@@ -73,11 +78,10 @@ export const GovernmentSidebar = ({
 
   return (
     <aside
-      className={`bg-white border-r border-slate-200 px-3 pt-3 pb-4 flex flex-col justify-between flex-shrink-0 transition-all duration-200 h-full z-20 shadow-xs select-none ${
-        isMobileMenuOpen
+      className={`bg-white border-r border-slate-200 px-3 pt-3 pb-4 flex flex-col justify-between flex-shrink-0 transition-all duration-200 h-full z-20 shadow-xs select-none ${isMobileMenuOpen
           ? 'absolute inset-y-0 left-0 w-60 shadow-xl bg-white md:relative md:shadow-none'
           : 'hidden md:flex'
-      } ${isSidebarExpanded ? 'w-60' : 'w-16'}`}
+        } ${isSidebarExpanded ? 'w-60' : 'w-16'}`}
     >
       <div className="space-y-3 overflow-y-auto pr-0.5">
         {/* Header with Navigation Label & Hamburger/Cross Collapse Toggle */}
@@ -95,9 +99,8 @@ export const GovernmentSidebar = ({
                 setIsSidebarExpanded(!isSidebarExpanded);
               }
             }}
-            className={`p-1.5 border border-slate-200 rounded-lg hover:bg-slate-50 text-slate-600 hover:text-slate-900 transition-colors bg-white cursor-pointer ${
-              !isSidebarExpanded ? 'mx-auto' : ''
-            }`}
+            className={`p-1.5 border border-slate-200 rounded-lg hover:bg-slate-50 text-slate-600 hover:text-slate-900 transition-colors bg-white cursor-pointer ${!isSidebarExpanded ? 'mx-auto' : ''
+              }`}
             title={isSidebarExpanded ? 'Collapse Sidebar' : 'Expand Sidebar'}
           >
             {isSidebarExpanded ? <X className="w-3.5 h-3.5" /> : <Menu className="w-3.5 h-3.5" />}
@@ -127,33 +130,29 @@ export const GovernmentSidebar = ({
                       if (setIsMobileMenuOpen) setIsMobileMenuOpen(false);
                     }
                   }}
-                  className={`w-full flex items-center justify-between rounded-xl text-xs font-bold transition-all relative cursor-pointer ${
-                    isSidebarExpanded ? 'px-3 py-2.5 text-left' : 'p-2.5 justify-center'
-                  } ${
-                    isParentActive && !hasSubItems
+                  className={`w-full flex items-center justify-between rounded-xl text-xs font-bold transition-all relative cursor-pointer ${isSidebarExpanded ? 'px-3 py-2.5 text-left' : 'p-2.5 justify-center'
+                    } ${isParentActive && !hasSubItems
                       ? 'bg-[#0d1b3e] text-white shadow-xs'
                       : isParentActive && hasSubItems
-                      ? 'bg-slate-100/90 text-slate-900'
-                      : 'text-slate-600 hover:bg-slate-100/70 hover:text-slate-900'
-                  }`}
+                        ? 'bg-slate-100/90 text-slate-900'
+                        : 'text-slate-600 hover:bg-slate-100/70 hover:text-slate-900'
+                    }`}
                   title={item.label}
                 >
                   <div className="flex items-center space-x-3 min-w-0">
                     {item.isAi ? (
                       <div
-                        className={`w-4 h-4 rounded flex items-center justify-center text-[9px] font-black tracking-tighter shrink-0 ${
-                          isParentActive && !hasSubItems
+                        className={`w-4 h-4 rounded flex items-center justify-center text-[9px] font-black tracking-tighter shrink-0 ${isParentActive && !hasSubItems
                             ? 'border border-white text-white'
                             : 'border border-slate-400 text-slate-600'
-                        }`}
+                          }`}
                       >
                         AI
                       </div>
                     ) : (
                       <IconComponent
-                        className={`w-4 h-4 shrink-0 ${
-                          isParentActive && !hasSubItems ? 'text-white' : 'text-slate-500'
-                        }`}
+                        className={`w-4 h-4 shrink-0 ${isParentActive && !hasSubItems ? 'text-white' : 'text-slate-500'
+                          }`}
                       />
                     )}
                     {isSidebarExpanded && (
@@ -187,11 +186,10 @@ export const GovernmentSidebar = ({
                             setActiveTab && setActiveTab(sub.id);
                             if (setIsMobileMenuOpen) setIsMobileMenuOpen(false);
                           }}
-                          className={`w-full flex items-center space-x-2.5 px-3 py-2 rounded-lg text-[11px] font-semibold transition-all cursor-pointer text-left ${
-                            isSubActive
+                          className={`w-full flex items-center space-x-2.5 px-3 py-2 rounded-lg text-[11px] font-semibold transition-all cursor-pointer text-left ${isSubActive
                               ? 'bg-[#0d1b3e] text-white shadow-2xs font-bold'
                               : 'text-slate-500 hover:text-slate-900 hover:bg-slate-100/60'
-                          }`}
+                            }`}
                         >
                           <SubIcon className={`w-3.5 h-3.5 shrink-0 ${isSubActive ? 'text-white' : 'text-slate-400'}`} />
                           <span className="truncate">{sub.label}</span>
@@ -210,9 +208,8 @@ export const GovernmentSidebar = ({
       <div className="pt-2 border-t border-slate-100 bg-white">
         <button
           onClick={onLogout}
-          className={`w-full flex items-center rounded-xl text-xs font-bold text-red-600 hover:bg-red-50 transition-all cursor-pointer ${
-            isSidebarExpanded ? 'px-3 py-2.5 space-x-2.5 text-left' : 'p-2.5 justify-center'
-          }`}
+          className={`w-full flex items-center rounded-xl text-xs font-bold text-red-600 hover:bg-red-50 transition-all cursor-pointer ${isSidebarExpanded ? 'px-3 py-2.5 space-x-2.5 text-left' : 'p-2.5 justify-center'
+            }`}
           title="Logout"
         >
           <LogOut className="w-4 h-4 shrink-0 text-red-500" />

@@ -9,7 +9,7 @@ const configSchema = z.object({
   MONGO_URI: z.string().url().default(process.env.URL || 'mongodb://localhost:27017/sih_2026'),
   JWT_ACCESS_SECRET: z.string().min(32).default('a_very_long_secure_default_access_token_secret_32_chars_min'),
   JWT_REFRESH_SECRET: z.string().min(32).default('a_very_long_secure_default_refresh_token_secret_32_chars_min'),
-  JWT_ACCESS_EXPIRY: z.string().default('15m'),
+  JWT_ACCESS_EXPIRY: z.string().default(process.env.NODE_ENV === 'production' ? '15m' : '1d'),
   JWT_REFRESH_EXPIRY: z.string().default('7d'),
   CORS_ORIGINS: z.string().transform((val) => val.split(',')).default('*'),
   LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace']).default('info'),
