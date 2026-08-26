@@ -19,6 +19,7 @@ export { default as AddProjectModal } from './AddProjectModal.jsx';
 export { default as EditProjectModal } from './EditProjectModal.jsx';
 export { default as GrantPaymentModal } from './GrantPaymentModal.jsx';
 export { default as ProjectLeafletMap } from './ProjectLeafletMap.jsx';
+export { default as ProjectSpecificLocationMap } from './ProjectSpecificLocationMap.jsx';
 export { default as ProjectTelemetryCharts } from './ProjectTelemetryCharts.jsx';
 export { default as ProposalDetailView } from './ProposalDetailView.jsx';
 export { default as ActiveProjectDetailView } from './ActiveProjectDetailView.jsx';

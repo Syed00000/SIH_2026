@@ -21,6 +21,7 @@ import {
   Trash2,
   CreditCard
 } from 'lucide-react';
+import ProjectSpecificLocationMap from './ProjectSpecificLocationMap.jsx';
 import ProjectLeafletMap from './ProjectLeafletMap.jsx';
 import ProjectTelemetryCharts from './ProjectTelemetryCharts.jsx';
 import ProjectCertificateModal from './ProjectCertificateModal.jsx';
@@ -271,6 +272,31 @@ export const ActiveProjectDetailView = ({
       {/* TAB 1: OVERVIEW & SPECS */}
       {activeSubTab === 'overview' && (
         <div className="space-y-4">
+          {/* Location Mapping Card */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-2xs space-y-1">
+              <span className="text-[10px] font-bold text-rose-700 uppercase tracking-wider flex items-center space-x-1">
+                <AlertCircle className="w-3.5 h-3.5" />
+                <span>Problem Location (Yeh Samasya Kahan Ki Hai):</span>
+              </span>
+              <p className="text-xs font-bold text-slate-900 leading-snug">
+                {project.problemOrigin || `${project.district} District Ground Problem Zone`}
+              </p>
+              <span className="text-[11px] text-slate-500 block">District: <strong>{project.district}</strong></span>
+            </div>
+
+            <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-2xs space-y-1">
+              <span className="text-[10px] font-bold text-emerald-800 uppercase tracking-wider flex items-center space-x-1">
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                <span>Active Work Site (Kaam Kahan Ho Rha Hai):</span>
+              </span>
+              <p className="text-xs font-bold text-slate-900 leading-snug">
+                {project.activeWorkSite || `${project.hei} Campus Lab & Field Testing Site`}
+              </p>
+              <span className="text-[11px] text-slate-500 block">Executing Institution: <strong>{project.hei}</strong></span>
+            </div>
+          </div>
+
           <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-2xs space-y-3">
             <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
               System Specifications & Solution Details
@@ -364,12 +390,12 @@ export const ActiveProjectDetailView = ({
         </div>
       )}
 
-      {/* TAB 3: REAL-TIME MAP & LIVE DEVICE STATUS */}
+      {/* TAB 3: EXACT LOCATION MAP & LIVE DEVICE STATUS */}
       {activeSubTab === 'telemetry' && (
         <div className="space-y-5">
-          {/* Leaflet Map */}
-          <ProjectLeafletMap
-            selectedDistrict={project.district}
+          {/* Specific Project Location Map */}
+          <ProjectSpecificLocationMap
+            project={project}
             height="360px"
           />
 

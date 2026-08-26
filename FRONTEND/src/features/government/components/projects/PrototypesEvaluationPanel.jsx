@@ -8,29 +8,74 @@ import {
   ExternalLink,
   ChevronRight,
   Sparkles,
-  Zap,
   Search,
   RotateCcw,
   ShieldCheck,
   Award,
-  Layers
+  Layers,
+  MapPin,
+  ArrowRight,
+  TrendingUp,
+  Activity
 } from 'lucide-react';
 
-import { ProjectManageModal } from './ProjectManageModal.jsx';
 import { INITIAL_ACTIVE_PROJECTS } from '../../data/projectsSolutionsData.js';
 
 export const PrototypesEvaluationPanel = () => {
-  const [projects, setProjects] = useState(INITIAL_ACTIVE_PROJECTS);
-  const [selectedTrlFilter, setSelectedTrlFilter] = useState('All TRL');
-  const [selectedTypeFilter, setSelectedTypeFilter] = useState('All Architectures');
+  const [projects, setProjects] = useState(() => {
+    try {
+      const saved = localStorage.getItem('joharsetu_active_projects');
+      if (saved) return JSON.parse(saved);
+    } catch {}
+    return INITIAL_ACTIVE_PROJECTS;
+  });
+
+  const [selectedTrlFilter, setSelectedTrlFilter] = useState('All Stages');
+  const [selectedTypeFilter, setSelectedTypeFilter] = useState('All Types');
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedProject, setSelectedProject] = useState(null);
-  const [isManageModalOpen, setIsManageModalOpen] = useState(false);
   const [notification, setNotification] = useState(null);
 
   const showToast = (msg, type = 'success') => {
     setNotification({ msg, type });
     setTimeout(() => setNotification(null), 3500);
+  };
+
+  const saveProjects = (updated) => {
+    setProjects(updated);
+    try {
+      localStorage.setItem('joharsetu_active_projects', JSON.stringify(updated));
+    } catch {}
+  };
+
+  // Human friendly TRL Stage classification
+  const getTrlStageInfo = (trlStr) => {
+    const num = parseInt(trlStr?.replace('TRL-', '') || '4', 10);
+    if (num <= 3) {
+      return {
+        stage: 'Stage 1: Lab Concept & Design',
+        color: 'bg-blue-50 text-blue-700 border-blue-200',
+        desc: 'Initial lab model under fabrication and testing'
+      };
+    }
+    if (num <= 6) {
+      return {
+        stage: 'Stage 2: Working Field Prototype',
+        color: 'bg-purple-50 text-purple-700 border-purple-200',
+        desc: 'Working physical device tested in real ground conditions'
+      };
+    }
+    if (num <= 8) {
+      return {
+        stage: 'Stage 3: State Deployment Ready',
+        color: 'bg-emerald-50 text-emerald-800 border-emerald-300 font-bold',
+        desc: 'Proven & certified for district-wide rollout'
+      };
+    }
+    return {
+      stage: 'Stage 4: Public Operation',
+      color: 'bg-slate-900 text-white border-slate-900',
+      desc: 'Scaled across Jharkhand districts'
+    };
   };
 
   const filteredProjects = projects.filter((p) => {
@@ -41,50 +86,50 @@ export const PrototypesEvaluationPanel = () => {
       p.hei.toLowerCase().includes(searchQuery.toLowerCase()) ||
       p.hardwareSpecs?.toLowerCase().includes(searchQuery.toLowerCase());
 
+    const num = parseInt(p.trlLevel?.replace('TRL-', '') || '4', 10);
+
     const matchesTrl =
-      selectedTrlFilter === 'All TRL' ||
-      (selectedTrlFilter === 'High TRL (7-9)' && parseInt(p.trlLevel.replace('TRL-', ''), 10) >= 7) ||
-      (selectedTrlFilter === 'Mid TRL (4-6)' &&
-        parseInt(p.trlLevel.replace('TRL-', ''), 10) >= 4 &&
-        parseInt(p.trlLevel.replace('TRL-', ''), 10) <= 6) ||
-      (selectedTrlFilter === 'Early TRL (1-3)' && parseInt(p.trlLevel.replace('TRL-', ''), 10) <= 3);
+      selectedTrlFilter === 'All Stages' ||
+      (selectedTrlFilter === 'Stage 1: Lab Concept' && num <= 3) ||
+      (selectedTrlFilter === 'Stage 2: Field Tested' && num >= 4 && num <= 6) ||
+      (selectedTrlFilter === 'Stage 3: Deployment Ready' && num >= 7);
 
     const matchesType =
-      selectedTypeFilter === 'All Architectures' || p.prototypeType === selectedTypeFilter;
+      selectedTypeFilter === 'All Types' || p.prototypeType === selectedTypeFilter;
 
     return matchesSearch && matchesTrl && matchesType;
   });
 
   const handleUpgradeTrl = (projectId) => {
-    setProjects((prev) =>
-      prev.map((p) => {
-        if (p.id === projectId) {
-          const currentNum = parseInt(p.trlLevel.replace('TRL-', ''), 10) || 4;
-          const nextNum = Math.min(9, currentNum + 1);
-          return {
-            ...p,
-            trlLevel: `TRL-${nextNum}`,
-            trlDescription: `Advanced to TRL-${nextNum} validated through field testing and NABL verification.`
-          };
-        }
-        return p;
-      })
-    );
-    showToast(`Project ${projectId} upgraded to next TRL rating.`);
+    const updated = projects.map((p) => {
+      if (p.id === projectId) {
+        const currentNum = parseInt(p.trlLevel?.replace('TRL-', '') || '4', 10);
+        const nextNum = Math.min(9, currentNum + 1);
+        return {
+          ...p,
+          trlLevel: `TRL-${nextNum}`,
+          trlDescription: `Advanced to TRL-${nextNum} validated through field testing and NABL verification.`
+        };
+      }
+      return p;
+    });
+
+    saveProjects(updated);
+    showToast(`Prototype for ${projectId} upgraded to next readiness stage.`);
   };
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto pb-12 select-none animate-fadeIn">
       {/* Toast Notification */}
       {notification && (
-        <div className="fixed bottom-6 right-6 z-50 px-4 py-3 rounded-2xl shadow-xl border text-xs font-bold flex items-center space-x-2 bg-slate-900 text-white border-slate-800 animate-slideUp">
+        <div className="fixed bottom-6 right-6 z-50 px-4 py-3 rounded-xl shadow-xl border text-xs font-bold flex items-center space-x-2 bg-slate-900 text-white border-slate-800 animate-slideUp">
           <CheckCircle2 className="w-4 h-4 text-emerald-400" />
           <span>{notification.msg}</span>
         </div>
       )}
 
       {/* Header Banner */}
-      <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <div className="flex items-center space-x-2 text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">
             <span className="flex items-center space-x-1">
@@ -92,172 +137,202 @@ export const PrototypesEvaluationPanel = () => {
               <span>Projects & Solutions</span>
             </span>
             <span>•</span>
-            <span className="text-slate-700">Technology Readiness Levels</span>
+            <span className="text-slate-700">Prototype Testing & Readiness</span>
           </div>
-          <h1 className="text-lg font-black text-slate-900 tracking-tight">
-            PROTOTYPES & TRL EVALUATION
+          <h1 className="text-lg font-bold text-slate-900 tracking-tight">
+            PROTOTYPES & TESTING EVALUATION
           </h1>
           <p className="text-xs text-slate-500 font-medium">
-            Hardware, software, and hybrid engineering specifications verified in university laboratories
+            Monitor physical device hardware, software apps, and field testing progress across Jharkhand
           </p>
         </div>
 
-        <span className="text-xs font-bold px-3 py-1.5 rounded-xl bg-slate-100 text-slate-700 border border-slate-200">
-          {projects.length} Verified Prototypes
+        <span className="text-xs font-bold px-3 py-1.5 rounded-lg bg-slate-100 text-slate-700 border border-slate-200">
+          {projects.length} Working Prototypes in Pipeline
         </span>
       </div>
 
-      {/* TRL Scale Explanation Strip */}
-      <div className="bg-slate-900 text-white rounded-2xl p-5 shadow-md space-y-3">
-        <div className="flex items-center justify-between">
-          <h3 className="text-xs font-bold uppercase tracking-wider text-slate-200 flex items-center space-x-2">
-            <Award className="w-4 h-4 text-amber-400" />
-            <span>Technology Readiness Level (TRL) Scale Ladder</span>
-          </h3>
-          <span className="text-[11px] text-slate-400 font-mono">TRL-1 (Concept) ➔ TRL-9 (Proven)</span>
+      {/* Meaningful 4-Stage Readiness Ladder */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+        <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-2xs space-y-1">
+          <div className="flex items-center justify-between">
+            <span className="text-[10px] font-bold text-blue-700 bg-blue-50 px-2 py-0.5 rounded border border-blue-200">
+              Stage 1 (TRL 1-3)
+            </span>
+            <span className="text-xs font-bold text-slate-900">
+              {projects.filter((p) => parseInt(p.trlLevel?.replace('TRL-', '') || '4', 10) <= 3).length} Units
+            </span>
+          </div>
+          <h4 className="text-xs font-bold text-slate-900 pt-1">Lab Concept & Fabrication</h4>
+          <p className="text-[11px] text-slate-500">Initial design and prototype construction in university labs</p>
         </div>
 
-        <div className="grid grid-cols-3 sm:grid-cols-9 gap-1.5 text-center text-xs">
-          {[
-            { trl: 'TRL-1', name: 'Basic Principles' },
-            { trl: 'TRL-2', name: 'Concept' },
-            { trl: 'TRL-3', name: 'Proof of Concept' },
-            { trl: 'TRL-4', name: 'Lab Validated' },
-            { trl: 'TRL-5', name: 'Relevant Env' },
-            { trl: 'TRL-6', name: 'Simulated Model' },
-            { trl: 'TRL-7', name: 'Operational Demo' },
-            { trl: 'TRL-8', name: 'System Qualified' },
-            { trl: 'TRL-9', name: 'Proven in Mission' }
-          ].map((item) => (
-            <div key={item.trl} className="bg-white/10 rounded-xl p-2 border border-white/10">
-              <span className="font-mono font-black text-xs block text-white">{item.trl}</span>
-              <span className="text-[9px] text-slate-300 line-clamp-1 mt-0.5">{item.name}</span>
-            </div>
-          ))}
+        <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-2xs space-y-1">
+          <div className="flex items-center justify-between">
+            <span className="text-[10px] font-bold text-purple-700 bg-purple-50 px-2 py-0.5 rounded border border-purple-200">
+              Stage 2 (TRL 4-6)
+            </span>
+            <span className="text-xs font-bold text-slate-900">
+              {projects.filter((p) => {
+                const n = parseInt(p.trlLevel?.replace('TRL-', '') || '4', 10);
+                return n >= 4 && n <= 6;
+              }).length} Units
+            </span>
+          </div>
+          <h4 className="text-xs font-bold text-slate-900 pt-1">Field Tested in Ground</h4>
+          <p className="text-[11px] text-slate-500">Physical machines tested in real villages, mines, and rivers</p>
+        </div>
+
+        <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-2xs space-y-1">
+          <div className="flex items-center justify-between">
+            <span className="text-[10px] font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-300">
+              Stage 3 (TRL 7-8)
+            </span>
+            <span className="text-xs font-bold text-slate-900">
+              {projects.filter((p) => {
+                const n = parseInt(p.trlLevel?.replace('TRL-', '') || '4', 10);
+                return n >= 7 && n <= 8;
+              }).length} Units
+            </span>
+          </div>
+          <h4 className="text-xs font-bold text-slate-900 pt-1">Ready for State Rollout</h4>
+          <p className="text-[11px] text-slate-500">Certified by NABL labs, ready for district administration handover</p>
+        </div>
+
+        <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-2xs space-y-1">
+          <div className="flex items-center justify-between">
+            <span className="text-[10px] font-bold text-slate-900 bg-slate-100 px-2 py-0.5 rounded border border-slate-300">
+              Stage 4 (TRL 9)
+            </span>
+            <span className="text-xs font-bold text-slate-900">
+              {projects.filter((p) => parseInt(p.trlLevel?.replace('TRL-', '') || '4', 10) >= 9).length} Units
+            </span>
+          </div>
+          <h4 className="text-xs font-bold text-slate-900 pt-1">Fully Scaled & Operational</h4>
+          <p className="text-[11px] text-slate-500">Operating publicly across Jharkhand with citizen impact</p>
         </div>
       </div>
 
-      {/* Search & Filter Toolbar */}
-      <div className="bg-white border border-slate-200 rounded-2xl p-3.5 shadow-2xs flex flex-col md:flex-row items-center gap-3">
+      {/* Filter Toolbar */}
+      <div className="bg-white border border-slate-200 rounded-xl p-3.5 shadow-2xs flex flex-col md:flex-row items-center gap-3">
         <div className="relative flex-1 w-full">
           <Search className="w-4 h-4 absolute left-3.5 top-1/2 transform -translate-y-1/2 text-slate-400" />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search prototype specs, sensors, microcontrollers, university..."
-            className="w-full pl-9 pr-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-slate-800 focus:outline-hidden"
+            placeholder="Search prototype name, specifications, university..."
+            className="w-full pl-9 pr-3.5 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-medium text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-slate-800 focus:outline-hidden"
           />
         </div>
 
-        <div className="flex items-center space-x-2">
-          {['All TRL', 'High TRL (7-9)', 'Mid TRL (4-6)', 'Early TRL (1-3)'].map((trl) => (
-            <button
-              key={trl}
-              type="button"
-              onClick={() => setSelectedTrlFilter(trl)}
-              className={`px-3 py-1.5 text-xs font-bold rounded-xl transition-colors cursor-pointer ${
-                selectedTrlFilter === trl
-                  ? 'bg-slate-900 text-white shadow-2xs'
-                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-              }`}
-            >
-              {trl}
-            </button>
-          ))}
+        <div className="w-full md:w-56">
+          <select
+            value={selectedTrlFilter}
+            onChange={(e) => setSelectedTrlFilter(e.target.value)}
+            className="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-bold text-slate-800 focus:bg-white focus:border-slate-800 focus:outline-hidden cursor-pointer"
+          >
+            <option value="All Stages">All Readiness Stages</option>
+            <option value="Stage 1: Lab Concept">Stage 1: Lab Concept (TRL 1-3)</option>
+            <option value="Stage 2: Field Tested">Stage 2: Field Tested (TRL 4-6)</option>
+            <option value="Stage 3: Deployment Ready">Stage 3: Deployment Ready (TRL 7+)</option>
+          </select>
         </div>
 
-        <div className="w-full md:w-44">
+        <div className="w-full md:w-48">
           <select
             value={selectedTypeFilter}
             onChange={(e) => setSelectedTypeFilter(e.target.value)}
-            className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-800 focus:bg-white focus:border-slate-800 focus:outline-hidden cursor-pointer"
+            className="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-bold text-slate-800 focus:bg-white focus:border-slate-800 focus:outline-hidden cursor-pointer"
           >
-            <option value="All Architectures">All Architectures</option>
-            <option value="Hardware">Hardware</option>
-            <option value="Software">Software</option>
-            <option value="Hybrid">Hybrid</option>
+            <option value="All Types">All Device Types</option>
+            <option value="Hardware">Physical Hardware Device</option>
+            <option value="Software">Software & Cloud App</option>
+            <option value="Hybrid">Hybrid (Hardware + AI)</option>
           </select>
         </div>
+
+        <button
+          type="button"
+          onClick={() => {
+            setSearchQuery('');
+            setSelectedTrlFilter('All Stages');
+            setSelectedTypeFilter('All Types');
+          }}
+          className="p-2 text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer border border-slate-200"
+          title="Reset Filters"
+        >
+          <RotateCcw className="w-4 h-4" />
+        </button>
       </div>
 
-      {/* Prototypes Grid */}
+      {/* Prototype Cards Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {filteredProjects.map((prj) => (
-          <div
-            key={prj.id}
-            className="bg-white border border-slate-200 rounded-2xl p-5 shadow-2xs hover:shadow-xs hover:border-slate-300 transition-all flex flex-col justify-between space-y-4"
-          >
-            <div>
-              <div className="flex items-start justify-between gap-2">
-                <div>
-                  <div className="flex items-center space-x-2">
-                    <span className="px-2.5 py-0.5 rounded-md font-mono text-[11px] font-black bg-slate-900 text-white">
-                      {prj.trlLevel}
-                    </span>
-                    <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-100 text-slate-700 border border-slate-200">
-                      {prj.prototypeType}
-                    </span>
-                  </div>
-                  <h3 className="text-sm font-bold text-slate-900 mt-2">{prj.title}</h3>
-                  <p className="text-[11px] text-slate-500 font-medium">{prj.trlDescription}</p>
-                </div>
-                <span className="font-mono text-xs font-bold text-slate-400">({prj.id})</span>
-              </div>
+        {filteredProjects.map((p) => {
+          const stageInfo = getTrlStageInfo(p.trlLevel);
 
-              <div className="mt-4 pt-3 border-t border-slate-100 space-y-2 text-xs">
-                <div>
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
-                    Hardware / Tech Stack Specifications:
-                  </span>
-                  <p className="text-slate-700 text-xs mt-0.5 leading-relaxed bg-slate-50 p-2.5 rounded-xl border border-slate-100">
-                    {prj.hardwareSpecs || 'Industrial Grade Microcontroller with Low-Power Sub-GHz Radios.'}
+          return (
+            <div
+              key={p.id}
+              className="bg-white border border-slate-200 rounded-xl p-5 shadow-2xs hover:shadow-xs transition-all flex flex-col justify-between space-y-4"
+            >
+              <div className="space-y-3">
+                {/* Card Top Strip */}
+                <div className="flex items-start justify-between gap-2">
+                  <div>
+                    <div className="flex items-center space-x-2">
+                      <span className="px-2 py-0.5 rounded font-mono text-[10px] font-black bg-slate-900 text-white">
+                        {p.id}
+                      </span>
+                      <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-700 border border-slate-200">
+                        {p.prototypeType}
+                      </span>
+                      <span className={`px-2 py-0.5 rounded text-[10px] font-bold border ${stageInfo.color}`}>
+                        {p.trlLevel} ({stageInfo.stage.split(':')[0]})
+                      </span>
+                    </div>
+                    <h3 className="text-sm font-bold text-slate-900 mt-2">{p.title}</h3>
+                  </div>
+                </div>
+
+                {/* Location Mapping Mini-Box */}
+                <div className="p-2.5 bg-slate-50 rounded-lg border border-slate-100 text-xs space-y-1">
+                  <div className="flex items-center space-x-1.5 text-slate-700">
+                    <MapPin className="w-3.5 h-3.5 text-rose-600 shrink-0" />
+                    <span><strong>Problem Area:</strong> {p.problemOrigin || `${p.district} Ground Area`}</span>
+                  </div>
+                  <div className="flex items-center space-x-1.5 text-slate-700">
+                    <Building2 className="w-3.5 h-3.5 text-slate-500 shrink-0" />
+                    <span><strong>Testing Site:</strong> {p.activeWorkSite || `${p.hei} Campus Lab`}</span>
+                  </div>
+                </div>
+
+                {/* System Specs in Simple Words */}
+                <div className="text-xs text-slate-600 bg-white p-3 rounded-lg border border-slate-200 space-y-1">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase block">What this device does:</span>
+                  <p className="leading-relaxed font-medium text-slate-800">
+                    {p.hardwareSpecs || 'Integrated embedded microcontroller with local processing and emergency alert display.'}
                   </p>
                 </div>
+              </div>
 
-                <div className="flex justify-between items-center pt-1 text-[11px]">
-                  <span className="text-slate-500">Facility & Lab:</span>
-                  <span className="font-semibold text-slate-800">{prj.labsAndFacilities}</span>
-                </div>
+              {/* Bottom Actions */}
+              <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
+                <span className="text-[11px] text-slate-500 font-medium">{p.teamLead}</span>
+
+                <button
+                  type="button"
+                  onClick={() => handleUpgradeTrl(p.id)}
+                  className="px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-white rounded-lg font-bold transition-colors cursor-pointer flex items-center space-x-1 shadow-2xs"
+                >
+                  <span>Advance Readiness (+1 TRL)</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </button>
               </div>
             </div>
-
-            <div className="pt-3 border-t border-slate-100 flex items-center justify-between">
-              <button
-                type="button"
-                onClick={() => handleUpgradeTrl(prj.id)}
-                className="px-3 py-1.5 text-xs font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-xl transition-colors cursor-pointer flex items-center space-x-1"
-              >
-                <Zap className="w-3.5 h-3.5" />
-                <span>Upgrade TRL</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => {
-                  setSelectedProject(prj);
-                  setIsManageModalOpen(true);
-                }}
-                className="px-3.5 py-1.5 text-xs font-bold text-slate-700 bg-white border border-slate-300 hover:bg-slate-50 rounded-xl transition-colors cursor-pointer flex items-center space-x-1"
-              >
-                <FlaskConical className="w-3.5 h-3.5 text-slate-500" />
-                <span>Inspect Specs</span>
-              </button>
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
-
-      {/* Manage Modal */}
-      <ProjectManageModal
-        project={selectedProject}
-        isOpen={isManageModalOpen}
-        onClose={() => {
-          setIsManageModalOpen(false);
-          setSelectedProject(null);
-        }}
-        onUpdateMilestoneStatus={() => {}}
-      />
     </div>
   );
 };
