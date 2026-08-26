@@ -7,6 +7,8 @@ export { CSREscrowMatrix } from './CSREscrowMatrix.jsx';
 export { CSRPaymentLedgerTable } from './CSRPaymentLedgerTable.jsx';
 export { CSRFundUtilization } from './CSRFundUtilization.jsx';
 export { CSRComplianceChecklist } from './CSRComplianceChecklist.jsx';
+export { CSRClosureReporting } from './CSRClosureReporting.jsx';
+export { CSRDisbursalModesTable } from './CSRDisbursalModesTable.jsx';
 export { AddProposalModal } from './AddProposalModal.jsx';
 
 export default CSRGrantsLifecycleDashboard;
