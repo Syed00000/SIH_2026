@@ -6,6 +6,11 @@ import { MongooseUser } from '../../../users/infrastructure/model.js';
 
 const router = Router();
 
+router.get('/', (req, res, next) => {
+  req.url = '/stats';
+  router.handle(req, res, next);
+});
+
 router.get('/stats', async (req, res, next) => {
   try {
     const [
