@@ -2,32 +2,39 @@ import React, { useEffect, useRef, useState } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import {
-  Radio,
-  Building2,
-  Activity,
-  Layers,
   MapPin,
-  Maximize2,
+  Search,
+  Building2,
+  AlertCircle,
   CheckCircle2,
-  AlertCircle
+  Layers,
+  ArrowRight,
+  RotateCcw,
+  Users,
+  Compass
 } from 'lucide-react';
-import { JHARKHAND_DISTRICTS_GEODATA } from '../../data/projectsSolutionsData.js';
+import { JHARKHAND_24_DISTRICTS } from '../../data/jharkhand24DistrictsData.js';
 
 export const ProjectLeafletMap = ({
   selectedDistrict = 'All Districts',
   onSelectDistrict,
   onSelectProject,
-  height = '420px'
+  height = '440px'
 }) => {
   const mapContainerRef = useRef(null);
   const mapInstanceRef = useRef(null);
   const markersLayerRef = useRef(null);
-  const [activeNode, setActiveNode] = useState(JHARKHAND_DISTRICTS_GEODATA[0]);
-  const [filterType, setFilterType] = useState('all');
+
+  const [activeDistrict, setActiveDistrict] = useState(() => {
+    return JHARKHAND_24_DISTRICTS.find((d) => d.name === selectedDistrict) || JHARKHAND_24_DISTRICTS[0];
+  });
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedSeverityFilter, setSelectedSeverityFilter] = useState('all');
 
   const JHARKHAND_CENTER = [23.65, 85.55];
-  const DEFAULT_ZOOM = 7.5;
+  const DEFAULT_ZOOM = 7.4;
 
+  // Initialize Leaflet Map
   useEffect(() => {
     if (!mapContainerRef.current) return;
 
@@ -63,165 +70,236 @@ export const ProjectLeafletMap = ({
     };
   }, []);
 
-  // Update Markers
+  // Filter districts
+  const filteredDistricts = JHARKHAND_24_DISTRICTS.filter((dist) => {
+    const matchesSearch =
+      searchQuery.trim() === '' ||
+      dist.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      dist.primaryProblem.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      dist.affectedBlocks.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      dist.leadHei.toLowerCase().includes(searchQuery.toLowerCase());
+
+    const matchesSeverity =
+      selectedSeverityFilter === 'all' ||
+      (selectedSeverityFilter === 'critical' && dist.severity === 'Critical Need') ||
+      (selectedSeverityFilter === 'high' && dist.severity === 'High Need') ||
+      (selectedSeverityFilter === 'moderate' && dist.severity === 'Moderate Need');
+
+    return matchesSearch && matchesSeverity;
+  });
+
+  // Update Map Markers
   useEffect(() => {
     if (!mapInstanceRef.current || !markersLayerRef.current) return;
 
     markersLayerRef.current.clearLayers();
 
-    JHARKHAND_DISTRICTS_GEODATA.forEach((district) => {
-      const isWarning = district.status === 'Warning Sync';
-      const isSelected = selectedDistrict === district.name || activeNode?.name === district.name;
+    filteredDistricts.forEach((dist) => {
+      const isSelected = activeDistrict?.id === dist.id;
+      const isCritical = dist.severity === 'Critical Need';
+      const isHigh = dist.severity === 'High Need';
 
-      if (filterType === 'warning' && !isWarning) return;
-      if (filterType === 'active' && isWarning) return;
+      const pinBg = isCritical ? 'bg-rose-600' : isHigh ? 'bg-amber-600' : 'bg-slate-900';
 
       const markerHtml = `
-        <div class="relative flex items-center justify-center cursor-pointer group">
-          ${isSelected ? `<div class="absolute w-8 h-8 rounded-full ${isWarning ? 'bg-red-500/30' : 'bg-emerald-500/30'} animate-ping"></div>` : ''}
-          <div class="w-6 h-6 rounded-full ${isWarning ? 'bg-rose-600' : 'bg-slate-900'} text-white flex items-center justify-center font-bold text-[10px] shadow-md border-2 border-white">
-            ${district.totalSensors}
+        <div class="relative flex flex-col items-center cursor-pointer group">
+          ${isSelected ? `<div class="absolute -top-1 w-8 h-8 rounded-full ${isCritical ? 'bg-rose-500/30' : 'bg-slate-900/20'} animate-ping"></div>` : ''}
+          <div class="px-2 py-0.5 rounded-md ${pinBg} text-white font-bold text-[10px] shadow-md border border-white flex items-center space-x-1 whitespace-nowrap">
+            <span>${dist.name}</span>
           </div>
+          <div class="w-1.5 h-1.5 rotate-45 ${pinBg} -mt-0.5 border-r border-b border-white"></div>
         </div>
       `;
 
       const customIcon = L.divIcon({
         html: markerHtml,
-        className: 'custom-leaflet-marker',
-        iconSize: [24, 24],
-        iconAnchor: [12, 12]
+        className: 'custom-district-marker',
+        iconSize: [80, 24],
+        iconAnchor: [40, 24]
       });
 
-      const marker = L.marker([district.lat, district.lng], { icon: customIcon });
+      const marker = L.marker([dist.lat, dist.lng], { icon: customIcon });
 
       marker.on('click', () => {
-        setActiveNode(district);
-        if (onSelectDistrict) onSelectDistrict(district.name);
+        setActiveDistrict(dist);
+        if (onSelectDistrict) onSelectDistrict(dist.name);
+        mapInstanceRef.current.panTo([dist.lat, dist.lng], { animate: true, duration: 0.6 });
       });
-
-      marker.bindPopup(`
-        <div style="font-family: system-ui, sans-serif; min-width: 180px; padding: 4px;">
-          <div style="font-weight: 800; font-size: 13px; color: #0f172a; margin-bottom: 2px;">
-            ${district.name} District
-          </div>
-          <div style="font-size: 11px; color: #64748b; margin-bottom: 6px;">
-            ${district.leadHei}
-          </div>
-          <div style="display: flex; justify-content: space-between; font-size: 11px; font-weight: 600; padding: 4px 0; border-top: 1px solid #e2e8f0;">
-            <span>Active Projects:</span>
-            <strong style="color: #0f172a;">${district.activeProjects}</strong>
-          </div>
-          <div style="display: flex; justify-content: space-between; font-size: 11px; font-weight: 600; padding: 4px 0; border-top: 1px solid #e2e8f0;">
-            <span>IoT Sensors:</span>
-            <strong style="color: #0f172a;">${district.totalSensors} Nodes</strong>
-          </div>
-          <div style="margin-top: 6px; font-size: 10px; font-weight: 700; color: ${isWarning ? '#b91c1c' : '#047857'}; background: ${isWarning ? '#fef2f2' : '#ecfdf5'}; padding: 2px 6px; border-radius: 4px; text-align: center;">
-            Status: ${district.status} (${district.complianceRate})
-          </div>
-        </div>
-      `);
 
       markersLayerRef.current.addLayer(marker);
     });
-  }, [selectedDistrict, activeNode, filterType, onSelectDistrict]);
+  }, [filteredDistricts, activeDistrict, onSelectDistrict]);
+
+  const handleSelectDistrictCard = (dist) => {
+    setActiveDistrict(dist);
+    if (onSelectDistrict) onSelectDistrict(dist.name);
+    if (mapInstanceRef.current) {
+      mapInstanceRef.current.panTo([dist.lat, dist.lng], { animate: true, duration: 0.6 });
+    }
+  };
 
   return (
     <div className="bg-white border border-slate-200 rounded-xl shadow-2xs overflow-hidden select-none">
-      {/* Map Control Toolbar */}
+      {/* Top Map Header & Search Toolbar */}
       <div className="p-3 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 bg-slate-50">
         <div className="flex items-center space-x-2">
           <div className="w-7 h-7 rounded-lg bg-slate-900 text-white flex items-center justify-center">
-            <Radio className="w-3.5 h-3.5 text-emerald-400 animate-pulse" />
+            <Compass className="w-3.5 h-3.5 text-emerald-400" />
           </div>
           <div>
             <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
-              Jharkhand Live Telemetry Map
+              Jharkhand 24 Districts Problem Map
             </h3>
             <p className="text-[10px] text-slate-500 font-medium">
-              Real-time sensor nodes in 12 monitoring zones (Leaflet GIS)
+              Geographical distribution of local ground challenges & university solutions
             </p>
           </div>
         </div>
 
-        <div className="flex items-center space-x-1.5">
-          {['all', 'active', 'warning'].map((f) => (
-            <button
-              key={f}
-              type="button"
-              onClick={() => setFilterType(f)}
-              className={`px-2.5 py-1 text-xs font-bold rounded-lg transition-colors cursor-pointer capitalize ${
-                filterType === f
-                  ? 'bg-slate-900 text-white shadow-2xs'
-                  : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-100'
-              }`}
-            >
-              {f} Nodes
-            </button>
-          ))}
+        <div className="flex flex-wrap items-center gap-1.5">
+          <div className="relative">
+            <Search className="w-3 h-3 absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search district, area or problem..."
+              className="pl-7 pr-2.5 py-1 text-xs bg-white border border-slate-200 rounded-lg text-slate-900 placeholder:text-slate-400 focus:outline-hidden focus:border-slate-800 w-44"
+            />
+          </div>
+
+          <div className="flex items-center space-x-1 bg-white p-0.5 rounded-lg border border-slate-200">
+            {[
+              { id: 'all', label: 'All 24' },
+              { id: 'critical', label: 'Critical' },
+              { id: 'high', label: 'High' }
+            ].map((tab) => (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => setSelectedSeverityFilter(tab.id)}
+                className={`px-2 py-0.5 text-[10px] font-bold rounded transition-colors cursor-pointer ${
+                  selectedSeverityFilter === tab.id
+                    ? 'bg-slate-900 text-white shadow-2xs'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
-      {/* Map Canvas & Inspector Split */}
+      {/* Map Canvas & Detailed Problem Inspector Split */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-0">
-        <div className="lg:col-span-8 relative">
+        {/* Left Map View */}
+        <div className="lg:col-span-7 relative">
           <div ref={mapContainerRef} style={{ height }} className="w-full z-10" />
 
-          {/* Map Floating Indicator */}
+          {/* Floating Map Legend */}
           <div className="absolute bottom-3 left-3 z-[400] bg-white/95 backdrop-blur-xs px-3 py-1.5 rounded-lg border border-slate-200 text-[10px] shadow-sm flex items-center space-x-3">
-            <span className="flex items-center space-x-1 font-bold text-slate-700">
-              <span className="w-2 h-2 rounded-full bg-slate-900 inline-block" />
-              <span>Normal Node</span>
-            </span>
             <span className="flex items-center space-x-1 font-bold text-rose-700">
               <span className="w-2 h-2 rounded-full bg-rose-600 inline-block" />
-              <span>Warning Node</span>
+              <span>Critical Need</span>
+            </span>
+            <span className="flex items-center space-x-1 font-bold text-amber-700">
+              <span className="w-2 h-2 rounded-full bg-amber-600 inline-block" />
+              <span>High Need</span>
+            </span>
+            <span className="flex items-center space-x-1 font-bold text-slate-700">
+              <span className="w-2 h-2 rounded-full bg-slate-900 inline-block" />
+              <span>Moderate</span>
             </span>
           </div>
         </div>
 
-        {/* Right Info Box */}
-        <div className="lg:col-span-4 p-4 bg-slate-50/60 border-t lg:border-t-0 lg:border-l border-slate-200 flex flex-col justify-between space-y-3 text-xs">
-          {activeNode ? (
+        {/* Right District Problem & Solution Inspector */}
+        <div className="lg:col-span-5 p-4 bg-slate-50/70 border-t lg:border-t-0 lg:border-l border-slate-200 flex flex-col justify-between space-y-3.5 text-xs overflow-y-auto max-h-[440px]">
+          {activeDistrict ? (
             <div className="space-y-3">
-              <div>
-                <span className="text-[10px] font-bold text-slate-400 uppercase block">Selected District Zone</span>
-                <h4 className="text-sm font-bold text-slate-900">{activeNode.name}</h4>
-                <p className="text-[11px] text-slate-500 font-medium">{activeNode.leadHei}</p>
+              {/* Header Box */}
+              <div className="flex items-start justify-between gap-2 border-b border-slate-200 pb-2.5">
+                <div>
+                  <div className="flex items-center space-x-2">
+                    <h4 className="text-sm font-black text-slate-900">{activeDistrict.name} District</h4>
+                    <span className={`px-2 py-0.5 rounded text-[10px] font-bold border ${activeDistrict.severityColor}`}>
+                      {activeDistrict.severity}
+                    </span>
+                  </div>
+                  <span className="text-[11px] text-slate-500">HQ: {activeDistrict.headquarters} • Area: <strong>{activeDistrict.areaSqKm}</strong></span>
+                </div>
+                <span className="text-[10px] font-mono font-bold bg-white px-2 py-0.5 rounded border border-slate-200 text-slate-700 shrink-0">
+                  Pop: {activeDistrict.population}
+                </span>
               </div>
 
-              <div className="grid grid-cols-2 gap-2 text-center">
-                <div className="p-2.5 bg-white rounded-lg border border-slate-200">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase block">Active Projects</span>
-                  <span className="text-sm font-black text-slate-900">{activeNode.activeProjects}</span>
-                </div>
-                <div className="p-2.5 bg-white rounded-lg border border-slate-200">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase block">Total Sensors</span>
-                  <span className="text-sm font-black text-slate-900">{activeNode.totalSensors}</span>
+              {/* Problem Description Box */}
+              <div className="p-3 bg-white rounded-lg border border-slate-200 space-y-1.5 shadow-2xs">
+                <span className="text-[10px] font-bold text-rose-700 uppercase tracking-wider flex items-center space-x-1">
+                  <AlertCircle className="w-3.5 h-3.5" />
+                  <span>Ground Problem in this District:</span>
+                </span>
+                <p className="text-xs text-slate-900 font-semibold leading-relaxed">
+                  {activeDistrict.primaryProblem}
+                </p>
+                <div className="text-[11px] text-slate-500 pt-1 border-t border-slate-100">
+                  <strong className="text-slate-700">Affected Local Areas / Blocks:</strong> {activeDistrict.affectedBlocks}
                 </div>
               </div>
 
-              <div className="p-3 bg-white rounded-lg border border-slate-200 space-y-1">
-                <span className="text-[10px] font-bold text-slate-400 uppercase block">Uptime & Compliance:</span>
-                <div className="flex items-center justify-between font-bold text-slate-800">
-                  <span className="text-emerald-700">{activeNode.complianceRate} Compliance</span>
-                  <span className="px-1.5 py-0.5 rounded text-[10px] bg-slate-100">{activeNode.status}</span>
+              {/* Working Solution & Academic Partner */}
+              <div className="p-3 bg-emerald-50/70 border border-emerald-200 rounded-lg space-y-1.5 text-emerald-950">
+                <span className="text-[10px] font-bold text-emerald-800 uppercase tracking-wider flex items-center space-x-1">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                  <span>Active Innovation & University Solution:</span>
+                </span>
+                <p className="text-xs text-emerald-900 font-semibold leading-relaxed">
+                  {activeDistrict.currentSolution}
+                </p>
+                <div className="text-[11px] text-emerald-800 pt-1 border-t border-emerald-200/60 flex items-center justify-between">
+                  <span>Lead HEI: <strong>{activeDistrict.leadHei}</strong></span>
+                  <span className="font-bold">{activeDistrict.activeProjectsCount} Projects Active</span>
+                </div>
+              </div>
+
+              {/* Quick District Grid Switcher */}
+              <div className="space-y-1 pt-1">
+                <span className="text-[10px] font-bold text-slate-400 uppercase block">Jump to District:</span>
+                <div className="flex flex-wrap gap-1 max-h-20 overflow-y-auto p-1 bg-white rounded-lg border border-slate-200">
+                  {JHARKHAND_24_DISTRICTS.map((d) => (
+                    <button
+                      key={d.id}
+                      type="button"
+                      onClick={() => handleSelectDistrictCard(d)}
+                      className={`px-1.5 py-0.5 rounded text-[10px] font-semibold transition-colors cursor-pointer ${
+                        activeDistrict.id === d.id
+                          ? 'bg-slate-900 text-white font-bold'
+                          : 'bg-slate-50 hover:bg-slate-100 text-slate-700'
+                      }`}
+                    >
+                      {d.name}
+                    </button>
+                  ))}
                 </div>
               </div>
             </div>
           ) : (
-            <div className="text-center py-8 text-slate-400 text-xs">
-              Click a marker on the map to see district project details.
+            <div className="text-center py-10 text-slate-400 text-xs">
+              Select a district on the map to see problems and solutions.
             </div>
           )}
 
+          {/* Filter Trigger Button */}
           <button
             type="button"
             onClick={() => {
-              if (onSelectProject && activeNode) onSelectProject(activeNode);
+              if (onSelectProject && activeDistrict) onSelectProject(activeDistrict);
             }}
-            className="w-full py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-lg text-xs font-bold transition-colors cursor-pointer flex items-center justify-center space-x-1 shadow-2xs"
+            className="w-full py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-lg text-xs font-bold transition-colors cursor-pointer flex items-center justify-center space-x-1.5 shadow-2xs"
           >
-            <span>Filter Projects in {activeNode?.name || 'District'}</span>
+            <span>View All Projects in {activeDistrict?.name || 'District'}</span>
+            <ArrowRight className="w-3.5 h-3.5" />
           </button>
         </div>
       </div>
