@@ -68,8 +68,7 @@ export const GovernmentSidebar = ({
         { id: 'projects_active', label: 'Active Projects', icon: PlayCircle },
         { id: 'projects_proposals', label: 'Solution Proposals', icon: FileCheck },
         { id: 'projects_milestones', label: 'Milestones & Monitoring', icon: CheckCircle2 },
-        { id: 'projects_prototypes', label: 'Prototypes & TRL', icon: Cpu },
-        { id: 'projects_deployment', label: 'Deployment / Validation', icon: Rocket }
+        { id: 'projects_prototypes', label: 'Prototypes & TRL', icon: Cpu }
       ]
     },
     {

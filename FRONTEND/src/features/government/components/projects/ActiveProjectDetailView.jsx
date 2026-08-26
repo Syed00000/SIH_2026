@@ -16,31 +16,52 @@ import {
   Printer,
   Mail,
   Send,
-  UserCheck
+  UserCheck,
+  Edit,
+  Trash2,
+  CreditCard
 } from 'lucide-react';
 import ProjectLeafletMap from './ProjectLeafletMap.jsx';
 import ProjectTelemetryCharts from './ProjectTelemetryCharts.jsx';
 import ProjectCertificateModal from './ProjectCertificateModal.jsx';
 import ValidationEmailModal from './ValidationEmailModal.jsx';
 import FinalProjectCompletionModal from './FinalProjectCompletionModal.jsx';
+import GrantPaymentModal from './GrantPaymentModal.jsx';
+import EditProjectModal from './EditProjectModal.jsx';
 
 export const ActiveProjectDetailView = ({
   project,
   onBack,
   onUpdateMilestoneStatus,
   onValidateDeployment,
-  onApproveCompletion
+  onApproveCompletion,
+  onSaveProject,
+  onDeleteProject,
+  onConfirmPayment
 }) => {
   const [activeSubTab, setActiveSubTab] = useState('overview'); // 'overview' | 'milestones' | 'telemetry' | 'finances'
   const [isCertificateOpen, setIsCertificateOpen] = useState(false);
   const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
   const [isCompletionModalOpen, setIsCompletionModalOpen] = useState(false);
+  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   if (!project) return null;
 
   const milestonesList = project.milestones || [];
   const completedMilestones = milestonesList.filter((m) => m.status === 'Completed').length;
   const isCompleted = project.isCompleted || (milestonesList.length > 0 && completedMilestones === milestonesList.length);
+
+  // Parse pending amount
+  const parseLakhs = (str) => {
+    if (!str) return 0;
+    const match = str.match(/[\d.]+/);
+    return match ? parseFloat(match[0]) : 0;
+  };
+
+  const sanctionedLakhs = parseLakhs(project.sanctionedGrant);
+  const disbursedLakhs = parseLakhs(project.disbursedAmount);
+  const pendingLakhs = Math.max(0, sanctionedLakhs - disbursedLakhs).toFixed(2);
 
   const handleValidate = () => {
     if (onValidateDeployment) {
@@ -54,6 +75,15 @@ export const ActiveProjectDetailView = ({
       onApproveCompletion(prjId, completionData);
     }
     setIsEmailModalOpen(true);
+  };
+
+  const handleDelete = () => {
+    if (window.confirm(`Are you sure you want to delete project ${project.id} (${project.title})?`)) {
+      if (onDeleteProject) {
+        onDeleteProject(project.id);
+      }
+      onBack();
+    }
   };
 
   return (
@@ -70,10 +100,31 @@ export const ActiveProjectDetailView = ({
         </button>
 
         <div className="flex flex-wrap items-center gap-2">
+          {/* Pay Grant Button */}
+          {parseFloat(pendingLakhs) > 0 && (
+            <button
+              type="button"
+              onClick={() => setIsPaymentModalOpen(true)}
+              className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition-colors cursor-pointer flex items-center space-x-1.5 shadow-2xs"
+            >
+              <IndianRupee className="w-3.5 h-3.5" />
+              <span>Pay Pending Grant (₹ {pendingLakhs}L)</span>
+            </button>
+          )}
+
+          <button
+            type="button"
+            onClick={() => setIsEditModalOpen(true)}
+            className="px-3 py-1.5 bg-white text-slate-700 hover:bg-slate-50 border border-slate-300 rounded-lg text-xs font-bold transition-colors cursor-pointer flex items-center space-x-1"
+          >
+            <Edit className="w-3.5 h-3.5 text-slate-500" />
+            <span>Edit Project</span>
+          </button>
+
           <button
             type="button"
             onClick={() => setIsEmailModalOpen(true)}
-            className="px-3 py-1.5 bg-white text-slate-700 hover:bg-slate-50 border border-slate-300 rounded-lg text-xs font-bold transition-colors cursor-pointer flex items-center space-x-1.5"
+            className="px-3 py-1.5 bg-white text-slate-700 hover:bg-slate-50 border border-slate-300 rounded-lg text-xs font-bold transition-colors cursor-pointer flex items-center space-x-1"
           >
             <Mail className="w-3.5 h-3.5 text-slate-500" />
             <span>Send Email</span>
@@ -82,42 +133,40 @@ export const ActiveProjectDetailView = ({
           <button
             type="button"
             onClick={() => setIsCertificateOpen(true)}
-            className="px-3 py-1.5 bg-white text-slate-700 hover:bg-slate-50 border border-slate-300 rounded-lg text-xs font-bold transition-colors cursor-pointer flex items-center space-x-1.5"
+            className="px-3 py-1.5 bg-white text-slate-700 hover:bg-slate-50 border border-slate-300 rounded-lg text-xs font-bold transition-colors cursor-pointer flex items-center space-x-1"
           >
             <Printer className="w-3.5 h-3.5 text-slate-500" />
-            <span>View Certificate</span>
+            <span>Certificate</span>
           </button>
 
           {!isCompleted ? (
             <button
               type="button"
               onClick={() => setIsCompletionModalOpen(true)}
-              className="px-4 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition-colors cursor-pointer flex items-center space-x-1.5 shadow-2xs"
+              className="px-3.5 py-1.5 bg-slate-900 hover:bg-slate-800 text-white rounded-lg text-xs font-bold transition-colors cursor-pointer flex items-center space-x-1.5 shadow-2xs"
             >
-              <Award className="w-4 h-4" />
-              <span>Final Government Approval: Mark Completed</span>
+              <Award className="w-4 h-4 text-emerald-400" />
+              <span>Approve Completion</span>
             </button>
           ) : (
-            <span className="px-3.5 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center space-x-1.5">
+            <span className="px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center space-x-1">
               <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-              <span>Government Approved & Completed ✓</span>
+              <span>Completed ✓</span>
             </span>
           )}
 
-          {!project.deploymentStatus?.includes('Validated') && (
-            <button
-              type="button"
-              onClick={handleValidate}
-              className="px-4 py-1.5 bg-slate-900 hover:bg-slate-800 text-white rounded-lg text-xs font-bold transition-colors cursor-pointer flex items-center space-x-1.5 shadow-2xs"
-            >
-              <ShieldCheck className="w-4 h-4 text-emerald-400" />
-              <span>Validate District Deployment</span>
-            </button>
-          )}
+          <button
+            type="button"
+            onClick={handleDelete}
+            className="p-1.5 bg-white text-rose-600 hover:bg-rose-50 border border-rose-200 rounded-lg transition-colors cursor-pointer"
+            title="Delete Project"
+          >
+            <Trash2 className="w-4 h-4" />
+          </button>
         </div>
       </div>
 
-      {/* Main Title & Progress Header */}
+      {/* Main Title & Header */}
       <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-2xs space-y-3">
         <div className="flex flex-wrap items-center gap-2 text-xs font-bold">
           <span className="px-2.5 py-0.5 rounded-md font-mono text-[10px] font-black bg-slate-900 text-white">
@@ -156,7 +205,7 @@ export const ActiveProjectDetailView = ({
               onClick={() => setIsCertificateOpen(true)}
               className="px-3.5 py-2 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs shadow-2xs cursor-pointer"
             >
-              Download Final Handover Certificate
+              Download Handover Certificate
             </button>
           </div>
         )}
@@ -178,11 +227,11 @@ export const ActiveProjectDetailView = ({
           <div className="p-3 bg-slate-50 rounded-lg border border-slate-100">
             <span className="text-[10px] font-bold text-slate-400 uppercase block">Grant Disbursed</span>
             <span className="font-bold text-emerald-700 text-sm block mt-0.5">{project.disbursedAmount}</span>
-            <span className="text-[11px] text-slate-500">of {project.sanctionedGrant}</span>
+            <span className="text-[11px] text-slate-500">Pending: ₹ {pendingLakhs}L</span>
           </div>
 
           <div className="p-3 bg-slate-50 rounded-lg border border-slate-100">
-            <span className="text-[10px] font-bold text-slate-400 uppercase block">Live Devices</span>
+            <span className="text-[10px] font-bold text-slate-400 uppercase block">Active Devices</span>
             <span className="font-bold text-slate-900 block mt-0.5">{project.liveSensorsCount || 12} Active Sensors</span>
             <span className="text-[11px] text-emerald-700 font-semibold">{project.telemetryUptime || '99.4%'} Working</span>
           </div>
@@ -195,7 +244,7 @@ export const ActiveProjectDetailView = ({
           { id: 'overview', label: '1. Project Overview & System Details', icon: Cpu },
           { id: 'milestones', label: '2. Project Steps & Verification', icon: CheckCircle2 },
           { id: 'telemetry', label: '3. Map & Live Device Status', icon: Activity },
-          { id: 'finances', label: '4. Grant Disbursal & Payments', icon: IndianRupee }
+          { id: 'finances', label: '4. Grant Payments & Tranches', icon: IndianRupee }
         ].map((tab) => {
           const TabIcon = tab.icon;
           const isActive = activeSubTab === tab.id;
@@ -313,7 +362,7 @@ export const ActiveProjectDetailView = ({
         </div>
       )}
 
-      {/* TAB 3: REAL-TIME MAP & SENSOR GRAPHS */}
+      {/* TAB 3: REAL-TIME MAP & LIVE DEVICE STATUS */}
       {activeSubTab === 'telemetry' && (
         <div className="space-y-5">
           {/* Leaflet Map */}
@@ -327,7 +376,7 @@ export const ActiveProjectDetailView = ({
         </div>
       )}
 
-      {/* TAB 4: FINANCIALS & GRANT DISBURSAL */}
+      {/* TAB 4: FINANCIALS & GRANT PAYMENTS */}
       {activeSubTab === 'finances' && (
         <div className="space-y-4">
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-white p-5 rounded-xl border border-slate-200 text-center text-xs">
@@ -340,45 +389,72 @@ export const ActiveProjectDetailView = ({
               <span className="text-base font-black text-emerald-700 mt-1 block">{project.disbursedAmount}</span>
             </div>
             <div>
-              <span className="text-[10px] font-bold text-slate-400 uppercase block">Disbursed %</span>
-              <span className="text-base font-black text-slate-900 mt-1 block">{project.disbursedPercentage || 70}%</span>
+              <span className="text-[10px] font-bold text-slate-400 uppercase block">Pending to Disburse</span>
+              <span className="text-base font-black text-amber-700 mt-1 block">₹ {pendingLakhs} Lakhs</span>
             </div>
-            <div>
-              <span className="text-[10px] font-bold text-slate-400 uppercase block">Audit Verification</span>
-              <span className="text-xs font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md inline-block mt-1">
-                Verified & Clear ✓
-              </span>
+            <div className="flex flex-col items-center justify-center">
+              {parseFloat(pendingLakhs) > 0 ? (
+                <button
+                  type="button"
+                  onClick={() => setIsPaymentModalOpen(true)}
+                  className="w-full py-2 px-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-bold text-xs shadow-2xs transition-colors cursor-pointer flex items-center justify-center space-x-1"
+                >
+                  <IndianRupee className="w-3.5 h-3.5" />
+                  <span>Release Payment</span>
+                </button>
+              ) : (
+                <span className="text-xs font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1.5 rounded-lg border border-emerald-200 inline-block">
+                  100% Fully Paid ✓
+                </span>
+              )}
             </div>
           </div>
 
           <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-2xs space-y-3 text-xs">
-            <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
-              Payment Schedule & Tranches
-            </h3>
+            <div className="flex items-center justify-between">
+              <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
+                Grant Payment Schedule & Vouchers
+              </h3>
+              {parseFloat(pendingLakhs) > 0 && (
+                <button
+                  type="button"
+                  onClick={() => setIsPaymentModalOpen(true)}
+                  className="text-xs font-bold text-emerald-700 hover:text-emerald-800 cursor-pointer flex items-center space-x-1"
+                >
+                  <span>+ Release Next Payment</span>
+                </button>
+              )}
+            </div>
+
             <div className="space-y-2">
-              <div className="p-3 bg-slate-50 rounded-lg border border-slate-100 flex items-center justify-between">
-                <div>
-                  <span className="font-bold text-slate-900">Payment 1 (Equipment & Project Start)</span>
-                  <span className="text-slate-500 block text-[11px]">Voucher #JH-GR-0981 • Disbursed</span>
+              {(project.paymentRecords || [
+                {
+                  id: 'JH-GR-0981',
+                  trancheName: 'Tranche 1: Equipment & Prototype Start',
+                  amount: '₹ 8.00 Lakhs',
+                  date: '2026-02-15',
+                  paymentMode: 'PFMS Direct Treasury Transfer',
+                  status: 'Paid'
+                },
+                {
+                  id: 'JH-GR-1042',
+                  trancheName: 'Tranche 2: Field Trial & Testing',
+                  amount: '₹ 5.50 Lakhs',
+                  date: '2026-05-10',
+                  paymentMode: 'State Innovation Fund DBT',
+                  status: 'Paid'
+                }
+              ]).map((pRec, idx) => (
+                <div key={idx} className="p-3 bg-slate-50 rounded-lg border border-slate-100 flex items-center justify-between">
+                  <div>
+                    <span className="font-bold text-slate-900">{pRec.trancheName}</span>
+                    <span className="text-slate-500 block text-[11px]">
+                      Voucher #{pRec.id} • {pRec.paymentMode} • {pRec.date}
+                    </span>
+                  </div>
+                  <span className="font-mono font-bold text-emerald-700">{pRec.amount} [{pRec.status}]</span>
                 </div>
-                <span className="font-mono font-bold text-emerald-700">₹ 8.00 Lakhs [Paid]</span>
-              </div>
-
-              <div className="p-3 bg-slate-50 rounded-lg border border-slate-100 flex items-center justify-between">
-                <div>
-                  <span className="font-bold text-slate-900">Payment 2 (Lab Testing & Prototype)</span>
-                  <span className="text-slate-500 block text-[11px]">Voucher #JH-GR-1042 • Disbursed</span>
-                </div>
-                <span className="font-mono font-bold text-emerald-700">₹ 5.50 Lakhs [Paid]</span>
-              </div>
-
-              <div className="p-3 bg-slate-50 rounded-lg border border-slate-100 flex items-center justify-between">
-                <div>
-                  <span className="font-bold text-slate-900">Payment 3 (Field Deployment & Handover)</span>
-                  <span className="text-slate-500 block text-[11px]">Final release upon project completion</span>
-                </div>
-                <span className="font-mono font-bold text-amber-700">₹ 5.00 Lakhs [Pending]</span>
-              </div>
+              ))}
             </div>
           </div>
         </div>
@@ -404,6 +480,22 @@ export const ActiveProjectDetailView = ({
         isOpen={isCompletionModalOpen}
         onClose={() => setIsCompletionModalOpen(false)}
         onConfirmCompletion={handleConfirmCompletion}
+      />
+
+      {/* Grant Payment Modal */}
+      <GrantPaymentModal
+        project={project}
+        isOpen={isPaymentModalOpen}
+        onClose={() => setIsPaymentModalOpen(false)}
+        onConfirmPayment={onConfirmPayment}
+      />
+
+      {/* Edit Project Modal */}
+      <EditProjectModal
+        project={project}
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        onSave={onSaveProject}
       />
     </div>
   );

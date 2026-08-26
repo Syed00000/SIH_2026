@@ -20,11 +20,15 @@ import {
   Layers,
   Award,
   Printer,
-  Mail
+  Mail,
+  Edit,
+  Trash2
 } from 'lucide-react';
 
 import { ActiveProjectDetailView } from './ActiveProjectDetailView.jsx';
 import { AddProjectModal } from './AddProjectModal.jsx';
+import { EditProjectModal } from './EditProjectModal.jsx';
+import { GrantPaymentModal } from './GrantPaymentModal.jsx';
 import { ProjectCertificateModal } from './ProjectCertificateModal.jsx';
 import { ValidationEmailModal } from './ValidationEmailModal.jsx';
 import { FinalProjectCompletionModal } from './FinalProjectCompletionModal.jsx';
@@ -50,6 +54,8 @@ export const ActiveProjectsPanel = () => {
 
   // Modals
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [editingProject, setEditingProject] = useState(null);
+  const [payingProject, setPayingProject] = useState(null);
   const [certificateProject, setCertificateProject] = useState(null);
   const [emailProject, setEmailProject] = useState(null);
   const [completionModalProject, setCompletionModalProject] = useState(null);
@@ -65,6 +71,13 @@ export const ActiveProjectsPanel = () => {
     try {
       localStorage.setItem('joharsetu_active_projects', JSON.stringify(updatedList));
     } catch {}
+  };
+
+  // Parse pending amount
+  const parseLakhs = (str) => {
+    if (!str) return 0;
+    const match = str.match(/[\d.]+/);
+    return match ? parseFloat(match[0]) : 0;
   };
 
   const completedProjectsCount = useMemo(() => {
@@ -173,6 +186,51 @@ export const ActiveProjectsPanel = () => {
     showToast(`Project ${projectId} officially marked as Completed & Approved.`);
   };
 
+  // Pay Pending Grant
+  const handleConfirmPayment = (projectId, { newDisbursedStr, newPercent, paymentRecord }) => {
+    const updated = projects.map((p) => {
+      if (p.id === projectId) {
+        const existingRecords = p.paymentRecords || [];
+        return {
+          ...p,
+          disbursedAmount: newDisbursedStr,
+          disbursedPercentage: newPercent,
+          paymentRecords: [paymentRecord, ...existingRecords]
+        };
+      }
+      return p;
+    });
+
+    saveProjects(updated);
+    const target = updated.find((p) => p.id === projectId);
+    if (viewingProject && viewingProject.id === projectId) {
+      setViewingProject(target);
+    }
+    setEmailProject(target);
+    showToast(`Payment of ${paymentRecord.amount} released for ${projectId}.`);
+  };
+
+  // Edit Project
+  const handleSaveProject = (projectId, updatedFields) => {
+    const updated = projects.map((p) =>
+      p.id === projectId ? { ...p, ...updatedFields } : p
+    );
+    saveProjects(updated);
+    if (viewingProject && viewingProject.id === projectId) {
+      setViewingProject(updated.find((p) => p.id === projectId));
+    }
+    showToast(`Project ${projectId} updated successfully.`);
+  };
+
+  // Delete Project
+  const handleDeleteProject = (projectId) => {
+    if (window.confirm(`Are you sure you want to delete project ${projectId}?`)) {
+      const updated = projects.filter((p) => p.id !== projectId);
+      saveProjects(updated);
+      showToast(`Project ${projectId} deleted.`);
+    }
+  };
+
   // Validate Project
   const handleValidateDeployment = (projectId) => {
     const updated = projects.map((p) =>
@@ -184,7 +242,7 @@ export const ActiveProjectsPanel = () => {
       setViewingProject(target);
     }
     setEmailProject(target);
-    showToast(`Project ${projectId} validated.`);
+    showToast(`Project ${projectId} field deployment validated.`);
   };
 
   // Add New Project
@@ -203,6 +261,9 @@ export const ActiveProjectsPanel = () => {
         onUpdateMilestoneStatus={handleUpdateMilestoneStatus}
         onValidateDeployment={handleValidateDeployment}
         onApproveCompletion={handleApproveCompletion}
+        onSaveProject={handleSaveProject}
+        onDeleteProject={handleDeleteProject}
+        onConfirmPayment={handleConfirmPayment}
       />
     );
   }
@@ -232,7 +293,7 @@ export const ActiveProjectsPanel = () => {
             ACTIVE PROJECTS IN PROGRESS
           </h1>
           <p className="text-xs text-slate-500 font-medium">
-            Stage gates, milestone completion, and final government handover
+            Stage gates, milestone completion, grant payment release, and final handover
           </p>
         </div>
 
@@ -413,7 +474,7 @@ export const ActiveProjectsPanel = () => {
                   <th className="py-3 px-4">Delivery Stage</th>
                   <th className="py-3 px-4">Prototype Type</th>
                   <th className="py-3 px-4">Current Status</th>
-                  <th className="py-3 px-4">Grant Disbursed</th>
+                  <th className="py-3 px-4">Grant Funding</th>
                   <th className="py-3 px-4 text-center">Actions</th>
                 </tr>
               </thead>
@@ -421,6 +482,9 @@ export const ActiveProjectsPanel = () => {
                 {filteredProjects.map((prj) => {
                   const mList = prj.milestones || [];
                   const isDone = prj.isCompleted || (mList.length > 0 && mList.every((m) => m.status === 'Completed'));
+                  const sLakhs = parseLakhs(prj.sanctionedGrant);
+                  const dLakhs = parseLakhs(prj.disbursedAmount);
+                  const pLakhs = Math.max(0, sLakhs - dLakhs).toFixed(2);
 
                   return (
                     <tr key={prj.id} className="hover:bg-slate-50/60 transition-colors group cursor-default">
@@ -484,8 +548,21 @@ export const ActiveProjectsPanel = () => {
                       </td>
 
                       <td className="py-3.5 px-4">
-                        <div className="font-mono font-bold text-slate-900">{prj.disbursedAmount}</div>
-                        <div className="text-[10px] text-slate-500 font-medium">of {prj.sanctionedGrant}</div>
+                        <div className="font-mono font-bold text-slate-900">
+                          {prj.disbursedAmount}{' '}
+                          <span className="text-[10px] font-normal text-slate-500">
+                            of {prj.sanctionedGrant}
+                          </span>
+                        </div>
+                        {parseFloat(pLakhs) > 0 ? (
+                          <div className="text-[10px] font-bold text-amber-700">
+                            Pending: ₹ {pLakhs}L
+                          </div>
+                        ) : (
+                          <div className="text-[10px] font-bold text-emerald-700">
+                            Fully Paid ✓
+                          </div>
+                        )}
                       </td>
 
                       <td className="py-3.5 px-4 text-center">
@@ -498,25 +575,34 @@ export const ActiveProjectsPanel = () => {
                             Manage
                           </button>
 
-                          {!isDone ? (
+                          {parseFloat(pLakhs) > 0 && (
                             <button
                               type="button"
-                              onClick={() => setCompletionModalProject(prj)}
+                              onClick={() => setPayingProject(prj)}
                               className="px-2.5 py-1 text-xs font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-lg transition-colors cursor-pointer"
-                              title="Mark as Completed"
+                              title="Release Grant Payment"
                             >
-                              Approve Done
-                            </button>
-                          ) : (
-                            <button
-                              type="button"
-                              onClick={() => setCertificateProject(prj)}
-                              className="p-1 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer border border-slate-200"
-                              title="Download Certificate"
-                            >
-                              <Printer className="w-3.5 h-3.5" />
+                              Pay Grant
                             </button>
                           )}
+
+                          <button
+                            type="button"
+                            onClick={() => setEditingProject(prj)}
+                            className="p-1 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer border border-slate-200"
+                            title="Edit Project"
+                          >
+                            <Edit className="w-3.5 h-3.5" />
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteProject(prj.id)}
+                            className="p-1 text-rose-600 hover:text-rose-800 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer border border-rose-200"
+                            title="Delete Project"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
                         </div>
                       </td>
                     </tr>
@@ -531,6 +617,9 @@ export const ActiveProjectsPanel = () => {
           {filteredProjects.map((prj) => {
             const mList = prj.milestones || [];
             const isDone = prj.isCompleted || (mList.length > 0 && mList.every((m) => m.status === 'Completed'));
+            const sLakhs = parseLakhs(prj.sanctionedGrant);
+            const dLakhs = parseLakhs(prj.disbursedAmount);
+            const pLakhs = Math.max(0, sLakhs - dLakhs).toFixed(2);
 
             return (
               <div
@@ -570,14 +659,33 @@ export const ActiveProjectsPanel = () => {
                 </div>
 
                 <div className="pt-3 border-t border-slate-100 flex items-center justify-between">
-                  <span className="text-[11px] font-mono font-bold text-slate-800">{prj.disbursedAmount}</span>
-                  <button
-                    type="button"
-                    onClick={() => setViewingProject(prj)}
-                    className="px-3.5 py-1 text-xs font-bold text-white bg-slate-900 hover:bg-slate-800 rounded-lg transition-colors cursor-pointer shadow-2xs"
-                  >
-                    Manage Details
-                  </button>
+                  <div>
+                    <span className="text-[11px] font-mono font-bold text-slate-800 block">{prj.disbursedAmount}</span>
+                    {parseFloat(pLakhs) > 0 ? (
+                      <span className="text-[10px] text-amber-700 font-semibold">Pending: ₹{pLakhs}L</span>
+                    ) : (
+                      <span className="text-[10px] text-emerald-700 font-semibold">Fully Paid ✓</span>
+                    )}
+                  </div>
+
+                  <div className="flex items-center space-x-1.5">
+                    {parseFloat(pLakhs) > 0 && (
+                      <button
+                        type="button"
+                        onClick={() => setPayingProject(prj)}
+                        className="px-2.5 py-1 text-xs font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-lg transition-colors cursor-pointer"
+                      >
+                        Pay
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => setViewingProject(prj)}
+                      className="px-3.5 py-1 text-xs font-bold text-white bg-slate-900 hover:bg-slate-800 rounded-lg transition-colors cursor-pointer shadow-2xs"
+                    >
+                      Manage
+                    </button>
+                  </div>
                 </div>
               </div>
             );
@@ -590,6 +698,22 @@ export const ActiveProjectsPanel = () => {
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
         onSubmit={handleAddNewProject}
+      />
+
+      {/* Edit Project Modal */}
+      <EditProjectModal
+        project={editingProject}
+        isOpen={Boolean(editingProject)}
+        onClose={() => setEditingProject(null)}
+        onSave={handleSaveProject}
+      />
+
+      {/* Grant Payment Modal */}
+      <GrantPaymentModal
+        project={payingProject}
+        isOpen={Boolean(payingProject)}
+        onClose={() => setPayingProject(null)}
+        onConfirmPayment={handleConfirmPayment}
       />
 
       {/* Certificate Modal */}

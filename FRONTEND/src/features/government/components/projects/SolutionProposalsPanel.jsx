@@ -19,7 +19,8 @@ import {
   IndianRupee,
   FileText,
   Layers,
-  Award
+  Award,
+  Trash2
 } from 'lucide-react';
 
 import { ProposalDetailView } from './ProposalDetailView.jsx';
@@ -113,6 +114,18 @@ export const SolutionProposalsPanel = () => {
     showToast(`Proposal "${proposal.id}" marked as rejected.`, 'info');
   };
 
+  // Action: Delete Proposal
+  const handleDeleteProposal = (proposalId) => {
+    if (window.confirm(`Are you sure you want to delete proposal ${proposalId}?`)) {
+      const updated = proposals.filter((p) => p.id !== proposalId);
+      saveProposals(updated);
+      if (viewingProposal && viewingProposal.id === proposalId) {
+        setViewingProposal(null);
+      }
+      showToast(`Proposal "${proposalId}" deleted.`);
+    }
+  };
+
   const getStatusBadge = (status) => {
     switch (status) {
       case 'New Submission':
@@ -142,6 +155,7 @@ export const SolutionProposalsPanel = () => {
         onBack={() => setViewingProposal(null)}
         onApproveGrant={handleApproveGrant}
         onRejectProposal={handleRejectProposal}
+        onDeleteProposal={handleDeleteProposal}
       />
     );
   }
@@ -396,6 +410,15 @@ export const SolutionProposalsPanel = () => {
                     <Eye className="w-3.5 h-3.5 text-slate-500" />
                     <span>Review DPR</span>
                   </button>
+
+                  <button
+                    type="button"
+                    onClick={() => handleDeleteProposal(proposal.id)}
+                    className="p-1.5 text-rose-600 hover:text-rose-800 hover:bg-rose-50 rounded-lg border border-rose-200 transition-colors cursor-pointer"
+                    title="Delete Proposal"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
                 </div>
               </div>
             );
@@ -439,13 +462,23 @@ export const SolutionProposalsPanel = () => {
                       </span>
                     </td>
                     <td className="py-3.5 px-4 text-center">
-                      <button
-                        type="button"
-                        onClick={() => setViewingProposal(prop)}
-                        className="px-3 py-1 text-xs font-bold text-white bg-slate-900 hover:bg-slate-800 rounded-lg transition-colors cursor-pointer shadow-2xs"
-                      >
-                        Review DPR
-                      </button>
+                      <div className="flex items-center justify-center space-x-1.5">
+                        <button
+                          type="button"
+                          onClick={() => setViewingProposal(prop)}
+                          className="px-3 py-1 text-xs font-bold text-white bg-slate-900 hover:bg-slate-800 rounded-lg transition-colors cursor-pointer shadow-2xs"
+                        >
+                          Review DPR
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteProposal(prop.id)}
+                          className="p-1 text-rose-600 hover:text-rose-800 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer border border-rose-200"
+                          title="Delete Proposal"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}

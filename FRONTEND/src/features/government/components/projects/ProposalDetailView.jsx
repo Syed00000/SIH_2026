@@ -20,7 +20,8 @@ export const ProposalDetailView = ({
   proposal,
   onBack,
   onApproveGrant,
-  onRejectProposal
+  onRejectProposal,
+  onDeleteProposal
 }) => {
   const [activeTab, setActiveTab] = useState('dpr'); // 'dpr' | 'methodology' | 'budget' | 'review'
   const [reviewerRemarks, setReviewerRemarks] = useState('');
