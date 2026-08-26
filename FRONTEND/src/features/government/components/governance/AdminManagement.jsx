@@ -17,7 +17,6 @@ export const AdminManagement = () => {
   const [editingAdmin, setEditingAdmin] = useState(null);
   const [viewingAdmin, setViewingAdmin] = useState(null);
 
-  // Clear any legacy mock data from browser localStorage
   useEffect(() => {
     localStorage.removeItem('joharsetu_gov_admins');
   }, []);
@@ -32,7 +31,7 @@ export const AdminManagement = () => {
         if (res.data.stats) setStats(res.data.stats);
       }
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to connect to database');
+      setError(err.response?.data?.error?.message || err.response?.data?.message || 'Failed to connect to database');
     } finally {
       setIsLoading(false);
     }
@@ -44,8 +43,10 @@ export const AdminManagement = () => {
 
   const handleFormSubmit = async (formData) => {
     try {
-      if (editingAdmin) {
-        await axios.put(`${API_BASE}/${editingAdmin.id}`, formData);
+      const targetId = editingAdmin?.id || editingAdmin?._id || formData?.id;
+      if (editingAdmin && targetId) {
+        const { id, _id, ...cleanData } = formData;
+        await axios.put(`${API_BASE}/${targetId}`, cleanData);
       } else {
         await axios.post(API_BASE, formData);
       }
@@ -53,35 +54,38 @@ export const AdminManagement = () => {
       setEditingAdmin(null);
       await fetchAdmins();
     } catch (err) {
-      alert(err.response?.data?.message || 'Error saving administrator');
+      const msg = err.response?.data?.error?.message || err.response?.data?.message || err.message || 'Error saving administrator';
+      alert(msg);
     }
   };
 
   const handleToggleStatus = async (id) => {
-    const target = admins.find(a => a.id === id);
+    const target = admins.find(a => (a.id === id || a._id === id));
     if (!target) return;
+    const targetId = target.id || target._id;
     const nextStatus = target.status === 'Active' ? 'Suspended' : 'Active';
     try {
-      await axios.patch(`${API_BASE}/${id}/status`, { status: nextStatus });
+      await axios.patch(`${API_BASE}/${targetId}/status`, { status: nextStatus });
       await fetchAdmins();
     } catch (err) {
-      alert(err.response?.data?.message || 'Error updating status');
+      alert(err.response?.data?.error?.message || 'Error updating status');
     }
   };
 
   const handleDeleteAdmin = async (id) => {
-    if (!window.confirm('Are you sure you want to permanently delete this administrator from the database?')) return;
+    const target = admins.find(a => (a.id === id || a._id === id));
+    const targetId = target?.id || target?._id || id;
+    if (!window.confirm(`Are you sure you want to delete ${target?.fullName || 'this administrator'} from the database?`)) return;
     try {
-      await axios.delete(`${API_BASE}/${id}`);
+      await axios.delete(`${API_BASE}/${targetId}`);
       await fetchAdmins();
     } catch (err) {
-      alert(err.response?.data?.message || 'Error removing administrator');
+      alert(err.response?.data?.error?.message || 'Error removing administrator');
     }
   };
 
   return (
     <div className="space-y-5 pb-8 max-w-[1600px] mx-auto">
-      {/* Top Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pt-1">
         <div>
           <h1 className="text-xl md:text-2xl font-black text-slate-900 tracking-tight">Admin Management</h1>
@@ -105,10 +109,8 @@ export const AdminManagement = () => {
         </div>
       )}
 
-      {/* KPI Stat Cards */}
       <AdminSummaryCards stats={stats} />
 
-      {/* Admin Directory Table */}
       <AdminDirectoryTable
         admins={admins}
         onViewAdmin={(admin) => setViewingAdmin(admin)}
@@ -117,7 +119,6 @@ export const AdminManagement = () => {
         onDeleteAdmin={handleDeleteAdmin}
       />
 
-      {/* Add / Edit Admin Modal */}
       <AdminFormModal
         isOpen={isFormOpen}
         onClose={() => { setIsFormOpen(false); setEditingAdmin(null); }}
@@ -125,7 +126,6 @@ export const AdminManagement = () => {
         initialData={editingAdmin}
       />
 
-      {/* View Admin Details Modal */}
       <AdminViewModal
         isOpen={Boolean(viewingAdmin)}
         onClose={() => setViewingAdmin(null)}
