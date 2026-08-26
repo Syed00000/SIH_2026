@@ -16,33 +16,64 @@ import {
   Table,
   Grid,
   ShieldCheck,
-  Zap,
   IndianRupee,
   Layers,
-  Award
+  Award,
+  Printer,
+  Mail
 } from 'lucide-react';
 
-import { ProjectManageModal } from './ProjectManageModal.jsx';
+import { ActiveProjectDetailView } from './ActiveProjectDetailView.jsx';
 import { AddProjectModal } from './AddProjectModal.jsx';
+import { ProjectCertificateModal } from './ProjectCertificateModal.jsx';
+import { ValidationEmailModal } from './ValidationEmailModal.jsx';
+import { FinalProjectCompletionModal } from './FinalProjectCompletionModal.jsx';
 import { SECTOR_OPTIONS, DISTRICT_OPTIONS, INITIAL_ACTIVE_PROJECTS } from '../../data/projectsSolutionsData.js';
 
 export const ActiveProjectsPanel = () => {
-  const [projects, setProjects] = useState(INITIAL_ACTIVE_PROJECTS);
+  const [projects, setProjects] = useState(() => {
+    try {
+      const saved = localStorage.getItem('joharsetu_active_projects');
+      if (saved) return JSON.parse(saved);
+    } catch {}
+    return INITIAL_ACTIVE_PROJECTS;
+  });
+
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedSector, setSelectedSector] = useState('All Sectors');
   const [selectedDistrict, setSelectedDistrict] = useState('All Districts');
-  const [selectedTrl, setSelectedTrl] = useState('All TRL');
+  const [selectedStatusTab, setSelectedStatusTab] = useState('All Projects'); // 'All Projects' | 'In Progress' | 'Completed'
   const [viewMode, setViewMode] = useState('table'); // 'table' | 'grid'
 
-  const [selectedProject, setSelectedProject] = useState(null);
-  const [isManageModalOpen, setIsManageModalOpen] = useState(false);
+  // Full Page Detail View State
+  const [viewingProject, setViewingProject] = useState(null);
+
+  // Modals
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [certificateProject, setCertificateProject] = useState(null);
+  const [emailProject, setEmailProject] = useState(null);
+  const [completionModalProject, setCompletionModalProject] = useState(null);
   const [notification, setNotification] = useState(null);
 
   const showToast = (msg, type = 'success') => {
     setNotification({ msg, type });
     setTimeout(() => setNotification(null), 3500);
   };
+
+  const saveProjects = (updatedList) => {
+    setProjects(updatedList);
+    try {
+      localStorage.setItem('joharsetu_active_projects', JSON.stringify(updatedList));
+    } catch {}
+  };
+
+  const completedProjectsCount = useMemo(() => {
+    return projects.filter((p) => {
+      if (p.isCompleted) return true;
+      const mList = p.milestones || [];
+      return mList.length > 0 && mList.every((m) => m.status === 'Completed');
+    }).length;
+  }, [projects]);
 
   const filteredProjects = useMemo(() => {
     return projects.filter((item) => {
@@ -59,85 +90,135 @@ export const ActiveProjectsPanel = () => {
       const matchesDistrict =
         selectedDistrict === 'All Districts' || item.district === selectedDistrict;
 
-      const matchesTrl =
-        selectedTrl === 'All TRL' || item.trlLevel === selectedTrl;
+      const mList = item.milestones || [];
+      const isDone = item.isCompleted || (mList.length > 0 && mList.every((m) => m.status === 'Completed'));
 
-      return matchesSearch && matchesSector && matchesDistrict && matchesTrl;
+      const matchesStatus =
+        selectedStatusTab === 'All Projects' ||
+        (selectedStatusTab === 'Completed' && isDone) ||
+        (selectedStatusTab === 'In Progress' && !isDone);
+
+      return matchesSearch && matchesSector && matchesDistrict && matchesStatus;
     });
-  }, [projects, searchQuery, selectedSector, selectedDistrict, selectedTrl]);
+  }, [projects, searchQuery, selectedSector, selectedDistrict, selectedStatusTab]);
 
   const handleResetFilters = () => {
     setSearchQuery('');
     setSelectedSector('All Sectors');
     setSelectedDistrict('All Districts');
-    setSelectedTrl('All TRL');
+    setSelectedStatusTab('All Projects');
   };
 
   // Update Milestone Status
   const handleUpdateMilestoneStatus = (projectId, milestoneId, nextStatus) => {
-    setProjects((prev) =>
-      prev.map((prj) => {
-        if (prj.id === projectId) {
-          const updatedMilestones = (prj.milestones || []).map((m) =>
-            m.id === milestoneId ? { ...m, status: nextStatus, progress: 100 } : m
-          );
-          const completedCount = updatedMilestones.filter((m) => m.status === 'Completed').length;
-          const newProgress = Math.round((completedCount / updatedMilestones.length) * 100);
+    const updated = projects.map((prj) => {
+      if (prj.id === projectId) {
+        const updatedMilestones = (prj.milestones || []).map((m) =>
+          m.id === milestoneId ? { ...m, status: nextStatus, progress: 100 } : m
+        );
+        const completedCount = updatedMilestones.filter((m) => m.status === 'Completed').length;
+        const newProgress = Math.round((completedCount / updatedMilestones.length) * 100);
+        const isDone = completedCount === updatedMilestones.length;
 
-          return {
-            ...prj,
-            milestones: updatedMilestones,
-            milestoneProgress: newProgress
-          };
-        }
-        return prj;
-      })
-    );
-    showToast(`Milestone ${milestoneId} updated to "${nextStatus}".`);
+        return {
+          ...prj,
+          milestones: updatedMilestones,
+          milestoneProgress: newProgress,
+          isCompleted: isDone ? true : prj.isCompleted,
+          deploymentStatus: isDone ? 'Completed ✓' : prj.deploymentStatus,
+          milestonePhase: isDone ? 'Phase 4: Completed' : prj.milestonePhase
+        };
+      }
+      return prj;
+    });
+
+    saveProjects(updated);
+    if (viewingProject && viewingProject.id === projectId) {
+      setViewingProject(updated.find((p) => p.id === projectId));
+    }
+    showToast(`Step ${milestoneId} marked as completed.`);
   };
 
-  // Advance Milestone Phase
-  const handleAdvancePhase = (projectId) => {
-    setProjects((prev) =>
-      prev.map((prj) => {
-        if (prj.id === projectId) {
-          const newProgress = Math.min(100, (prj.milestoneProgress || 50) + 20);
-          return {
-            ...prj,
-            milestoneProgress: newProgress,
-            deploymentStatus: newProgress >= 90 ? 'Validated ✓' : prj.deploymentStatus
-          };
-        }
-        return prj;
-      })
+  // Final Government Approval: Mark Completed
+  const handleApproveCompletion = (projectId, { officerName, designation, remarks }) => {
+    const updated = projects.map((p) => {
+      if (p.id === projectId) {
+        const completedMilestones = (p.milestones || []).map((m) => ({
+          ...m,
+          status: 'Completed',
+          progress: 100
+        }));
+        return {
+          ...p,
+          isCompleted: true,
+          milestones: completedMilestones,
+          milestoneProgress: 100,
+          milestonePhase: 'Phase 4: Completed',
+          deploymentStatus: 'Completed ✓',
+          completedByOfficer: officerName,
+          officerDesignation: designation,
+          officerRemarks: remarks,
+          completionDate: new Date().toISOString().split('T')[0]
+        };
+      }
+      return p;
+    });
+
+    saveProjects(updated);
+    const target = updated.find((p) => p.id === projectId);
+    if (viewingProject && viewingProject.id === projectId) {
+      setViewingProject(target);
+    }
+    setEmailProject(target);
+    showToast(`Project ${projectId} officially marked as Completed & Approved.`);
+  };
+
+  // Validate Project
+  const handleValidateDeployment = (projectId) => {
+    const updated = projects.map((p) =>
+      p.id === projectId ? { ...p, deploymentStatus: 'Validated ✓' } : p
     );
-    showToast(`Project ${projectId} advanced to next milestone stage.`);
+    saveProjects(updated);
+    const target = updated.find((p) => p.id === projectId);
+    if (viewingProject && viewingProject.id === projectId) {
+      setViewingProject(target);
+    }
+    setEmailProject(target);
+    showToast(`Project ${projectId} validated.`);
   };
 
   // Add New Project
   const handleAddNewProject = (newPrj) => {
-    setProjects((prev) => [newPrj, ...prev]);
-    showToast(`New innovation project "${newPrj.title}" sanctioned successfully.`);
+    const updated = [newPrj, ...projects];
+    saveProjects(updated);
+    showToast(`New project "${newPrj.title}" sanctioned successfully.`);
   };
+
+  // If viewing detailed full-page project view
+  if (viewingProject) {
+    return (
+      <ActiveProjectDetailView
+        project={viewingProject}
+        onBack={() => setViewingProject(null)}
+        onUpdateMilestoneStatus={handleUpdateMilestoneStatus}
+        onValidateDeployment={handleValidateDeployment}
+        onApproveCompletion={handleApproveCompletion}
+      />
+    );
+  }
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto pb-12 select-none animate-fadeIn">
       {/* Toast Notification */}
       {notification && (
-        <div
-          className={`fixed bottom-6 right-6 z-50 px-4 py-3 rounded-2xl shadow-xl border text-xs font-bold flex items-center space-x-2 animate-slideUp ${
-            notification.type === 'error'
-              ? 'bg-red-900 text-white border-red-800'
-              : 'bg-slate-900 text-white border-slate-800'
-          }`}
-        >
+        <div className="fixed bottom-6 right-6 z-50 px-4 py-3 rounded-xl shadow-xl border text-xs font-bold flex items-center space-x-2 bg-slate-900 text-white border-slate-800 animate-slideUp">
           <CheckCircle2 className="w-4 h-4 text-emerald-400" />
           <span>{notification.msg}</span>
         </div>
       )}
 
       {/* Header Banner */}
-      <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <div className="flex items-center space-x-2 text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">
             <span className="flex items-center space-x-1">
@@ -147,11 +228,11 @@ export const ActiveProjectsPanel = () => {
             <span>•</span>
             <span className="text-slate-700">Active R&D Innovations</span>
           </div>
-          <h1 className="text-lg font-black text-slate-900 tracking-tight">
+          <h1 className="text-lg font-bold text-slate-900 tracking-tight">
             ACTIVE PROJECTS IN PROGRESS
           </h1>
           <p className="text-xs text-slate-500 font-medium">
-            Real-time stage gates, milestone compliance, and TRL monitoring across funded innovations
+            Stage gates, milestone completion, and final government handover
           </p>
         </div>
 
@@ -159,7 +240,7 @@ export const ActiveProjectsPanel = () => {
           <button
             type="button"
             onClick={() => setIsAddModalOpen(true)}
-            className="px-4 py-2 text-xs font-bold text-white bg-slate-900 hover:bg-slate-800 rounded-xl transition-colors cursor-pointer flex items-center space-x-1.5 shadow-2xs"
+            className="px-4 py-2 text-xs font-bold text-white bg-slate-900 hover:bg-slate-800 rounded-lg transition-colors cursor-pointer flex items-center space-x-1.5 shadow-2xs"
           >
             <Plus className="w-4 h-4" />
             <span>Sanction New Project</span>
@@ -169,123 +250,92 @@ export const ActiveProjectsPanel = () => {
 
       {/* Top Metric Summary Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-        <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-2xs">
+        <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-2xs">
           <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">
-            Active Projects
+            Total Projects
           </span>
-          <div className="text-2xl font-black text-slate-900 mt-1">{projects.length}</div>
-          <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-emerald-50 text-emerald-700 mt-1 inline-block">
+          <div className="text-2xl font-bold text-slate-900 mt-1">{projects.length}</div>
+          <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-slate-100 text-slate-700 mt-1 inline-block">
             In Pipeline
           </span>
         </div>
 
-        <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-2xs">
+        <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-2xs">
           <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">
-            On Schedule
+            Completed Projects
           </span>
-          <div className="text-2xl font-black text-slate-900 mt-1">24</div>
-          <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-slate-100 text-slate-700 mt-1 inline-block">
-            85.7% On Track
+          <div className="text-2xl font-bold text-emerald-700 mt-1">{completedProjectsCount}</div>
+          <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-emerald-50 text-emerald-700 mt-1 inline-block">
+            100% Done
           </span>
         </div>
 
-        <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-2xs">
+        <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-2xs">
           <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">
-            Delayed Milestones
+            In Progress
           </span>
-          <div className="text-2xl font-black text-rose-700 mt-1">4</div>
-          <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-rose-50 text-rose-700 mt-1 inline-block">
-            Audit Required
-          </span>
-        </div>
-
-        <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-2xs">
-          <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">
-            Avg TRL Level
-          </span>
-          <div className="text-2xl font-black text-slate-900 mt-1">TRL-6.2</div>
+          <div className="text-2xl font-bold text-slate-900 mt-1">{projects.length - completedProjectsCount}</div>
           <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-blue-50 text-blue-700 mt-1 inline-block">
-            System Validated
+            Active Work
           </span>
         </div>
 
-        <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-2xs">
+        <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-2xs">
+          <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">
+            Avg Readiness
+          </span>
+          <div className="text-2xl font-bold text-slate-900 mt-1">TRL-6.4</div>
+          <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-slate-100 text-slate-700 mt-1 inline-block">
+            Tested
+          </span>
+        </div>
+
+        <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-2xs">
           <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">
             Sanctioned Grants
           </span>
-          <div className="text-2xl font-black text-slate-900 mt-1">₹ 2.5 Cr</div>
+          <div className="text-2xl font-bold text-slate-900 mt-1">₹ 2.5 Cr</div>
           <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-slate-100 text-slate-700 mt-1 inline-block">
             Allocated Pool
           </span>
         </div>
 
-        <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-2xs">
+        <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-2xs">
           <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">
             Disbursed
           </span>
-          <div className="text-2xl font-black text-emerald-700 mt-1">₹ 1.8 Cr</div>
+          <div className="text-2xl font-bold text-emerald-700 mt-1">₹ 1.8 Cr</div>
           <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-emerald-50 text-emerald-700 mt-1 inline-block">
-            72% Disbursed
+            72% Paid
           </span>
         </div>
       </div>
 
-      {/* Filter Toolbar */}
-      <div className="bg-white border border-slate-200 rounded-2xl p-3.5 shadow-2xs flex flex-col md:flex-row items-center gap-3">
-        <div className="relative flex-1 w-full">
-          <Search className="w-4 h-4 absolute left-3.5 top-1/2 transform -translate-y-1/2 text-slate-400" />
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search project title, ID, team lead, or university..."
-            className="w-full pl-9 pr-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-slate-800 focus:outline-hidden"
-          />
-        </div>
-
-        <div className="w-full md:w-48">
-          <select
-            value={selectedSector}
-            onChange={(e) => setSelectedSector(e.target.value)}
-            className="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-800 focus:bg-white focus:border-slate-800 focus:outline-hidden cursor-pointer"
-          >
-            {SECTOR_OPTIONS.map((sec) => (
-              <option key={sec} value={sec}>
-                {sec}
-              </option>
+      {/* Filter Toolbar & Status Filter Tabs */}
+      <div className="bg-white border border-slate-200 rounded-xl p-3.5 shadow-2xs space-y-3">
+        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-2.5">
+          <div className="flex items-center space-x-1.5">
+            {['All Projects', 'In Progress', 'Completed'].map((tab) => (
+              <button
+                key={tab}
+                type="button"
+                onClick={() => setSelectedStatusTab(tab)}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors cursor-pointer ${
+                  selectedStatusTab === tab
+                    ? 'bg-slate-900 text-white shadow-2xs'
+                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                }`}
+              >
+                {tab} {tab === 'Completed' ? `(${completedProjectsCount})` : ''}
+              </button>
             ))}
-          </select>
-        </div>
+          </div>
 
-        <div className="w-full md:w-44">
-          <select
-            value={selectedDistrict}
-            onChange={(e) => setSelectedDistrict(e.target.value)}
-            className="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-800 focus:bg-white focus:border-slate-800 focus:outline-hidden cursor-pointer"
-          >
-            {DISTRICT_OPTIONS.map((dist) => (
-              <option key={dist} value={dist}>
-                {dist}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div className="flex items-center space-x-1.5 flex-shrink-0">
-          <button
-            type="button"
-            onClick={handleResetFilters}
-            className="p-2 text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-colors cursor-pointer border border-slate-200"
-            title="Reset Filters"
-          >
-            <RotateCcw className="w-4 h-4" />
-          </button>
-
-          <div className="border border-slate-200 rounded-xl p-0.5 bg-slate-50 flex items-center">
+          <div className="border border-slate-200 rounded-lg p-0.5 bg-slate-50 flex items-center">
             <button
               type="button"
               onClick={() => setViewMode('table')}
-              className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
+              className={`p-1.5 rounded transition-colors cursor-pointer ${
                 viewMode === 'table' ? 'bg-white shadow-xs text-slate-900 font-bold' : 'text-slate-400 hover:text-slate-700'
               }`}
               title="Table View"
@@ -295,7 +345,7 @@ export const ActiveProjectsPanel = () => {
             <button
               type="button"
               onClick={() => setViewMode('grid')}
-              className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
+              className={`p-1.5 rounded transition-colors cursor-pointer ${
                 viewMode === 'grid' ? 'bg-white shadow-xs text-slate-900 font-bold' : 'text-slate-400 hover:text-slate-700'
               }`}
               title="Grid View"
@@ -304,193 +354,264 @@ export const ActiveProjectsPanel = () => {
             </button>
           </div>
         </div>
+
+        <div className="flex flex-col md:flex-row items-center gap-3">
+          <div className="relative flex-1 w-full">
+            <Search className="w-4 h-4 absolute left-3.5 top-1/2 transform -translate-y-1/2 text-slate-400" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search project title, ID, team lead, or university..."
+              className="w-full pl-9 pr-3.5 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-medium text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-slate-800 focus:outline-hidden"
+            />
+          </div>
+
+          <div className="w-full md:w-48">
+            <select
+              value={selectedSector}
+              onChange={(e) => setSelectedSector(e.target.value)}
+              className="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-bold text-slate-800 focus:bg-white focus:border-slate-800 focus:outline-hidden cursor-pointer"
+            >
+              {SECTOR_OPTIONS.map((sec) => (
+                <option key={sec} value={sec}>{sec}</option>
+              ))}
+            </select>
+          </div>
+
+          <div className="w-full md:w-44">
+            <select
+              value={selectedDistrict}
+              onChange={(e) => setSelectedDistrict(e.target.value)}
+              className="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-bold text-slate-800 focus:bg-white focus:border-slate-800 focus:outline-hidden cursor-pointer"
+            >
+              {DISTRICT_OPTIONS.map((dist) => (
+                <option key={dist} value={dist}>{dist}</option>
+              ))}
+            </select>
+          </div>
+
+          <button
+            type="button"
+            onClick={handleResetFilters}
+            className="p-2 text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer border border-slate-200"
+            title="Reset Filters"
+          >
+            <RotateCcw className="w-4 h-4" />
+          </button>
+        </div>
       </div>
 
       {/* Main Content: Table or Grid */}
       {viewMode === 'table' ? (
-        <div className="bg-white border border-slate-200 rounded-2xl shadow-2xs overflow-hidden">
+        <div className="bg-white border border-slate-200 rounded-xl shadow-2xs overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="border-b border-slate-200 bg-slate-50/80 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
-                  <th className="py-3 px-4">Project Title & ID</th>
-                  <th className="py-3 px-4">Milestone Phase & Progress</th>
-                  <th className="py-3 px-4">Prototype & TRL</th>
-                  <th className="py-3 px-4">Deployment Status</th>
-                  <th className="py-3 px-4">Grant Disbursal</th>
+                <tr className="border-b border-slate-200 bg-slate-50 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                  <th className="py-3 px-4">Project & Institution</th>
+                  <th className="py-3 px-4">Delivery Stage</th>
+                  <th className="py-3 px-4">Prototype Type</th>
+                  <th className="py-3 px-4">Current Status</th>
+                  <th className="py-3 px-4">Grant Disbursed</th>
                   <th className="py-3 px-4 text-center">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 text-xs">
-                {filteredProjects.map((prj) => (
-                  <tr key={prj.id} className="hover:bg-slate-50/60 transition-colors group cursor-default">
-                    <td className="py-3.5 px-4">
-                      <div className="font-bold text-slate-900 group-hover:text-black">
-                        {prj.title}{' '}
-                        <span className="font-mono text-slate-500 font-semibold text-[11px]">
-                          ({prj.id})
-                        </span>
-                      </div>
-                      <div className="text-[11px] text-slate-500 flex items-center space-x-2 mt-0.5">
-                        <span className="font-medium text-slate-700 flex items-center space-x-1">
-                          <Building2 className="w-3 h-3 text-slate-400" />
-                          <span>{prj.hei}</span>
-                        </span>
-                        <span>•</span>
-                        <span>{prj.sector}</span>
-                        <span>•</span>
-                        <span className="font-semibold text-slate-800">{prj.district}</span>
-                      </div>
-                    </td>
+                {filteredProjects.map((prj) => {
+                  const mList = prj.milestones || [];
+                  const isDone = prj.isCompleted || (mList.length > 0 && mList.every((m) => m.status === 'Completed'));
 
-                    <td className="py-3.5 px-4">
-                      <div className="font-semibold text-slate-800">{prj.milestonePhase}</div>
-                      <div className="flex items-center space-x-2 mt-1">
-                        <div className="w-24 bg-slate-100 h-1.5 rounded-full overflow-hidden">
-                          <div
-                            className="bg-slate-900 h-full rounded-full transition-all duration-300"
-                            style={{ width: `${prj.milestoneProgress || 50}%` }}
-                          />
+                  return (
+                    <tr key={prj.id} className="hover:bg-slate-50/60 transition-colors group cursor-default">
+                      <td className="py-3.5 px-4">
+                        <div className="font-bold text-slate-900 group-hover:text-black">
+                          {prj.title}{' '}
+                          <span className="font-mono text-slate-500 font-semibold text-[11px]">
+                            ({prj.id})
+                          </span>
                         </div>
-                        <span className="text-[10px] font-bold text-slate-600">
-                          {prj.milestoneProgress || 50}%
+                        <div className="text-[11px] text-slate-500 flex items-center space-x-2 mt-0.5">
+                          <span className="font-medium text-slate-700 flex items-center space-x-1">
+                            <Building2 className="w-3 h-3 text-slate-400" />
+                            <span>{prj.hei}</span>
+                          </span>
+                          <span>•</span>
+                          <span>{prj.sector}</span>
+                          <span>•</span>
+                          <span className="font-semibold text-slate-800">{prj.district}</span>
+                        </div>
+                      </td>
+
+                      <td className="py-3.5 px-4">
+                        <div className="font-semibold text-slate-800 flex items-center space-x-1.5">
+                          <span>{prj.milestonePhase}</span>
+                          {isDone && <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />}
+                        </div>
+                        <div className="flex items-center space-x-2 mt-1">
+                          <div className="w-24 bg-slate-100 h-1.5 rounded-full overflow-hidden">
+                            <div
+                              className="bg-slate-900 h-full rounded-full transition-all duration-300"
+                              style={{ width: `${prj.milestoneProgress || 50}%` }}
+                            />
+                          </div>
+                          <span className="text-[10px] font-bold text-slate-600">
+                            {prj.milestoneProgress || 50}%
+                          </span>
+                        </div>
+                      </td>
+
+                      <td className="py-3.5 px-4">
+                        <span className="px-2.5 py-1 rounded-lg text-xs font-mono font-bold bg-slate-100 text-slate-800 border border-slate-200 inline-flex items-center space-x-1">
+                          <span>{prj.prototypeType}</span>
+                          <span className="text-slate-400">|</span>
+                          <span className="font-bold text-slate-900">{prj.trlLevel}</span>
                         </span>
-                      </div>
-                    </td>
+                      </td>
 
-                    <td className="py-3.5 px-4">
-                      <span className="px-2.5 py-1 rounded-lg text-xs font-mono font-bold bg-slate-100 text-slate-800 border border-slate-200 inline-flex items-center space-x-1">
-                        <span>{prj.prototypeType}</span>
-                        <span className="text-slate-400">|</span>
-                        <span className="font-black text-slate-900">{prj.trlLevel}</span>
-                      </span>
-                    </td>
-
-                    <td className="py-3.5 px-4">
-                      <span
-                        className={`inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-bold border ${
-                          prj.deploymentStatus?.includes('Validated') || prj.deploymentStatus?.includes('Active')
-                            ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                            : prj.deploymentStatus === 'In Progress'
-                            ? 'bg-amber-50 text-amber-700 border-amber-200'
-                            : 'bg-slate-100 text-slate-700 border-slate-200'
-                        }`}
-                      >
-                        {prj.deploymentStatus}
-                      </span>
-                    </td>
-
-                    <td className="py-3.5 px-4">
-                      <div className="font-mono font-bold text-slate-900">{prj.disbursedAmount}</div>
-                      <div className="text-[10px] text-slate-500 font-medium">of {prj.sanctionedGrant}</div>
-                    </td>
-
-                    <td className="py-3.5 px-4 text-center">
-                      <div className="flex items-center justify-center space-x-1.5">
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setSelectedProject(prj);
-                            setIsManageModalOpen(true);
-                          }}
-                          className="px-3 py-1 text-xs font-bold text-slate-700 bg-white border border-slate-300 hover:bg-slate-50 rounded-xl transition-colors cursor-pointer"
+                      <td className="py-3.5 px-4">
+                        <span
+                          className={`inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-bold border ${
+                            isDone || prj.deploymentStatus?.includes('Completed')
+                              ? 'bg-emerald-50 text-emerald-800 border-emerald-300 font-black'
+                              : prj.deploymentStatus?.includes('Validated')
+                              ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                              : 'bg-slate-100 text-slate-700 border-slate-200'
+                          }`}
                         >
-                          Manage
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => handleAdvancePhase(prj.id)}
-                          className="p-1 text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer"
-                          title="Advance Milestone Stage"
-                        >
-                          <Zap className="w-3.5 h-3.5 text-amber-600" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
+                          {isDone ? 'Completed ✓' : prj.deploymentStatus}
+                        </span>
+                      </td>
+
+                      <td className="py-3.5 px-4">
+                        <div className="font-mono font-bold text-slate-900">{prj.disbursedAmount}</div>
+                        <div className="text-[10px] text-slate-500 font-medium">of {prj.sanctionedGrant}</div>
+                      </td>
+
+                      <td className="py-3.5 px-4 text-center">
+                        <div className="flex items-center justify-center space-x-1.5">
+                          <button
+                            type="button"
+                            onClick={() => setViewingProject(prj)}
+                            className="px-3 py-1 text-xs font-bold text-white bg-slate-900 hover:bg-slate-800 rounded-lg transition-colors cursor-pointer shadow-2xs"
+                          >
+                            Manage
+                          </button>
+
+                          {!isDone ? (
+                            <button
+                              type="button"
+                              onClick={() => setCompletionModalProject(prj)}
+                              className="px-2.5 py-1 text-xs font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-lg transition-colors cursor-pointer"
+                              title="Mark as Completed"
+                            >
+                              Approve Done
+                            </button>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={() => setCertificateProject(prj)}
+                              className="p-1 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer border border-slate-200"
+                              title="Download Certificate"
+                            >
+                              <Printer className="w-3.5 h-3.5" />
+                            </button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filteredProjects.map((prj) => (
-            <div
-              key={prj.id}
-              className="bg-white border border-slate-200 rounded-2xl p-5 shadow-2xs hover:shadow-xs hover:border-slate-300 transition-all flex flex-col justify-between space-y-4"
-            >
-              <div>
-                <div className="flex items-start justify-between gap-2">
-                  <div>
-                    <span className="px-2 py-0.5 rounded-md font-mono text-[10px] font-bold bg-slate-900 text-white">
-                      {prj.id}
-                    </span>
-                    <span className="text-xs font-bold text-slate-500 ml-2">{prj.sector}</span>
-                    <h3 className="text-sm font-bold text-slate-900 mt-2">{prj.title}</h3>
+          {filteredProjects.map((prj) => {
+            const mList = prj.milestones || [];
+            const isDone = prj.isCompleted || (mList.length > 0 && mList.every((m) => m.status === 'Completed'));
+
+            return (
+              <div
+                key={prj.id}
+                className="bg-white border border-slate-200 rounded-xl p-5 shadow-2xs hover:shadow-xs transition-all flex flex-col justify-between space-y-4"
+              >
+                <div>
+                  <div className="flex items-start justify-between gap-2">
+                    <div>
+                      <span className="px-2 py-0.5 rounded font-mono text-[10px] font-black bg-slate-900 text-white">
+                        {prj.id}
+                      </span>
+                      <span className="text-xs font-bold text-slate-500 ml-2">{prj.sector}</span>
+                      <h3 className="text-sm font-bold text-slate-900 mt-2">{prj.title}</h3>
+                    </div>
+                  </div>
+
+                  <div className="mt-3 space-y-2 text-xs">
+                    <div className="flex justify-between items-center text-[11px]">
+                      <span className="text-slate-500">Institution:</span>
+                      <span className="font-semibold text-slate-800">{prj.hei}</span>
+                    </div>
+                    <div className="flex justify-between items-center text-[11px]">
+                      <span className="text-slate-500">Stage:</span>
+                      <span className="font-semibold text-slate-900">{prj.milestonePhase}</span>
+                    </div>
+                    <div>
+                      <div className="flex justify-between text-[10px] font-bold text-slate-600 mb-1">
+                        <span>Progress</span>
+                        <span>{prj.milestoneProgress || 50}%</span>
+                      </div>
+                      <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
+                        <div className="bg-slate-900 h-full rounded-full" style={{ width: `${prj.milestoneProgress || 50}%` }} />
+                      </div>
+                    </div>
                   </div>
                 </div>
 
-                <div className="mt-3 space-y-2 text-xs">
-                  <div className="flex justify-between items-center text-[11px]">
-                    <span className="text-slate-500">Institution:</span>
-                    <span className="font-semibold text-slate-800">{prj.hei}</span>
-                  </div>
-                  <div className="flex justify-between items-center text-[11px]">
-                    <span className="text-slate-500">Milestone Stage:</span>
-                    <span className="font-semibold text-slate-900">{prj.milestonePhase}</span>
-                  </div>
-                  <div>
-                    <div className="flex justify-between text-[10px] font-bold text-slate-600 mb-1">
-                      <span>Progress</span>
-                      <span>{prj.milestoneProgress || 50}%</span>
-                    </div>
-                    <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
-                      <div className="bg-slate-900 h-full rounded-full" style={{ width: `${prj.milestoneProgress || 50}%` }} />
-                    </div>
-                  </div>
+                <div className="pt-3 border-t border-slate-100 flex items-center justify-between">
+                  <span className="text-[11px] font-mono font-bold text-slate-800">{prj.disbursedAmount}</span>
+                  <button
+                    type="button"
+                    onClick={() => setViewingProject(prj)}
+                    className="px-3.5 py-1 text-xs font-bold text-white bg-slate-900 hover:bg-slate-800 rounded-lg transition-colors cursor-pointer shadow-2xs"
+                  >
+                    Manage Details
+                  </button>
                 </div>
               </div>
-
-              <div className="pt-3 border-t border-slate-100 flex items-center justify-between">
-                <span className="text-[11px] font-mono font-bold text-slate-800">{prj.disbursedAmount}</span>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setSelectedProject(prj);
-                    setIsManageModalOpen(true);
-                  }}
-                  className="px-3.5 py-1 text-xs font-bold text-slate-700 bg-white border border-slate-300 hover:bg-slate-50 rounded-xl transition-colors cursor-pointer"
-                >
-                  Manage Details
-                </button>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
 
-      {/* Modals */}
-      <ProjectManageModal
-        project={selectedProject}
-        isOpen={isManageModalOpen}
-        onClose={() => {
-          setIsManageModalOpen(false);
-          setSelectedProject(null);
-        }}
-        onUpdateMilestoneStatus={(prjId, mId, status) => handleUpdateMilestoneStatus(prjId, mId, status)}
-        onValidateDeployment={(prjId) => {
-          setProjects((prev) =>
-            prev.map((p) => (p.id === prjId ? { ...p, deploymentStatus: 'Validated ✓' } : p))
-          );
-          showToast(`State deployment certificate issued for project ${prjId}.`);
-        }}
-      />
-
+      {/* Add Project Modal */}
       <AddProjectModal
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
-        onSubmit={(newPrj) => handleAddNewProject(newPrj)}
+        onSubmit={handleAddNewProject}
+      />
+
+      {/* Certificate Modal */}
+      <ProjectCertificateModal
+        project={certificateProject}
+        isOpen={Boolean(certificateProject)}
+        onClose={() => setCertificateProject(null)}
+      />
+
+      {/* Email Notification Modal */}
+      <ValidationEmailModal
+        project={emailProject}
+        isOpen={Boolean(emailProject)}
+        onClose={() => setEmailProject(null)}
+      />
+
+      {/* Final Completion Modal */}
+      <FinalProjectCompletionModal
+        project={completionModalProject}
+        isOpen={Boolean(completionModalProject)}
+        onClose={() => setCompletionModalProject(null)}
+        onConfirmCompletion={handleApproveCompletion}
       />
     </div>
   );

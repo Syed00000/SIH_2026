@@ -21,7 +21,7 @@ import {
 } from 'lucide-react';
 
 import ProjectKpiCards from './ProjectKpiCards.jsx';
-import ProjectTelemetryMap from './ProjectTelemetryMap.jsx';
+import ProjectLeafletMap from './ProjectLeafletMap.jsx';
 import {
   PROJECTS_AND_SOLUTIONS_KPIS,
   FINANCIAL_GRANT_METRICS,
@@ -195,9 +195,10 @@ export const ProjectsOverviewPanel = ({ onNavigateTab }) => {
       </div>
 
       {/* 4. Real-time Geospatial Telemetry & Node Map */}
-      <ProjectTelemetryMap
+      <ProjectLeafletMap
         onSelectDistrict={(dist) => onNavigateTab && onNavigateTab('projects_deployment')}
         onSelectProject={() => onNavigateTab && onNavigateTab('projects_active')}
+        height="380px"
       />
 
       {/* 4. Analytics & Attention Required Grid */}

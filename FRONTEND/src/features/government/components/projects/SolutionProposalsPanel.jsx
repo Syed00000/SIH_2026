@@ -14,7 +14,6 @@ import {
   Check,
   ChevronRight,
   Sparkles,
-  SlidersHorizontal,
   Table,
   Grid,
   IndianRupee,
@@ -23,24 +22,38 @@ import {
   Award
 } from 'lucide-react';
 
-import { ProposalReviewModal } from './ProposalReviewModal.jsx';
+import { ProposalDetailView } from './ProposalDetailView.jsx';
 import { SECTOR_OPTIONS, DISTRICT_OPTIONS, INITIAL_SOLUTION_PROPOSALS } from '../../data/projectsSolutionsData.js';
 
 export const SolutionProposalsPanel = () => {
-  const [proposals, setProposals] = useState(INITIAL_SOLUTION_PROPOSALS);
+  const [proposals, setProposals] = useState(() => {
+    try {
+      const saved = localStorage.getItem('joharsetu_solution_proposals');
+      if (saved) return JSON.parse(saved);
+    } catch {}
+    return INITIAL_SOLUTION_PROPOSALS;
+  });
+
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedSector, setSelectedSector] = useState('All Sectors');
   const [selectedDistrict, setSelectedDistrict] = useState('All Districts');
   const [selectedStatus, setSelectedStatus] = useState('All Status');
   const [viewMode, setViewMode] = useState('cards'); // 'cards' | 'table'
 
-  const [selectedProposal, setSelectedProposal] = useState(null);
-  const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
+  // Full Page Proposal Detail State
+  const [viewingProposal, setViewingProposal] = useState(null);
   const [notification, setNotification] = useState(null);
 
   const showToast = (msg, type = 'success') => {
     setNotification({ msg, type });
     setTimeout(() => setNotification(null), 3500);
+  };
+
+  const saveProposals = (updatedList) => {
+    setProposals(updatedList);
+    try {
+      localStorage.setItem('joharsetu_solution_proposals', JSON.stringify(updatedList));
+    } catch {}
   };
 
   const filteredProposals = useMemo(() => {
@@ -74,26 +87,30 @@ export const SolutionProposalsPanel = () => {
 
   // Action: Approve Grant
   const handleApproveGrant = (proposal, remarks = '') => {
-    setProposals((prev) =>
-      prev.map((p) =>
-        p.id === proposal.id
-          ? { ...p, status: 'Approved', reviewerNotes: remarks || 'Grant approved by administration.' }
-          : p
-      )
+    const updated = proposals.map((p) =>
+      p.id === proposal.id
+        ? { ...p, status: 'Approved', reviewerNotes: remarks || 'Grant approved by administration.' }
+        : p
     );
+    saveProposals(updated);
+    if (viewingProposal && viewingProposal.id === proposal.id) {
+      setViewingProposal(updated.find((p) => p.id === proposal.id));
+    }
     showToast(`Grant sanctioned for "${proposal.title}" (${proposal.id}).`);
   };
 
   // Action: Reject Proposal
   const handleRejectProposal = (proposal, remarks = '') => {
-    setProposals((prev) =>
-      prev.map((p) =>
-        p.id === proposal.id
-          ? { ...p, status: 'Rejected', reviewerNotes: remarks || 'Proposal rejected.' }
-          : p
-      )
+    const updated = proposals.map((p) =>
+      p.id === proposal.id
+        ? { ...p, status: 'Rejected', reviewerNotes: remarks || 'Proposal rejected.' }
+        : p
     );
-    showToast(`Proposal "${proposal.id}" has been rejected.`, 'info');
+    saveProposals(updated);
+    if (viewingProposal && viewingProposal.id === proposal.id) {
+      setViewingProposal(updated.find((p) => p.id === proposal.id));
+    }
+    showToast(`Proposal "${proposal.id}" marked as rejected.`, 'info');
   };
 
   const getStatusBadge = (status) => {
@@ -117,24 +134,30 @@ export const SolutionProposalsPanel = () => {
     }
   };
 
+  // If viewing detailed full-page proposal review
+  if (viewingProposal) {
+    return (
+      <ProposalDetailView
+        proposal={viewingProposal}
+        onBack={() => setViewingProposal(null)}
+        onApproveGrant={handleApproveGrant}
+        onRejectProposal={handleRejectProposal}
+      />
+    );
+  }
+
   return (
     <div className="space-y-6 max-w-7xl mx-auto pb-12 select-none animate-fadeIn">
       {/* Toast Notification */}
       {notification && (
-        <div
-          className={`fixed bottom-6 right-6 z-50 px-4 py-3 rounded-2xl shadow-xl border text-xs font-bold flex items-center space-x-2 animate-slideUp ${
-            notification.type === 'error'
-              ? 'bg-red-900 text-white border-red-800'
-              : 'bg-slate-900 text-white border-slate-800'
-          }`}
-        >
+        <div className="fixed bottom-6 right-6 z-50 px-4 py-3 rounded-xl shadow-xl border text-xs font-bold flex items-center space-x-2 bg-slate-900 text-white border-slate-800 animate-slideUp">
           <CheckCircle2 className="w-4 h-4 text-emerald-400" />
           <span>{notification.msg}</span>
         </div>
       )}
 
       {/* Header Banner */}
-      <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <div className="flex items-center space-x-2 text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">
             <span className="flex items-center space-x-1">
@@ -144,36 +167,36 @@ export const SolutionProposalsPanel = () => {
             <span>•</span>
             <span className="text-slate-700">Proposal Queue & Evaluation</span>
           </div>
-          <h1 className="text-lg font-black text-slate-900 tracking-tight">
+          <h1 className="text-lg font-bold text-slate-900 tracking-tight">
             SOLUTION PROPOSALS & GRANT APPLICATIONS
           </h1>
           <p className="text-xs text-slate-500 font-medium">
-            Academic & innovator proposals submitted for Jharkhand state societal challenges
+            Academic & innovator proposals submitted for Jharkhand state challenges
           </p>
         </div>
 
-        <span className="text-xs font-bold px-3 py-1.5 rounded-xl bg-slate-100 text-slate-700 border border-slate-200">
+        <span className="text-xs font-bold px-3 py-1.5 rounded-lg bg-slate-100 text-slate-700 border border-slate-200">
           {proposals.length} Total Applications in Queue
         </span>
       </div>
 
       {/* Top Metric Summary Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-5 gap-3">
-        <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-2xs">
+        <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-2xs">
           <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">
             Total Submissions
           </span>
-          <div className="text-2xl font-black text-slate-900 mt-1">{proposals.length}</div>
+          <div className="text-2xl font-bold text-slate-900 mt-1">{proposals.length}</div>
           <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-slate-100 text-slate-700 mt-1 inline-block">
             +8 this month
           </span>
         </div>
 
-        <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-2xs">
+        <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-2xs">
           <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">
             Pending Review
           </span>
-          <div className="text-2xl font-black text-amber-700 mt-1">
+          <div className="text-2xl font-bold text-amber-700 mt-1">
             {proposals.filter((p) => p.status === 'Pending Review' || p.status === 'New Submission').length}
           </div>
           <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-amber-50 text-amber-700 mt-1 inline-block">
@@ -181,23 +204,23 @@ export const SolutionProposalsPanel = () => {
           </span>
         </div>
 
-        <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-2xs">
+        <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-2xs">
           <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">
             High Priority
           </span>
-          <div className="text-2xl font-black text-red-700 mt-1">
+          <div className="text-2xl font-bold text-red-700 mt-1">
             {proposals.filter((p) => p.status === 'High Priority').length}
           </div>
           <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-red-50 text-red-700 mt-1 inline-block">
-            Critical Impact
+            Critical Need
           </span>
         </div>
 
-        <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-2xs">
+        <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-2xs">
           <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">
             Approved Grants
           </span>
-          <div className="text-2xl font-black text-emerald-700 mt-1">
+          <div className="text-2xl font-bold text-emerald-700 mt-1">
             {proposals.filter((p) => p.status === 'Approved' || p.status === 'Verified').length}
           </div>
           <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-emerald-50 text-emerald-700 mt-1 inline-block">
@@ -205,19 +228,19 @@ export const SolutionProposalsPanel = () => {
           </span>
         </div>
 
-        <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-2xs">
+        <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-2xs">
           <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">
             Avg Score
           </span>
-          <div className="text-2xl font-black text-slate-900 mt-1">91.4 / 100</div>
+          <div className="text-2xl font-bold text-slate-900 mt-1">91.4 / 100</div>
           <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-blue-50 text-blue-700 mt-1 inline-block">
-            Expert Evaluated
+            Evaluated
           </span>
         </div>
       </div>
 
       {/* Filter Toolbar */}
-      <div className="bg-white border border-slate-200 rounded-2xl p-3.5 shadow-2xs flex flex-col md:flex-row items-center gap-3">
+      <div className="bg-white border border-slate-200 rounded-xl p-3.5 shadow-2xs flex flex-col md:flex-row items-center gap-3">
         <div className="relative flex-1 w-full">
           <Search className="w-4 h-4 absolute left-3.5 top-1/2 transform -translate-y-1/2 text-slate-400" />
           <input
@@ -225,7 +248,7 @@ export const SolutionProposalsPanel = () => {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search proposal title, ID, team lead, or university..."
-            className="w-full pl-9 pr-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-slate-800 focus:outline-hidden"
+            className="w-full pl-9 pr-3.5 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-medium text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-slate-800 focus:outline-hidden"
           />
         </div>
 
@@ -233,7 +256,7 @@ export const SolutionProposalsPanel = () => {
           <select
             value={selectedSector}
             onChange={(e) => setSelectedSector(e.target.value)}
-            className="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-800 focus:bg-white focus:border-slate-800 focus:outline-hidden cursor-pointer"
+            className="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-bold text-slate-800 focus:bg-white focus:border-slate-800 focus:outline-hidden cursor-pointer"
           >
             {SECTOR_OPTIONS.map((sec) => (
               <option key={sec} value={sec}>
@@ -247,7 +270,7 @@ export const SolutionProposalsPanel = () => {
           <select
             value={selectedStatus}
             onChange={(e) => setSelectedStatus(e.target.value)}
-            className="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-800 focus:bg-white focus:border-slate-800 focus:outline-hidden cursor-pointer"
+            className="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-bold text-slate-800 focus:bg-white focus:border-slate-800 focus:outline-hidden cursor-pointer"
           >
             <option value="All Status">All Status</option>
             <option value="New Submission">New Submission</option>
@@ -259,21 +282,21 @@ export const SolutionProposalsPanel = () => {
           </select>
         </div>
 
-        <div className="flex items-center space-x-1.5 flex-shrink-0">
+        <div className="flex items-center space-x-1.5 shrink-0">
           <button
             type="button"
             onClick={handleResetFilters}
-            className="p-2 text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-colors cursor-pointer border border-slate-200"
+            className="p-2 text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer border border-slate-200"
             title="Reset Filters"
           >
             <RotateCcw className="w-4 h-4" />
           </button>
 
-          <div className="border border-slate-200 rounded-xl p-0.5 bg-slate-50 flex items-center">
+          <div className="border border-slate-200 rounded-lg p-0.5 bg-slate-50 flex items-center">
             <button
               type="button"
               onClick={() => setViewMode('cards')}
-              className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
+              className={`p-1.5 rounded transition-colors cursor-pointer ${
                 viewMode === 'cards' ? 'bg-white shadow-xs text-slate-900 font-bold' : 'text-slate-400 hover:text-slate-700'
               }`}
               title="Cards Queue View"
@@ -283,7 +306,7 @@ export const SolutionProposalsPanel = () => {
             <button
               type="button"
               onClick={() => setViewMode('table')}
-              className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
+              className={`p-1.5 rounded transition-colors cursor-pointer ${
                 viewMode === 'table' ? 'bg-white shadow-xs text-slate-900 font-bold' : 'text-slate-400 hover:text-slate-700'
               }`}
               title="Table View"
@@ -303,10 +326,10 @@ export const SolutionProposalsPanel = () => {
             return (
               <div
                 key={proposal.id}
-                className="bg-white border border-slate-200 rounded-2xl p-5 shadow-2xs hover:shadow-xs hover:border-slate-300 transition-all flex flex-col md:flex-row md:items-center justify-between gap-4"
+                className="bg-white border border-slate-200 rounded-xl p-5 shadow-2xs hover:shadow-xs transition-all flex flex-col md:flex-row md:items-center justify-between gap-4"
               >
                 <div className="flex items-start space-x-3.5 min-w-0">
-                  <div className="w-10 h-10 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-center font-bold text-slate-700 flex-shrink-0">
+                  <div className="w-10 h-10 rounded-lg bg-slate-50 border border-slate-200 flex items-center justify-center font-bold text-slate-700 shrink-0">
                     <FileText className="w-5 h-5 text-slate-600" />
                   </div>
 
@@ -341,40 +364,37 @@ export const SolutionProposalsPanel = () => {
                       <span>•</span>
                       <span>{proposal.district}</span>
                       <span>•</span>
-                      <span className="font-mono font-bold text-slate-900 bg-slate-50 px-2 py-0.5 rounded-md border border-slate-200">
+                      <span className="font-mono font-bold text-slate-900 bg-slate-50 px-2 py-0.5 rounded border border-slate-200">
                         {proposal.requestedGrant}
                       </span>
                     </div>
                   </div>
                 </div>
 
-                <div className="flex items-center space-x-2 flex-shrink-0 self-end md:self-center">
+                <div className="flex items-center space-x-2 shrink-0 self-end md:self-center">
                   {!isApproved ? (
                     <button
                       type="button"
                       onClick={() => handleApproveGrant(proposal)}
-                      className="px-3.5 py-1.5 text-xs font-bold text-white bg-slate-900 hover:bg-slate-800 rounded-xl transition-colors cursor-pointer flex items-center space-x-1.5 shadow-2xs"
+                      className="px-3.5 py-1.5 text-xs font-bold text-white bg-slate-900 hover:bg-slate-800 rounded-lg transition-colors cursor-pointer flex items-center space-x-1.5 shadow-2xs"
                     >
                       <Check className="w-3.5 h-3.5 text-emerald-400" />
                       <span>Approve Grant</span>
                     </button>
                   ) : (
-                    <span className="px-3 py-1 text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center space-x-1">
+                    <span className="px-3 py-1 text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-lg flex items-center space-x-1">
                       <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-                      <span>Grant Sanctioned</span>
+                      <span>Sanctioned</span>
                     </span>
                   )}
 
                   <button
                     type="button"
-                    onClick={() => {
-                      setSelectedProposal(proposal);
-                      setIsReviewModalOpen(true);
-                    }}
-                    className="px-3.5 py-1.5 text-xs font-bold text-slate-700 bg-white border border-slate-300 hover:bg-slate-50 rounded-xl transition-colors cursor-pointer flex items-center space-x-1.5"
+                    onClick={() => setViewingProposal(proposal)}
+                    className="px-3.5 py-1.5 text-xs font-bold text-slate-700 bg-white border border-slate-300 hover:bg-slate-50 rounded-lg transition-colors cursor-pointer flex items-center space-x-1.5"
                   >
                     <Eye className="w-3.5 h-3.5 text-slate-500" />
-                    <span>Review Dossier</span>
+                    <span>Review DPR</span>
                   </button>
                 </div>
               </div>
@@ -382,11 +402,11 @@ export const SolutionProposalsPanel = () => {
           })}
         </div>
       ) : (
-        <div className="bg-white border border-slate-200 rounded-2xl shadow-2xs overflow-hidden">
+        <div className="bg-white border border-slate-200 rounded-xl shadow-2xs overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="border-b border-slate-200 bg-slate-50/80 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                <tr className="border-b border-slate-200 bg-slate-50 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
                   <th className="py-3 px-4">Proposal & ID</th>
                   <th className="py-3 px-4">Submitting Institution</th>
                   <th className="py-3 px-4">Sector / District</th>
@@ -421,11 +441,8 @@ export const SolutionProposalsPanel = () => {
                     <td className="py-3.5 px-4 text-center">
                       <button
                         type="button"
-                        onClick={() => {
-                          setSelectedProposal(prop);
-                          setIsReviewModalOpen(true);
-                        }}
-                        className="px-3 py-1 text-xs font-bold text-slate-700 bg-white border border-slate-300 hover:bg-slate-50 rounded-xl transition-colors cursor-pointer"
+                        onClick={() => setViewingProposal(prop)}
+                        className="px-3 py-1 text-xs font-bold text-white bg-slate-900 hover:bg-slate-800 rounded-lg transition-colors cursor-pointer shadow-2xs"
                       >
                         Review DPR
                       </button>
@@ -437,18 +454,6 @@ export const SolutionProposalsPanel = () => {
           </div>
         </div>
       )}
-
-      {/* Review Modal */}
-      <ProposalReviewModal
-        proposal={selectedProposal}
-        isOpen={isReviewModalOpen}
-        onClose={() => {
-          setIsReviewModalOpen(false);
-          setSelectedProposal(null);
-        }}
-        onApproveGrant={(prop, remarks) => handleApproveGrant(prop, remarks)}
-        onRejectProposal={(prop, remarks) => handleRejectProposal(prop, remarks)}
-      />
     </div>
   );
 };
