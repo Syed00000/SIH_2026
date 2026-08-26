@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 
 import { ProjectManageModal } from './ProjectManageModal.jsx';
+import { ProjectTelemetryMap } from './ProjectTelemetryMap.jsx';
 import { INITIAL_ACTIVE_PROJECTS, DISTRICT_OPTIONS } from '../../data/projectsSolutionsData.js';
 
 export const DeploymentTelemetryPanel = () => {
@@ -136,6 +137,13 @@ export const DeploymentTelemetryPanel = () => {
           </span>
         </div>
       </div>
+
+      {/* Interactive Geospatial Telemetry & Sensor Network Map */}
+      <ProjectTelemetryMap
+        activeDistrict={selectedDistrict}
+        onSelectDistrict={(dist) => setSelectedDistrict(dist)}
+        onSelectProject={(node) => setSelectedDistrict(node.name)}
+      />
 
       {/* Filter Toolbar */}
       <div className="bg-white border border-slate-200 rounded-2xl p-3.5 shadow-2xs flex flex-col md:flex-row items-center gap-3">
