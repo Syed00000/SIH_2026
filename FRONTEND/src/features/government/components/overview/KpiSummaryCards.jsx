@@ -1,5 +1,5 @@
 import React from 'react';
-import { ClipboardList, Building2, IndianRupee, CheckCircle2 } from 'lucide-react';
+import { ClipboardList, Building2, IndianRupee, CheckCircle2, TrendingUp, Sparkles } from 'lucide-react';
 
 export const KpiSummaryCards = ({ kpis }) => {
   const cards = [
@@ -7,25 +7,37 @@ export const KpiSummaryCards = ({ kpis }) => {
       title: "Problems Received",
       value: kpis?.problemsReceived?.value || "12,450",
       growth: kpis?.problemsReceived?.growthText || "+320 this week",
-      icon: ClipboardList
+      icon: ClipboardList,
+      accentColor: "#3b82f6",
+      bgLight: "bg-blue-50/70 text-blue-700 border-blue-100",
+      indicator: "Total Inflow"
     },
     {
       title: "Active HEIs",
-      value: kpis?.activeHeis?.value || "340",
-      growth: kpis?.activeHeis?.growthText || "+18 this month",
-      icon: Building2
+      value: kpis?.activeHeis?.value || "12",
+      growth: kpis?.activeHeis?.growthText || "100% Accredited",
+      icon: Building2,
+      accentColor: "#8b5cf6",
+      bgLight: "bg-purple-50/70 text-purple-700 border-purple-100",
+      indicator: "All 24 Districts"
     },
     {
       title: "CSR Funds Committed",
-      value: kpis?.csrFunds?.value || "₹4.2 Cr",
-      growth: kpis?.csrFunds?.growthText || "+₹1.1 Cr this month",
-      icon: IndianRupee
+      value: kpis?.csrFunds?.value || "₹0.00 Cr",
+      growth: kpis?.csrFunds?.growthText || "Committed Funds",
+      icon: IndianRupee,
+      accentColor: "#f59e0b",
+      bgLight: "bg-amber-50/70 text-amber-700 border-amber-100",
+      indicator: "Govt. Approved"
     },
     {
       title: "Problems Solved",
-      value: kpis?.problemsSolved?.value || kpis?.solvedProblems?.value || "10,850",
-      growth: kpis?.problemsSolved?.growthText || "+410 this week",
-      icon: CheckCircle2
+      value: kpis?.problemsSolved?.value || kpis?.solvedProblems?.value || "10,854",
+      growth: kpis?.problemsSolved?.growthText || "+414 this week",
+      icon: CheckCircle2,
+      accentColor: "#10b981",
+      bgLight: "bg-emerald-50/70 text-emerald-700 border-emerald-100",
+      indicator: "87.2% Resolution"
     }
   ];
 
@@ -36,25 +48,30 @@ export const KpiSummaryCards = ({ kpis }) => {
         return (
           <div
             key={idx}
-            className="bg-white border border-slate-200/90 rounded-2xl p-3.5 shadow-xs hover:shadow-sm transition-all duration-200 flex items-center space-x-3.5"
+            className="bg-white border border-slate-200/80 hover:border-slate-300/90 rounded-xl p-4 shadow-[0_1px_3px_rgba(15,23,42,0.03)] hover:shadow-[0_8px_24px_-6px_rgba(15,23,42,0.07)] transition-all duration-300 flex flex-col justify-between relative overflow-hidden group"
           >
-            {/* Left Icon - Clean with NO colorful background */}
-            <div className="w-10 h-10 flex items-center justify-center shrink-0 text-slate-700">
-              <IconComponent className="w-5 h-5 text-slate-800" />
+            {/* Top Row: Icon & Status Tag */}
+            <div className="flex items-center justify-between mb-2.5">
+              <IconComponent className="w-5 h-5 text-slate-700 transition-colors group-hover:text-slate-900" />
+              <span className="text-[9.5px] font-bold text-slate-400 bg-slate-50 border border-slate-200/60 px-2 py-0.5 rounded-full uppercase tracking-wider">
+                {card.indicator}
+              </span>
             </div>
 
-            {/* Right Text Content */}
-            <div className="space-y-0.5 min-w-0">
-              <div className="text-2xl font-bold tracking-tight text-slate-900 leading-none">
+            {/* Middle Row: Numbers & Title */}
+            <div className="space-y-1 my-0.5">
+              <div className="text-2xl font-black tracking-tight text-slate-900 leading-none">
                 {card.value}
               </div>
-              <div className="text-xs font-medium text-slate-500 truncate">
+              <div className="text-xs font-semibold text-slate-500 truncate">
                 {card.title}
               </div>
-              <div className="flex items-center text-[11px] font-semibold text-emerald-600">
-                <span>{card.growth}</span>
-                <span className="ml-1">↑</span>
-              </div>
+            </div>
+
+            {/* Bottom Row: Growth Badge */}
+            <div className="flex items-center space-x-1.5 pt-2.5 mt-2 border-t border-slate-100 text-[11px] font-bold text-emerald-600">
+              <TrendingUp className="w-3.5 h-3.5 shrink-0" />
+              <span>{card.growth}</span>
             </div>
           </div>
         );
