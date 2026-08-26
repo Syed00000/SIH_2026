@@ -79,14 +79,14 @@ export const AllocationOverride = ({
           ))}
         </select>
 
-        <div className="relative flex-1 min-w-[200px] p-3">
-          <Search className="absolute left-2.5  top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 " />
+        <div className="relative flex-1 min-w-[200px]">
+          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none" />
           <input
             type="text"
             placeholder="Search by Problem ID or Title..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full p-2 pl-8.5 pr-3 py-1.2 border border-slate-200 focus:border-blue-500 outline-hidden bg-slate-50 rounded-xl text-[10.5px] font-medium text-slate-800"
+            className="w-full pl-8 pr-3 py-1.5 border border-slate-200 focus:border-blue-400 outline-none bg-slate-50 rounded-xl text-[10.5px] font-medium text-slate-800 placeholder:text-slate-400"
           />
         </div>
       </div>
@@ -120,26 +120,26 @@ export const AllocationOverride = ({
                   </span>
                 </td>
                 <td className="py-3 px-3">
-                  <span className={`px-2 py-0.5 rounded-full text-[9.5px] font-bold ${item.priority === 'High'
-                    ? 'bg-red-50 text-red-600 border border-red-100'
-                    : item.priority === 'Medium'
-                      ? 'bg-amber-50 text-amber-600 border border-amber-100'
-                      : 'bg-slate-50 text-slate-500 border border-slate-200/50'
-                    }`}>
-                    {item.priority}
-                  </span>
+                  <div className="flex items-center space-x-1.5">
+                    <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${
+                      item.priority === 'High' ? 'bg-rose-500'
+                      : item.priority === 'Medium' ? 'bg-amber-400'
+                      : 'bg-slate-300'
+                    }`} />
+                    <span className="text-[10.5px] font-medium text-slate-700">{item.priority}</span>
+                  </div>
                 </td>
                 <td className="py-3 px-3">
-                  <span className={`px-2 py-0.8 rounded-lg text-[9.5px] font-bold ${item.status === 'Reassignment Requested'
-                    ? 'bg-amber-50 text-amber-600 border border-amber-200'
-                    : item.status === 'Pending'
-                      ? 'bg-blue-50 text-blue-600 border border-blue-200'
-                      : item.status === 'Reassigned'
-                        ? 'bg-emerald-50 text-emerald-600 border border-emerald-200'
-                        : 'bg-slate-100 text-slate-600 border border-slate-200/60'
-                    }`}>
-                    {item.status}
-                  </span>
+                  <div className="flex items-center space-x-1.5">
+                    <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${
+                      item.status === 'Reassignment Requested' ? 'bg-amber-400'
+                      : item.status === 'Pending' ? 'bg-slate-400'
+                      : item.status === 'Reassigned' ? 'bg-emerald-500'
+                      : item.status === 'Completed' ? 'bg-blue-500'
+                      : 'bg-slate-300'
+                    }`} />
+                    <span className="text-[10.5px] font-medium text-slate-700 whitespace-nowrap">{item.status}</span>
+                  </div>
                 </td>
                 <td className="py-3 px-3 text-center">
                   {['Pending', 'Reassignment Requested'].includes(item.status) ? (

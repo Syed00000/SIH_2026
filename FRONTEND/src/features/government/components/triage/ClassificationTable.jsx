@@ -66,47 +66,71 @@ export const ClassificationTable = ({ issues, onInspectIssue, onRefresh }) => {
         </div>
       </div>
 
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Issue ID</TableHead>
-            <TableHead>Problem Statement</TableHead>
-            <TableHead>District</TableHead>
-            <TableHead>AI Classified Sector</TableHead>
-            <TableHead>Confidence</TableHead>
-            <TableHead>Sub-Sector</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead className="text-right">Action</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {filteredIssues.map((row) => (
-            <TableRow key={row.id}>
-              <TableCell className="font-bold text-slate-900 whitespace-nowrap">{row.id}</TableCell>
-              <TableCell className="max-w-[220px] truncate font-medium text-slate-800">{row.title}</TableCell>
-              <TableCell className="text-slate-600 whitespace-nowrap">{row.district}</TableCell>
-              <TableCell className="whitespace-nowrap">
-                <span className="inline-flex items-center text-slate-800 font-semibold text-xs">
-                  {getDomainIcon(row.domain)}
-                  {row.domain}
-                </span>
-              </TableCell>
-              <TableCell className="whitespace-nowrap">{getConfidenceBadge(row.confidence)}</TableCell>
-              <TableCell className="text-slate-500 text-xs truncate max-w-[120px]">{row.subSector}</TableCell>
-              <TableCell className="whitespace-nowrap">
-                <Badge variant={row.status === 'Auto-Routed' ? 'info' : 'default'} className="font-medium">
-                  {row.status}
-                </Badge>
-              </TableCell>
-              <TableCell className="text-right whitespace-nowrap">
-                <Button size="sm" variant="ghost" onClick={() => onInspectIssue(row)} className="h-7 text-xs text-blue-600 hover:text-blue-800">
-                  <Eye className="w-3.5 h-3.5 mr-1" /> Inspect
-                </Button>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+      <div className="w-full overflow-hidden">
+        <table className="w-full text-left text-xs border-collapse table-fixed">
+          <thead className="border-b border-slate-100 bg-slate-50/70 text-[10px] uppercase font-bold text-slate-400">
+            <tr>
+              <th className="py-2.5 px-3 w-[13%]">Issue ID</th>
+              <th className="py-2.5 px-2.5 w-[27%]">Problem Statement</th>
+              <th className="py-2.5 px-2 w-[10%]">District</th>
+              <th className="py-2.5 px-2 w-[16%]">Classified Sector</th>
+              <th className="py-2.5 px-1.5 w-[8%] text-center">Confidence</th>
+              <th className="py-2.5 px-2 w-[10%]">Sub-Sector</th>
+              <th className="py-2.5 px-1.5 w-[8%]">Status</th>
+              <th className="py-2.5 px-2 w-[8%] text-center">Action</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-slate-100">
+            {filteredIssues.map((row) => (
+              <tr key={row.id} className="hover:bg-slate-50/60 transition-colors">
+                <td className="py-3 px-3 font-mono font-bold text-slate-900 text-[11px] truncate">
+                  {row.id}
+                </td>
+                <td className="py-3 px-2.5 font-medium text-slate-800 text-[11px] truncate" title={row.title}>
+                  {row.title}
+                </td>
+                <td className="py-3 px-2 text-slate-600 text-[10.5px] truncate">
+                  {row.district}
+                </td>
+                <td className="py-3 px-2 truncate">
+                  <span className="inline-flex items-center text-slate-800 font-semibold text-[10.5px] truncate">
+                    {getDomainIcon(row.domain)}
+                    <span className="truncate">{row.domain}</span>
+                  </span>
+                </td>
+                <td className="py-3 px-1.5 text-center">
+                  <span className="font-mono text-[11px] font-bold text-slate-800">
+                    {row.confidence}%
+                  </span>
+                </td>
+                <td className="py-3 px-2 text-slate-500 text-[10px] truncate" title={row.subSector}>
+                  {row.subSector}
+                </td>
+                <td className="py-3 px-1.5">
+                  <div className="flex items-center space-x-1.5">
+                    <span
+                      className={`w-1.5 h-1.5 rounded-full shrink-0 ${
+                        row.status === 'Auto-Routed' ? 'bg-emerald-500' : 'bg-amber-500'
+                      }`}
+                    />
+                    <span className="text-[10.5px] font-medium text-slate-700 whitespace-nowrap">
+                      {row.status === 'Auto-Routed' ? 'Auto-Routed' : 'Review'}
+                    </span>
+                  </div>
+                </td>
+                <td className="py-3 px-2 text-center">
+                  <button
+                    onClick={() => onInspectIssue(row)}
+                    className="inline-block px-2.5 py-1 text-[10.5px] font-semibold text-slate-700 hover:text-slate-900 bg-slate-50 hover:bg-slate-100 border border-slate-200/80 rounded-md transition-colors cursor-pointer"
+                  >
+                    Inspect
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </Card>
   );
 };
