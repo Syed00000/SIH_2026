@@ -1,3 +1,9 @@
+export { default as ProjectsOverviewPanel } from './ProjectsOverviewPanel.jsx';
+export { default as ActiveProjectsPanel } from './ActiveProjectsPanel.jsx';
+export { default as SolutionProposalsPanel } from './SolutionProposalsPanel.jsx';
+export { default as MilestonesMonitoringPanel } from './MilestonesMonitoringPanel.jsx';
+export { default as PrototypesEvaluationPanel } from './PrototypesEvaluationPanel.jsx';
+export { default as DeploymentTelemetryPanel } from './DeploymentTelemetryPanel.jsx';
 export { default as ProjectsSolutionsDashboard } from './ProjectsSolutionsDashboard.jsx';
 export { default as ProjectKpiCards } from './ProjectKpiCards.jsx';
 export { default as RecentProposalsQueue } from './RecentProposalsQueue.jsx';
@@ -9,3 +15,4 @@ export { default as RegionalMappingView } from './RegionalMappingView.jsx';
 export { default as HeiNetworkPipelineView } from './HeiNetworkPipelineView.jsx';
 export { default as ProposalReviewModal } from './ProposalReviewModal.jsx';
 export { default as ProjectManageModal } from './ProjectManageModal.jsx';
+export { default as AddProjectModal } from './AddProjectModal.jsx';

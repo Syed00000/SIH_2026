@@ -8,7 +8,15 @@ import { ComingSoonPanel } from '../common/ComingSoonPanel.jsx';
 import { HeiHubPanel } from '../heis/heiHubPanel.jsx';
 import { ManageUniversitiesDashboard } from '../universities/ManageUniversitiesDashboard.jsx';
 import { ManageIndustriesDashboard } from '../industries/ManageIndustriesDashboard.jsx';
-import { ProjectsSolutionsDashboard } from '../projects/ProjectsSolutionsDashboard.jsx';
+import {
+  ProjectsOverviewPanel,
+  ActiveProjectsPanel,
+  SolutionProposalsPanel,
+  MilestonesMonitoringPanel,
+  PrototypesEvaluationPanel,
+  DeploymentTelemetryPanel,
+  ProjectsSolutionsDashboard
+} from '../projects/index.js';
 import { GovernmentGisDashboard } from '../gis/GovernmentGisDashboard.jsx';
 import { AdminManagement } from '../governance/AdminManagement.jsx';
 import { OfficialPrintableDossier } from '../common/OfficialPrintableDossier.jsx';
@@ -249,17 +257,17 @@ export const GovernmentLayout = ({ onLogout }) => {
                 onSelectDistrict={(dist) => setSelectedDistrict(dist)}
               />
             ) : activeTab === 'projects_solutions' || activeTab === 'projects_overview' ? (
-              <ProjectsSolutionsDashboard initialTab="recent_proposals" />
+              <ProjectsOverviewPanel onNavigateTab={handleSetActiveTab} />
             ) : activeTab === 'projects_active' ? (
-              <ProjectsSolutionsDashboard initialTab="in_progress" />
+              <ActiveProjectsPanel />
             ) : activeTab === 'projects_proposals' ? (
-              <ProjectsSolutionsDashboard initialTab="recent_proposals" />
+              <SolutionProposalsPanel />
             ) : activeTab === 'projects_milestones' ? (
-              <ProjectsSolutionsDashboard initialTab="milestones" />
+              <MilestonesMonitoringPanel />
             ) : activeTab === 'projects_prototypes' ? (
-              <ProjectsSolutionsDashboard initialTab="prototypes" />
+              <PrototypesEvaluationPanel />
             ) : activeTab === 'projects_deployment' ? (
-              <ProjectsSolutionsDashboard initialTab="deployment" />
+              <DeploymentTelemetryPanel />
             ) : activeTab === 'heis' ? (
               <HeiHubPanel
                 selectedDistrict={selectedDistrict}

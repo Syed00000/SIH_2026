@@ -57,6 +57,9 @@ export const GovernmentSidebar = ({
   const mainNavItems = [
     { id: 'overview', label: 'Overview', icon: LayoutDashboard },
     { id: 'triage', label: 'Problem Triage', icon: Layers },
+    { id: 'heis', label: 'HEI Hub', icon: GraduationCap },
+    { id: 'csr', label: 'CSR Grants', icon: IndianRupee },
+    { id: 'gis', label: 'GIS Map', icon: Map },
     {
       id: 'projects_solutions',
       label: 'Projects & Solutions',
@@ -64,14 +67,11 @@ export const GovernmentSidebar = ({
       subItems: [
         { id: 'projects_active', label: 'Active Projects', icon: PlayCircle },
         { id: 'projects_proposals', label: 'Solution Proposals', icon: FileCheck },
-        { id: 'projects_milestones', label: 'Milestones', icon: CheckCircle2 },
-        { id: 'projects_prototypes', label: 'Prototypes', icon: Cpu },
+        { id: 'projects_milestones', label: 'Milestones & Monitoring', icon: CheckCircle2 },
+        { id: 'projects_prototypes', label: 'Prototypes & TRL', icon: Cpu },
         { id: 'projects_deployment', label: 'Deployment / Validation', icon: Rocket }
       ]
     },
-    { id: 'heis', label: 'HEI Hub', icon: GraduationCap },
-    { id: 'csr', label: 'CSR Grants', icon: IndianRupee },
-    { id: 'gis', label: 'GIS Map', icon: Map },
     {
       id: 'user_governance',
       label: 'User Governance',
