@@ -5,6 +5,8 @@ export { CSRStatutoryParameters } from './CSRStatutoryParameters.jsx';
 export { CSRProposalPipelineTable } from './CSRProposalPipelineTable.jsx';
 export { CSREscrowMatrix } from './CSREscrowMatrix.jsx';
 export { CSRPaymentLedgerTable } from './CSRPaymentLedgerTable.jsx';
+export { CSRFundUtilization } from './CSRFundUtilization.jsx';
+export { CSRComplianceChecklist } from './CSRComplianceChecklist.jsx';
 export { AddProposalModal } from './AddProposalModal.jsx';
 
 export default CSRGrantsLifecycleDashboard;
