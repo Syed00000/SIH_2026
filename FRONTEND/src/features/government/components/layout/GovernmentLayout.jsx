@@ -8,11 +8,25 @@ import { ComingSoonPanel } from '../common/ComingSoonPanel.jsx';
 import { HeiHubPanel } from '../heis/heiHubPanel.jsx';
 import { ManageUniversitiesDashboard } from '../universities/ManageUniversitiesDashboard.jsx';
 import { ManageIndustriesDashboard } from '../industries/ManageIndustriesDashboard.jsx';
+import {
+  ProjectsOverviewPanel,
+  ActiveProjectsPanel,
+  SolutionProposalsPanel,
+  MilestonesMonitoringPanel,
+  PrototypesEvaluationPanel,
+  DeploymentTelemetryPanel,
+  ProjectsSolutionsDashboard
+} from '../projects/index.js';
 import { GovernmentGisDashboard } from '../gis/GovernmentGisDashboard.jsx';
 import { AdminManagement } from '../governance/AdminManagement.jsx';
 import { CSRGrantsLifecycleDashboard } from '../csr/CSRGrantsLifecycleDashboard.jsx';
 import { OfficialPrintableDossier } from '../common/OfficialPrintableDossier.jsx';
 import { governmentDataService } from '../../services/governmentDataService.js';
+import { exportAdminDirectoryPdf, exportIndustryDirectoryPdf, exportUniversityDirectoryPdf, exportGenericReportPdf } from '../../services/exportPdfService.js';
+import { industryService } from '../../services/industryService.js';
+import { universityService } from '../../services/universityService.js';
+import { adminService } from '../../services/adminService.js';
+import { MOCK_ADMIN_RECORDS } from '../../data/mockAdminData.js';
 
 export const GovernmentLayout = ({ onLogout }) => {
   const getInitialTab = () => {
@@ -63,15 +77,15 @@ export const GovernmentLayout = ({ onLogout }) => {
   // Reactive Global Filters
   const [selectedDistrict, setSelectedDistrict] = useState('All');
   const [selectedSector, setSelectedSector] = useState('All');
-  const [sectorTimeframe, setSectorTimeframe] = useState('This Month');
+  const [sectorTimeframe, setSectorTimeframe] = useState('Quarter');
   const [trendInterval, setTrendInterval] = useState('Monthly');
 
   // Reactive State Data
-  const [kpis, setKpis] = useState(governmentDataService.getFilteredKpis(selectedDistrict, selectedSector));
-  const [triageFeed, setTriageFeed] = useState(governmentDataService.getTriageFeed());
-  const [sectors, setSectors] = useState(governmentDataService.getFilteredSectors(selectedDistrict, sectorTimeframe));
-  const [trendData, setTrendData] = useState(governmentDataService.getFilteredTrend(selectedDistrict, selectedSector, trendInterval));
-  const [heis, setHeis] = useState(governmentDataService.getFilteredHeis(selectedDistrict));
+  const [kpis, setKpis] = useState(() => governmentDataService.getFilteredKpis(selectedDistrict, selectedSector));
+  const [triageFeed, setTriageFeed] = useState(() => governmentDataService.getTriageFeed());
+  const [sectors, setSectors] = useState(() => governmentDataService.getFilteredSectors(selectedDistrict, sectorTimeframe));
+  const [trendData, setTrendData] = useState(() => governmentDataService.getFilteredTrend(selectedDistrict, selectedSector, trendInterval));
+  const [heis, setHeis] = useState(() => governmentDataService.getFilteredHeis(selectedDistrict));
 
   // Automatically recalculate data whenever filters or timeframes change
   useEffect(() => {
@@ -93,8 +107,55 @@ export const GovernmentLayout = ({ onLogout }) => {
     setKpis(governmentDataService.getFilteredKpis(selectedDistrict, selectedSector));
   };
 
-  const handleExportPdf = () => {
-    window.print();
+  const handleExportPdf = async () => {
+    if (activeTab === 'users_admin' || activeTab === 'user_governance') {
+      try {
+        const res = await adminService.getAdmins({
+          limit: 200,
+          district: selectedDistrict !== 'All' ? selectedDistrict : undefined
+        });
+        const list = res?.records?.length ? res.records : MOCK_ADMIN_RECORDS;
+        exportAdminDirectoryPdf(list, { district: selectedDistrict });
+      } catch (err) {
+        console.error('Failed to fetch admins for export, using fallback:', err);
+        exportAdminDirectoryPdf(MOCK_ADMIN_RECORDS, { district: selectedDistrict });
+      }
+    } else if (
+      activeTab === 'governance_industries' ||
+      activeTab === 'industries' ||
+      activeTab === 'manage_industries'
+    ) {
+      try {
+        const data = await industryService.getIndustries({
+          limit: 200,
+          district: selectedDistrict !== 'All' ? selectedDistrict : undefined
+        });
+        const list = data?.records || [];
+        exportIndustryDirectoryPdf(list, { district: selectedDistrict, sector: selectedSector });
+      } catch (err) {
+        console.error('Failed to export industry directory:', err);
+        exportIndustryDirectoryPdf([], { district: selectedDistrict, sector: selectedSector });
+      }
+    } else if (
+      activeTab === 'governance_universities' ||
+      activeTab === 'universities' ||
+      activeTab === 'manage_universities' ||
+      activeTab === 'heis'
+    ) {
+      try {
+        const data = await universityService.getUniversities({
+          limit: 200,
+          district: selectedDistrict !== 'All' ? selectedDistrict : undefined
+        });
+        const list = data?.records?.length ? data.records : heis;
+        exportUniversityDirectoryPdf(list, { district: selectedDistrict });
+      } catch (err) {
+        console.error('Failed to fetch universities for export, using local list:', err);
+        exportUniversityDirectoryPdf(heis, { district: selectedDistrict });
+      }
+    } else {
+      exportGenericReportPdf(getTabTitle(activeTab), { district: selectedDistrict });
+    }
   };
 
   // Filtered Triage Feed by Selected District & Sector
@@ -114,6 +175,13 @@ export const GovernmentLayout = ({ onLogout }) => {
 
   const getTabTitle = (tab) => {
     switch (tab) {
+      case 'projects_solutions':
+      case 'projects_overview': return 'Projects & Solutions Dashboard';
+      case 'projects_active': return 'Active Projects in Progress';
+      case 'projects_proposals': return 'Solution Proposals Queue';
+      case 'projects_milestones': return 'Milestones & Stage Gate Compliance';
+      case 'projects_prototypes': return 'Prototypes & TRL Monitoring';
+      case 'projects_deployment': return 'Field Deployment & Telemetry';
       case 'triage': return 'Problem Triage & Verification';
       case 'heis': return 'HEI Hub & University Directory';
       case 'csr': return 'CSR Grants & Corporate Partnerships';
@@ -189,6 +257,18 @@ export const GovernmentLayout = ({ onLogout }) => {
                 selectedDistrict={selectedDistrict}
                 onSelectDistrict={(dist) => setSelectedDistrict(dist)}
               />
+            ) : activeTab === 'projects_solutions' || activeTab === 'projects_overview' ? (
+              <ProjectsOverviewPanel onNavigateTab={handleSetActiveTab} />
+            ) : activeTab === 'projects_active' ? (
+              <ActiveProjectsPanel />
+            ) : activeTab === 'projects_proposals' ? (
+              <SolutionProposalsPanel />
+            ) : activeTab === 'projects_milestones' ? (
+              <MilestonesMonitoringPanel />
+            ) : activeTab === 'projects_prototypes' ? (
+              <PrototypesEvaluationPanel />
+            ) : activeTab === 'projects_deployment' ? (
+              <DeploymentTelemetryPanel />
             ) : activeTab === 'heis' ? (
               <HeiHubPanel
                 selectedDistrict={selectedDistrict}

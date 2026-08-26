@@ -1,10 +1,11 @@
 import React from 'react';
 import { Building2, CheckCircle2, Clock } from 'lucide-react';
 
-export const IndustrySummaryCards = ({ stats }) => {
-  const totalCount = stats?.totalIndustries ?? 0;
-  const activeCount = stats?.activeIndustries ?? 0;
-  const pendingCount = stats?.pendingReview ?? 0;
+export const IndustrySummaryCards = ({ stats, kpis }) => {
+  const data = kpis || stats || {};
+  const totalCount = data.totalIndustries ?? 0;
+  const activeCount = data.activeIndustries ?? 0;
+  const pendingCount = data.pendingReview ?? 0;
 
   const cards = [
     {
@@ -13,8 +14,7 @@ export const IndustrySummaryCards = ({ stats }) => {
       value: totalCount,
       subtitle: 'All Applied & Onboarded',
       icon: Building2,
-      iconBg: 'bg-blue-50 text-blue-700 border-blue-100',
-      valueColor: 'text-slate-900'
+      iconColor: 'text-blue-600'
     },
     {
       id: 'active',
@@ -22,8 +22,7 @@ export const IndustrySummaryCards = ({ stats }) => {
       value: activeCount,
       subtitle: 'Verified Partner Entities',
       icon: CheckCircle2,
-      iconBg: 'bg-emerald-50 text-emerald-700 border-emerald-100',
-      valueColor: 'text-emerald-700'
+      iconColor: 'text-emerald-600'
     },
     {
       id: 'pending',
@@ -31,47 +30,36 @@ export const IndustrySummaryCards = ({ stats }) => {
       value: pendingCount,
       subtitle: 'Awaiting Govt. Approval',
       icon: Clock,
-      iconBg: 'bg-amber-50 text-amber-700 border-amber-100',
-      valueColor: 'text-amber-700'
+      iconColor: 'text-amber-600'
     }
   ];
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 select-none">
       {cards.map((card) => {
         const IconComponent = card.icon;
         return (
           <div
             key={card.id}
-            className="bg-white rounded-xl border border-slate-200/90 p-4.5 flex flex-col justify-between shadow-2xs hover:border-slate-300 transition-all"
+            className="bg-white border border-slate-200/90 rounded-lg p-4 shadow-2xs flex flex-col justify-between min-h-[96px] hover:border-slate-300 transition-colors"
           >
-            <div className="flex items-start justify-between">
-              {/* Left Icon */}
-              <div
-                className={`w-10 h-10 rounded-xl ${card.iconBg} border flex items-center justify-center shrink-0`}
-              >
-                <IconComponent className="w-5 h-5" />
-              </div>
-
-              {/* Right Content */}
-              <div className="text-right flex-1 pl-3 min-w-0">
-                <span className="text-xs font-semibold text-slate-500 block truncate">
-                  {card.title}
-                </span>
-                <div className={`text-2xl font-bold tracking-tight leading-tight mt-0.5 ${card.valueColor}`}>
-                  {card.value}
-                </div>
-                <span className="text-[11px] font-medium text-slate-400 block truncate mt-0.5">
-                  {card.subtitle}
-                </span>
+            {/* Top row: Label & Bare Icon */}
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">
+                {card.title}
+              </span>
+              <div className={`flex items-center justify-center ${card.iconColor}`}>
+                <IconComponent className="w-4 h-4" />
               </div>
             </div>
 
-            {/* Bottom Indicator */}
-            <div className="mt-3 pt-2 border-t border-slate-100 flex items-center justify-between text-[11px]">
-              <span className="text-slate-400 font-medium">Status</span>
-              <span className="font-bold text-slate-600">
-                {totalCount > 0 ? `${Math.round((card.value / totalCount) * 100)}% of total` : '0%'}
+            {/* Bottom row: Value & Subtitle */}
+            <div className="mt-2">
+              <div className="text-2xl font-extrabold text-slate-900 tracking-tight">
+                {card.value}
+              </div>
+              <span className="text-[11px] font-medium text-slate-400 block truncate mt-0.5">
+                {card.subtitle}
               </span>
             </div>
           </div>

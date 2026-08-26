@@ -76,12 +76,12 @@
     print-color-adjust: exact !important;
   }
 
-  /* Hide everything on screen by default */
-  body * {
+  /* Hide everything on screen by default when printing modal dossier */
+  body:has(#printable-dossier) * {
     visibility: hidden;
   }
 
-  /* Only make the printable dossier and its children visible */
+  /* Only make the printable dossier and its children visible if present */
   #printable-dossier,
   #printable-dossier * {
     visibility: visible !important;
@@ -142,4 +142,12 @@
     padding: 0 !important;
     margin: 0 !important;
   }
+
+  main {
+    padding: 0 !important;
+    margin: 0 !important;
+    width: 100% !important;
+    overflow: visible !important;
+  }
 }
+

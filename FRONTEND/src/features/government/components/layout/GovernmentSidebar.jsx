@@ -22,7 +22,14 @@ import {
   Briefcase,
   Plus,
   Award,
-  Layers
+  Layers,
+  FolderKanban,
+  PlayCircle,
+  FileCheck,
+  CheckCircle2,
+  Cpu,
+  Rocket,
+  Lightbulb
 } from 'lucide-react';
 
 export const GovernmentSidebar = ({
@@ -35,6 +42,7 @@ export const GovernmentSidebar = ({
   onLogout
 }) => {
   const [openDropdowns, setOpenDropdowns] = useState({
+    projects_solutions: true,
     user_governance: true,
     reports: false
   });
@@ -52,6 +60,18 @@ export const GovernmentSidebar = ({
     { id: 'heis', label: 'HEI Hub', icon: GraduationCap },
     { id: 'csr', label: 'CSR Grants', icon: IndianRupee },
     { id: 'gis', label: 'GIS Map', icon: Map },
+    {
+      id: 'projects_solutions',
+      label: 'Projects & Solutions',
+      icon: FolderKanban,
+      subItems: [
+        { id: 'projects_active', label: 'Active Projects', icon: PlayCircle },
+        { id: 'projects_proposals', label: 'Solution Proposals', icon: FileCheck },
+        { id: 'projects_milestones', label: 'Milestones & Monitoring', icon: CheckCircle2 },
+        { id: 'projects_prototypes', label: 'Prototypes & TRL', icon: Cpu },
+        { id: 'projects_deployment', label: 'Deployment / Validation', icon: Rocket }
+      ]
+    },
     {
       id: 'user_governance',
       label: 'User Governance',
@@ -127,24 +147,32 @@ export const GovernmentSidebar = ({
                         setIsSidebarExpanded(true);
                       }
                       toggleDropdown(item.id);
+                      if (item.id === 'projects_solutions') {
+                        setActiveTab && setActiveTab('projects_solutions');
+                      } else if (item.id === 'user_governance') {
+                        setActiveTab && setActiveTab('governance_universities');
+                      }
                     } else {
                       setActiveTab && setActiveTab(item.id);
                       if (setIsMobileMenuOpen) setIsMobileMenuOpen(false);
                     }
                   }}
-                  className={`w-full flex items-center justify-between rounded-xl text-xs font-bold transition-all relative cursor-pointer ${isSidebarExpanded ? 'px-3 py-2.5 text-left' : 'p-2.5 justify-center'
-                    } ${isParentActive && !hasSubItems
-                      ? 'bg-[#0d1b3e] text-white shadow-xs'
+                  className={`w-full flex items-center justify-between rounded-xl text-xs font-bold transition-all relative cursor-pointer ${
+                    isSidebarExpanded ? 'px-3 py-2.5 text-left' : 'p-2.5 justify-center'
+                  } ${
+                    isParentActive && !hasSubItems
+                      ? 'bg-slate-900 text-white shadow-xs'
                       : isParentActive && hasSubItems
-                        ? 'bg-slate-100/90 text-slate-900'
-                        : 'text-slate-600 hover:bg-slate-100/70 hover:text-slate-900'
-                    }`}
+                      ? 'bg-slate-100 text-slate-900'
+                      : 'text-slate-600 hover:bg-slate-100/70 hover:text-slate-900'
+                  }`}
                   title={item.label}
                 >
                   <div className="flex items-center space-x-3 min-w-0">
                     <IconComponent
-                      className={`w-4 h-4 shrink-0 ${isParentActive && !hasSubItems ? 'text-white' : 'text-slate-500'
-                        }`}
+                      className={`w-4 h-4 shrink-0 ${
+                        isParentActive && !hasSubItems ? 'text-white' : 'text-slate-500'
+                      }`}
                     />
                     {isSidebarExpanded && (
                       <span className="truncate tracking-tight">{item.label}</span>
@@ -177,12 +205,17 @@ export const GovernmentSidebar = ({
                             setActiveTab && setActiveTab(sub.id);
                             if (setIsMobileMenuOpen) setIsMobileMenuOpen(false);
                           }}
-                          className={`w-full flex items-center space-x-2.5 px-3 py-2 rounded-lg text-[11px] font-semibold transition-all cursor-pointer text-left ${isSubActive
-                              ? 'bg-[#0d1b3e] text-white shadow-2xs font-bold'
+                          className={`w-full flex items-center space-x-2.5 px-3 py-2 rounded-lg text-[11px] font-semibold transition-all cursor-pointer text-left ${
+                            isSubActive
+                              ? 'bg-slate-900 text-white shadow-2xs font-bold'
                               : 'text-slate-500 hover:text-slate-900 hover:bg-slate-100/60'
-                            }`}
+                          }`}
                         >
-                          <SubIcon className={`w-3.5 h-3.5 shrink-0 ${isSubActive ? 'text-white' : 'text-slate-400'}`} />
+                          <SubIcon
+                            className={`w-3.5 h-3.5 shrink-0 ${
+                              isSubActive ? 'text-white' : 'text-slate-400'
+                            }`}
+                          />
                           <span className="truncate">{sub.label}</span>
                         </button>
                       );
