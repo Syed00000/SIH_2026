@@ -85,7 +85,7 @@ export const performTokenRefresh = async () => {
   return null;
 };
 
-const request = async (endpoint, options = {}, isRetry = false) => {
+const request = async (endpoint, options = {}, isRetry = false, isNetworkRetry = false) => {
   const url = buildUrl(endpoint);
   const token = getAccessToken();
 
@@ -154,6 +154,12 @@ const request = async (endpoint, options = {}, isRetry = false) => {
 
     return data;
   } catch (error) {
+    // If it is a transient network-level error (server starting up/connecting) and haven't retried yet
+    if (!error.status && !isNetworkRetry) {
+      await new Promise((resolve) => setTimeout(resolve, 500));
+      return request(endpoint, options, isRetry, true);
+    }
+
     if (!error.response) {
       error.response = { data: { error: { message: error.message } } };
     }

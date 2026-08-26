@@ -12,21 +12,37 @@ const start = async () => {
   logger.info(`Starting server in ${config.NODE_ENV} mode...`);
 
   try {
-    // 1. Initialize Databases with resilient fallback
-    await connectMongo();
+    // 1. Start HTTP Server immediately so port is instantly open (zero connection-refused cold starts)
+    server = http.createServer(app);
 
-    // 2. Auto-seed Government Admin if configured
-    await seedGovtAdmin();
+    server.on('error', (err) => {
+      if (err.code === 'EADDRINUSE') {
+        logger.error(`❌ Port ${config.PORT} is already in use by another process. Please terminate the existing process or use another port.`);
+        process.exit(1);
+      } else {
+        logger.error('HTTP server encountered an error:', err);
+      }
+    });
+
+    await new Promise((resolve) => {
+      server.listen(config.PORT, () => {
+        logger.info(`🚀 Server running and listening on port ${config.PORT}`);
+        resolve();
+      });
+    });
+
+    // 2. Initialize Database & Background Services (Mongoose buffers queries seamlessly while connecting)
+    connectMongo()
+      .then(async () => {
+        // Auto-seed Government Admin once DB is connected
+        await seedGovtAdmin();
+      })
+      .catch((err) => {
+        logger.error('Failed to initialize MongoDB connection:', err);
+      });
 
     // 3. Initialize Background Workers
     initializeWorkers();
-
-    // 3. Start HTTP Server
-    server = http.createServer(app);
-    
-    server.listen(config.PORT, () => {
-      logger.info(`🚀 Server running on port ${config.PORT}`);
-    });
 
     // Handle process events for Graceful Shutdown
     const shutdown = async (signal) => {
@@ -62,11 +78,7 @@ const start = async () => {
     process.on('SIGINT', () => shutdown('SIGINT'));
 
   } catch (error) {
-    logger.error('Bootstrap encountered warning, starting HTTP server...', error);
-    server = http.createServer(app);
-    server.listen(config.PORT, () => {
-      logger.info(`🚀 Server running on port ${config.PORT} (standalone fallback)`);
-    });
+    logger.error('Error during server bootstrap:', error);
   }
 };
 
