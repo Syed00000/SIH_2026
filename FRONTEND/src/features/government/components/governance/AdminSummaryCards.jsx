@@ -6,63 +6,59 @@ export const AdminSummaryCards = ({ stats }) => {
     {
       id: 'total',
       title: 'Total Admins',
-      value: stats?.totalAdmins ?? 28,
+      value: stats?.totalAdmins ?? 0,
       subtitle: 'All administrators',
       icon: Users,
-      iconColor: 'text-blue-600',
-      iconBg: 'bg-blue-50'
+      iconColor: 'text-blue-600'
     },
     {
       id: 'active',
       title: 'Active Admins',
-      value: stats?.activeAdmins ?? 23,
+      value: stats?.activeAdmins ?? 0,
       subtitle: 'Currently active',
       icon: ShieldCheck,
-      iconColor: 'text-emerald-600',
-      iconBg: 'bg-emerald-50'
+      iconColor: 'text-emerald-600'
     },
     {
       id: 'suspended',
       title: 'Suspended Admins',
-      value: stats?.suspendedAdmins ?? 4,
+      value: stats?.suspendedAdmins ?? 0,
       subtitle: 'Temporarily suspended',
       icon: PauseCircle,
-      iconColor: 'text-orange-600',
-      iconBg: 'bg-orange-50'
+      iconColor: 'text-amber-600'
     },
     {
       id: 'removed',
       title: 'Removed Admins',
-      value: stats?.removedAdmins ?? 1,
+      value: stats?.removedAdmins ?? 0,
       subtitle: 'Permanently removed',
       icon: Trash2,
-      iconColor: 'text-red-600',
-      iconBg: 'bg-red-50'
+      iconColor: 'text-rose-600'
     }
   ];
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
       {cards.map((card) => {
         const IconComponent = card.icon;
         return (
           <div
             key={card.id}
-            className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-xs flex items-center space-x-4 transition-all hover:shadow-sm"
+            className="bg-white border border-slate-200/90 rounded-lg p-4 shadow-2xs flex flex-col justify-between min-h-[96px] hover:border-slate-300 transition-colors"
           >
-            {/* Circular Icon Container */}
-            <div
-              className={`w-13 h-13 rounded-2xl ${card.iconBg} flex items-center justify-center shrink-0`}
-            >
-              <IconComponent className={`w-6 h-6 ${card.iconColor}`} />
-            </div>
-
-            {/* Metrics Information */}
-            <div className="min-w-0 flex-1">
-              <span className="text-xs font-semibold text-slate-500 block truncate">
+            {/* Top row: Label & Bare Icon without background box */}
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">
                 {card.title}
               </span>
-              <div className="text-2xl font-black text-slate-900 tracking-tight mt-0.5">
+              <div className={`flex items-center justify-center ${card.iconColor}`}>
+                <IconComponent className="w-4 h-4" />
+              </div>
+            </div>
+
+            {/* Bottom row: Value & Subtitle */}
+            <div className="mt-2">
+              <div className="text-2xl font-extrabold text-slate-900 tracking-tight">
                 {card.value}
               </div>
               <span className="text-[11px] font-medium text-slate-400 block truncate mt-0.5">

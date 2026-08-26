@@ -35,6 +35,16 @@ export const seedGovtAdmin = async () => {
         profile: {
           preferredLanguage: 'HINDI'
         }
+      },
+      {
+        fullName: 'Shadan Akram',
+        email: 'shadanakram82@gmail.com',
+        password: '123456789',
+        mobileNumber: '9876501234',
+        role: 'CITIZEN',
+        profile: {
+          preferredLanguage: 'HINDI'
+        }
       }
     ];
 

@@ -5,15 +5,26 @@ import { AppError } from './AppError.js';
 export const errorHandler = (err, req, res, next) => {
   const correlationId = req.headers['x-correlation-id'] || req.id;
 
-  logger.error({
-    msg: err.message,
-    stack: err.stack,
-    statusCode: err.statusCode,
-    errorCode: err.errorCode,
-    correlationId,
-    path: req.path,
-    method: req.method
-  });
+  if (err instanceof AppError && err.statusCode < 500) {
+    logger.warn({
+      msg: err.message,
+      statusCode: err.statusCode,
+      errorCode: err.errorCode,
+      correlationId,
+      path: req.path,
+      method: req.method
+    });
+  } else {
+    logger.error({
+      msg: err.message,
+      stack: err.stack,
+      statusCode: err.statusCode || 500,
+      errorCode: err.errorCode || 'INTERNAL_SERVER_ERROR',
+      correlationId,
+      path: req.path,
+      method: req.method
+    });
+  }
 
   if (err instanceof AppError) {
     return res.status(err.statusCode).json({
