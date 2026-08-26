@@ -125,13 +125,13 @@ const industrySchema = new mongoose.Schema(
     credentials: {
       loginEmail: {
         type: String,
-        required: true,
         lowercase: true,
-        trim: true
+        trim: true,
+        default: ''
       },
       generatedPassword: {
         type: String,
-        required: true
+        default: ''
       },
       passwordHash: {
         type: String,

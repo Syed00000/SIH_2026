@@ -239,6 +239,249 @@ export class IndustryService {
   }
 
   /**
+   * Public Self-Registration Application (Without applicant password)
+   */
+  async applyIndustry(payload) {
+    const {
+      legalName,
+      shortName,
+      category,
+      registrationNumber,
+      thematicDomain,
+      thematicDomains,
+      supportModes = [],
+      website,
+      spocName,
+      designation,
+      officialEmail,
+      mobileNumber,
+      alternateContact,
+      address
+    } = payload;
+
+    if (!legalName || !legalName.trim()) {
+      throw new BadRequestError('Organization Legal Name is required');
+    }
+    if (!spocName || !spocName.trim()) {
+      throw new BadRequestError('Nodal SPOC Name is required');
+    }
+    if (!officialEmail || !officialEmail.trim()) {
+      throw new BadRequestError('Official Email is required');
+    }
+    if (!mobileNumber || !mobileNumber.trim()) {
+      throw new BadRequestError('Mobile Number is required');
+    }
+
+    const normalizedOfficialEmail = officialEmail.toLowerCase().trim();
+
+    const existing = await industryRepository.findByEmail(normalizedOfficialEmail);
+    if (existing) {
+      throw new ConflictError('An application or organization with this official email already exists');
+    }
+
+    const industryId = await this.generateNextIndustryId();
+    const normalizedDomain = thematicDomain || (Array.isArray(thematicDomains) ? thematicDomains.join(', ') : 'Innovation');
+
+    const industry = await industryRepository.create({
+      industryId,
+      legalName: legalName.trim(),
+      shortName: shortName ? shortName.trim() : '',
+      category: category || 'Private Industry',
+      registrationNumber: registrationNumber ? registrationNumber.trim() : '',
+      thematicDomain: normalizedDomain,
+      thematicDomains: Array.isArray(thematicDomains) && thematicDomains.length > 0 ? thematicDomains : [normalizedDomain],
+      supportModes,
+      website: website ? website.trim() : '',
+      spocName: spocName.trim(),
+      designation: designation ? designation.trim() : 'Nodal Representative',
+      officialEmail: normalizedOfficialEmail,
+      mobileNumber: mobileNumber.trim(),
+      alternateContact: alternateContact ? alternateContact.trim() : '',
+      address: {
+        addressLine1: address?.addressLine1 || '',
+        addressLine2: address?.addressLine2 || '',
+        state: address?.state || 'Jharkhand',
+        district: address?.district || 'Ranchi',
+        city: address?.city || 'Ranchi',
+        pincode: address?.pincode || '834001'
+      },
+      status: 'Pending',
+      accessStatus: 'Disabled',
+      verificationStatus: 'Pending',
+      financials: {
+        csrCommittedCr: 0,
+        supportedProjectsCount: 0,
+        labsCount: 0
+      },
+      auditLogs: [
+        {
+          action: 'APPLIED',
+          performedBy: 'Applicant (Online Portal)',
+          timestamp: new Date(),
+          details: `Self-registration application submitted online with Reference ID ${industryId}.`
+        }
+      ]
+    });
+
+    logger.info({ msg: 'Industry self-registration application submitted', industryId, legalName });
+
+    return {
+      success: true,
+      industryId,
+      legalName: industry.legalName,
+      officialEmail: normalizedOfficialEmail,
+      status: 'Pending',
+      verificationStatus: 'Pending',
+      message: 'Application submitted successfully. It has been routed to the Government of Jharkhand for administrative review.'
+    };
+  }
+
+  /**
+   * Government Admin Approval of Application with Credential Dispatch
+   */
+  async approveApplication(id, options = {}) {
+    const industry = await industryRepository.findById(id);
+    if (!industry) {
+      throw new NotFoundError('Industry application not found');
+    }
+
+    const effectiveLoginEmail = (options.loginEmail || industry.credentials?.loginEmail || industry.officialEmail).toLowerCase().trim();
+    const rawPassword = options.initialPassword || this.generateSecurePassword();
+    const passwordHash = await bcrypt.hash(rawPassword, 10);
+
+    let cleanMobile = industry.mobileNumber.replace(/\D/g, '').slice(-10);
+    if (cleanMobile.length !== 10 || !/^[6-9]/.test(cleanMobile)) {
+      cleanMobile = '98' + Math.floor(10000000 + Math.random() * 90000000).toString().slice(0, 8);
+    }
+
+    // Create or Link User account in MongooseUser
+    let user = await MongooseUser.findOne({ email: effectiveLoginEmail });
+    if (user) {
+      user.role = 'INDUSTRY';
+      user.passwordHash = passwordHash;
+      user.fullName = industry.spocName.trim();
+      user.accountStatus = 'ACTIVE';
+      user.emailVerification = { verified: true, verifiedAt: new Date() };
+      user.profile = {
+        preferredLanguage: 'HINDI',
+        location: { districtId: null, blockOrULBId: null, panchayatOrWardId: null },
+        organizationName: industry.legalName.trim(),
+        entityType: industry.category,
+        cin: industry.registrationNumber || '',
+        primaryContactDesignation: industry.designation,
+        supportSectors: industry.supportModes
+      };
+      await user.save();
+    } else {
+      let existingMobile = await MongooseUser.findOne({ mobileNumber: cleanMobile });
+      while (existingMobile) {
+        cleanMobile = '9' + Math.floor(100000000 + Math.random() * 900000000).toString().slice(0, 9);
+        existingMobile = await MongooseUser.findOne({ mobileNumber: cleanMobile });
+      }
+
+      user = new MongooseUser({
+        fullName: industry.spocName.trim(),
+        email: effectiveLoginEmail,
+        mobileNumber: cleanMobile,
+        passwordHash,
+        role: 'INDUSTRY',
+        accountStatus: 'ACTIVE',
+        emailVerification: { verified: true, verifiedAt: new Date() },
+        profile: {
+          preferredLanguage: 'HINDI',
+          location: { districtId: null, blockOrULBId: null, panchayatOrWardId: null },
+          organizationName: industry.legalName.trim(),
+          entityType: industry.category,
+          cin: industry.registrationNumber || '',
+          primaryContactDesignation: industry.designation,
+          supportSectors: industry.supportModes
+        }
+      });
+      await user.save();
+    }
+
+    const updated = await industryRepository.update(id, {
+      status: 'Active',
+      accessStatus: 'Enabled',
+      verificationStatus: 'Verified',
+      credentials: {
+        loginEmail: effectiveLoginEmail,
+        generatedPassword: rawPassword,
+        passwordHash
+      },
+      userId: user._id
+    });
+
+    await industryRepository.addAuditLog(id, {
+      action: 'APPROVED',
+      performedBy: 'Government Admin',
+      details: 'Application reviewed and approved. Official credentials generated and dispatched.'
+    });
+
+    // Send official Onboarding Email with credentials
+    const recipientEmails = Array.from(new Set([
+      industry.officialEmail,
+      effectiveLoginEmail
+    ].filter(Boolean)));
+
+    try {
+      await sendIndustryOnboardingEmail({
+        emails: recipientEmails,
+        email: industry.officialEmail,
+        organizationName: industry.legalName,
+        spocName: industry.spocName,
+        industryId: industry.industryId,
+        loginEmail: effectiveLoginEmail,
+        temporaryPassword: rawPassword
+      });
+      logger.info({ msg: 'Official onboarding email dispatched on approval', recipients: recipientEmails, industryId: industry.industryId });
+    } catch (emailErr) {
+      logger.error({ msg: 'SMTP dispatch failed on approval', error: emailErr.message });
+    }
+
+    return {
+      success: true,
+      industry: updated,
+      credentials: {
+        industryId: industry.industryId,
+        legalName: industry.legalName,
+        email: effectiveLoginEmail,
+        password: rawPassword,
+        status: 'Active'
+      },
+      message: 'Industry application approved and onboarding credentials dispatched successfully.'
+    };
+  }
+
+  /**
+   * Government Admin Rejection of Application
+   */
+  async rejectApplication(id, options = {}) {
+    const industry = await industryRepository.findById(id);
+    if (!industry) {
+      throw new NotFoundError('Industry application not found');
+    }
+
+    const updated = await industryRepository.update(id, {
+      status: 'Disabled',
+      accessStatus: 'Disabled',
+      verificationStatus: 'Rejected'
+    });
+
+    await industryRepository.addAuditLog(id, {
+      action: 'REJECTED',
+      performedBy: 'Government Admin',
+      details: `Application rejected. Remarks: ${options.reason || 'Verification criteria not satisfied.'}`
+    });
+
+    return {
+      success: true,
+      industry: updated,
+      message: 'Industry application rejected.'
+    };
+  }
+
+  /**
    * Fetch all industries with search, filtering, and real database KPIs
    */
   async getIndustries(queryParams) {

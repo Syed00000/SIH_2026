@@ -6,6 +6,7 @@ import { AddIndustryDrawer, INDUSTRY_CATEGORIES, THEMATIC_DOMAINS } from './AddI
 import { EditIndustryDrawer } from './EditIndustryDrawer.jsx';
 import { IndustryDetailsModal } from './IndustryDetailsModal.jsx';
 import { IndustrySuccessModal } from './IndustrySuccessModal.jsx';
+import { ApproveIndustryModal } from './ApproveIndustryModal.jsx';
 import { industryService } from '../../services/industryService.js';
 
 export const ManageIndustriesDashboard = () => {
@@ -15,6 +16,7 @@ export const ManageIndustriesDashboard = () => {
     activeIndustries: 0,
     disabledIndustries: 0,
     verifiedPartners: 0,
+    pendingReview: 0,
     totalCsrFundsCr: 0,
     supportedProjects: 0,
     verifiedLabs: 0
@@ -29,6 +31,7 @@ export const ManageIndustriesDashboard = () => {
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [selectedDomain, setSelectedDomain] = useState('All');
   const [selectedStatus, setSelectedStatus] = useState('All');
+  const [selectedVerification, setSelectedVerification] = useState('All');
 
   // Pagination State
   const [currentPage, setCurrentPage] = useState(1);
@@ -40,6 +43,7 @@ export const ManageIndustriesDashboard = () => {
   const [isAddDrawerOpen, setIsAddDrawerOpen] = useState(false);
   const [editingIndustry, setEditingIndustry] = useState(null);
   const [viewingIndustry, setViewingIndustry] = useState(null);
+  const [approvingIndustry, setApprovingIndustry] = useState(null);
   const [successCredentials, setSuccessCredentials] = useState(null);
 
   // Fetch industries from real MongoDB backend
@@ -52,6 +56,7 @@ export const ManageIndustriesDashboard = () => {
         category: selectedCategory,
         thematicDomain: selectedDomain,
         status: selectedStatus,
+        verificationStatus: selectedVerification,
         page: currentPage,
         limit: itemsPerPage
       });
@@ -67,7 +72,7 @@ export const ManageIndustriesDashboard = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [searchTerm, selectedCategory, selectedDomain, selectedStatus, currentPage, itemsPerPage]);
+  }, [searchTerm, selectedCategory, selectedDomain, selectedStatus, selectedVerification, currentPage, itemsPerPage]);
 
   useEffect(() => {
     fetchIndustries();
@@ -85,6 +90,37 @@ export const ManageIndustriesDashboard = () => {
       await fetchIndustries();
     } catch (err) {
       alert(err.response?.data?.error?.message || err.message || 'Error registering industry');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // Handle Approve Industry Application
+  const handleApproveApplication = async (id, payload) => {
+    try {
+      setIsSubmitting(true);
+      const res = await industryService.approveApplication(id, payload);
+      setApprovingIndustry(null);
+      if (res?.credentials) {
+        setSuccessCredentials(res.credentials);
+      }
+      await fetchIndustries();
+    } catch (err) {
+      alert(err.response?.data?.error?.message || err.message || 'Error approving application');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // Handle Reject Industry Application
+  const handleRejectApplication = async (id, payload) => {
+    try {
+      setIsSubmitting(true);
+      await industryService.rejectApplication(id, payload);
+      setApprovingIndustry(null);
+      await fetchIndustries();
+    } catch (err) {
+      alert(err.response?.data?.error?.message || err.message || 'Error rejecting application');
     } finally {
       setIsSubmitting(false);
     }
@@ -202,9 +238,27 @@ export const ManageIndustriesDashboard = () => {
             <h1 className="text-base sm:text-lg font-bold text-slate-900 tracking-tight">
               Industry & Partner Directory
             </h1>
-            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-100/80 text-amber-800 border border-amber-200">
-              Awaiting Review
-            </span>
+            <button
+              type="button"
+              onClick={() => {
+                const next = selectedVerification === 'Pending' ? 'All' : 'Pending';
+                setSelectedVerification(next);
+                setCurrentPage(1);
+              }}
+              className={`inline-flex items-center space-x-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold border transition-all cursor-pointer ${
+                selectedVerification === 'Pending'
+                  ? 'bg-amber-600 text-white border-amber-700 shadow-xs'
+                  : 'bg-amber-50 hover:bg-amber-100/90 text-amber-800 border-amber-200'
+              }`}
+              title="Filter by Pending Review Applications"
+            >
+              <span>Awaiting Review</span>
+              <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-bold ${
+                selectedVerification === 'Pending' ? 'bg-white text-amber-900' : 'bg-amber-200/90 text-amber-900'
+              }`}>
+                {kpis.pendingReview || 0}
+              </span>
+            </button>
           </div>
 
           <div className="flex items-center space-x-2">
@@ -319,6 +373,24 @@ export const ManageIndustriesDashboard = () => {
             <ChevronDown className="w-3.5 h-3.5 text-slate-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
           </div>
 
+          {/* Verification Status Filter */}
+          <div className="relative min-w-[140px]">
+            <select
+              value={selectedVerification}
+              onChange={(e) => {
+                setSelectedVerification(e.target.value);
+                setCurrentPage(1);
+              }}
+              className="w-full bg-white border border-slate-200 rounded px-3 py-1.5 pr-8 text-xs font-medium text-slate-700 hover:border-slate-300 focus:outline-none cursor-pointer appearance-none shadow-2xs"
+            >
+              <option value="All">All Applications</option>
+              <option value="Pending">Pending Review</option>
+              <option value="Verified">Verified / Approved</option>
+              <option value="Rejected">Rejected</option>
+            </select>
+            <ChevronDown className="w-3.5 h-3.5 text-slate-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+          </div>
+
           {/* Reset Filters */}
           <button
             onClick={() => {
@@ -326,6 +398,7 @@ export const ManageIndustriesDashboard = () => {
               setSelectedCategory('All');
               setSelectedDomain('All');
               setSelectedStatus('All');
+              setSelectedVerification('All');
               setCurrentPage(1);
             }}
             className="flex items-center space-x-1.5 bg-white hover:bg-slate-50 text-slate-600 font-medium px-3 py-1.5 rounded border border-slate-200 text-xs transition-colors cursor-pointer"
@@ -354,6 +427,7 @@ export const ManageIndustriesDashboard = () => {
           onToggleStatus={handleToggleStatus}
           onResetPassword={handleResetPassword}
           onDelete={handleDeleteIndustry}
+          onApprove={(ind) => setApprovingIndustry(ind)}
         />
       </div>
 
@@ -386,6 +460,16 @@ export const ManageIndustriesDashboard = () => {
         isOpen={Boolean(successCredentials)}
         credentials={successCredentials}
         onClose={() => setSuccessCredentials(null)}
+      />
+
+      {/* 5. Approve Application Modal */}
+      <ApproveIndustryModal
+        isOpen={Boolean(approvingIndustry)}
+        industry={approvingIndustry}
+        onClose={() => setApprovingIndustry(null)}
+        onApprove={handleApproveApplication}
+        onReject={handleRejectApplication}
+        isLoading={isSubmitting}
       />
     </div>
   );

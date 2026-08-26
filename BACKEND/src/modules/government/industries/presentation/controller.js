@@ -3,13 +3,14 @@ import { industryService } from '../application/service.js';
 export class IndustryController {
   async getIndustries(req, res, next) {
     try {
-      const { search, category, thematicDomain, status, accessStatus, district, page, limit } = req.query;
+      const { search, category, thematicDomain, status, accessStatus, verificationStatus, district, page, limit } = req.query;
       const data = await industryService.getIndustries({
         search,
         category,
         thematicDomain,
         status,
         accessStatus,
+        verificationStatus,
         district,
         page: page || 1,
         limit: limit || 10
@@ -105,6 +106,47 @@ export class IndustryController {
       res.status(200).json({
         status: 'SUCCESS',
         message: result.message
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async applyIndustry(req, res, next) {
+    try {
+      const result = await industryService.applyIndustry(req.body);
+      res.status(201).json({
+        status: 'SUCCESS',
+        message: result.message,
+        data: result
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async approveApplication(req, res, next) {
+    try {
+      const { id } = req.params;
+      const result = await industryService.approveApplication(id, req.body);
+      res.status(200).json({
+        status: 'SUCCESS',
+        message: result.message,
+        data: result
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async rejectApplication(req, res, next) {
+    try {
+      const { id } = req.params;
+      const result = await industryService.rejectApplication(id, req.body);
+      res.status(200).json({
+        status: 'SUCCESS',
+        message: result.message,
+        data: result
       });
     } catch (error) {
       next(error);

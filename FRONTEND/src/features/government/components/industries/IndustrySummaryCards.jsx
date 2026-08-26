@@ -1,47 +1,38 @@
 import React from 'react';
-import { Users, IndianRupee, FolderCheck } from 'lucide-react';
+import { Building2, CheckCircle2, Clock } from 'lucide-react';
 
 export const IndustrySummaryCards = ({ stats }) => {
-  const activeCount = stats?.activeIndustries ?? 0;
   const totalCount = stats?.totalIndustries ?? 0;
-  const totalCsrCr = typeof stats?.totalCsrFundsCr === 'number' ? stats.totalCsrFundsCr : 0;
-  const supportedProjects = stats?.supportedProjects ?? 0;
-
-  // Real Dynamic CSR Trend Heights (proportional from database top contributors)
-  const csrValues = Array.isArray(stats?.csrTrend) && stats.csrTrend.length > 0
-    ? stats.csrTrend.slice(0, 4)
-    : [18.5, 12.0, 9.4, 6.8];
-  const maxCsr = Math.max(...csrValues, 1);
-  const csrBarHeights = csrValues.map((v) => Math.max(4, Math.round((v / maxCsr) * 20)));
+  const activeCount = stats?.activeIndustries ?? 0;
+  const pendingCount = stats?.pendingReview ?? 0;
 
   const cards = [
     {
+      id: 'total',
+      title: 'Total Registered',
+      value: totalCount,
+      subtitle: 'All Applied & Onboarded',
+      icon: Building2,
+      iconBg: 'bg-blue-50 text-blue-700 border-blue-100',
+      valueColor: 'text-slate-900'
+    },
+    {
       id: 'active',
-      title: 'Active Partners',
+      title: 'Approved & Active',
       value: activeCount,
-      subtitle: totalCount > activeCount ? `${activeCount}/${totalCount} Operational` : 'MSME Corp. Status',
-      icon: Users,
-      iconBg: 'bg-emerald-50 text-emerald-600',
-      sparklineType: 'line'
+      subtitle: 'Verified Partner Entities',
+      icon: CheckCircle2,
+      iconBg: 'bg-emerald-50 text-emerald-700 border-emerald-100',
+      valueColor: 'text-emerald-700'
     },
     {
-      id: 'csr_funds',
-      title: 'CSR & Innovation Funds',
-      value: `₹${totalCsrCr.toFixed(2)} Cr`,
-      subtitle: 'Total Committed',
-      icon: IndianRupee,
-      iconBg: 'bg-emerald-50 text-emerald-600',
-      sparklineType: 'bars',
-      barHeights: csrBarHeights
-    },
-    {
-      id: 'supported_projects',
-      title: 'Supported Projects',
-      value: supportedProjects,
-      subtitle: 'Across Domains',
-      icon: FolderCheck,
-      iconBg: 'bg-emerald-50 text-emerald-600',
-      sparklineType: 'wave'
+      id: 'pending',
+      title: 'Pending Review',
+      value: pendingCount,
+      subtitle: 'Awaiting Govt. Approval',
+      icon: Clock,
+      iconBg: 'bg-amber-50 text-amber-700 border-amber-100',
+      valueColor: 'text-amber-700'
     }
   ];
 
@@ -55,9 +46,9 @@ export const IndustrySummaryCards = ({ stats }) => {
             className="bg-white rounded-xl border border-slate-200/90 p-4.5 flex flex-col justify-between shadow-2xs hover:border-slate-300 transition-all"
           >
             <div className="flex items-start justify-between">
-              {/* Left Circular Icon */}
+              {/* Left Icon */}
               <div
-                className={`w-11 h-11 rounded-full ${card.iconBg} flex items-center justify-center shrink-0`}
+                className={`w-10 h-10 rounded-xl ${card.iconBg} border flex items-center justify-center shrink-0`}
               >
                 <IconComponent className="w-5 h-5" />
               </div>
@@ -67,7 +58,7 @@ export const IndustrySummaryCards = ({ stats }) => {
                 <span className="text-xs font-semibold text-slate-500 block truncate">
                   {card.title}
                 </span>
-                <div className="text-2xl font-bold text-slate-900 tracking-tight leading-tight mt-0.5">
+                <div className={`text-2xl font-bold tracking-tight leading-tight mt-0.5 ${card.valueColor}`}>
                   {card.value}
                 </div>
                 <span className="text-[11px] font-medium text-slate-400 block truncate mt-0.5">
@@ -76,41 +67,12 @@ export const IndustrySummaryCards = ({ stats }) => {
               </div>
             </div>
 
-            {/* Bottom Mini Sparkline Graphic matching Reference */}
-            <div className="mt-3 pt-2 border-t border-slate-100 flex items-center justify-end">
-              {card.sparklineType === 'line' && (
-                <svg className="w-24 h-5 text-emerald-500" viewBox="0 0 100 20" fill="none">
-                  <path
-                    d="M0 16 L20 14 L40 17 L60 8 L80 12 L100 6"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              )}
-              {card.sparklineType === 'wave' && (
-                <svg className="w-24 h-5 text-emerald-500" viewBox="0 0 100 20" fill="none">
-                  <path
-                    d="M0 12 L20 16 L40 10 L60 15 L80 6 L100 11"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              )}
-              {card.sparklineType === 'bars' && (
-                <div className="flex items-end space-x-1 h-5">
-                  {card.barHeights.map((h, i) => (
-                    <span
-                      key={i}
-                      style={{ height: `${h}px` }}
-                      className="w-1.5 bg-emerald-500 rounded-xs transition-all duration-300"
-                    />
-                  ))}
-                </div>
-              )}
+            {/* Bottom Indicator */}
+            <div className="mt-3 pt-2 border-t border-slate-100 flex items-center justify-between text-[11px]">
+              <span className="text-slate-400 font-medium">Status</span>
+              <span className="font-bold text-slate-600">
+                {totalCount > 0 ? `${Math.round((card.value / totalCount) * 100)}% of total` : '0%'}
+              </span>
             </div>
           </div>
         );
