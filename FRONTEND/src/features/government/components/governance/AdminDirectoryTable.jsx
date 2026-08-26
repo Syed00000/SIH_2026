@@ -16,38 +16,44 @@ import { JHARKHAND_DISTRICTS_LIST } from '../../data/mockGovernmentData.js';
 import { ADMIN_ROLES_LIST, ADMIN_STATUS_LIST } from '../../data/mockAdminData.js';
 import { TableSkeleton } from '../../../../shared/components/ui/tableSkeleton.jsx';
 
-const AVATAR_COLOR_MAP = {
-  purple: 'bg-purple-100 text-purple-700 border-purple-200',
-  green: 'bg-emerald-100 text-emerald-700 border-emerald-200',
-  orange: 'bg-orange-100 text-orange-700 border-orange-200',
-  pink: 'bg-pink-100 text-pink-700 border-pink-200',
-  yellow: 'bg-amber-100 text-amber-700 border-amber-200',
-  teal: 'bg-teal-100 text-teal-700 border-teal-200',
-  blue: 'bg-blue-100 text-blue-700 border-blue-200',
-  cyan: 'bg-cyan-100 text-cyan-700 border-cyan-200',
-  violet: 'bg-violet-100 text-violet-700 border-violet-200',
-  rose: 'bg-rose-100 text-rose-700 border-rose-200',
-  indigo: 'bg-indigo-100 text-indigo-700 border-indigo-200',
-  emerald: 'bg-emerald-100 text-emerald-700 border-emerald-200'
+// Distinctive sleek color styles for initials (Clean rectangular monograms, no round pastel blobs)
+const INITIALS_PALETTES = [
+  'border-blue-500 text-blue-700 bg-blue-50/40',
+  'border-purple-500 text-purple-700 bg-purple-50/40',
+  'border-emerald-500 text-emerald-700 bg-emerald-50/40',
+  'border-amber-500 text-amber-700 bg-amber-50/40',
+  'border-indigo-500 text-indigo-700 bg-indigo-50/40',
+  'border-cyan-500 text-cyan-700 bg-cyan-50/40',
+  'border-rose-500 text-rose-700 bg-rose-50/40',
+  'border-teal-500 text-teal-700 bg-teal-50/40'
+];
+
+const getInitialsPalette = (name = '') => {
+  let hash = 0;
+  for (let i = 0; i < name.length; i++) {
+    hash = name.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  const index = Math.abs(hash) % INITIALS_PALETTES.length;
+  return INITIALS_PALETTES[index];
 };
 
 const getRoleBadgeStyle = (role) => {
   const map = {
-    'Super Admin': 'bg-purple-50 text-purple-700 border-purple-200/70',
-    'Nodal Officer': 'bg-blue-50 text-blue-600 border-blue-200/70',
-    'District Admin': 'bg-sky-50 text-sky-700 border-sky-200/70',
-    'HEI Admin': 'bg-cyan-50 text-cyan-700 border-cyan-200/70'
+    'Super Admin': 'bg-purple-50 text-purple-700 border-purple-300',
+    'Nodal Officer': 'bg-blue-50 text-blue-700 border-blue-300',
+    'District Admin': 'bg-sky-50 text-sky-700 border-sky-300',
+    'HEI Admin': 'bg-cyan-50 text-cyan-700 border-cyan-300'
   };
-  return map[role] || 'bg-slate-100 text-slate-700 border-slate-200';
+  return map[role] || 'bg-slate-50 text-slate-700 border-slate-300';
 };
 
 const getStatusBadgeStyle = (status) => {
   const map = {
-    Active: { pill: 'bg-emerald-50 text-emerald-700 border-emerald-200/80', dot: 'bg-emerald-500' },
-    Suspended: { pill: 'bg-amber-50 text-amber-700 border-amber-200/80', dot: 'bg-amber-500' },
-    Removed: { pill: 'bg-red-50 text-red-600 border-red-200/80', dot: 'bg-red-500' }
+    Active: { pill: 'bg-emerald-50/70 text-emerald-700 border-emerald-300', dot: 'bg-emerald-500' },
+    Suspended: { pill: 'bg-amber-50/70 text-amber-700 border-amber-300', dot: 'bg-amber-500' },
+    Removed: { pill: 'bg-rose-50/70 text-rose-700 border-rose-300', dot: 'bg-rose-500' }
   };
-  return map[status] || { pill: 'bg-slate-50 text-slate-600 border-slate-200', dot: 'bg-slate-400' };
+  return map[status] || { pill: 'bg-slate-50 text-slate-600 border-slate-300', dot: 'bg-slate-400' };
 };
 
 const getInitials = (name = '') => {
@@ -73,8 +79,12 @@ export const AdminDirectoryTable = ({
   const filteredAdmins = admins.filter((admin) => {
     if (searchTerm.trim()) {
       const q = searchTerm.toLowerCase().trim();
-      const match = admin.fullName.toLowerCase().includes(q) || admin.email.toLowerCase().includes(q) ||
-        admin.role.toLowerCase().includes(q) || admin.district.toLowerCase().includes(q) || admin.mobileNumber.includes(q);
+      const match =
+        admin.fullName.toLowerCase().includes(q) ||
+        admin.email.toLowerCase().includes(q) ||
+        admin.role.toLowerCase().includes(q) ||
+        admin.district.toLowerCase().includes(q) ||
+        (admin.mobileNumber && admin.mobileNumber.includes(q));
       if (!match) return false;
     }
     if (selectedRole !== 'All Roles' && admin.role.toLowerCase() !== selectedRole.toLowerCase()) return false;
@@ -91,10 +101,16 @@ export const AdminDirectoryTable = ({
   const paginatedAdmins = filteredAdmins.slice(startIndex, endIndex);
 
   return (
-    <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden flex flex-col">
-      {/* Directory Header & Filtering Toolbar */}
-      <div className="p-5 border-b border-slate-100 space-y-4">
-        <h2 className="text-base font-bold text-slate-900 tracking-tight">Admin Directory</h2>
+    <div className="bg-white border border-slate-200 shadow-xs overflow-hidden flex flex-col">
+      {/* Directory Header & Filtering Toolbar - Sharp Rectangular Styling */}
+      <div className="p-5 border-b border-slate-200 space-y-4 bg-white">
+        <div className="flex items-center justify-between">
+          <h2 className="text-base font-bold text-slate-900 tracking-tight">Admin Directory</h2>
+          <span className="text-xs font-semibold text-slate-400">
+            {totalRecords} Total Registered
+          </span>
+        </div>
+
         <div className="flex flex-wrap items-center gap-3">
           {/* Search Input Bar */}
           <div className="relative flex-1 min-w-[240px]">
@@ -104,7 +120,7 @@ export const AdminDirectoryTable = ({
               placeholder="Search by name, email or role..."
               value={searchTerm}
               onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }}
-              className="w-full pl-10 pr-4 py-2 bg-slate-50/70 border border-slate-200/90 rounded-xl text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-blue-600 focus:bg-white transition-all shadow-2xs"
+              className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-blue-600 focus:bg-white transition-colors"
             />
           </div>
 
@@ -114,11 +130,11 @@ export const AdminDirectoryTable = ({
             { value: selectedStatus, setter: setSelectedStatus, options: ADMIN_STATUS_LIST },
             { value: selectedDistrict, setter: setSelectedDistrict, options: ['All Districts', ...JHARKHAND_DISTRICTS_LIST.filter(d => d !== 'All')] }
           ].map((flt, idx) => (
-            <div key={idx} className="relative min-w-[130px]">
+            <div key={idx} className="relative min-w-[135px]">
               <select
                 value={flt.value === 'All' ? 'All Districts' : flt.value}
                 onChange={(e) => { flt.setter(e.target.value === 'All Districts' ? 'All' : e.target.value); setCurrentPage(1); }}
-                className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 pr-8 text-xs font-semibold text-slate-700 hover:border-slate-300 focus:outline-none focus:ring-1 focus:ring-blue-600 cursor-pointer appearance-none shadow-2xs"
+                className="w-full bg-white border border-slate-200 px-3 py-2 pr-8 text-xs font-semibold text-slate-700 hover:border-slate-300 focus:outline-none focus:border-blue-600 cursor-pointer appearance-none"
               >
                 {flt.options.map(opt => <option key={opt} value={opt}>{opt}</option>)}
               </select>
@@ -128,11 +144,11 @@ export const AdminDirectoryTable = ({
 
           <button
             onClick={() => { setSearchTerm(''); setSelectedRole('All Roles'); setSelectedStatus('All Status'); setSelectedDistrict('All'); setCurrentPage(1); }}
-            className="flex items-center space-x-1.5 bg-white hover:bg-slate-50 text-slate-700 font-semibold px-3.5 py-2 rounded-xl border border-slate-200 text-xs shadow-2xs transition-colors cursor-pointer"
+            className="flex items-center space-x-1.5 bg-white hover:bg-slate-50 text-slate-700 font-semibold px-3.5 py-2 border border-slate-200 text-xs transition-colors cursor-pointer"
             title="Reset Filters"
           >
             <SlidersHorizontal className="w-3.5 h-3.5 text-slate-500" />
-            <span>Filters</span>
+            <span>Reset</span>
           </button>
         </div>
       </div>
@@ -141,7 +157,7 @@ export const AdminDirectoryTable = ({
       <div className="overflow-x-auto">
         <table className="w-full text-left border-collapse">
           <thead>
-            <tr className="border-b border-slate-100 bg-slate-50/50 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+            <tr className="border-b border-slate-200 bg-slate-50 text-[11px] font-bold text-slate-600 uppercase tracking-wider">
               <th className="py-3.5 px-5">Admin Name</th>
               <th className="py-3.5 px-4">Email ID</th>
               <th className="py-3.5 px-4">Role</th>
@@ -156,7 +172,7 @@ export const AdminDirectoryTable = ({
               <TableSkeleton rows={6} columns={7} />
             ) : paginatedAdmins.length === 0 ? (
               <tr>
-                <td colSpan={7} className="py-12 text-center text-slate-400">
+                <td colSpan={7} className="py-12 text-center text-slate-400 bg-white">
                   <UserCheck className="w-8 h-8 mx-auto text-slate-300 mb-2" />
                   <p className="font-semibold text-slate-600">No administrators found</p>
                   <p className="text-[11px] text-slate-400 mt-0.5">Try adjusting your search query or filters.</p>
@@ -164,54 +180,81 @@ export const AdminDirectoryTable = ({
               </tr>
             ) : (
               paginatedAdmins.map((admin) => {
-                const avatarClass = AVATAR_COLOR_MAP[admin.avatarColor] || AVATAR_COLOR_MAP.purple;
+                const initialsClass = getInitialsPalette(admin.fullName);
                 const statusStyle = getStatusBadgeStyle(admin.status);
 
                 return (
-                  <tr key={admin.id} className="hover:bg-slate-50/80 transition-colors group">
+                  <tr key={admin.id || admin._id} className="hover:bg-slate-50/90 transition-colors group">
+                    {/* Admin Name & Sharp Rectangular Initials Badge */}
                     <td className="py-3.5 px-5">
                       <div className="flex items-center space-x-3">
-                        <div className={`w-9 h-9 rounded-full flex items-center justify-center font-bold text-xs shrink-0 border ${avatarClass}`}>
+                        <div className={`w-8 h-8 border-l-2 border border-slate-200 flex items-center justify-center font-mono font-black text-xs shrink-0 ${initialsClass}`}>
                           {getInitials(admin.fullName)}
                         </div>
                         <div>
                           <div className="font-bold text-slate-900 leading-tight">{admin.fullName}</div>
-                          <div className="text-[11px] font-medium text-slate-400 mt-0.5">{admin.mobileNumber}</div>
+                          <div className="text-[11px] font-medium text-slate-400 mt-0.5">{admin.mobileNumber || 'N/A'}</div>
                         </div>
                       </div>
                     </td>
-                    <td className="py-3.5 px-4 text-slate-600 font-medium font-mono text-[11px]">{admin.email}</td>
+
+                    {/* Email */}
+                    <td className="py-3.5 px-4 text-slate-600 font-mono text-[11px]">{admin.email}</td>
+
+                    {/* Role Tag (Rectangular) */}
                     <td className="py-3.5 px-4">
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-md text-[11px] font-semibold border ${getRoleBadgeStyle(admin.role)}`}>
+                      <span className={`inline-flex items-center px-2 py-0.5 text-[11px] font-bold border ${getRoleBadgeStyle(admin.role)}`}>
                         {admin.role}
                       </span>
                     </td>
+
+                    {/* District */}
                     <td className="py-3.5 px-4 text-slate-700 font-semibold">{admin.district}</td>
-                    <td className="py-3.5 px-4 text-slate-500 text-[11px] font-medium whitespace-nowrap">{admin.lastLogin}</td>
+
+                    {/* Last Login */}
+                    <td className="py-3.5 px-4 text-slate-500 text-[11px] font-medium whitespace-nowrap">{admin.lastLogin || 'Never logged in'}</td>
+
+                    {/* Status Badge (Rectangular) */}
                     <td className="py-3.5 px-4">
-                      <span className={`inline-flex items-center space-x-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold border ${statusStyle.pill}`}>
-                        <span className={`w-1.5 h-1.5 rounded-full ${statusStyle.dot}`} />
+                      <span className={`inline-flex items-center space-x-1.5 px-2.5 py-0.5 text-[11px] font-bold border ${statusStyle.pill}`}>
+                        <span className={`w-1.5 h-1.5 ${statusStyle.dot}`} />
                         <span>{admin.status}</span>
                       </span>
                     </td>
+
+                    {/* Action Buttons (Rectangular & Crisp) */}
                     <td className="py-3.5 px-5 text-right">
                       <div className="flex items-center justify-end space-x-1.5">
-                        <button onClick={() => onViewAdmin?.(admin)} className="w-7 h-7 rounded-lg border border-slate-200 flex items-center justify-center text-blue-600 hover:bg-blue-50 hover:border-blue-300 transition-colors cursor-pointer shadow-2xs" title="View Admin Profile">
+                        <button
+                          onClick={() => onViewAdmin?.(admin)}
+                          className="w-7 h-7 border border-slate-200 flex items-center justify-center text-blue-600 hover:bg-blue-50 hover:border-blue-300 transition-colors cursor-pointer bg-white"
+                          title="View Admin Profile"
+                        >
                           <Eye className="w-3.5 h-3.5" />
                         </button>
-                        <button onClick={() => onEditAdmin?.(admin)} className="w-7 h-7 rounded-lg border border-slate-200 flex items-center justify-center text-blue-600 hover:bg-blue-50 hover:border-blue-300 transition-colors cursor-pointer shadow-2xs" title="Edit Admin">
+                        <button
+                          onClick={() => onEditAdmin?.(admin)}
+                          className="w-7 h-7 border border-slate-200 flex items-center justify-center text-blue-600 hover:bg-blue-50 hover:border-blue-300 transition-colors cursor-pointer bg-white"
+                          title="Edit Admin"
+                        >
                           <Pencil className="w-3.5 h-3.5" />
                         </button>
                         <button
-                          onClick={() => onToggleStatus?.(admin.id)}
-                          className={`w-7 h-7 rounded-lg border flex items-center justify-center transition-colors cursor-pointer shadow-2xs ${
-                            admin.status === 'Suspended' ? 'border-emerald-200 text-emerald-600 hover:bg-emerald-50 hover:border-emerald-300' : 'border-amber-200 text-amber-600 hover:bg-amber-50 hover:border-amber-300'
+                          onClick={() => onToggleStatus?.(admin.id || admin._id)}
+                          className={`w-7 h-7 border flex items-center justify-center transition-colors cursor-pointer bg-white ${
+                            admin.status === 'Suspended'
+                              ? 'border-emerald-200 text-emerald-600 hover:bg-emerald-50 hover:border-emerald-300'
+                              : 'border-amber-200 text-amber-600 hover:bg-amber-50 hover:border-amber-300'
                           }`}
                           title={admin.status === 'Suspended' ? 'Activate Admin' : 'Suspend Admin'}
                         >
                           {admin.status === 'Suspended' ? <PlayCircle className="w-3.5 h-3.5" /> : <PauseCircle className="w-3.5 h-3.5" />}
                         </button>
-                        <button onClick={() => onDeleteAdmin?.(admin.id)} className="w-7 h-7 rounded-lg border border-red-200 flex items-center justify-center text-red-600 hover:bg-red-50 hover:border-red-300 transition-colors cursor-pointer shadow-2xs" title="Remove Admin">
+                        <button
+                          onClick={() => onDeleteAdmin?.(admin.id || admin._id)}
+                          className="w-7 h-7 border border-rose-200 flex items-center justify-center text-rose-600 hover:bg-rose-50 hover:border-rose-300 transition-colors cursor-pointer bg-white"
+                          title="Remove Admin"
+                        >
                           <Trash2 className="w-3.5 h-3.5" />
                         </button>
                       </div>
@@ -224,8 +267,8 @@ export const AdminDirectoryTable = ({
         </table>
       </div>
 
-      {/* Pagination Footer */}
-      <div className="p-4 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500">
+      {/* Pagination Footer - Sharp Rectangular Styling */}
+      <div className="p-4 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500 bg-white">
         <div>
           Showing <span className="font-bold text-slate-800">{totalRecords > 0 ? startIndex + 1 : 0}</span> to <span className="font-bold text-slate-800">{endIndex}</span> of <span className="font-bold text-slate-800">{totalRecords}</span> records
         </div>
@@ -234,7 +277,7 @@ export const AdminDirectoryTable = ({
             <select
               value={itemsPerPage}
               onChange={(e) => { setItemsPerPage(Number(e.target.value)); setCurrentPage(1); }}
-              className="bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 pr-7 text-xs font-semibold text-slate-700 hover:border-slate-300 focus:outline-none cursor-pointer appearance-none shadow-2xs"
+              className="bg-white border border-slate-200 px-2.5 py-1.5 pr-7 text-xs font-semibold text-slate-700 hover:border-slate-300 focus:outline-none cursor-pointer appearance-none"
             >
               <option value={8}>8 per page</option>
               <option value={10}>10 per page</option>
@@ -243,19 +286,31 @@ export const AdminDirectoryTable = ({
             <ChevronDown className="w-3 h-3 text-slate-400 absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none" />
           </div>
           <div className="flex items-center space-x-1">
-            <button onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={validCurrentPage <= 1} className="w-8 h-8 rounded-lg border border-slate-200 flex items-center justify-center text-slate-600 hover:bg-slate-50 disabled:opacity-40 cursor-pointer shadow-2xs">
+            <button
+              onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+              disabled={validCurrentPage <= 1}
+              className="w-8 h-8 border border-slate-200 flex items-center justify-center text-slate-600 hover:bg-slate-50 disabled:opacity-40 cursor-pointer bg-white"
+            >
               <ChevronLeft className="w-4 h-4" />
             </button>
             {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => (
               <button
                 key={pageNum}
                 onClick={() => setCurrentPage(pageNum)}
-                className={`w-8 h-8 rounded-lg text-xs font-bold transition-colors cursor-pointer ${validCurrentPage === pageNum ? 'bg-blue-600 text-white shadow-xs' : 'border border-slate-200 text-slate-700 hover:bg-slate-50'}`}
+                className={`w-8 h-8 text-xs font-bold transition-colors cursor-pointer ${
+                  validCurrentPage === pageNum
+                    ? 'bg-blue-600 text-white'
+                    : 'border border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
+                }`}
               >
                 {pageNum}
               </button>
             ))}
-            <button onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={validCurrentPage >= totalPages} className="w-8 h-8 rounded-lg border border-slate-200 flex items-center justify-center text-slate-600 hover:bg-slate-50 disabled:opacity-40 cursor-pointer shadow-2xs">
+            <button
+              onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+              disabled={validCurrentPage >= totalPages}
+              className="w-8 h-8 border border-slate-200 flex items-center justify-center text-slate-600 hover:bg-slate-50 disabled:opacity-40 cursor-pointer bg-white"
+            >
               <ChevronRight className="w-4 h-4" />
             </button>
           </div>

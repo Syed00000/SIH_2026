@@ -6,38 +6,38 @@ export const AdminSummaryCards = ({ stats }) => {
     {
       id: 'total',
       title: 'Total Admins',
-      value: stats?.totalAdmins ?? 28,
+      value: stats?.totalAdmins ?? 0,
       subtitle: 'All administrators',
       icon: Users,
       iconColor: 'text-blue-600',
-      iconBg: 'bg-blue-50'
+      borderColor: 'border-l-blue-600'
     },
     {
       id: 'active',
       title: 'Active Admins',
-      value: stats?.activeAdmins ?? 23,
+      value: stats?.activeAdmins ?? 0,
       subtitle: 'Currently active',
       icon: ShieldCheck,
       iconColor: 'text-emerald-600',
-      iconBg: 'bg-emerald-50'
+      borderColor: 'border-l-emerald-600'
     },
     {
       id: 'suspended',
       title: 'Suspended Admins',
-      value: stats?.suspendedAdmins ?? 4,
+      value: stats?.suspendedAdmins ?? 0,
       subtitle: 'Temporarily suspended',
       icon: PauseCircle,
-      iconColor: 'text-orange-600',
-      iconBg: 'bg-orange-50'
+      iconColor: 'text-amber-600',
+      borderColor: 'border-l-amber-600'
     },
     {
       id: 'removed',
       title: 'Removed Admins',
-      value: stats?.removedAdmins ?? 1,
+      value: stats?.removedAdmins ?? 0,
       subtitle: 'Permanently removed',
       icon: Trash2,
-      iconColor: 'text-red-600',
-      iconBg: 'bg-red-50'
+      iconColor: 'text-rose-600',
+      borderColor: 'border-l-rose-600'
     }
   ];
 
@@ -48,26 +48,24 @@ export const AdminSummaryCards = ({ stats }) => {
         return (
           <div
             key={card.id}
-            className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-xs flex items-center space-x-4 transition-all hover:shadow-sm"
+            className={`bg-white border border-slate-200 border-l-4 ${card.borderColor} p-5 shadow-xs flex items-center justify-between transition-all hover:border-slate-300`}
           >
-            {/* Circular Icon Container */}
-            <div
-              className={`w-13 h-13 rounded-2xl ${card.iconBg} flex items-center justify-center shrink-0`}
-            >
-              <IconComponent className={`w-6 h-6 ${card.iconColor}`} />
-            </div>
-
             {/* Metrics Information */}
-            <div className="min-w-0 flex-1">
-              <span className="text-xs font-semibold text-slate-500 block truncate">
+            <div className="min-w-0 flex-1 pr-3">
+              <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block truncate">
                 {card.title}
               </span>
-              <div className="text-2xl font-black text-slate-900 tracking-tight mt-0.5">
+              <div className="text-2xl lg:text-3xl font-black text-slate-900 tracking-tight mt-1">
                 {card.value}
               </div>
               <span className="text-[11px] font-medium text-slate-400 block truncate mt-0.5">
                 {card.subtitle}
               </span>
+            </div>
+
+            {/* Direct Crisp Icon with No Background Shape */}
+            <div className="shrink-0 flex items-center justify-center p-1">
+              <IconComponent className={`w-7 h-7 ${card.iconColor}`} strokeWidth={2} />
             </div>
           </div>
         );
