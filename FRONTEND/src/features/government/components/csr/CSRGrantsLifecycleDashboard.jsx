@@ -1,14 +1,16 @@
 import React, { useState } from 'react';
-import { ShieldCheck, RefreshCw } from 'lucide-react';
+import { ShieldCheck } from 'lucide-react';
 import { CSRPhaseTabs } from './CSRPhaseTabs.jsx';
 import { CSRFundingSources } from './CSRFundingSources.jsx';
 import { CSRStatutoryParameters } from './CSRStatutoryParameters.jsx';
 import { CSRProposalPipelineTable } from './CSRProposalPipelineTable.jsx';
+import { CSREscrowMatrix } from './CSREscrowMatrix.jsx';
+import { CSRPaymentLedgerTable } from './CSRPaymentLedgerTable.jsx';
 import { AddProposalModal } from './AddProposalModal.jsx';
 import { MOCK_PROPOSAL_PIPELINE } from '../../data/mockCsrLifecycleData.js';
 
 export const CSRGrantsLifecycleDashboard = () => {
-  const [activePhase, setActivePhase] = useState('phase_1_2');
+  const [activePhase, setActivePhase] = useState('phase_3_4');
   const [proposals, setProposals] = useState(MOCK_PROPOSAL_PIPELINE);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
@@ -43,19 +45,24 @@ export const CSRGrantsLifecycleDashboard = () => {
         onSelectPhase={(phase) => setActivePhase(phase)}
       />
 
-      {/* 3. Three Funding Source Cards */}
-      <CSRFundingSources />
+      {/* 3. Dynamic Phase Content */}
+      {activePhase === 'phase_1_2' ? (
+        <>
+          <CSRFundingSources />
+          <CSRStatutoryParameters activePhase={activePhase} />
+          <CSRProposalPipelineTable
+            proposals={proposals}
+            onOpenAddModal={() => setIsAddModalOpen(true)}
+          />
+        </>
+      ) : (
+        <>
+          <CSREscrowMatrix />
+          <CSRPaymentLedgerTable />
+        </>
+      )}
 
-      {/* 4. Statutory Verification Parameters */}
-      <CSRStatutoryParameters activePhase={activePhase} />
-
-      {/* 5. Comprehensive Proposal Pipeline Table */}
-      <CSRProposalPipelineTable
-        proposals={proposals}
-        onOpenAddModal={() => setIsAddModalOpen(true)}
-      />
-
-      {/* 6. Add Proposal Modal */}
+      {/* 4. Add Proposal Modal */}
       <AddProposalModal
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
