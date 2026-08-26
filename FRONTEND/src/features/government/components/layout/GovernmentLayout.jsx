@@ -10,6 +10,7 @@ import { ManageUniversitiesDashboard } from '../universities/ManageUniversitiesD
 import { ManageIndustriesDashboard } from '../industries/ManageIndustriesDashboard.jsx';
 import { GovernmentGisDashboard } from '../gis/GovernmentGisDashboard.jsx';
 import { AdminManagement } from '../governance/AdminManagement.jsx';
+import { OfficialPrintableDossier } from '../common/OfficialPrintableDossier.jsx';
 import { governmentDataService } from '../../services/governmentDataService.js';
 
 export const GovernmentLayout = ({ onLogout }) => {
@@ -179,10 +180,14 @@ export const GovernmentLayout = ({ onLogout }) => {
                 onSelectSector={(sec) => setSelectedSector(sec)}
                 onApproveTriage={handleApproveTriage}
                 onRejectTriage={handleRejectTriage}
-                onNavigateTab={(tab) => handleSetActiveTab(tab)}
+                onViewAllTriage={() => handleSetActiveTab('triage')}
+                onViewAllHeis={() => handleSetActiveTab('heis')}
               />
-            ) : activeTab === 'triage' || activeTab === 'ai-triage' ? (
-              <AITriageDashboard />
+            ) : activeTab === 'triage' ? (
+              <AITriageDashboard
+                selectedDistrict={selectedDistrict}
+                onSelectDistrict={(dist) => setSelectedDistrict(dist)}
+              />
             ) : activeTab === 'heis' ? (
               <HeiHubPanel
                 selectedDistrict={selectedDistrict}
@@ -208,6 +213,14 @@ export const GovernmentLayout = ({ onLogout }) => {
           <GovernmentFooter />
         </div>
       </div>
+
+      {/* Official Government Printable Dossier (Hidden on screen, prints directly on Export PDF) */}
+      <OfficialPrintableDossier
+        selectedDistrict={selectedDistrict}
+        selectedSector={selectedSector}
+        kpis={kpis}
+        triageFeed={filteredTriageFeed}
+      />
     </div>
   );
 };

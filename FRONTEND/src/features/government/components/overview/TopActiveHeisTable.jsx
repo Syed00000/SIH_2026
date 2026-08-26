@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ArrowRight, ArrowUpDown, Building, X, CheckCircle2, IndianRupee } from 'lucide-react';
+import { ArrowRight, ArrowUpDown, Building, X, CheckCircle2, IndianRupee, Award, School } from 'lucide-react';
 
 export const TopActiveHeisTable = ({ heis = [], onViewAll }) => {
   const [sortField, setSortField] = useState('solved'); // 'name', 'projects', 'solved'
@@ -24,19 +24,23 @@ export const TopActiveHeisTable = ({ heis = [], onViewAll }) => {
     }
   };
 
+  const maxSolved = Math.max(...heis.map(h => h.solved || 1), 150);
+
   return (
-    <div className="bg-white border border-slate-200/90 rounded-2xl p-3.5 shadow-xs flex flex-col justify-between h-full min-h-[300px] relative">
+    <div className="bg-white border border-slate-200/80 hover:border-slate-300/90 rounded-xl p-4 shadow-[0_1px_3px_rgba(15,23,42,0.03)] hover:shadow-[0_8px_24px_-6px_rgba(15,23,42,0.07)] flex flex-col justify-between h-full min-h-[340px] transition-all duration-300 relative">
       {/* Header */}
-      <div className="flex items-center justify-between pb-2 mb-1 border-b border-slate-100">
-        <h3 className="text-sm font-bold text-slate-900 tracking-tight">
-          Top Active HEIs
-        </h3>
-        <button
-          onClick={onViewAll}
-          className="text-xs font-semibold text-blue-600 hover:text-blue-700 hover:underline cursor-pointer"
-        >
-          View All
-        </button>
+      <div className="flex items-center justify-between pb-2.5 mb-2 border-b border-slate-100">
+        <div className="flex items-center space-x-2">
+          <School className="w-4 h-4 text-purple-600" />
+          <div>
+            <h3 className="text-xs font-bold text-slate-900 tracking-tight flex items-center gap-1.5">
+              <span>Top Active HEIs</span>
+            </h3>
+            <span className="text-[10px] text-slate-400 font-medium block leading-tight">
+              Institutional Problem-Solving Leaderboard
+            </span>
+          </div>
+        </div>
       </div>
 
       {/* Table Content */}
@@ -46,78 +50,100 @@ export const TopActiveHeisTable = ({ heis = [], onViewAll }) => {
             <tr className="border-b border-slate-100 text-[10px] uppercase font-bold text-slate-400 select-none">
               <th
                 onClick={() => handleSort('name')}
-                className="pb-2 font-semibold cursor-pointer hover:text-slate-700"
+                className="pb-2 font-bold cursor-pointer hover:text-slate-700"
               >
                 <div className="flex items-center space-x-1">
                   <span>HEI Name</span>
-                  <ArrowUpDown className="w-2.5 h-2.5" />
+                  <ArrowUpDown className="w-2.5 h-2.5 text-slate-400" />
                 </div>
               </th>
               <th
                 onClick={() => handleSort('projects')}
-                className="pb-2 text-center font-semibold cursor-pointer hover:text-slate-700"
+                className="pb-2 text-center font-bold cursor-pointer hover:text-slate-700"
               >
                 <div className="flex items-center justify-center space-x-1">
                   <span>Projects</span>
-                  <ArrowUpDown className="w-2.5 h-2.5" />
+                  <ArrowUpDown className="w-2.5 h-2.5 text-slate-400" />
                 </div>
               </th>
               <th
                 onClick={() => handleSort('solved')}
-                className="pb-2 text-right font-semibold cursor-pointer hover:text-slate-700"
+                className="pb-2 text-right font-bold cursor-pointer hover:text-slate-700"
               >
                 <div className="flex items-center justify-end space-x-1">
                   <span>Solved</span>
-                  <ArrowUpDown className="w-2.5 h-2.5" />
+                  <ArrowUpDown className="w-2.5 h-2.5 text-slate-400" />
                 </div>
               </th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-50">
-            {sortedHeis.slice(0, 5).map((hei) => (
-              <tr
-                key={hei.id}
-                onClick={() => setSelectedHei(hei)}
-                className="hover:bg-slate-50/80 transition-colors cursor-pointer"
-              >
-                <td className="py-2.5 font-bold text-slate-900 pr-2">
-                  <div className="truncate max-w-[140px] sm:max-w-[170px] hover:text-blue-600">
-                    {hei.name}
-                  </div>
-                </td>
-                <td className="py-2.5 text-center font-semibold text-slate-600">
-                  {hei.projects}
-                </td>
-                <td className="py-2.5 text-right font-bold text-slate-800">
-                  {hei.solved}
-                </td>
-              </tr>
-            ))}
+            {sortedHeis.slice(0, 5).map((hei, idx) => {
+              const solvePct = Math.min(100, Math.round(((hei.solved || 0) / maxSolved) * 100));
+              return (
+                <tr
+                  key={hei.id || idx}
+                  onClick={() => setSelectedHei(hei)}
+                  className="hover:bg-slate-50/80 transition-colors cursor-pointer group"
+                >
+                  <td className="py-2.5 font-bold text-slate-900 pr-2">
+                    <div className="flex items-center space-x-2">
+                      <span className="w-4 h-4 rounded-full bg-slate-100 text-slate-600 font-extrabold text-[9.5px] flex items-center justify-center shrink-0 group-hover:bg-purple-100 group-hover:text-purple-700 transition-colors">
+                        {idx + 1}
+                      </span>
+                      <div className="truncate max-w-[130px] sm:max-w-[160px] text-[11.5px] group-hover:text-blue-600 font-semibold">
+                        {hei.name}
+                      </div>
+                    </div>
+                  </td>
+                  <td className="py-2.5 text-center font-semibold text-slate-600 text-[11px]">
+                    <span className="bg-slate-50 border border-slate-200/60 px-1.5 py-0.5 rounded text-[10.5px]">
+                      {hei.projects}
+                    </span>
+                  </td>
+                  <td className="py-2.5 text-right font-bold text-slate-900 text-[11px]">
+                    <div className="flex items-center justify-end space-x-1.5">
+                      <span className="text-emerald-700 font-black">{hei.solved}</span>
+                      <div className="w-8 h-1 bg-slate-100 rounded-full overflow-hidden shrink-0">
+                        <div
+                          className="h-full bg-emerald-500 rounded-full"
+                          style={{ width: `${solvePct}%` }}
+                        />
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>
 
       {/* Footer Link */}
-      <div className="pt-2 border-t border-slate-100 text-right mt-1">
+      <div className="pt-2.5 mt-1 border-t border-slate-100 flex items-center justify-between text-xs">
+        <div className="flex items-center space-x-1 text-[11px] text-slate-400 font-medium">
+          <Award className="w-3.5 h-3.5 text-amber-500" />
+          <span>Verified NIRF/NAAC</span>
+        </div>
         <button
           onClick={onViewAll}
-          className="inline-flex items-center text-xs font-bold text-blue-600 hover:text-blue-700 hover:underline cursor-pointer"
+          className="inline-flex items-center text-[11.5px] font-bold text-blue-600 hover:text-blue-700 hover:underline cursor-pointer"
         >
           <span>View All HEIs</span>
-          <ArrowRight className="w-3.5 h-3.5 ml-1" />
+          <ArrowRight className="w-3 h-3 ml-1" />
         </button>
       </div>
 
       {/* HEI Detail Modal */}
       {selectedHei && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4 z-50">
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4 z-50 animate-fadeIn">
           <div className="bg-white rounded-2xl max-w-sm w-full p-5 border border-slate-200 shadow-xl space-y-4">
             <div className="flex justify-between items-start border-b border-slate-100 pb-2.5">
               <div>
                 <h4 className="text-sm font-bold text-slate-900">{selectedHei.name}</h4>
-                <p className="text-xs text-slate-500 font-medium">Lead District: {selectedHei.leadDistrict}</p>
+                <p className="text-xs text-slate-500 font-medium">Lead District: {selectedHei.leadDistrict || 'Ranchi'}</p>
               </div>
-              <button onClick={() => setSelectedHei(null)} className="text-slate-400 hover:text-slate-600">
+              <button onClick={() => setSelectedHei(null)} className="text-slate-400 hover:text-slate-600 cursor-pointer">
                 <X className="w-4 h-4" />
               </button>
             </div>
@@ -140,7 +166,7 @@ export const TopActiveHeisTable = ({ heis = [], onViewAll }) => {
             <div className="flex justify-end pt-2 border-t border-slate-100">
               <button
                 onClick={() => setSelectedHei(null)}
-                className="px-3 py-1.5 bg-slate-900 text-white rounded-lg text-xs font-semibold"
+                className="px-3.5 py-1.5 bg-slate-900 text-white rounded-lg text-xs font-semibold hover:bg-slate-800 cursor-pointer"
               >
                 Close
               </button>
