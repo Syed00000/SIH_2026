@@ -16,5 +16,9 @@ export { default as HeiNetworkPipelineView } from './HeiNetworkPipelineView.jsx'
 export { default as ProposalReviewModal } from './ProposalReviewModal.jsx';
 export { default as ProjectManageModal } from './ProjectManageModal.jsx';
 export { default as AddProjectModal } from './AddProjectModal.jsx';
-export { default as ProjectTelemetryMap } from './ProjectTelemetryMap.jsx';
+export { default as ProjectLeafletMap } from './ProjectLeafletMap.jsx';
+export { default as ProjectTelemetryCharts } from './ProjectTelemetryCharts.jsx';
+export { default as ProposalDetailView } from './ProposalDetailView.jsx';
+export { default as ActiveProjectDetailView } from './ActiveProjectDetailView.jsx';
+export { default as ValidationEmailModal } from './ValidationEmailModal.jsx';
 export { default as ProjectCertificateModal } from './ProjectCertificateModal.jsx';
