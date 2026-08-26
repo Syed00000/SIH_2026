@@ -41,7 +41,7 @@ export const AdminDirectoryRow = ({
           </div>
           <div className="min-w-0">
             <div
-              className="font-bold text-slate-900 hover:text-blue-600 cursor-pointer text-xs leading-tight"
+              className="font-bold text-slate-900 hover:text-slate-600 cursor-pointer text-xs leading-tight"
               onClick={() => onViewAdmin(admin)}
             >
               {admin.fullName}
@@ -81,7 +81,7 @@ export const AdminDirectoryRow = ({
           <button
             type="button"
             onClick={() => onViewAdmin(admin)}
-            className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors cursor-pointer"
+            className="p-1.5 text-slate-400 hover:text-slate-900 hover:bg-slate-100 rounded-md transition-colors cursor-pointer"
             title="View Details"
           >
             <Eye className="w-4 h-4" />
@@ -89,7 +89,7 @@ export const AdminDirectoryRow = ({
           <button
             type="button"
             onClick={() => onEditAdmin(admin)}
-            className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors cursor-pointer"
+            className="p-1.5 text-slate-400 hover:text-slate-900 hover:bg-slate-100 rounded-md transition-colors cursor-pointer"
             title="Edit Admin"
           >
             <Pencil className="w-4 h-4" />

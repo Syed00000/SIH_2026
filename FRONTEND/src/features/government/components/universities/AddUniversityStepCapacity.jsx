@@ -22,7 +22,7 @@ export const AddUniversityStepCapacity = ({
             type="number"
             value={formData.departments}
             onChange={(e) => onInputChange('departments', e.target.value)}
-            className="w-20 mx-auto text-center font-bold text-base text-slate-900 bg-white border border-slate-200 rounded-md py-1 focus:ring-1 focus:ring-blue-500 shadow-2xs"
+            className="w-20 mx-auto text-center font-bold text-base text-slate-900 bg-white border border-slate-200 rounded-md py-1 focus:ring-1 focus:ring-slate-900 shadow-2xs"
           />
         </div>
 
@@ -32,7 +32,7 @@ export const AddUniversityStepCapacity = ({
             type="number"
             value={formData.totalFaculty}
             onChange={(e) => onInputChange('totalFaculty', e.target.value)}
-            className="w-20 mx-auto text-center font-bold text-base text-slate-900 bg-white border border-slate-200 rounded-md py-1 focus:ring-1 focus:ring-blue-500 shadow-2xs"
+            className="w-20 mx-auto text-center font-bold text-base text-slate-900 bg-white border border-slate-200 rounded-md py-1 focus:ring-1 focus:ring-slate-900 shadow-2xs"
           />
         </div>
 
@@ -42,7 +42,7 @@ export const AddUniversityStepCapacity = ({
             type="number"
             value={formData.availableFaculty}
             onChange={(e) => onInputChange('availableFaculty', e.target.value)}
-            className="w-20 mx-auto text-center font-bold text-base text-slate-900 bg-white border border-slate-200 rounded-md py-1 focus:ring-1 focus:ring-blue-500 shadow-2xs"
+            className="w-20 mx-auto text-center font-bold text-base text-slate-900 bg-white border border-slate-200 rounded-md py-1 focus:ring-1 focus:ring-slate-900 shadow-2xs"
           />
         </div>
 
@@ -52,7 +52,7 @@ export const AddUniversityStepCapacity = ({
             type="number"
             value={formData.labsAndFacilities}
             onChange={(e) => onInputChange('labsAndFacilities', e.target.value)}
-            className="w-20 mx-auto text-center font-bold text-base text-slate-900 bg-white border border-slate-200 rounded-md py-1 focus:ring-1 focus:ring-blue-500 shadow-2xs"
+            className="w-20 mx-auto text-center font-bold text-base text-slate-900 bg-white border border-slate-200 rounded-md py-1 focus:ring-1 focus:ring-slate-900 shadow-2xs"
           />
         </div>
 
@@ -62,7 +62,7 @@ export const AddUniversityStepCapacity = ({
             type="number"
             value={formData.activeProjects}
             onChange={(e) => onInputChange('activeProjects', e.target.value)}
-            className="w-20 mx-auto text-center font-bold text-base text-slate-900 bg-white border border-slate-200 rounded-md py-1 focus:ring-1 focus:ring-blue-500 shadow-2xs"
+            className="w-20 mx-auto text-center font-bold text-base text-slate-900 bg-white border border-slate-200 rounded-md py-1 focus:ring-1 focus:ring-slate-900 shadow-2xs"
           />
         </div>
 
@@ -71,7 +71,7 @@ export const AddUniversityStepCapacity = ({
           <select
             value={formData.capacityStatus}
             onChange={(e) => onInputChange('capacityStatus', e.target.value)}
-            className="w-full px-2 py-1.5 bg-white border border-slate-200 rounded-md text-xs font-semibold text-slate-900 focus:ring-1 focus:ring-blue-500 cursor-pointer shadow-2xs"
+            className="w-full px-2 py-1.5 bg-white border border-slate-200 rounded-md text-xs font-semibold text-slate-900 focus:ring-1 focus:ring-slate-900 cursor-pointer shadow-2xs"
           >
             <option value="Available">Available</option>
             <option value="Limited">Limited</option>

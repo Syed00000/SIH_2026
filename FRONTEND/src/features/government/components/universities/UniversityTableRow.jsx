@@ -36,7 +36,7 @@ export const UniversityTableRow = ({
           </div>
           <div className="min-w-0 max-w-[220px]">
             <div
-              className="font-bold text-slate-900 hover:text-blue-600 cursor-pointer text-xs truncate leading-tight"
+              className="font-bold text-slate-900 hover:text-slate-600 cursor-pointer text-xs truncate leading-tight"
               onClick={() => onViewUniversity(uni)}
               title={uni.name}
             >
@@ -127,7 +127,7 @@ export const UniversityTableRow = ({
           <button
             type="button"
             onClick={() => onViewUniversity(uni)}
-            className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors cursor-pointer"
+            className="p-1.5 text-slate-400 hover:text-slate-900 hover:bg-slate-100 rounded-md transition-colors cursor-pointer"
             title="View Details"
           >
             <Eye className="w-4 h-4" />
@@ -135,7 +135,7 @@ export const UniversityTableRow = ({
           <button
             type="button"
             onClick={() => onEditUniversity(uni)}
-            className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors cursor-pointer"
+            className="p-1.5 text-slate-400 hover:text-slate-900 hover:bg-slate-100 rounded-md transition-colors cursor-pointer"
             title="Edit University"
           >
             <Pencil className="w-4 h-4" />

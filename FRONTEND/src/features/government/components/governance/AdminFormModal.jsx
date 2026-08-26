@@ -133,7 +133,7 @@ export const AdminFormModal = ({ isOpen, onClose, onSubmit, initialData = null }
             </button>
             <button
               type="submit"
-              className="px-4 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-md font-semibold transition-colors cursor-pointer text-xs shadow-xs"
+              className="px-4 py-1.5 bg-slate-900 hover:bg-black text-white rounded-md font-semibold transition-colors cursor-pointer text-xs shadow-xs"
             >
               {initialData ? 'Save Changes' : 'Create Administrator'}
             </button>

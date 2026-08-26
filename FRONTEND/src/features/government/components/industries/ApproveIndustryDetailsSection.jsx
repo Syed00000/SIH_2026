@@ -42,7 +42,7 @@ export const ApproveIndustryDetailsSection = ({ industry = {} }) => {
                 href={industry.website}
                 target="_blank"
                 rel="noreferrer"
-                className="font-medium text-blue-600 hover:underline mt-0.5 flex items-center space-x-1 truncate"
+                className="font-bold text-slate-900 hover:underline mt-0.5 flex items-center space-x-1 truncate"
               >
                 <Globe className="w-3 h-3 shrink-0" />
                 <span className="truncate">{industry.website.replace(/^https?:\/\//, '')}</span>

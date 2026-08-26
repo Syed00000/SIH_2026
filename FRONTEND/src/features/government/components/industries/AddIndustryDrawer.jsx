@@ -178,7 +178,7 @@ export const AddIndustryDrawer = ({ isOpen, onClose, onSubmit, isLoading = false
               type="button"
               onClick={handleSubmit}
               disabled={isLoading}
-              className="px-5 py-2 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-md shadow-xs transition-colors cursor-pointer disabled:opacity-50"
+              className="px-5 py-2 text-xs font-semibold text-white bg-slate-900 hover:bg-black rounded-md shadow-xs transition-colors cursor-pointer disabled:opacity-50"
             >
               {isLoading ? 'Creating Partner...' : 'Create & Generate Credentials'}
             </button>

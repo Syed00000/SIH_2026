@@ -33,7 +33,7 @@ export const IndustryCredentialsSection = ({
             <button
               type="button"
               onClick={() => handleCopy(loginEmail, 'email')}
-              className="text-slate-400 hover:text-blue-600 transition-colors p-0.5 cursor-pointer shrink-0"
+              className="text-slate-400 hover:text-slate-900 transition-colors p-0.5 cursor-pointer shrink-0"
               title="Copy Login Email"
             >
               {copiedField === 'email' ? <Check className="w-3 h-3 text-emerald-600" /> : <Copy className="w-3 h-3" />}
@@ -62,7 +62,7 @@ export const IndustryCredentialsSection = ({
               <button
                 type="button"
                 onClick={() => handleCopy(loginPassword, 'password')}
-                className="text-slate-400 hover:text-blue-600 transition-colors p-0.5 cursor-pointer"
+                className="text-slate-400 hover:text-slate-900 transition-colors p-0.5 cursor-pointer"
                 title="Copy Password"
               >
                 {copiedField === 'password' ? <Check className="w-3 h-3 text-emerald-600" /> : <Copy className="w-3 h-3" />}

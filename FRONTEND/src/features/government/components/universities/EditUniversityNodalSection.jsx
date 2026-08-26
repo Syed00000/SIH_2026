@@ -19,7 +19,7 @@ export const EditUniversityNodalSection = ({
             type="text"
             value={formData.nodalOfficerName}
             onChange={(e) => onInputChange('nodalOfficerName', e.target.value)}
-            className="w-full px-2.5 py-1.5 bg-slate-50/60 border border-slate-200 rounded-md text-xs text-slate-900 focus:bg-white focus:ring-1 focus:ring-blue-500 shadow-2xs"
+            className="w-full px-2.5 py-1.5 bg-slate-50/60 border border-slate-200 rounded-md text-xs text-slate-900 focus:bg-white focus:ring-1 focus:ring-slate-900 shadow-2xs"
           />
         </div>
 
@@ -29,7 +29,7 @@ export const EditUniversityNodalSection = ({
             type="text"
             value={formData.nodalOfficerDesignation}
             onChange={(e) => onInputChange('nodalOfficerDesignation', e.target.value)}
-            className="w-full px-2.5 py-1.5 bg-slate-50/60 border border-slate-200 rounded-md text-xs text-slate-900 focus:bg-white focus:ring-1 focus:ring-blue-500 shadow-2xs"
+            className="w-full px-2.5 py-1.5 bg-slate-50/60 border border-slate-200 rounded-md text-xs text-slate-900 focus:bg-white focus:ring-1 focus:ring-slate-900 shadow-2xs"
           />
         </div>
 
@@ -39,7 +39,7 @@ export const EditUniversityNodalSection = ({
             type="email"
             value={formData.nodalOfficerEmail}
             onChange={(e) => onInputChange('nodalOfficerEmail', e.target.value)}
-            className="w-full px-2.5 py-1.5 bg-slate-50/60 border border-slate-200 rounded-md text-xs text-slate-900 focus:bg-white focus:ring-1 focus:ring-blue-500 shadow-2xs"
+            className="w-full px-2.5 py-1.5 bg-slate-50/60 border border-slate-200 rounded-md text-xs text-slate-900 focus:bg-white focus:ring-1 focus:ring-slate-900 shadow-2xs"
           />
         </div>
 
@@ -49,7 +49,7 @@ export const EditUniversityNodalSection = ({
             type="text"
             value={formData.nodalOfficerPhone}
             onChange={(e) => onInputChange('nodalOfficerPhone', e.target.value)}
-            className="w-full px-2.5 py-1.5 bg-slate-50/60 border border-slate-200 rounded-md text-xs text-slate-900 focus:bg-white focus:ring-1 focus:ring-blue-500 shadow-2xs"
+            className="w-full px-2.5 py-1.5 bg-slate-50/60 border border-slate-200 rounded-md text-xs text-slate-900 focus:bg-white focus:ring-1 focus:ring-slate-900 shadow-2xs"
           />
         </div>
 
@@ -59,7 +59,7 @@ export const EditUniversityNodalSection = ({
             type="email"
             value={formData.universityEmail}
             onChange={(e) => onInputChange('universityEmail', e.target.value)}
-            className="w-full px-2.5 py-1.5 bg-slate-50/60 border border-slate-200 rounded-md text-xs text-slate-900 focus:bg-white focus:ring-1 focus:ring-blue-500 shadow-2xs"
+            className="w-full px-2.5 py-1.5 bg-slate-50/60 border border-slate-200 rounded-md text-xs text-slate-900 focus:bg-white focus:ring-1 focus:ring-slate-900 shadow-2xs"
           />
         </div>
 
@@ -69,7 +69,7 @@ export const EditUniversityNodalSection = ({
             type="text"
             value={formData.universityPhone}
             onChange={(e) => onInputChange('universityPhone', e.target.value)}
-            className="w-full px-2.5 py-1.5 bg-slate-50/60 border border-slate-200 rounded-md text-xs text-slate-900 focus:bg-white focus:ring-1 focus:ring-blue-500 shadow-2xs"
+            className="w-full px-2.5 py-1.5 bg-slate-50/60 border border-slate-200 rounded-md text-xs text-slate-900 focus:bg-white focus:ring-1 focus:ring-slate-900 shadow-2xs"
           />
         </div>
       </div>

@@ -47,7 +47,7 @@ export const IndustryTable = ({
                   <div className="font-semibold text-slate-600">No industry partners found</div>
                   <button
                     onClick={onResetFilters}
-                    className="mt-1 text-[11px] font-bold text-blue-600 hover:underline cursor-pointer"
+                    className="mt-1 text-[11px] font-bold text-slate-900 hover:underline cursor-pointer"
                   >
                     Reset all filters
                   </button>
@@ -109,7 +109,7 @@ export const IndustryTable = ({
                 onClick={() => onPageChange(pageNum)}
                 className={`w-7 h-7 rounded-md text-xs font-bold transition-colors cursor-pointer ${
                   currentPage === pageNum
-                    ? 'bg-blue-600 text-white shadow-xs'
+                    ? 'bg-slate-900 text-white shadow-xs'
                     : 'border border-slate-200 text-slate-700 hover:bg-slate-50'
                 }`}
               >

@@ -74,7 +74,7 @@ export const UniversityInfoSection = ({ university = {} }) => {
                 href={university.website}
                 target="_blank"
                 rel="noreferrer"
-                className="font-medium text-blue-600 hover:underline flex items-center space-x-1"
+                className="font-bold text-slate-900 hover:underline flex items-center space-x-1"
               >
                 <span>{university.website}</span>
                 <ExternalLink className="w-3 h-3" />

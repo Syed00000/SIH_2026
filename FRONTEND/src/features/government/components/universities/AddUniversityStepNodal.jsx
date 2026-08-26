@@ -25,7 +25,7 @@ export const AddUniversityStepNodal = ({
             value={formData.nodalOfficerName}
             onChange={(e) => onInputChange('nodalOfficerName', e.target.value)}
             placeholder="e.g. Dr. Ramesh Kumar"
-            className="w-full px-2.5 py-1.5 bg-slate-50/60 border border-slate-200 rounded-md text-xs text-slate-900 focus:bg-white focus:ring-1 focus:ring-blue-500 shadow-2xs"
+            className="w-full px-2.5 py-1.5 bg-slate-50/60 border border-slate-200 rounded-md text-xs text-slate-900 focus:bg-white focus:ring-1 focus:ring-slate-900 shadow-2xs"
             autoFocus
           />
         </div>
@@ -37,7 +37,7 @@ export const AddUniversityStepNodal = ({
             value={formData.nodalOfficerDesignation}
             onChange={(e) => onInputChange('nodalOfficerDesignation', e.target.value)}
             placeholder="e.g. Registrar / Dean R&D"
-            className="w-full px-2.5 py-1.5 bg-slate-50/60 border border-slate-200 rounded-md text-xs text-slate-900 focus:bg-white focus:ring-1 focus:ring-blue-500 shadow-2xs"
+            className="w-full px-2.5 py-1.5 bg-slate-50/60 border border-slate-200 rounded-md text-xs text-slate-900 focus:bg-white focus:ring-1 focus:ring-slate-900 shadow-2xs"
           />
         </div>
 
@@ -50,7 +50,7 @@ export const AddUniversityStepNodal = ({
             value={formData.nodalOfficerEmail}
             onChange={(e) => onInputChange('nodalOfficerEmail', e.target.value)}
             placeholder="nodal@university.ac.in"
-            className="w-full px-2.5 py-1.5 bg-slate-50/60 border border-slate-200 rounded-md text-xs text-slate-900 focus:bg-white focus:ring-1 focus:ring-blue-500 shadow-2xs"
+            className="w-full px-2.5 py-1.5 bg-slate-50/60 border border-slate-200 rounded-md text-xs text-slate-900 focus:bg-white focus:ring-1 focus:ring-slate-900 shadow-2xs"
           />
         </div>
 
@@ -61,7 +61,7 @@ export const AddUniversityStepNodal = ({
             value={formData.nodalOfficerPhone}
             onChange={(e) => onInputChange('nodalOfficerPhone', e.target.value)}
             placeholder="+91 98765 43210"
-            className="w-full px-2.5 py-1.5 bg-slate-50/60 border border-slate-200 rounded-md text-xs text-slate-900 focus:bg-white focus:ring-1 focus:ring-blue-500 shadow-2xs"
+            className="w-full px-2.5 py-1.5 bg-slate-50/60 border border-slate-200 rounded-md text-xs text-slate-900 focus:bg-white focus:ring-1 focus:ring-slate-900 shadow-2xs"
           />
         </div>
 
@@ -72,7 +72,7 @@ export const AddUniversityStepNodal = ({
             value={formData.universityEmail}
             onChange={(e) => onInputChange('universityEmail', e.target.value)}
             placeholder="info@university.ac.in"
-            className="w-full px-2.5 py-1.5 bg-slate-50/60 border border-slate-200 rounded-md text-xs text-slate-900 focus:bg-white focus:ring-1 focus:ring-blue-500 shadow-2xs"
+            className="w-full px-2.5 py-1.5 bg-slate-50/60 border border-slate-200 rounded-md text-xs text-slate-900 focus:bg-white focus:ring-1 focus:ring-slate-900 shadow-2xs"
           />
         </div>
 
@@ -83,7 +83,7 @@ export const AddUniversityStepNodal = ({
             value={formData.universityPhone}
             onChange={(e) => onInputChange('universityPhone', e.target.value)}
             placeholder="0651-2233445"
-            className="w-full px-2.5 py-1.5 bg-slate-50/60 border border-slate-200 rounded-md text-xs text-slate-900 focus:bg-white focus:ring-1 focus:ring-blue-500 shadow-2xs"
+            className="w-full px-2.5 py-1.5 bg-slate-50/60 border border-slate-200 rounded-md text-xs text-slate-900 focus:bg-white focus:ring-1 focus:ring-slate-900 shadow-2xs"
           />
         </div>
       </div>

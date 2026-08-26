@@ -136,7 +136,7 @@ export const EditUniversityModal = ({ university, isOpen, onClose, onSave }) => 
                 placeholder="Leave blank or enter new password"
                 value={formData.loginPassword}
                 onChange={(e) => handleInputChange('loginPassword', e.target.value)}
-                className="w-full px-2.5 py-1.5 bg-slate-50/60 border border-slate-200 rounded-md text-xs font-mono text-slate-900 focus:bg-white focus:ring-1 focus:ring-blue-500 shadow-2xs"
+                className="w-full px-2.5 py-1.5 bg-slate-50/60 border border-slate-200 rounded-md text-xs font-mono text-slate-900 focus:bg-white focus:ring-1 focus:ring-slate-900 shadow-2xs"
               />
             </div>
           </div>
@@ -153,7 +153,7 @@ export const EditUniversityModal = ({ university, isOpen, onClose, onSave }) => 
             <button
               type="submit"
               disabled={isSubmitting}
-              className="px-4 py-1.5 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-md transition-colors cursor-pointer flex items-center space-x-1.5 disabled:opacity-50 shadow-xs"
+              className="px-4 py-1.5 text-xs font-semibold text-white bg-slate-900 hover:bg-black rounded-md transition-colors cursor-pointer flex items-center space-x-1.5 disabled:opacity-50 shadow-xs"
             >
               <Save className="w-3.5 h-3.5" />
               <span>{isSubmitting ? 'Saving...' : 'Save Changes'}</span>

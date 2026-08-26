@@ -119,7 +119,7 @@ export const AdminViewModal = ({ isOpen, onClose, admin }) => {
                 <button
                   type="button"
                   onClick={() => handleCopy(admin.email, 'email')}
-                  className="text-slate-400 hover:text-blue-600 transition-colors p-0.5 cursor-pointer shrink-0"
+                  className="text-slate-400 hover:text-slate-900 transition-colors p-0.5 cursor-pointer shrink-0"
                   title="Copy Email"
                 >
                   {copiedField === 'email' ? (
@@ -152,7 +152,7 @@ export const AdminViewModal = ({ isOpen, onClose, admin }) => {
                   <button
                     type="button"
                     onClick={() => handleCopy(loginPassword, 'password')}
-                    className="text-slate-400 hover:text-blue-600 transition-colors p-0.5 cursor-pointer"
+                    className="text-slate-400 hover:text-slate-900 transition-colors p-0.5 cursor-pointer"
                     title="Copy Password"
                   >
                     {copiedField === 'password' ? (

@@ -98,7 +98,7 @@ export const AdminManagement = () => {
           </button>
           <button
             onClick={() => { setEditingAdmin(null); setIsFormOpen(true); }}
-            className="inline-flex items-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold px-3.5 py-2 rounded-md text-xs shadow-xs transition-colors cursor-pointer"
+            className="inline-flex items-center space-x-2 bg-slate-900 hover:bg-black text-white font-semibold px-3.5 py-2 rounded-md text-xs shadow-xs transition-colors cursor-pointer"
           >
             <Plus className="w-4 h-4" />
             <span>Add New Admin</span>

@@ -36,7 +36,7 @@ export const AddIndustryCredentialsCard = ({
           <button
             type="button"
             onClick={onAutoGenerateEmail}
-            className="text-[10px] font-bold text-blue-600 hover:text-blue-700 flex items-center space-x-1 cursor-pointer"
+            className="text-[10px] font-bold text-slate-900 hover:underline flex items-center space-x-1 cursor-pointer"
           >
             <Link2 className="w-3 h-3" />
             <span>Auto-fill from SPOC</span>
@@ -49,7 +49,7 @@ export const AddIndustryCredentialsCard = ({
           placeholder="login@partner.joharsetu.gov.in"
           className={`w-full bg-white border ${
             errors.loginEmail ? 'border-red-500' : 'border-slate-200'
-          } rounded-md px-3 py-2 text-xs font-medium text-slate-800 focus:outline-none focus:ring-1 focus:ring-blue-500 shadow-2xs`}
+          } rounded-md px-3 py-2 text-xs font-medium text-slate-800 focus:outline-none focus:ring-1 focus:ring-slate-900 shadow-2xs`}
         />
         {errors.loginEmail && (
           <p className="text-[11px] text-red-500 mt-0.5">{errors.loginEmail}</p>
@@ -74,7 +74,7 @@ export const AddIndustryCredentialsCard = ({
             type={showPassword ? 'text' : 'password'}
             value={formData.initialPassword}
             onChange={(e) => onChange('initialPassword', e.target.value)}
-            className="w-full bg-white border border-slate-200 rounded-md px-3 py-2 pr-9 text-xs font-mono font-bold text-slate-800 focus:outline-none focus:ring-1 focus:ring-blue-500 shadow-2xs"
+            className="w-full bg-white border border-slate-200 rounded-md px-3 py-2 pr-9 text-xs font-mono font-bold text-slate-800 focus:outline-none focus:ring-1 focus:ring-slate-900 shadow-2xs"
           />
           <button
             type="button"

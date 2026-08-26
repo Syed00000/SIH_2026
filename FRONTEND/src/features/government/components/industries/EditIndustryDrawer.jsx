@@ -179,7 +179,7 @@ export const EditIndustryDrawer = ({ isOpen, onClose, onSubmit, industry, isLoad
               type="button"
               onClick={handleSubmit}
               disabled={isLoading}
-              className="px-5 py-2 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-md shadow-xs transition-colors cursor-pointer flex items-center space-x-1.5 disabled:opacity-50"
+              className="px-5 py-2 text-xs font-semibold text-white bg-slate-900 hover:bg-black rounded-md shadow-xs transition-colors cursor-pointer flex items-center space-x-1.5 disabled:opacity-50"
             >
               <Save className="w-4 h-4" />
               <span>{isLoading ? 'Saving...' : 'Save Changes'}</span>

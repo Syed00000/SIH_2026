@@ -36,7 +36,7 @@ export const AddIndustryAddressFields = ({
           placeholder="Plot/Building, Industrial Area"
           className={`w-full bg-slate-50/60 border ${
             errors.addressLine1 ? 'border-red-500' : 'border-slate-200'
-          } rounded-md px-3 py-2 text-xs font-medium text-slate-800 focus:bg-white focus:outline-none focus:ring-1 focus:ring-blue-500`}
+          } rounded-md px-3 py-2 text-xs font-medium text-slate-800 focus:bg-white focus:outline-none focus:ring-1 focus:ring-slate-900`}
         />
         {errors.addressLine1 && (
           <p className="text-[11px] text-red-500 mt-0.5">{errors.addressLine1}</p>
@@ -52,7 +52,7 @@ export const AddIndustryAddressFields = ({
             <select
               value={formData.district}
               onChange={(e) => onChange('district', e.target.value)}
-              className="w-full bg-slate-50/60 border border-slate-200 rounded-md px-3 py-2 text-xs font-medium text-slate-800 focus:bg-white focus:outline-none focus:ring-1 focus:ring-blue-500 appearance-none cursor-pointer"
+              className="w-full bg-slate-50/60 border border-slate-200 rounded-md px-3 py-2 text-xs font-medium text-slate-800 focus:bg-white focus:outline-none focus:ring-1 focus:ring-slate-900 appearance-none cursor-pointer"
             >
               {JHARKHAND_DISTRICTS_LIST.map((dist) => (
                 <option key={dist} value={dist}>
@@ -75,7 +75,7 @@ export const AddIndustryAddressFields = ({
             placeholder="834001"
             className={`w-full bg-slate-50/60 border ${
               errors.pincode ? 'border-red-500' : 'border-slate-200'
-            } rounded-md px-3 py-2 text-xs font-mono font-medium text-slate-800 focus:bg-white focus:outline-none focus:ring-1 focus:ring-blue-500`}
+            } rounded-md px-3 py-2 text-xs font-mono font-medium text-slate-800 focus:bg-white focus:outline-none focus:ring-1 focus:ring-slate-900`}
           />
           {errors.pincode && <p className="text-[11px] text-red-500 mt-0.5">{errors.pincode}</p>}
         </div>
@@ -96,13 +96,13 @@ export const AddIndustryAddressFields = ({
                 onClick={() => onToggleSupportMode(mode)}
                 className={`flex items-center space-x-2 px-2.5 py-1.5 rounded-md text-xs font-medium border transition-colors text-left cursor-pointer ${
                   isSelected
-                    ? 'bg-blue-50 border-blue-300 text-blue-800 font-semibold'
+                    ? 'bg-slate-100 border-slate-900 text-slate-900 font-bold'
                     : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
                 }`}
               >
                 <div
                   className={`w-3.5 h-3.5 rounded flex items-center justify-center border ${
-                    isSelected ? 'bg-blue-600 border-blue-600 text-white' : 'border-slate-300'
+                    isSelected ? 'bg-slate-900 border-slate-900 text-white' : 'border-slate-300'
                   }`}
                 >
                   {isSelected && <Check className="w-2.5 h-2.5 stroke-[3]" />}

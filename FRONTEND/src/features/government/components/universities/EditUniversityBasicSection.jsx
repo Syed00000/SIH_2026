@@ -20,7 +20,7 @@ export const EditUniversityBasicSection = ({
             type="text"
             value={formData.name}
             onChange={(e) => onInputChange('name', e.target.value)}
-            className="w-full px-2.5 py-1.5 bg-slate-50/60 border border-slate-200 rounded-md text-xs text-slate-900 focus:bg-white focus:ring-1 focus:ring-blue-500 shadow-2xs"
+            className="w-full px-2.5 py-1.5 bg-slate-50/60 border border-slate-200 rounded-md text-xs text-slate-900 focus:bg-white focus:ring-1 focus:ring-slate-900 shadow-2xs"
           />
         </div>
 
@@ -30,7 +30,7 @@ export const EditUniversityBasicSection = ({
             type="text"
             value={formData.shortName}
             onChange={(e) => onInputChange('shortName', e.target.value)}
-            className="w-full px-2.5 py-1.5 bg-slate-50/60 border border-slate-200 rounded-md text-xs text-slate-900 focus:bg-white focus:ring-1 focus:ring-blue-500 shadow-2xs"
+            className="w-full px-2.5 py-1.5 bg-slate-50/60 border border-slate-200 rounded-md text-xs text-slate-900 focus:bg-white focus:ring-1 focus:ring-slate-900 shadow-2xs"
           />
         </div>
 
@@ -40,7 +40,7 @@ export const EditUniversityBasicSection = ({
             type="text"
             value={formData.code}
             onChange={(e) => onInputChange('code', e.target.value)}
-            className="w-full px-2.5 py-1.5 bg-slate-50/60 border border-slate-200 rounded-md text-xs font-mono font-bold text-slate-900 focus:bg-white focus:ring-1 focus:ring-blue-500 shadow-2xs"
+            className="w-full px-2.5 py-1.5 bg-slate-50/60 border border-slate-200 rounded-md text-xs font-mono font-bold text-slate-900 focus:bg-white focus:ring-1 focus:ring-slate-900 shadow-2xs"
           />
         </div>
 
@@ -49,7 +49,7 @@ export const EditUniversityBasicSection = ({
           <select
             value={formData.universityType}
             onChange={(e) => onInputChange('universityType', e.target.value)}
-            className="w-full px-2.5 py-1.5 bg-slate-50/60 border border-slate-200 rounded-md text-xs font-medium text-slate-700 focus:bg-white focus:ring-1 focus:ring-blue-500 cursor-pointer shadow-2xs"
+            className="w-full px-2.5 py-1.5 bg-slate-50/60 border border-slate-200 rounded-md text-xs font-medium text-slate-700 focus:bg-white focus:ring-1 focus:ring-slate-900 cursor-pointer shadow-2xs"
           >
             <option value="Central University">Central University</option>
             <option value="State University">State University</option>
@@ -65,7 +65,7 @@ export const EditUniversityBasicSection = ({
           <select
             value={formData.district}
             onChange={(e) => onInputChange('district', e.target.value)}
-            className="w-full px-2.5 py-1.5 bg-slate-50/60 border border-slate-200 rounded-md text-xs font-medium text-slate-700 focus:bg-white focus:ring-1 focus:ring-blue-500 cursor-pointer shadow-2xs"
+            className="w-full px-2.5 py-1.5 bg-slate-50/60 border border-slate-200 rounded-md text-xs font-medium text-slate-700 focus:bg-white focus:ring-1 focus:ring-slate-900 cursor-pointer shadow-2xs"
           >
             {districtOptions.map((dist) => (
               <option key={dist} value={dist}>
@@ -80,7 +80,7 @@ export const EditUniversityBasicSection = ({
           <select
             value={formData.status}
             onChange={(e) => onInputChange('status', e.target.value)}
-            className="w-full px-2.5 py-1.5 bg-slate-50/60 border border-slate-200 rounded-md text-xs font-medium text-slate-700 focus:bg-white focus:ring-1 focus:ring-blue-500 cursor-pointer shadow-2xs"
+            className="w-full px-2.5 py-1.5 bg-slate-50/60 border border-slate-200 rounded-md text-xs font-medium text-slate-700 focus:bg-white focus:ring-1 focus:ring-slate-900 cursor-pointer shadow-2xs"
           >
             <option value="Approved">Approved</option>
             <option value="Pending">Pending Review</option>
@@ -95,7 +95,7 @@ export const EditUniversityBasicSection = ({
             type="number"
             value={formData.establishmentYear}
             onChange={(e) => onInputChange('establishmentYear', e.target.value)}
-            className="w-full px-2.5 py-1.5 bg-slate-50/60 border border-slate-200 rounded-md text-xs text-slate-900 focus:bg-white focus:ring-1 focus:ring-blue-500 shadow-2xs"
+            className="w-full px-2.5 py-1.5 bg-slate-50/60 border border-slate-200 rounded-md text-xs text-slate-900 focus:bg-white focus:ring-1 focus:ring-slate-900 shadow-2xs"
           />
         </div>
 
@@ -105,7 +105,7 @@ export const EditUniversityBasicSection = ({
             type="url"
             value={formData.website}
             onChange={(e) => onInputChange('website', e.target.value)}
-            className="w-full px-2.5 py-1.5 bg-slate-50/60 border border-slate-200 rounded-md text-xs text-slate-900 focus:bg-white focus:ring-1 focus:ring-blue-500 shadow-2xs"
+            className="w-full px-2.5 py-1.5 bg-slate-50/60 border border-slate-200 rounded-md text-xs text-slate-900 focus:bg-white focus:ring-1 focus:ring-slate-900 shadow-2xs"
           />
         </div>
       </div>

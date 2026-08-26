@@ -19,7 +19,7 @@ export const AddIndustrySpocFields = ({ formData, onChange, errors = {} }) => {
             placeholder="e.g., Rajesh Sharma"
             className={`w-full bg-slate-50/60 border ${
               errors.spocName ? 'border-red-500' : 'border-slate-200'
-            } rounded-md px-3 py-2 text-xs font-medium text-slate-800 focus:bg-white focus:outline-none focus:ring-1 focus:ring-blue-500`}
+            } rounded-md px-3 py-2 text-xs font-medium text-slate-800 focus:bg-white focus:outline-none focus:ring-1 focus:ring-slate-900`}
           />
           {errors.spocName && <p className="text-[11px] text-red-500 mt-0.5">{errors.spocName}</p>}
         </div>
@@ -31,7 +31,7 @@ export const AddIndustrySpocFields = ({ formData, onChange, errors = {} }) => {
             value={formData.designation}
             onChange={(e) => onChange('designation', e.target.value)}
             placeholder="e.g., Head CSR & Partnerships"
-            className="w-full bg-slate-50/60 border border-slate-200 rounded-md px-3 py-2 text-xs font-medium text-slate-800 focus:bg-white focus:outline-none focus:ring-1 focus:ring-blue-500"
+            className="w-full bg-slate-50/60 border border-slate-200 rounded-md px-3 py-2 text-xs font-medium text-slate-800 focus:bg-white focus:outline-none focus:ring-1 focus:ring-slate-900"
           />
         </div>
       </div>
@@ -48,7 +48,7 @@ export const AddIndustrySpocFields = ({ formData, onChange, errors = {} }) => {
             placeholder="spoc@company.com"
             className={`w-full bg-slate-50/60 border ${
               errors.officialEmail ? 'border-red-500' : 'border-slate-200'
-            } rounded-md px-3 py-2 text-xs font-medium text-slate-800 focus:bg-white focus:outline-none focus:ring-1 focus:ring-blue-500`}
+            } rounded-md px-3 py-2 text-xs font-medium text-slate-800 focus:bg-white focus:outline-none focus:ring-1 focus:ring-slate-900`}
           />
           {errors.officialEmail && (
             <p className="text-[11px] text-red-500 mt-0.5">{errors.officialEmail}</p>
@@ -66,7 +66,7 @@ export const AddIndustrySpocFields = ({ formData, onChange, errors = {} }) => {
             placeholder="+91 9876543210"
             className={`w-full bg-slate-50/60 border ${
               errors.mobileNumber ? 'border-red-500' : 'border-slate-200'
-            } rounded-md px-3 py-2 text-xs font-mono font-medium text-slate-800 focus:bg-white focus:outline-none focus:ring-1 focus:ring-blue-500`}
+            } rounded-md px-3 py-2 text-xs font-mono font-medium text-slate-800 focus:bg-white focus:outline-none focus:ring-1 focus:ring-slate-900`}
           />
           {errors.mobileNumber && (
             <p className="text-[11px] text-red-500 mt-0.5">{errors.mobileNumber}</p>

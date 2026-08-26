@@ -28,7 +28,7 @@ export const AddUniversityStepperBar = ({
                 <div
                   className={`w-7 h-7 rounded-md flex items-center justify-center font-bold text-xs transition-all ${
                     isCurrent
-                      ? 'bg-blue-600 text-white shadow-xs'
+                      ? 'bg-slate-900 text-white shadow-xs'
                       : isPassed
                       ? 'bg-emerald-600 text-white'
                       : 'bg-slate-100 text-slate-400'

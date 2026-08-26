@@ -21,7 +21,7 @@ export const AddUniversityStepAccreditation = ({
           <select
             value={formData.naacGrade}
             onChange={(e) => onInputChange('naacGrade', e.target.value)}
-            className="w-full px-2.5 py-1.5 bg-slate-50/60 border border-slate-200 rounded-md text-xs font-medium text-slate-700 focus:bg-white focus:ring-1 focus:ring-blue-500 cursor-pointer shadow-2xs"
+            className="w-full px-2.5 py-1.5 bg-slate-50/60 border border-slate-200 rounded-md text-xs font-medium text-slate-700 focus:bg-white focus:ring-1 focus:ring-slate-900 cursor-pointer shadow-2xs"
           >
             <option value="A++">A++</option>
             <option value="A+">A+</option>
@@ -40,7 +40,7 @@ export const AddUniversityStepAccreditation = ({
             type="date"
             value={formData.naacValidity}
             onChange={(e) => onInputChange('naacValidity', e.target.value)}
-            className="w-full px-2.5 py-1.5 bg-slate-50/60 border border-slate-200 rounded-md text-xs text-slate-900 focus:bg-white focus:ring-1 focus:ring-blue-500 shadow-2xs"
+            className="w-full px-2.5 py-1.5 bg-slate-50/60 border border-slate-200 rounded-md text-xs text-slate-900 focus:bg-white focus:ring-1 focus:ring-slate-900 shadow-2xs"
           />
         </div>
 
@@ -51,7 +51,7 @@ export const AddUniversityStepAccreditation = ({
             value={formData.nirfRanking}
             onChange={(e) => onInputChange('nirfRanking', e.target.value)}
             placeholder="e.g. 45"
-            className="w-full px-2.5 py-1.5 bg-slate-50/60 border border-slate-200 rounded-md text-xs text-slate-900 focus:bg-white focus:ring-1 focus:ring-blue-500 shadow-2xs"
+            className="w-full px-2.5 py-1.5 bg-slate-50/60 border border-slate-200 rounded-md text-xs text-slate-900 focus:bg-white focus:ring-1 focus:ring-slate-900 shadow-2xs"
           />
         </div>
       </div>

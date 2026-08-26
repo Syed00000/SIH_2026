@@ -19,7 +19,7 @@ export const AdminFormPersonalSection = ({ form, onChange, isEdit = false }) => 
             value={form.fullName}
             onChange={(e) => onChange('fullName', e.target.value)}
             required
-            className="w-full px-3 py-1.5 bg-slate-50/60 border border-slate-200 rounded-md focus:bg-white focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none text-xs"
+            className="w-full px-3 py-1.5 bg-slate-50/60 border border-slate-200 rounded-md focus:bg-white focus:ring-1 focus:ring-slate-900 focus:border-slate-900 outline-none text-xs"
           />
         </div>
 
@@ -33,7 +33,7 @@ export const AdminFormPersonalSection = ({ form, onChange, isEdit = false }) => 
             value={form.username}
             onChange={(e) => onChange('username', e.target.value)}
             required
-            className="w-full px-3 py-1.5 bg-slate-50/60 border border-slate-200 rounded-md focus:bg-white focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none text-xs"
+            className="w-full px-3 py-1.5 bg-slate-50/60 border border-slate-200 rounded-md focus:bg-white focus:ring-1 focus:ring-slate-900 focus:border-slate-900 outline-none text-xs"
           />
         </div>
 
@@ -47,7 +47,7 @@ export const AdminFormPersonalSection = ({ form, onChange, isEdit = false }) => 
             value={form.email}
             onChange={(e) => onChange('email', e.target.value)}
             required
-            className="w-full px-3 py-1.5 bg-slate-50/60 border border-slate-200 rounded-md focus:bg-white focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none text-xs"
+            className="w-full px-3 py-1.5 bg-slate-50/60 border border-slate-200 rounded-md focus:bg-white focus:ring-1 focus:ring-slate-900 focus:border-slate-900 outline-none text-xs"
           />
         </div>
 
@@ -61,7 +61,7 @@ export const AdminFormPersonalSection = ({ form, onChange, isEdit = false }) => 
             value={form.mobileNumber}
             onChange={(e) => onChange('mobileNumber', e.target.value)}
             required
-            className="w-full px-3 py-1.5 bg-slate-50/60 border border-slate-200 rounded-md focus:bg-white focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none text-xs"
+            className="w-full px-3 py-1.5 bg-slate-50/60 border border-slate-200 rounded-md focus:bg-white focus:ring-1 focus:ring-slate-900 focus:border-slate-900 outline-none text-xs"
           />
         </div>
 
@@ -74,7 +74,7 @@ export const AdminFormPersonalSection = ({ form, onChange, isEdit = false }) => 
             placeholder="Enter password"
             value={form.password}
             onChange={(e) => onChange('password', e.target.value)}
-            className="w-full px-3 py-1.5 pr-8 bg-slate-50/60 border border-slate-200 rounded-md focus:bg-white focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none text-xs"
+            className="w-full px-3 py-1.5 pr-8 bg-slate-50/60 border border-slate-200 rounded-md focus:bg-white focus:ring-1 focus:ring-slate-900 focus:border-slate-900 outline-none text-xs"
           />
           <button
             type="button"
@@ -94,7 +94,7 @@ export const AdminFormPersonalSection = ({ form, onChange, isEdit = false }) => 
             placeholder="Confirm password"
             value={form.confirmPassword}
             onChange={(e) => onChange('confirmPassword', e.target.value)}
-            className="w-full px-3 py-1.5 pr-8 bg-slate-50/60 border border-slate-200 rounded-md focus:bg-white focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none text-xs"
+            className="w-full px-3 py-1.5 pr-8 bg-slate-50/60 border border-slate-200 rounded-md focus:bg-white focus:ring-1 focus:ring-slate-900 focus:border-slate-900 outline-none text-xs"
           />
           <button
             type="button"

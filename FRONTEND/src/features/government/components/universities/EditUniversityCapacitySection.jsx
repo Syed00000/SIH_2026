@@ -23,7 +23,7 @@ export const EditUniversityCapacitySection = ({
               type="number"
               value={formData.departments}
               onChange={(e) => onInputChange('departments', e.target.value)}
-              className="w-full px-2.5 py-1.5 bg-slate-50/60 border border-slate-200 rounded-md text-xs text-slate-900 focus:bg-white focus:ring-1 focus:ring-blue-500 shadow-2xs"
+              className="w-full px-2.5 py-1.5 bg-slate-50/60 border border-slate-200 rounded-md text-xs text-slate-900 focus:bg-white focus:ring-1 focus:ring-slate-900 shadow-2xs"
             />
           </div>
 
@@ -33,7 +33,7 @@ export const EditUniversityCapacitySection = ({
               type="number"
               value={formData.totalFaculty}
               onChange={(e) => onInputChange('totalFaculty', e.target.value)}
-              className="w-full px-2.5 py-1.5 bg-slate-50/60 border border-slate-200 rounded-md text-xs text-slate-900 focus:bg-white focus:ring-1 focus:ring-blue-500 shadow-2xs"
+              className="w-full px-2.5 py-1.5 bg-slate-50/60 border border-slate-200 rounded-md text-xs text-slate-900 focus:bg-white focus:ring-1 focus:ring-slate-900 shadow-2xs"
             />
           </div>
 
@@ -43,7 +43,7 @@ export const EditUniversityCapacitySection = ({
               type="number"
               value={formData.availableFaculty}
               onChange={(e) => onInputChange('availableFaculty', e.target.value)}
-              className="w-full px-2.5 py-1.5 bg-slate-50/60 border border-slate-200 rounded-md text-xs text-slate-900 focus:bg-white focus:ring-1 focus:ring-blue-500 shadow-2xs"
+              className="w-full px-2.5 py-1.5 bg-slate-50/60 border border-slate-200 rounded-md text-xs text-slate-900 focus:bg-white focus:ring-1 focus:ring-slate-900 shadow-2xs"
             />
           </div>
 
@@ -53,7 +53,7 @@ export const EditUniversityCapacitySection = ({
               type="number"
               value={formData.labsAndFacilities}
               onChange={(e) => onInputChange('labsAndFacilities', e.target.value)}
-              className="w-full px-2.5 py-1.5 bg-slate-50/60 border border-slate-200 rounded-md text-xs text-slate-900 focus:bg-white focus:ring-1 focus:ring-blue-500 shadow-2xs"
+              className="w-full px-2.5 py-1.5 bg-slate-50/60 border border-slate-200 rounded-md text-xs text-slate-900 focus:bg-white focus:ring-1 focus:ring-slate-900 shadow-2xs"
             />
           </div>
 
@@ -63,7 +63,7 @@ export const EditUniversityCapacitySection = ({
               type="number"
               value={formData.activeProjects}
               onChange={(e) => onInputChange('activeProjects', e.target.value)}
-              className="w-full px-2.5 py-1.5 bg-slate-50/60 border border-slate-200 rounded-md text-xs text-slate-900 focus:bg-white focus:ring-1 focus:ring-blue-500 shadow-2xs"
+              className="w-full px-2.5 py-1.5 bg-slate-50/60 border border-slate-200 rounded-md text-xs text-slate-900 focus:bg-white focus:ring-1 focus:ring-slate-900 shadow-2xs"
             />
           </div>
 
@@ -72,7 +72,7 @@ export const EditUniversityCapacitySection = ({
             <select
               value={formData.capacityStatus}
               onChange={(e) => onInputChange('capacityStatus', e.target.value)}
-              className="w-full px-2.5 py-1.5 bg-slate-50/60 border border-slate-200 rounded-md text-xs font-medium text-slate-700 focus:bg-white focus:ring-1 focus:ring-blue-500 cursor-pointer shadow-2xs"
+              className="w-full px-2.5 py-1.5 bg-slate-50/60 border border-slate-200 rounded-md text-xs font-medium text-slate-700 focus:bg-white focus:ring-1 focus:ring-slate-900 cursor-pointer shadow-2xs"
             >
               <option value="Available">Available</option>
               <option value="Limited">Limited</option>
@@ -100,7 +100,7 @@ export const EditUniversityCapacitySection = ({
               value={formData.loginPassword}
               onChange={(e) => onInputChange('loginPassword', e.target.value)}
               placeholder="Enter password"
-              className="w-full px-2.5 py-1.5 pr-9 bg-slate-50/60 border border-slate-200 rounded-md text-xs font-mono font-bold text-slate-900 focus:bg-white focus:ring-1 focus:ring-blue-500 shadow-2xs"
+              className="w-full px-2.5 py-1.5 pr-9 bg-slate-50/60 border border-slate-200 rounded-md text-xs font-mono font-bold text-slate-900 focus:bg-white focus:ring-1 focus:ring-slate-900 shadow-2xs"
             />
             <button
               type="button"

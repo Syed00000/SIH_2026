@@ -30,7 +30,7 @@ export const IndustryTableRow = ({
           </div>
           <div className="min-w-0 max-w-[210px]">
             <div
-              className="font-bold text-slate-900 hover:text-blue-600 cursor-pointer text-xs truncate leading-tight"
+              className="font-bold text-slate-900 hover:text-slate-600 cursor-pointer text-xs truncate leading-tight"
               onClick={() => onView(ind)}
               title={ind.legalName}
             >
@@ -142,7 +142,7 @@ export const IndustryTableRow = ({
           <button
             type="button"
             onClick={() => onView(ind)}
-            className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors cursor-pointer"
+            className="p-1.5 text-slate-400 hover:text-slate-900 hover:bg-slate-100 rounded-md transition-colors cursor-pointer"
             title="View Details"
           >
             <Eye className="w-4 h-4" />
@@ -151,7 +151,7 @@ export const IndustryTableRow = ({
           <button
             type="button"
             onClick={() => onEdit(ind)}
-            className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors cursor-pointer"
+            className="p-1.5 text-slate-400 hover:text-slate-900 hover:bg-slate-100 rounded-md transition-colors cursor-pointer"
             title="Edit Industry"
           >
             <Pencil className="w-4 h-4" />
@@ -160,7 +160,7 @@ export const IndustryTableRow = ({
           <button
             type="button"
             onClick={() => onResetPassword(ind)}
-            className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors cursor-pointer"
+            className="p-1.5 text-slate-400 hover:text-slate-900 hover:bg-slate-100 rounded-md transition-colors cursor-pointer"
             title="Regenerate Credentials"
           >
             <Key className="w-4 h-4" />

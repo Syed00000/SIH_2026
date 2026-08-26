@@ -24,7 +24,7 @@ export const AdminDirectoryToolbar = ({
           placeholder="Search by name, email or role..."
           value={searchTerm}
           onChange={(e) => onSearchChange(e.target.value)}
-          className="w-full pl-9 pr-3.5 py-1.5 bg-slate-50/60 border border-slate-200 rounded-md text-xs text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white transition-all shadow-2xs"
+          className="w-full pl-9 pr-3.5 py-1.5 bg-slate-50/60 border border-slate-200 rounded-md text-xs text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-slate-900 focus:bg-white transition-all shadow-2xs"
         />
       </div>
 
@@ -33,7 +33,7 @@ export const AdminDirectoryToolbar = ({
         <select
           value={selectedRole}
           onChange={(e) => onRoleChange(e.target.value)}
-          className="w-full bg-slate-50/60 border border-slate-200 rounded-md px-2.5 py-1.5 pr-7 text-xs font-medium text-slate-700 hover:border-slate-300 focus:outline-none focus:ring-1 focus:ring-blue-500 cursor-pointer appearance-none shadow-2xs"
+          className="w-full bg-slate-50/60 border border-slate-200 rounded-md px-2.5 py-1.5 pr-7 text-xs font-medium text-slate-700 hover:border-slate-300 focus:outline-none focus:ring-1 focus:ring-slate-900 cursor-pointer appearance-none shadow-2xs"
         >
           {ADMIN_ROLES_LIST.map((role) => (
             <option key={role} value={role}>
@@ -49,7 +49,7 @@ export const AdminDirectoryToolbar = ({
         <select
           value={selectedStatus}
           onChange={(e) => onStatusChange(e.target.value)}
-          className="w-full bg-slate-50/60 border border-slate-200 rounded-md px-2.5 py-1.5 pr-7 text-xs font-medium text-slate-700 hover:border-slate-300 focus:outline-none focus:ring-1 focus:ring-blue-500 cursor-pointer appearance-none shadow-2xs"
+          className="w-full bg-slate-50/60 border border-slate-200 rounded-md px-2.5 py-1.5 pr-7 text-xs font-medium text-slate-700 hover:border-slate-300 focus:outline-none focus:ring-1 focus:ring-slate-900 cursor-pointer appearance-none shadow-2xs"
         >
           {ADMIN_STATUS_LIST.map((st) => (
             <option key={st} value={st}>
@@ -65,7 +65,7 @@ export const AdminDirectoryToolbar = ({
         <select
           value={selectedDistrict}
           onChange={(e) => onDistrictChange(e.target.value)}
-          className="w-full bg-slate-50/60 border border-slate-200 rounded-md px-2.5 py-1.5 pr-7 text-xs font-medium text-slate-700 hover:border-slate-300 focus:outline-none focus:ring-1 focus:ring-blue-500 cursor-pointer appearance-none shadow-2xs"
+          className="w-full bg-slate-50/60 border border-slate-200 rounded-md px-2.5 py-1.5 pr-7 text-xs font-medium text-slate-700 hover:border-slate-300 focus:outline-none focus:ring-1 focus:ring-slate-900 cursor-pointer appearance-none shadow-2xs"
         >
           <option value="All">All Districts</option>
           {JHARKHAND_DISTRICTS_LIST.map((dist) => (

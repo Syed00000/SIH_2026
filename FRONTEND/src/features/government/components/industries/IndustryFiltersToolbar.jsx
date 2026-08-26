@@ -27,14 +27,14 @@ export const IndustryFiltersToolbar = ({
             value={searchTerm}
             onChange={(e) => onSearchChange(e.target.value)}
             placeholder="Search by legal name, ID or SPOC..."
-            className="w-full pl-9 pr-3.5 py-1.5 bg-slate-50/60 border border-slate-200 rounded-md text-xs text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white transition-all shadow-2xs"
+            className="w-full pl-9 pr-3.5 py-1.5 bg-slate-50/60 border border-slate-200 rounded-md text-xs text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-slate-900 focus:bg-white transition-all shadow-2xs"
           />
         </div>
 
         <button
           type="button"
           onClick={onAddIndustry}
-          className="inline-flex items-center space-x-1.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold px-3.5 py-1.5 rounded-md text-xs shadow-xs transition-colors cursor-pointer shrink-0"
+          className="inline-flex items-center space-x-1.5 bg-slate-900 hover:bg-black text-white font-semibold px-3.5 py-1.5 rounded-md text-xs shadow-xs transition-colors cursor-pointer shrink-0"
         >
           <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
           <span>Add Industry</span>
@@ -48,7 +48,7 @@ export const IndustryFiltersToolbar = ({
           <select
             value={selectedCategory}
             onChange={(e) => onCategoryChange(e.target.value)}
-            className="w-full bg-slate-50/60 border border-slate-200 rounded-md px-2.5 py-1.5 pr-7 text-xs font-medium text-slate-700 hover:border-slate-300 focus:outline-none focus:ring-1 focus:ring-blue-500 cursor-pointer appearance-none shadow-2xs"
+            className="w-full bg-slate-50/60 border border-slate-200 rounded-md px-2.5 py-1.5 pr-7 text-xs font-medium text-slate-700 hover:border-slate-300 focus:outline-none focus:ring-1 focus:ring-slate-900 cursor-pointer appearance-none shadow-2xs"
           >
             <option value="All Categories">All Categories</option>
             {INDUSTRY_CATEGORIES.map((cat) => (
@@ -65,7 +65,7 @@ export const IndustryFiltersToolbar = ({
           <select
             value={selectedDomain}
             onChange={(e) => onDomainChange(e.target.value)}
-            className="w-full bg-slate-50/60 border border-slate-200 rounded-md px-2.5 py-1.5 pr-7 text-xs font-medium text-slate-700 hover:border-slate-300 focus:outline-none focus:ring-1 focus:ring-blue-500 cursor-pointer appearance-none shadow-2xs"
+            className="w-full bg-slate-50/60 border border-slate-200 rounded-md px-2.5 py-1.5 pr-7 text-xs font-medium text-slate-700 hover:border-slate-300 focus:outline-none focus:ring-1 focus:ring-slate-900 cursor-pointer appearance-none shadow-2xs"
           >
             <option value="All Domains">All Domains</option>
             {THEMATIC_DOMAINS.map((domain) => (
@@ -82,7 +82,7 @@ export const IndustryFiltersToolbar = ({
           <select
             value={selectedVerification}
             onChange={(e) => onVerificationChange(e.target.value)}
-            className="w-full bg-slate-50/60 border border-slate-200 rounded-md px-2.5 py-1.5 pr-7 text-xs font-medium text-slate-700 hover:border-slate-300 focus:outline-none focus:ring-1 focus:ring-blue-500 cursor-pointer appearance-none shadow-2xs"
+            className="w-full bg-slate-50/60 border border-slate-200 rounded-md px-2.5 py-1.5 pr-7 text-xs font-medium text-slate-700 hover:border-slate-300 focus:outline-none focus:ring-1 focus:ring-slate-900 cursor-pointer appearance-none shadow-2xs"
           >
             <option value="All Verification">All Verification</option>
             <option value="Approved">Approved</option>
@@ -97,7 +97,7 @@ export const IndustryFiltersToolbar = ({
           <select
             value={selectedStatus}
             onChange={(e) => onStatusChange(e.target.value)}
-            className="w-full bg-slate-50/60 border border-slate-200 rounded-md px-2.5 py-1.5 pr-7 text-xs font-medium text-slate-700 hover:border-slate-300 focus:outline-none focus:ring-1 focus:ring-blue-500 cursor-pointer appearance-none shadow-2xs"
+            className="w-full bg-slate-50/60 border border-slate-200 rounded-md px-2.5 py-1.5 pr-7 text-xs font-medium text-slate-700 hover:border-slate-300 focus:outline-none focus:ring-1 focus:ring-slate-900 cursor-pointer appearance-none shadow-2xs"
           >
             <option value="All Status">All Status</option>
             <option value="Active">Active</option>

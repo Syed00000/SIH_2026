@@ -58,7 +58,7 @@ export const UniversityCredentialsCard = ({
           <button
             type="button"
             onClick={() => handleCopy(loginEmail, 'email')}
-            className="p-1 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors cursor-pointer"
+            className="p-1 text-slate-400 hover:text-slate-900 hover:bg-slate-100 rounded transition-colors cursor-pointer"
             title="Copy Email"
           >
             {copiedField === 'email' ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5 text-slate-400" />}
@@ -85,7 +85,7 @@ export const UniversityCredentialsCard = ({
             <button
               type="button"
               onClick={() => handleCopy(loginPassword, 'password')}
-              className="p-1 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors cursor-pointer"
+              className="p-1 text-slate-400 hover:text-slate-900 hover:bg-slate-100 rounded transition-colors cursor-pointer"
               title="Copy Password"
             >
               {copiedField === 'password' ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5 text-slate-400" />}

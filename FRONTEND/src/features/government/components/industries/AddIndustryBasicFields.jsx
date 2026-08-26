@@ -47,7 +47,7 @@ export const AddIndustryBasicFields = ({ formData, onChange, errors = {} }) => {
             onChange={(e) => onChange('category', e.target.value)}
             className={`w-full bg-slate-50/60 border ${
               errors.category ? 'border-red-500' : 'border-slate-200'
-            } rounded-md px-3 py-2 text-xs font-medium text-slate-800 focus:bg-white focus:outline-none focus:ring-1 focus:ring-blue-500 appearance-none cursor-pointer`}
+            } rounded-md px-3 py-2 text-xs font-medium text-slate-800 focus:bg-white focus:outline-none focus:ring-1 focus:ring-slate-900 appearance-none cursor-pointer`}
           >
             <option value="">Select Category</option>
             {INDUSTRY_CATEGORIES.map((cat) => (
@@ -73,7 +73,7 @@ export const AddIndustryBasicFields = ({ formData, onChange, errors = {} }) => {
           placeholder="e.g., Tata Steel Foundation"
           className={`w-full bg-slate-50/60 border ${
             errors.legalName ? 'border-red-500' : 'border-slate-200'
-          } rounded-md px-3 py-2 text-xs font-medium text-slate-800 focus:bg-white focus:outline-none focus:ring-1 focus:ring-blue-500`}
+          } rounded-md px-3 py-2 text-xs font-medium text-slate-800 focus:bg-white focus:outline-none focus:ring-1 focus:ring-slate-900`}
         />
         {errors.legalName && <p className="text-[11px] text-red-500 mt-0.5">{errors.legalName}</p>}
       </div>
@@ -87,7 +87,7 @@ export const AddIndustryBasicFields = ({ formData, onChange, errors = {} }) => {
             value={formData.shortName}
             onChange={(e) => onChange('shortName', e.target.value)}
             placeholder="e.g., TSF"
-            className="w-full bg-slate-50/60 border border-slate-200 rounded-md px-3 py-2 text-xs font-medium text-slate-800 focus:bg-white focus:outline-none focus:ring-1 focus:ring-blue-500"
+            className="w-full bg-slate-50/60 border border-slate-200 rounded-md px-3 py-2 text-xs font-medium text-slate-800 focus:bg-white focus:outline-none focus:ring-1 focus:ring-slate-900"
           />
         </div>
         <div>
@@ -101,7 +101,7 @@ export const AddIndustryBasicFields = ({ formData, onChange, errors = {} }) => {
             placeholder="e.g., U12345JH2020PTC..."
             className={`w-full bg-slate-50/60 border ${
               errors.registrationNumber ? 'border-red-500' : 'border-slate-200'
-            } rounded-md px-3 py-2 text-xs font-mono font-medium text-slate-800 focus:bg-white focus:outline-none focus:ring-1 focus:ring-blue-500`}
+            } rounded-md px-3 py-2 text-xs font-mono font-medium text-slate-800 focus:bg-white focus:outline-none focus:ring-1 focus:ring-slate-900`}
           />
           {errors.registrationNumber && (
             <p className="text-[11px] text-red-500 mt-0.5">{errors.registrationNumber}</p>
@@ -121,7 +121,7 @@ export const AddIndustryBasicFields = ({ formData, onChange, errors = {} }) => {
               onChange={(e) => onChange('thematicDomain', e.target.value)}
               className={`w-full bg-slate-50/60 border ${
                 errors.thematicDomain ? 'border-red-500' : 'border-slate-200'
-              } rounded-md px-3 py-2 text-xs font-medium text-slate-800 focus:bg-white focus:outline-none focus:ring-1 focus:ring-blue-500 appearance-none cursor-pointer`}
+              } rounded-md px-3 py-2 text-xs font-medium text-slate-800 focus:bg-white focus:outline-none focus:ring-1 focus:ring-slate-900 appearance-none cursor-pointer`}
             >
               <option value="">Select Domain</option>
               {THEMATIC_DOMAINS.map((domain) => (
@@ -143,7 +143,7 @@ export const AddIndustryBasicFields = ({ formData, onChange, errors = {} }) => {
             value={formData.website}
             onChange={(e) => onChange('website', e.target.value)}
             placeholder="https://example.com"
-            className="w-full bg-slate-50/60 border border-slate-200 rounded-md px-3 py-2 text-xs font-medium text-slate-800 focus:bg-white focus:outline-none focus:ring-1 focus:ring-blue-500"
+            className="w-full bg-slate-50/60 border border-slate-200 rounded-md px-3 py-2 text-xs font-medium text-slate-800 focus:bg-white focus:outline-none focus:ring-1 focus:ring-slate-900"
           />
         </div>
       </div>
