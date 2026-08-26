@@ -21,8 +21,26 @@ export const GovernmentOverview = ({
   onSelectSector,
   onApproveTriage,
   onRejectTriage,
-  onNavigateTab
+  onNavigateTab,
+  onViewAllTriage,
+  onViewAllHeis
 }) => {
+  const handleGoToTriage = () => {
+    if (onViewAllTriage) {
+      onViewAllTriage();
+    } else if (onNavigateTab) {
+      onNavigateTab('triage');
+    }
+  };
+
+  const handleGoToHeis = () => {
+    if (onViewAllHeis) {
+      onViewAllHeis();
+    } else if (onNavigateTab) {
+      onNavigateTab('heis');
+    }
+  };
+
   return (
     <div className="w-full space-y-3 pb-3">
       {/* 1. Top KPI Stat Cards - Dynamically calculated */}
@@ -41,7 +59,7 @@ export const GovernmentOverview = ({
             feed={triageFeed}
             onApprove={onApproveTriage}
             onReject={onRejectTriage}
-            onViewAll={() => onNavigateTab && onNavigateTab('triage')}
+            onViewAll={handleGoToTriage}
           />
         </div>
       </div>
@@ -58,11 +76,11 @@ export const GovernmentOverview = ({
           trendData={trendData}
           currentInterval={trendInterval}
           onIntervalChange={onChangeTrendInterval}
-          onViewReport={() => onNavigateTab && onNavigateTab('reports')}
+          onViewReport={handleGoToTriage}
         />
         <TopActiveHeisTable
           heis={heis}
-          onViewAll={() => onNavigateTab && onNavigateTab('heis')}
+          onViewAll={handleGoToHeis}
         />
       </div>
     </div>

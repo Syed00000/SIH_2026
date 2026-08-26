@@ -1,75 +1,92 @@
 import React from 'react';
-import { Cpu, Sliders, Layers, AlertTriangle } from 'lucide-react';
-import { Card } from '../../../../shared/components/ui/card.jsx';
+import { Cpu, Sliders, Layers, AlertTriangle, ChevronRight } from 'lucide-react';
 
 export const TriageNavTabs = ({ activeTab, onSelectTab }) => {
   const tabs = [
     {
       id: 'classification',
       title: 'Domain Classification',
-      description: 'Automatic sector categorization & department routing',
+      description: 'Automatic sector categorization & routing',
       icon: Cpu,
-      accentColor: 'border-blue-500 text-blue-600 bg-blue-50/60'
+      activeBg: 'border-blue-500 bg-blue-50/40 ring-1 ring-blue-500/30 text-blue-950',
+      activeIcon: 'bg-blue-600 text-white',
+      inactiveIcon: 'bg-blue-50 text-blue-600 border border-blue-100',
+      tag: 'Auto-AI'
     },
     {
       id: 'override',
       title: 'Department Override',
-      description: 'Manual reassignment, sector updates & audit tracking',
+      description: 'Manual reassignment & sector updates',
       icon: Sliders,
-      accentColor: 'border-amber-500 text-amber-600 bg-amber-50/60'
+      activeBg: 'border-amber-500 bg-amber-50/40 ring-1 ring-amber-500/30 text-amber-950',
+      activeIcon: 'bg-amber-600 text-white',
+      inactiveIcon: 'bg-amber-50 text-amber-600 border border-amber-100',
+      tag: 'Manual'
     },
     {
       id: 'deduplication',
       title: 'Duplicate Review',
-      description: 'Identify and merge identical citizen problem reports',
+      description: 'Identify & merge identical problem reports',
       icon: Layers,
-      accentColor: 'border-emerald-500 text-emerald-600 bg-emerald-50/60'
+      activeBg: 'border-emerald-500 bg-emerald-50/40 ring-1 ring-emerald-500/30 text-emerald-950',
+      activeIcon: 'bg-emerald-600 text-white',
+      inactiveIcon: 'bg-emerald-50 text-emerald-600 border border-emerald-100',
+      tag: 'Clusters'
     },
     {
       id: 'escalation',
       title: 'Priority Escalation',
-      description: 'High-severity issues & fast-track department dispatch',
+      description: 'High-severity issues & fast-track dispatch',
       icon: AlertTriangle,
-      accentColor: 'border-rose-500 text-rose-600 bg-rose-50/60'
+      activeBg: 'border-rose-500 bg-rose-50/40 ring-1 ring-rose-500/30 text-rose-950',
+      activeIcon: 'bg-rose-600 text-white',
+      inactiveIcon: 'bg-rose-50 text-rose-600 border border-rose-100',
+      tag: 'Critical'
     }
   ];
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5">
       {tabs.map((tab) => {
         const Icon = tab.icon;
         const isActive = activeTab === tab.id;
 
         return (
-          <Card
+          <button
             key={tab.id}
+            type="button"
             onClick={() => onSelectTab(tab.id)}
-            className={`cursor-pointer transition-all duration-150 p-2.5 rounded-md border text-left flex flex-col justify-between ${
+            className={`group relative text-left p-3 rounded-xl border transition-all duration-150 cursor-pointer flex flex-col justify-between h-[84px] select-none ${
               isActive
-                ? 'bg-slate-900 text-white border-slate-900 shadow-xs'
-                : 'bg-white text-slate-700 border-slate-200 hover:border-slate-300 hover:bg-slate-50/70'
+                ? `${tab.activeBg} shadow-xs`
+                : 'bg-white text-slate-700 border-slate-200 hover:border-slate-300 hover:bg-slate-50/70 shadow-2xs'
             }`}
           >
-            <div className="flex items-center space-x-2">
-              <div
-                className={`p-1 rounded ${
-                  isActive ? 'bg-slate-800 text-white' : tab.accentColor
+            {/* Top row: Icon + Title + Tag */}
+            <div className="flex items-center justify-between gap-2 w-full">
+              <div className="flex items-center space-x-2 min-w-0">
+                <Icon className={`w-4 h-4 shrink-0 ${isActive ? 'text-slate-900' : 'text-slate-500'}`} />
+                <span className="font-bold text-xs tracking-tight text-slate-900 truncate">
+                  {tab.title}
+                </span>
+              </div>
+
+              <span
+                className={`text-[9px] font-bold px-1.5 py-0.2 rounded-md shrink-0 border ${
+                  isActive
+                    ? 'bg-white/90 border-slate-300/80 text-slate-800'
+                    : 'bg-slate-50 border-slate-100 text-slate-400 group-hover:text-slate-600'
                 }`}
               >
-                <Icon className="w-3.5 h-3.5" />
-              </div>
-              <span className="font-bold text-xs tracking-tight truncate">
-                {tab.title}
+                {tab.tag}
               </span>
             </div>
-            <p
-              className={`text-[10.5px] mt-1 line-clamp-1 ${
-                isActive ? 'text-slate-300' : 'text-slate-500'
-              }`}
-            >
+
+            {/* Bottom row: Description */}
+            <p className="text-[10.5px] font-medium text-slate-500 truncate w-full pl-0.5">
               {tab.description}
             </p>
-          </Card>
+          </button>
         );
       })}
     </div>

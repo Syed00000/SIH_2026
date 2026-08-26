@@ -56,9 +56,7 @@ export const TriageHeaderStats = () => {
               <span className="text-[11px] font-bold text-slate-500 tracking-wide uppercase">
                 {item.title}
               </span>
-              <div className={`p-1 rounded ${item.iconColor}`}>
-                <Icon className="w-3.5 h-3.5" />
-              </div>
+              <Icon className="w-4 h-4 text-slate-600" />
             </div>
             <div className="mt-1 flex items-baseline justify-between">
               <span className="text-xl font-extrabold text-slate-900 tracking-tight">
