@@ -11,6 +11,11 @@ import { ManageIndustriesDashboard } from '../industries/ManageIndustriesDashboa
 import { GovernmentGisDashboard } from '../gis/GovernmentGisDashboard.jsx';
 import { AdminManagement } from '../governance/AdminManagement.jsx';
 import { governmentDataService } from '../../services/governmentDataService.js';
+import { exportAdminDirectoryPdf, exportIndustryDirectoryPdf, exportUniversityDirectoryPdf, exportGenericReportPdf } from '../../services/exportPdfService.js';
+import { industryService } from '../../services/industryService.js';
+import { universityService } from '../../services/universityService.js';
+import { adminService } from '../../services/adminService.js';
+import { MOCK_ADMIN_RECORDS } from '../../data/mockAdminData.js';
 
 export const GovernmentLayout = ({ onLogout }) => {
   const getInitialTab = () => {
@@ -61,15 +66,15 @@ export const GovernmentLayout = ({ onLogout }) => {
   // Reactive Global Filters
   const [selectedDistrict, setSelectedDistrict] = useState('All');
   const [selectedSector, setSelectedSector] = useState('All');
-  const [sectorTimeframe, setSectorTimeframe] = useState('This Month');
+  const [sectorTimeframe, setSectorTimeframe] = useState('Quarter');
   const [trendInterval, setTrendInterval] = useState('Monthly');
 
   // Reactive State Data
-  const [kpis, setKpis] = useState(governmentDataService.getFilteredKpis(selectedDistrict, selectedSector));
-  const [triageFeed, setTriageFeed] = useState(governmentDataService.getTriageFeed());
-  const [sectors, setSectors] = useState(governmentDataService.getFilteredSectors(selectedDistrict, sectorTimeframe));
-  const [trendData, setTrendData] = useState(governmentDataService.getFilteredTrend(selectedDistrict, selectedSector, trendInterval));
-  const [heis, setHeis] = useState(governmentDataService.getFilteredHeis(selectedDistrict));
+  const [kpis, setKpis] = useState(() => governmentDataService.getFilteredKpis(selectedDistrict, selectedSector));
+  const [triageFeed, setTriageFeed] = useState(() => governmentDataService.getTriageFeed());
+  const [sectors, setSectors] = useState(() => governmentDataService.getFilteredSectors(selectedDistrict, sectorTimeframe));
+  const [trendData, setTrendData] = useState(() => governmentDataService.getFilteredTrend(selectedDistrict, selectedSector, trendInterval));
+  const [heis, setHeis] = useState(() => governmentDataService.getFilteredHeis(selectedDistrict));
 
   // Automatically recalculate data whenever filters or timeframes change
   useEffect(() => {
@@ -91,8 +96,55 @@ export const GovernmentLayout = ({ onLogout }) => {
     setKpis(governmentDataService.getFilteredKpis(selectedDistrict, selectedSector));
   };
 
-  const handleExportPdf = () => {
-    window.print();
+  const handleExportPdf = async () => {
+    if (activeTab === 'users_admin' || activeTab === 'user_governance') {
+      try {
+        const res = await adminService.getAdmins({
+          limit: 200,
+          district: selectedDistrict !== 'All' ? selectedDistrict : undefined
+        });
+        const list = res?.records?.length ? res.records : MOCK_ADMIN_RECORDS;
+        exportAdminDirectoryPdf(list, { district: selectedDistrict });
+      } catch (err) {
+        console.error('Failed to fetch admins for export, using fallback:', err);
+        exportAdminDirectoryPdf(MOCK_ADMIN_RECORDS, { district: selectedDistrict });
+      }
+    } else if (
+      activeTab === 'governance_industries' ||
+      activeTab === 'industries' ||
+      activeTab === 'manage_industries'
+    ) {
+      try {
+        const data = await industryService.getIndustries({
+          limit: 200,
+          district: selectedDistrict !== 'All' ? selectedDistrict : undefined
+        });
+        const list = data?.records || [];
+        exportIndustryDirectoryPdf(list, { district: selectedDistrict, sector: selectedSector });
+      } catch (err) {
+        console.error('Failed to export industry directory:', err);
+        exportIndustryDirectoryPdf([], { district: selectedDistrict, sector: selectedSector });
+      }
+    } else if (
+      activeTab === 'governance_universities' ||
+      activeTab === 'universities' ||
+      activeTab === 'manage_universities' ||
+      activeTab === 'heis'
+    ) {
+      try {
+        const data = await universityService.getUniversities({
+          limit: 200,
+          district: selectedDistrict !== 'All' ? selectedDistrict : undefined
+        });
+        const list = data?.records?.length ? data.records : heis;
+        exportUniversityDirectoryPdf(list, { district: selectedDistrict });
+      } catch (err) {
+        console.error('Failed to fetch universities for export, using local list:', err);
+        exportUniversityDirectoryPdf(heis, { district: selectedDistrict });
+      }
+    } else {
+      exportGenericReportPdf(getTabTitle(activeTab), { district: selectedDistrict });
+    }
   };
 
   // Filtered Triage Feed by Selected District & Sector

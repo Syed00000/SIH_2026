@@ -95,6 +95,10 @@ export const universityService = {
     throw new Error(res?.message || 'Failed to update review status');
   },
 
+  async updateUniversityStatus(id, status, remarks = '') {
+    return this.updateStatus(id, status, remarks);
+  },
+
   /**
    * Delete University from MongoDB & deactivate User
    */

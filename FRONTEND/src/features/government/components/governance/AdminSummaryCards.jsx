@@ -9,8 +9,7 @@ export const AdminSummaryCards = ({ stats }) => {
       value: stats?.totalAdmins ?? 0,
       subtitle: 'All administrators',
       icon: Users,
-      iconColor: 'text-blue-600',
-      borderColor: 'border-l-blue-600'
+      iconColor: 'text-blue-600'
     },
     {
       id: 'active',
@@ -18,8 +17,7 @@ export const AdminSummaryCards = ({ stats }) => {
       value: stats?.activeAdmins ?? 0,
       subtitle: 'Currently active',
       icon: ShieldCheck,
-      iconColor: 'text-emerald-600',
-      borderColor: 'border-l-emerald-600'
+      iconColor: 'text-emerald-600'
     },
     {
       id: 'suspended',
@@ -27,8 +25,7 @@ export const AdminSummaryCards = ({ stats }) => {
       value: stats?.suspendedAdmins ?? 0,
       subtitle: 'Temporarily suspended',
       icon: PauseCircle,
-      iconColor: 'text-amber-600',
-      borderColor: 'border-l-amber-600'
+      iconColor: 'text-amber-600'
     },
     {
       id: 'removed',
@@ -36,36 +33,37 @@ export const AdminSummaryCards = ({ stats }) => {
       value: stats?.removedAdmins ?? 0,
       subtitle: 'Permanently removed',
       icon: Trash2,
-      iconColor: 'text-rose-600',
-      borderColor: 'border-l-rose-600'
+      iconColor: 'text-rose-600'
     }
   ];
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
       {cards.map((card) => {
         const IconComponent = card.icon;
         return (
           <div
             key={card.id}
-            className={`bg-white border border-slate-200 border-l-4 ${card.borderColor} p-5 shadow-xs flex items-center justify-between transition-all hover:border-slate-300`}
+            className="bg-white border border-slate-200/90 rounded-lg p-4 shadow-2xs flex flex-col justify-between min-h-[96px] hover:border-slate-300 transition-colors"
           >
-            {/* Metrics Information */}
-            <div className="min-w-0 flex-1 pr-3">
-              <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block truncate">
+            {/* Top row: Label & Bare Icon without background box */}
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">
                 {card.title}
               </span>
-              <div className="text-2xl lg:text-3xl font-black text-slate-900 tracking-tight mt-1">
+              <div className={`flex items-center justify-center ${card.iconColor}`}>
+                <IconComponent className="w-4 h-4" />
+              </div>
+            </div>
+
+            {/* Bottom row: Value & Subtitle */}
+            <div className="mt-2">
+              <div className="text-2xl font-extrabold text-slate-900 tracking-tight">
                 {card.value}
               </div>
               <span className="text-[11px] font-medium text-slate-400 block truncate mt-0.5">
                 {card.subtitle}
               </span>
-            </div>
-
-            {/* Direct Crisp Icon with No Background Shape */}
-            <div className="shrink-0 flex items-center justify-center p-1">
-              <IconComponent className={`w-7 h-7 ${card.iconColor}`} strokeWidth={2} />
             </div>
           </div>
         );

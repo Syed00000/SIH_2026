@@ -1,39 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import {
-  Building2,
-  User,
-  Award,
   Layers,
-  GraduationCap,
-  KeyRound,
-  Copy,
-  Check,
-  Eye,
-  EyeOff,
-  Globe,
   MapPin,
-  Calendar,
-  Mail,
-  Phone,
+  Clock,
   Pencil,
   ArrowLeft,
   ChevronRight,
-  ExternalLink,
-  BookOpen,
-  FlaskConical,
-  ShieldCheck,
-  Clock,
-  CheckCircle2,
-  AlertCircle,
-  XCircle,
-  X
+  Check,
+  XCircle
 } from 'lucide-react';
+import { universityService } from '../../services/universityService.js';
+import { UniversityCredentialsCard } from './UniversityCredentialsCard.jsx';
+import { UniversityCapacityStats } from './UniversityCapacityStats.jsx';
+import { UniversityInfoSection } from './UniversityInfoSection.jsx';
 
 export const ViewUniversityDetails = ({ university, onBack, onEdit, onUpdateStatus }) => {
   const [currentUni, setCurrentUni] = useState(university);
   const [isUpdating, setIsUpdating] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
-  const [copiedField, setCopiedField] = useState(null);
 
   useEffect(() => {
     if (university) {
@@ -43,15 +26,10 @@ export const ViewUniversityDetails = ({ university, onBack, onEdit, onUpdateStat
 
   if (!currentUni) return null;
 
-  const handleCopy = (text, field) => {
-    navigator.clipboard.writeText(text);
-    setCopiedField(field);
-    setTimeout(() => setCopiedField(null), 2000);
-  };
-
   const handleStatusChange = async (newStatus) => {
     setIsUpdating(true);
-    // Optimistic UI state update
+    const id = currentUni._id || currentUni.id;
+
     setCurrentUni((prev) => ({
       ...prev,
       status: newStatus,
@@ -59,9 +37,15 @@ export const ViewUniversityDetails = ({ university, onBack, onEdit, onUpdateStat
     }));
 
     try {
-      if (onUpdateStatus) {
-        await onUpdateStatus(currentUni._id || currentUni.id, newStatus);
+      const updated = await universityService.updateStatus(id, newStatus);
+      if (updated) {
+        setCurrentUni(updated);
       }
+      if (onUpdateStatus) {
+        await onUpdateStatus(id, newStatus);
+      }
+    } catch (err) {
+      console.error('Failed to update status:', err);
     } finally {
       setIsUpdating(false);
     }
@@ -87,48 +71,42 @@ export const ViewUniversityDetails = ({ university, onBack, onEdit, onUpdateStat
     : '20 May 2025';
 
   return (
-    <div className="space-y-6 animate-fadeIn select-none max-w-5xl mx-auto pb-10">
+    <div className="space-y-4 select-none w-full max-w-[1600px] mx-auto pb-10">
       {/* Top Breadcrumb & Action Controls */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-5 rounded-2xl border border-slate-200 shadow-2xs">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-4 rounded-lg border border-slate-200/90 shadow-2xs">
         <div>
-          <div className="flex items-center space-x-2 text-xs font-semibold text-slate-500 mb-1">
-            <button
-              onClick={onBack}
-              className="hover:text-slate-900 transition-colors cursor-pointer"
-            >
+          <div className="flex items-center space-x-1.5 text-[11px] font-semibold text-slate-400 mb-0.5">
+            <button onClick={onBack} className="hover:text-slate-900 transition-colors cursor-pointer">
               User Governance
             </button>
-            <ChevronRight className="w-3.5 h-3.5" />
-            <button
-              onClick={onBack}
-              className="hover:text-slate-900 transition-colors cursor-pointer"
-            >
+            <ChevronRight className="w-3 h-3 text-slate-400" />
+            <button onClick={onBack} className="hover:text-slate-900 transition-colors cursor-pointer">
               Universities
             </button>
-            <ChevronRight className="w-3.5 h-3.5" />
-            <span className="text-slate-900 font-bold">{currentUni.name}</span>
+            <ChevronRight className="w-3 h-3 text-slate-400" />
+            <span className="text-slate-800 font-bold">{currentUni.name}</span>
           </div>
-          <div className="flex items-center space-x-3">
-            <h1 className="text-lg font-bold text-slate-900 tracking-tight">{currentUni.name}</h1>
-            <span className="px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-slate-100 text-slate-700 border border-slate-200">
+          <div className="flex items-center space-x-2">
+            <h1 className="text-sm sm:text-base font-bold text-slate-900 tracking-tight">{currentUni.name}</h1>
+            <span className="px-2 py-0.5 rounded-md text-[10px] font-mono font-bold bg-slate-100 text-slate-700 border border-slate-200">
               {currentUni.code}
             </span>
           </div>
         </div>
 
-        <div className="flex items-center space-x-2.5">
+        <div className="flex items-center space-x-2">
           <button
             type="button"
             onClick={onBack}
-            className="px-4 py-2 text-xs font-bold text-slate-700 bg-white border border-slate-300 hover:bg-slate-50 rounded-xl transition-colors cursor-pointer flex items-center space-x-1.5"
+            className="px-3 py-1.5 text-xs font-semibold text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 rounded-md transition-colors cursor-pointer flex items-center space-x-1.5 shadow-2xs"
           >
-            <ArrowLeft className="w-3.5 h-3.5" />
+            <ArrowLeft className="w-3.5 h-3.5 text-slate-500" />
             <span>Back to Universities</span>
           </button>
           <button
             type="button"
             onClick={onEdit}
-            className="px-4 py-2 text-xs font-bold text-white bg-slate-900 hover:bg-slate-800 shadow-sm rounded-xl transition-colors cursor-pointer flex items-center space-x-1.5"
+            className="px-3.5 py-1.5 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 shadow-xs rounded-md transition-colors cursor-pointer flex items-center space-x-1.5"
           >
             <Pencil className="w-3.5 h-3.5" />
             <span>Edit University</span>
@@ -137,64 +115,83 @@ export const ViewUniversityDetails = ({ university, onBack, onEdit, onUpdateStat
       </div>
 
       {/* Hero Overview Header */}
-      <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-5">
-        <div className="flex items-center space-x-4">
-          <div className="w-16 h-16 rounded-2xl bg-slate-900 text-white flex items-center justify-center font-black text-2xl shadow-sm border border-slate-700 flex-shrink-0">
+      <div className="bg-white p-4 sm:p-5 rounded-lg border border-slate-200/90 shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="flex items-center space-x-3.5">
+          <div className="w-11 h-11 rounded-md bg-slate-900 text-white flex items-center justify-center font-black text-lg shadow-2xs border border-slate-700 flex-shrink-0">
             {firstLetter}
           </div>
           <div>
-            <div className="flex items-center space-x-2.5">
-              <h2 className="text-base font-bold text-slate-900">{currentUni.name}</h2>
-              <span className="text-xs text-slate-500">({currentUni.shortName || currentUni.code})</span>
+            <div className="flex items-center space-x-2">
+              <h2 className="text-sm sm:text-base font-bold text-slate-900">{currentUni.name}</h2>
+              <span className="text-xs text-slate-400">({currentUni.shortName || currentUni.code})</span>
             </div>
-            <div className="flex flex-wrap items-center gap-2 mt-1.5 text-xs text-slate-600">
+            <div className="flex flex-wrap items-center gap-2 mt-1 text-xs text-slate-500">
               <span className="flex items-center space-x-1">
                 <MapPin className="w-3.5 h-3.5 text-slate-400" />
                 <span>{currentUni.district}, Jharkhand</span>
               </span>
-              <span>•</span>
+              <span>&bull;</span>
               <span>{currentUni.universityType}</span>
-              <span>•</span>
+              <span>&bull;</span>
               <span>Est. {currentUni.establishmentYear || '2012'}</span>
             </div>
           </div>
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
-          {/* Review Status Control */}
-          <div className="px-3 py-1.5 rounded-xl bg-slate-50 border border-slate-200 text-center">
-            <span className="text-[10px] font-bold text-slate-400 uppercase block">Review Status</span>
+          {/* Review Status */}
+          <div className="px-3 py-1.5 rounded-md bg-slate-50/70 border border-slate-200/80 text-left">
+            <span className="text-[10px] font-bold text-slate-400 uppercase block tracking-wider">Review Status</span>
             <span
-              className={`text-xs font-bold ${
+              className={`inline-flex items-center space-x-1.5 text-xs font-bold mt-0.5 ${
                 currentUni.status === 'Approved' || currentUni.status === 'Active'
-                  ? 'text-emerald-700'
+                  ? 'text-emerald-600'
                   : currentUni.status === 'Pending'
-                  ? 'text-amber-700'
+                  ? 'text-amber-600'
                   : 'text-red-600'
               }`}
             >
-              {currentUni.status || 'Approved'}
+              <span
+                className={`w-1.5 h-1.5 rounded-full ${
+                  currentUni.status === 'Approved' || currentUni.status === 'Active'
+                    ? 'bg-emerald-500'
+                    : currentUni.status === 'Pending'
+                    ? 'bg-amber-500 animate-pulse'
+                    : 'bg-red-500'
+                }`}
+              />
+              <span>{currentUni.status || 'Approved'}</span>
             </span>
           </div>
 
-          <div className="px-3 py-1.5 rounded-xl bg-slate-50 border border-slate-200 text-center">
-            <span className="text-[10px] font-bold text-slate-400 uppercase block">Portal Access</span>
-            <span className={`text-xs font-bold ${currentUni.accessStatus === 'Enabled' ? 'text-emerald-700' : 'text-red-600'}`}>
-              {currentUni.accessStatus || 'Enabled'}
+          {/* Portal Access */}
+          <div className="px-3 py-1.5 rounded-md bg-slate-50/70 border border-slate-200/80 text-left">
+            <span className="text-[10px] font-bold text-slate-400 uppercase block tracking-wider">Portal Access</span>
+            <span
+              className={`inline-flex items-center space-x-1.5 text-xs font-bold mt-0.5 ${
+                currentUni.accessStatus === 'Enabled' ? 'text-emerald-600' : 'text-red-600'
+              }`}
+            >
+              <span
+                className={`w-1.5 h-1.5 rounded-full ${
+                  currentUni.accessStatus === 'Enabled' ? 'bg-emerald-500' : 'bg-red-500'
+                }`}
+              />
+              <span>{currentUni.accessStatus || 'Enabled'}</span>
             </span>
           </div>
 
-          {/* Quick Approve / Reject Actions */}
-          <div className="flex items-center space-x-2">
+          {/* Quick Actions */}
+          <div className="flex items-center space-x-1.5">
             {currentUni.status !== 'Approved' && (
               <button
                 type="button"
                 disabled={isUpdating}
                 onClick={() => handleStatusChange('Approved')}
-                className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-colors cursor-pointer flex items-center space-x-1.5 disabled:opacity-50"
+                className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-md text-xs font-semibold transition-colors cursor-pointer flex items-center space-x-1.5 disabled:opacity-50 shadow-xs"
               >
                 <Check className="w-3.5 h-3.5" />
-                <span>{currentUni.status === 'Rejected' ? 'Re-Approve HEI' : 'Approve HEI'}</span>
+                <span>{currentUni.status === 'Rejected' ? 'Re-Approve' : 'Approve'}</span>
               </button>
             )}
             {currentUni.status !== 'Rejected' && (
@@ -202,10 +199,10 @@ export const ViewUniversityDetails = ({ university, onBack, onEdit, onUpdateStat
                 type="button"
                 disabled={isUpdating}
                 onClick={() => handleStatusChange('Rejected')}
-                className="px-3.5 py-1.5 bg-red-600 hover:bg-red-700 text-white rounded-xl text-xs font-bold transition-colors cursor-pointer flex items-center space-x-1.5 disabled:opacity-50"
+                className="px-3 py-1.5 bg-white border border-red-200 text-red-600 hover:bg-red-50 rounded-md text-xs font-semibold transition-colors cursor-pointer flex items-center space-x-1.5 disabled:opacity-50 shadow-2xs"
               >
                 <XCircle className="w-3.5 h-3.5" />
-                <span>Reject HEI</span>
+                <span>Reject</span>
               </button>
             )}
           </div>
@@ -213,234 +210,31 @@ export const ViewUniversityDetails = ({ university, onBack, onEdit, onUpdateStat
       </div>
 
       {/* 1. Official HEI Login Credentials Box */}
-      <div className="bg-slate-900 text-white rounded-2xl p-6 shadow-md space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-          <div className="flex items-center space-x-2.5">
-            <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-white">
-              <KeyRound className="w-4 h-4" />
-            </div>
-            <div>
-              <h3 className="text-xs font-bold uppercase tracking-wider text-white">Official HEI Login Credentials</h3>
-              <p className="text-[11px] text-slate-400">Generated by Government Admin for University Portal Login</p>
-            </div>
-          </div>
+      <UniversityCredentialsCard
+        universityName={currentUni.name}
+        loginEmail={loginEmail}
+        loginPassword={loginPassword}
+      />
 
-          <button
-            type="button"
-            onClick={() => {
-              const creds = `University: ${currentUni.name}\nLogin ID: ${loginEmail}\nPassword: ${loginPassword}\nPortal Link: ${window.location.origin}/login`;
-              handleCopy(creds, 'all');
-            }}
-            className="px-3.5 py-1.5 bg-white/10 hover:bg-white/20 text-white border border-white/20 rounded-xl text-xs font-bold transition-colors cursor-pointer flex items-center space-x-1.5 self-start sm:self-auto"
-          >
-            {copiedField === 'all' ? (
-              <>
-                <Check className="w-3.5 h-3.5 text-emerald-400" />
-                <span>All Copied!</span>
-              </>
-            ) : (
-              <>
-                <Copy className="w-3.5 h-3.5" />
-                <span>Copy Credentials Card</span>
-              </>
-            )}
-          </button>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
-          {/* Login Email */}
-          <div className="bg-white/10 rounded-xl p-3.5 border border-white/10 flex items-center justify-between">
-            <div>
-              <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Portal Login Email</span>
-              <span className="text-xs font-bold text-white select-all">{loginEmail}</span>
-            </div>
-            <button
-              type="button"
-              onClick={() => handleCopy(loginEmail, 'email')}
-              className="p-1.5 text-slate-400 hover:text-white rounded-lg transition-colors cursor-pointer"
-              title="Copy Email"
-            >
-              {copiedField === 'email' ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
-            </button>
-          </div>
-
-          {/* Generated Password */}
-          <div className="bg-white/10 rounded-xl p-3.5 border border-white/10 flex items-center justify-between">
-            <div>
-              <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Account Password</span>
-              <span className="text-xs font-mono font-bold text-white select-all">
-                {showPassword ? loginPassword : '••••••••••••'}
-              </span>
-            </div>
-            <div className="flex items-center space-x-1">
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="p-1.5 text-slate-400 hover:text-white rounded-lg transition-colors cursor-pointer"
-                title={showPassword ? 'Hide' : 'Show'}
-              >
-                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-              </button>
-              <button
-                type="button"
-                onClick={() => handleCopy(loginPassword, 'password')}
-                className="p-1.5 text-slate-400 hover:text-white rounded-lg transition-colors cursor-pointer"
-                title="Copy Password"
-              >
-                {copiedField === 'password' ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <div className="text-[11px] text-slate-400 pt-1">
-          Representative university staff can use these credentials to log in at <strong>/login</strong> and submit problem proposals and research deliverables.
-        </div>
-      </div>
-
-      {/* 2. Quick Summary / Capacity Metrics */}
-      <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-2xs space-y-4">
-        <div className="flex items-center justify-between">
-          <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider flex items-center space-x-1.5">
-            <GraduationCap className="w-4 h-4 text-slate-700" />
-            <span>Capacity & Resource Strength</span>
-          </h3>
-          <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
-            Capacity: {currentUni.quickSummary?.capacityStatus || 'Available'}
-          </span>
-        </div>
-
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
-          <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 text-center">
-            <BookOpen className="w-4 h-4 text-slate-700 mx-auto mb-1" />
-            <div className="text-base font-black text-slate-900">{currentUni.quickSummary?.departments || 16}</div>
-            <div className="text-[10px] text-slate-500 font-medium">Departments</div>
-          </div>
-
-          <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 text-center">
-            <User className="w-4 h-4 text-slate-700 mx-auto mb-1" />
-            <div className="text-base font-black text-slate-900">{currentUni.quickSummary?.totalFaculty || 120}</div>
-            <div className="text-[10px] text-slate-500 font-medium">Total Faculty</div>
-          </div>
-
-          <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 text-center">
-            <GraduationCap className="w-4 h-4 text-slate-700 mx-auto mb-1" />
-            <div className="text-base font-black text-slate-900">{currentUni.quickSummary?.availableFaculty || 58}</div>
-            <div className="text-[10px] text-slate-500 font-medium">Available R&D Faculty</div>
-          </div>
-
-          <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 text-center">
-            <FlaskConical className="w-4 h-4 text-slate-700 mx-auto mb-1" />
-            <div className="text-base font-black text-slate-900">{currentUni.quickSummary?.labsAndFacilities || 28}</div>
-            <div className="text-[10px] text-slate-500 font-medium">Labs & Facilities</div>
-          </div>
-
-          <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 text-center">
-            <Layers className="w-4 h-4 text-slate-700 mx-auto mb-1" />
-            <div className="text-base font-black text-slate-900">{currentUni.quickSummary?.activeProjects || 14}</div>
-            <div className="text-[10px] text-slate-500 font-medium">Active Projects</div>
-          </div>
-        </div>
-      </div>
+      {/* 2. Capacity & Resource Strength */}
+      <UniversityCapacityStats quickSummary={currentUni.quickSummary} />
 
       {/* 3. Detailed Data Sections Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-        {/* Nodal Officer & Contact Details */}
-        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-2xs space-y-3">
-          <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider pb-2 border-b border-slate-100 flex items-center space-x-1.5">
-            <User className="w-4 h-4 text-slate-700" />
-            <span>Nodal Officer & Contacts</span>
-          </h3>
+      <UniversityInfoSection university={currentUni} />
 
-          <div className="space-y-2.5 text-xs">
-            <div className="flex justify-between py-1 border-b border-slate-50">
-              <span className="text-slate-500">Nodal Officer Name:</span>
-              <span className="font-bold text-slate-900">{currentUni.nodalOfficer?.name || 'N/A'}</span>
-            </div>
-            <div className="flex justify-between py-1 border-b border-slate-50">
-              <span className="text-slate-500">Designation:</span>
-              <span className="font-medium text-slate-800">{currentUni.nodalOfficer?.designation || 'Registrar'}</span>
-            </div>
-            <div className="flex justify-between py-1 border-b border-slate-50">
-              <span className="text-slate-500">Nodal Email:</span>
-              <span className="font-medium text-slate-800 select-all">{currentUni.nodalOfficer?.email}</span>
-            </div>
-            <div className="flex justify-between py-1 border-b border-slate-50">
-              <span className="text-slate-500">Nodal Mobile:</span>
-              <span className="font-medium text-slate-800">{currentUni.nodalOfficer?.phone}</span>
-            </div>
-            <div className="flex justify-between py-1 border-b border-slate-50">
-              <span className="text-slate-500">General Email:</span>
-              <span className="font-medium text-slate-800 select-all">{currentUni.universityEmail}</span>
-            </div>
-            <div className="flex justify-between py-1">
-              <span className="text-slate-500">Landline / Phone:</span>
-              <span className="font-medium text-slate-800">{currentUni.universityPhone || 'N/A'}</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Accreditation & Institutional Metadata */}
-        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-2xs space-y-3">
-          <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider pb-2 border-b border-slate-100 flex items-center space-x-1.5">
-            <Award className="w-4 h-4 text-slate-700" />
-            <span>Accreditation & Institutional Info</span>
-          </h3>
-
-          <div className="space-y-2.5 text-xs">
-            <div className="flex justify-between py-1 border-b border-slate-50">
-              <span className="text-slate-500">NAAC Grade:</span>
-              <span className="px-2 py-0.5 rounded-md font-bold text-xs bg-slate-100 text-slate-800 border border-slate-200">
-                {currentUni.accreditation?.naacGrade || 'A'}
-              </span>
-            </div>
-            <div className="flex justify-between py-1 border-b border-slate-50">
-              <span className="text-slate-500">Accreditation Validity:</span>
-              <span className="font-medium text-slate-800">{currentUni.accreditation?.validity || '2028-12-31'}</span>
-            </div>
-            <div className="flex justify-between py-1 border-b border-slate-50">
-              <span className="text-slate-500">NIRF Ranking:</span>
-              <span className="font-bold text-slate-900">
-                {currentUni.accreditation?.nirfRanking ? `#${currentUni.accreditation.nirfRanking}` : 'State Tier / Unranked'}
-              </span>
-            </div>
-            <div className="flex justify-between py-1 border-b border-slate-50">
-              <span className="text-slate-500">Institution Category:</span>
-              <span className="font-medium text-slate-800">{currentUni.institutionCategory || 'University'}</span>
-            </div>
-            <div className="flex justify-between py-1">
-              <span className="text-slate-500">Official Website:</span>
-              {currentUni.website ? (
-                <a
-                  href={currentUni.website}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="font-medium text-blue-600 hover:underline flex items-center space-x-1"
-                >
-                  <span>{currentUni.website}</span>
-                  <ExternalLink className="w-3 h-3" />
-                </a>
-              ) : (
-                <span className="text-slate-400">N/A</span>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* 4. Focus Areas / Expertise Domains */}
-      <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-2xs space-y-3">
-        <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider flex items-center space-x-1.5">
-          <Layers className="w-4 h-4 text-slate-700" />
+      {/* 4. Focus Areas */}
+      <div className="bg-white p-4 sm:p-5 rounded-lg border border-slate-200/90 shadow-2xs space-y-3">
+        <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider flex items-center space-x-1.5 pb-2 border-b border-slate-100">
+          <Layers className="w-3.5 h-3.5 text-blue-600" />
           <span>Academic & Societal Research Focus Areas</span>
         </h3>
 
-        <div className="flex flex-wrap gap-2 pt-1">
+        <div className="flex flex-wrap gap-1.5 pt-1">
           {(currentUni.focusAreas || ['Water Management', 'Infrastructure', 'Education', 'Public Health']).map(
             (area, idx) => (
               <span
                 key={idx}
-                className="px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 text-slate-800 border border-slate-200"
+                className="px-2.5 py-1 rounded-md text-xs font-medium bg-slate-100 text-slate-700 border border-slate-200/80"
               >
                 {area}
               </span>
@@ -449,14 +243,14 @@ export const ViewUniversityDetails = ({ university, onBack, onEdit, onUpdateStat
         </div>
       </div>
 
-      {/* 5. Audit Trail & Registration Information */}
-      <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-slate-500">
-        <div className="flex items-center space-x-2">
-          <Clock className="w-4 h-4 text-slate-400" />
-          <span>Registered into Government Portal on <strong>{regDate}</strong></span>
+      {/* 5. Audit Trail */}
+      <div className="bg-slate-50/60 p-3 rounded-lg border border-slate-200/80 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-slate-400">
+        <div className="flex items-center space-x-1.5">
+          <Clock className="w-3.5 h-3.5 text-slate-400" />
+          <span>Registered into Government Portal on <strong className="text-slate-600">{regDate}</strong></span>
         </div>
         <div>
-          <span>Last active session: <strong>Active today</strong></span>
+          <span>Last active session: <strong className="text-slate-600">Active today</strong></span>
         </div>
       </div>
     </div>
