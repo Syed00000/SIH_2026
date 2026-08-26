@@ -8,6 +8,7 @@ import { ComingSoonPanel } from '../common/ComingSoonPanel.jsx';
 import { HeiHubPanel } from '../heis/heiHubPanel.jsx';
 import { ManageUniversitiesDashboard } from '../universities/ManageUniversitiesDashboard.jsx';
 import { ManageIndustriesDashboard } from '../industries/ManageIndustriesDashboard.jsx';
+import { ProjectsSolutionsDashboard } from '../projects/ProjectsSolutionsDashboard.jsx';
 import { GovernmentGisDashboard } from '../gis/GovernmentGisDashboard.jsx';
 import { AdminManagement } from '../governance/AdminManagement.jsx';
 import { OfficialPrintableDossier } from '../common/OfficialPrintableDossier.jsx';
@@ -165,6 +166,13 @@ export const GovernmentLayout = ({ onLogout }) => {
 
   const getTabTitle = (tab) => {
     switch (tab) {
+      case 'projects_solutions':
+      case 'projects_overview': return 'Projects & Solutions Dashboard';
+      case 'projects_active': return 'Active Projects in Progress';
+      case 'projects_proposals': return 'Solution Proposals Queue';
+      case 'projects_milestones': return 'Milestones & Stage Gate Compliance';
+      case 'projects_prototypes': return 'Prototypes & TRL Monitoring';
+      case 'projects_deployment': return 'Field Deployment & Telemetry';
       case 'triage': return 'Problem Triage & Verification';
       case 'heis': return 'HEI Hub & University Directory';
       case 'csr': return 'CSR Grants & Corporate Partnerships';
@@ -240,6 +248,18 @@ export const GovernmentLayout = ({ onLogout }) => {
                 selectedDistrict={selectedDistrict}
                 onSelectDistrict={(dist) => setSelectedDistrict(dist)}
               />
+            ) : activeTab === 'projects_solutions' || activeTab === 'projects_overview' ? (
+              <ProjectsSolutionsDashboard initialTab="recent_proposals" />
+            ) : activeTab === 'projects_active' ? (
+              <ProjectsSolutionsDashboard initialTab="in_progress" />
+            ) : activeTab === 'projects_proposals' ? (
+              <ProjectsSolutionsDashboard initialTab="recent_proposals" />
+            ) : activeTab === 'projects_milestones' ? (
+              <ProjectsSolutionsDashboard initialTab="milestones" />
+            ) : activeTab === 'projects_prototypes' ? (
+              <ProjectsSolutionsDashboard initialTab="prototypes" />
+            ) : activeTab === 'projects_deployment' ? (
+              <ProjectsSolutionsDashboard initialTab="deployment" />
             ) : activeTab === 'heis' ? (
               <HeiHubPanel
                 selectedDistrict={selectedDistrict}

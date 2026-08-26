@@ -22,7 +22,14 @@ import {
   Briefcase,
   Plus,
   Award,
-  Layers
+  Layers,
+  FolderKanban,
+  PlayCircle,
+  FileCheck,
+  CheckCircle2,
+  Cpu,
+  Rocket,
+  Lightbulb
 } from 'lucide-react';
 
 export const GovernmentSidebar = ({
@@ -35,6 +42,7 @@ export const GovernmentSidebar = ({
   onLogout
 }) => {
   const [openDropdowns, setOpenDropdowns] = useState({
+    projects_solutions: true,
     user_governance: true,
     reports: false
   });
@@ -49,6 +57,18 @@ export const GovernmentSidebar = ({
   const mainNavItems = [
     { id: 'overview', label: 'Overview', icon: LayoutDashboard },
     { id: 'triage', label: 'Problem Triage', icon: Layers },
+    {
+      id: 'projects_solutions',
+      label: 'Projects & Solutions',
+      icon: FolderKanban,
+      subItems: [
+        { id: 'projects_active', label: 'Active Projects', icon: PlayCircle },
+        { id: 'projects_proposals', label: 'Solution Proposals', icon: FileCheck },
+        { id: 'projects_milestones', label: 'Milestones', icon: CheckCircle2 },
+        { id: 'projects_prototypes', label: 'Prototypes', icon: Cpu },
+        { id: 'projects_deployment', label: 'Deployment / Validation', icon: Rocket }
+      ]
+    },
     { id: 'heis', label: 'HEI Hub', icon: GraduationCap },
     { id: 'csr', label: 'CSR Grants', icon: IndianRupee },
     { id: 'gis', label: 'GIS Map', icon: Map },
