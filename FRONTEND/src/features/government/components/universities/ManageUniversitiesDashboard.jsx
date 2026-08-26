@@ -7,7 +7,7 @@ import { UniversityTable } from './UniversityTable.jsx';
 import { AddUniversityWizard } from './AddUniversityWizard.jsx';
 import { ViewUniversityDetails } from './ViewUniversityDetails.jsx';
 import { EditUniversityView } from './EditUniversityView.jsx';
-import { DeleteUniversityModal } from './EditUniversityModal.jsx';
+import { DeleteUniversityModal } from './DeleteUniversityModal.jsx';
 import { JHARKHAND_DISTRICTS_DATA } from '../../data/jharkhandGisData.js';
 
 export const ManageUniversitiesDashboard = ({ initialMode = 'list' }) => {
