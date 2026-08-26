@@ -281,15 +281,28 @@ export const LoginForm = ({ onNavigate }) => {
           </form>
 
           {/* Footer Register Link */}
-          <div className="text-center text-xs text-slate-500 font-medium pt-3 border-t border-slate-100">
-            Don't have an account?{' '}
-            <button
-              type="button"
-              onClick={() => (onNavigate ? onNavigate('/register') : (window.location.href = '/register'))}
-              className="font-bold text-slate-900 hover:underline ml-1"
-            >
-              Create Account
-            </button>
+          <div className="text-center text-xs text-slate-500 font-medium pt-3 border-t border-slate-100 space-y-2">
+            <div>
+              Don't have an account?{' '}
+              <button
+                type="button"
+                onClick={() => (onNavigate ? onNavigate('/register') : (window.location.href = '/register'))}
+                className="font-bold text-slate-900 hover:underline ml-1 cursor-pointer"
+              >
+                Create Account
+              </button>
+            </div>
+            <div className="pt-1 border-t border-slate-100/80 text-[11.5px]">
+              <span className="text-slate-500">Industry / Partner Organization? </span>
+              <button
+                type="button"
+                onClick={() => (onNavigate ? onNavigate('/register/industry') : (window.location.href = '/register/industry'))}
+                className="font-bold text-blue-600 hover:underline cursor-pointer inline-flex items-center"
+              >
+                <span>Apply for Industry Onboarding</span>
+                <span className="ml-1 text-[9.5px] bg-blue-50 text-blue-700 font-bold px-1.5 py-0.2 rounded border border-blue-200">Govt. Review</span>
+              </button>
+            </div>
           </div>
         </CardContent>
       </Card>

@@ -24,7 +24,7 @@ export class IndustryRepository {
     });
   }
 
-  async findAll({ search, category, thematicDomain, status, accessStatus, district, page = 1, limit = 10 }) {
+  async findAll({ search, category, thematicDomain, status, accessStatus, verificationStatus, district, page = 1, limit = 10 }) {
     const query = {};
 
     if (search && search.trim()) {
@@ -57,6 +57,10 @@ export class IndustryRepository {
       query.accessStatus = accessStatus;
     }
 
+    if (verificationStatus && verificationStatus !== 'All') {
+      query.verificationStatus = verificationStatus;
+    }
+
     if (district && district !== 'All' && district !== 'All Districts') {
       query['address.district'] = new RegExp(`^${district}$`, 'i');
     }
@@ -81,11 +85,13 @@ export class IndustryRepository {
   }
 
   async getKpis() {
-    const [total, active, disabled, verified, totalFinancials, categoryDistribution, topCsr] = await Promise.all([
+    const [total, active, disabled, verified, pending, rejected, totalFinancials, categoryDistribution, topCsr] = await Promise.all([
       MongooseIndustry.countDocuments(),
       MongooseIndustry.countDocuments({ status: 'Active', accessStatus: 'Enabled' }),
       MongooseIndustry.countDocuments({ $or: [{ status: 'Disabled' }, { accessStatus: 'Disabled' }] }),
       MongooseIndustry.countDocuments({ verificationStatus: 'Verified' }),
+      MongooseIndustry.countDocuments({ verificationStatus: 'Pending' }),
+      MongooseIndustry.countDocuments({ verificationStatus: 'Rejected' }),
       MongooseIndustry.aggregate([
         {
           $group: {
@@ -114,10 +120,12 @@ export class IndustryRepository {
       activeIndustries: active,
       disabledIndustries: disabled,
       verifiedPartners: verified,
+      pendingReview: pending,
+      rejectedIndustries: rejected,
       totalCsrFundsCr: Number((financials.totalCsrFundsCr || 0).toFixed(2)),
       supportedProjects: financials.totalProjects || 0,
       verifiedLabs: financials.totalLabs || 0,
-      csrTrend: csrTrend.length > 0 ? csrTrend : [18.5, 12.0, 9.4, 6.8, 5.2, 4.2],
+      csrTrend: csrTrend.length > 0 ? csrTrend : [],
       categoryDistribution: categoryDistribution || []
     };
   }

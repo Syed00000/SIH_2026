@@ -265,6 +265,24 @@ export const RegisterForm = ({ onNavigate }) => {
                 </div>
               </div>
 
+              {formData.role === 'INDUSTRY' && (
+                <div className="p-3.5 bg-blue-50/90 border border-blue-200 rounded-xl text-xs text-blue-950 flex flex-col sm:flex-row sm:items-center justify-between gap-3 animate-fadeIn">
+                  <div>
+                    <p className="font-bold text-blue-900">Official Industry & Partner Onboarding</p>
+                    <p className="text-blue-700 text-[11.5px] mt-0.5">
+                      Partner with state universities & student researchers. Government of Jharkhand provisions verified credentials upon application review.
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => (onNavigate ? onNavigate('/register/industry') : (window.location.href = '/register/industry'))}
+                    className="bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs px-3.5 py-2 rounded-lg shrink-0 shadow-2xs cursor-pointer text-center"
+                  >
+                    Open Industry Application
+                  </button>
+                </div>
+              )}
+
               <div className="pt-4">
                 <Button onClick={handleNext} className="w-full py-2.5">
                   Continue to Account Details

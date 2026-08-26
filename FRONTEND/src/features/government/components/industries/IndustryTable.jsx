@@ -1,5 +1,5 @@
 import React from 'react';
-import { Eye, Pencil, PauseCircle, PlayCircle, Trash2, Building, ChevronLeft, ChevronRight, ChevronDown, Key } from 'lucide-react';
+import { Eye, Pencil, PauseCircle, PlayCircle, Trash2, Building, ChevronLeft, ChevronRight, ChevronDown, Key, ShieldCheck, CheckCircle2 } from 'lucide-react';
 import { TableSkeleton } from '../../../../shared/components/ui/tableSkeleton.jsx';
 
 const CATEGORY_BADGE_STYLES = {
@@ -36,7 +36,8 @@ export const IndustryTable = ({
   onEdit,
   onToggleStatus,
   onResetPassword,
-  onDelete
+  onDelete,
+  onApprove
 }) => {
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = Math.min(startIndex + itemsPerPage, totalRecords);
@@ -123,68 +124,97 @@ export const IndustryTable = ({
 
                     {/* 6. Status */}
                     <td className="py-3.5 px-4 whitespace-nowrap">
-                      <span
-                        className={`inline-flex items-center space-x-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold border ${
-                          isEnabled
-                            ? 'bg-emerald-50 text-emerald-700 border-emerald-200/80'
-                            : 'bg-red-50 text-red-600 border-red-200/80'
-                        }`}
-                      >
+                      {ind.verificationStatus === 'Pending' ? (
+                        <span className="inline-flex items-center space-x-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold border bg-amber-50 text-amber-800 border-amber-200">
+                          <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
+                          <span>Pending Review</span>
+                        </span>
+                      ) : ind.verificationStatus === 'Rejected' ? (
+                        <span className="inline-flex items-center space-x-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold border bg-rose-50 text-rose-700 border-rose-200">
+                          <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />
+                          <span>Rejected</span>
+                        </span>
+                      ) : (
                         <span
-                          className={`w-1.5 h-1.5 rounded-full ${
-                            isEnabled ? 'bg-emerald-500' : 'bg-red-500'
+                          className={`inline-flex items-center space-x-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold border ${
+                            isEnabled
+                              ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                              : 'bg-red-50 text-red-600 border-red-200'
                           }`}
-                        />
-                        <span>{isEnabled ? 'Active' : 'Disabled'}</span>
-                      </span>
+                        >
+                          <span
+                            className={`w-1.5 h-1.5 rounded-full ${
+                              isEnabled ? 'bg-emerald-500' : 'bg-red-500'
+                            }`}
+                          />
+                          <span>{isEnabled ? 'Active' : 'Disabled'}</span>
+                        </span>
+                      )}
                     </td>
 
                     {/* 7. Actions */}
                     <td className="py-3.5 px-4 text-right whitespace-nowrap">
                       <div className="flex items-center justify-end space-x-1.5">
+                        {/* Pending Review Action */}
+                        {ind.verificationStatus === 'Pending' && (
+                          <button
+                            onClick={() => onApprove?.(ind)}
+                            className="h-7 px-2.5 rounded bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[11px] flex items-center space-x-1 transition-colors cursor-pointer shadow-2xs"
+                            title="Review and Approve Application"
+                          >
+                            <ShieldCheck className="w-3.5 h-3.5" />
+                            <span>Review & Approve</span>
+                          </button>
+                        )}
+
                         {/* View Action */}
                         <button
                           onClick={() => onView?.(ind)}
-                          className="w-7 h-7 rounded border border-slate-200 flex items-center justify-center text-blue-600 hover:bg-blue-50 hover:border-blue-300 transition-colors cursor-pointer shadow-2xs"
+                          className="w-7 h-7 rounded border border-slate-200 flex items-center justify-center text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors cursor-pointer shadow-2xs"
                           title="View Details"
                         >
                           <Eye className="w-3.5 h-3.5" />
                         </button>
 
-                        {/* Edit Action */}
-                        <button
-                          onClick={() => onEdit?.(ind)}
-                          className="w-7 h-7 rounded border border-slate-200 flex items-center justify-center text-blue-600 hover:bg-blue-50 hover:border-blue-300 transition-colors cursor-pointer shadow-2xs"
-                          title="Edit Organization"
-                        >
-                          <Pencil className="w-3.5 h-3.5" />
-                        </button>
+                        {/* Actions for Active / Verified records */}
+                        {ind.verificationStatus !== 'Pending' && (
+                          <>
+                            {/* Edit Action */}
+                            <button
+                              onClick={() => onEdit?.(ind)}
+                              className="w-7 h-7 rounded border border-slate-200 flex items-center justify-center text-blue-600 hover:bg-blue-50 hover:border-blue-300 transition-colors cursor-pointer shadow-2xs"
+                              title="Edit Organization"
+                            >
+                              <Pencil className="w-3.5 h-3.5" />
+                            </button>
 
-                        {/* Reset Password Action */}
-                        <button
-                          onClick={() => onResetPassword?.(ind)}
-                          className="w-7 h-7 rounded border border-slate-200 flex items-center justify-center text-indigo-600 hover:bg-indigo-50 hover:border-indigo-300 transition-colors cursor-pointer shadow-2xs"
-                          title="Regenerate Credentials"
-                        >
-                          <Key className="w-3.5 h-3.5" />
-                        </button>
+                            {/* Reset Password Action */}
+                            <button
+                              onClick={() => onResetPassword?.(ind)}
+                              className="w-7 h-7 rounded border border-slate-200 flex items-center justify-center text-indigo-600 hover:bg-indigo-50 hover:border-indigo-300 transition-colors cursor-pointer shadow-2xs"
+                              title="Regenerate Credentials"
+                            >
+                              <Key className="w-3.5 h-3.5" />
+                            </button>
 
-                        {/* Enable / Disable Action */}
-                        <button
-                          onClick={() => onToggleStatus?.(ind)}
-                          className={`w-7 h-7 rounded border flex items-center justify-center transition-colors cursor-pointer shadow-2xs ${
-                            isEnabled
-                              ? 'border-amber-200 text-amber-600 hover:bg-amber-50 hover:border-amber-300'
-                              : 'border-emerald-200 text-emerald-600 hover:bg-emerald-50 hover:border-emerald-300'
-                          }`}
-                          title={isEnabled ? 'Disable Account' : 'Enable Account'}
-                        >
-                          {isEnabled ? (
-                            <PauseCircle className="w-3.5 h-3.5" />
-                          ) : (
-                            <PlayCircle className="w-3.5 h-3.5" />
-                          )}
-                        </button>
+                            {/* Enable / Disable Action */}
+                            <button
+                              onClick={() => onToggleStatus?.(ind)}
+                              className={`w-7 h-7 rounded border flex items-center justify-center transition-colors cursor-pointer shadow-2xs ${
+                                isEnabled
+                                  ? 'border-amber-200 text-amber-600 hover:bg-amber-50 hover:border-amber-300'
+                                  : 'border-emerald-200 text-emerald-600 hover:bg-emerald-50 hover:border-emerald-300'
+                              }`}
+                              title={isEnabled ? 'Disable Account' : 'Enable Account'}
+                            >
+                              {isEnabled ? (
+                                <PauseCircle className="w-3.5 h-3.5" />
+                              ) : (
+                                <PlayCircle className="w-3.5 h-3.5" />
+                              )}
+                            </button>
+                          </>
+                        )}
 
                         {/* Delete Action */}
                         <button

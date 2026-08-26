@@ -16,6 +16,9 @@ export const industryService = {
     if (params.status && params.status !== 'All' && params.status !== 'All Status') {
       query.append('status', params.status);
     }
+    if (params.verificationStatus && params.verificationStatus !== 'All') {
+      query.append('verificationStatus', params.verificationStatus);
+    }
     if (params.district && params.district !== 'All' && params.district !== 'All Districts') {
       query.append('district', params.district);
     }
@@ -37,11 +40,45 @@ export const industryService = {
         activeIndustries: 0,
         disabledIndustries: 0,
         verifiedPartners: 0,
+        pendingReview: 0,
         totalCsrFundsCr: 0,
         supportedProjects: 0,
         verifiedLabs: 0
       }
     };
+  },
+
+  /**
+   * Public Self-Registration Application (Without applicant password)
+   */
+  async applyIndustry(payload) {
+    const res = await apiClient.post('admin/industries/apply', payload);
+    if (res?.data) {
+      return res.data;
+    }
+    throw new Error(res?.message || 'Failed to submit application');
+  },
+
+  /**
+   * Government Admin: Approve Application & Dispatch Credentials
+   */
+  async approveApplication(id, payload = {}) {
+    const res = await apiClient.post(`admin/industries/${id}/approve`, payload);
+    if (res?.data) {
+      return res.data;
+    }
+    throw new Error(res?.message || 'Failed to approve application');
+  },
+
+  /**
+   * Government Admin: Reject Application
+   */
+  async rejectApplication(id, payload = {}) {
+    const res = await apiClient.post(`admin/industries/${id}/reject`, payload);
+    if (res?.data) {
+      return res.data;
+    }
+    throw new Error(res?.message || 'Failed to reject application');
   },
 
   /**
