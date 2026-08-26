@@ -11,8 +11,10 @@ import { getDb } from './infrastructure/database/mongo/client.js';
 
 // Route Imports
 import authRoutes from './modules/auth/presentation/routes.js';
-import heisRoutes from './modules/heis/presentation/routes.js';
-import adminRoutes from './modules/government/presentation/adminRoutes.js';
+import heisRoutes from './modules/government/heis/presentation/routes.js';
+import industryRoutes from './modules/government/industries/presentation/routes.js';
+import adminRoutes from './modules/government/admins/presentation/routes.js';
+import overviewRoutes from './modules/government/overview/presentation/routes.js';
 
 const app = express();
 
@@ -101,7 +103,10 @@ app.get('/health/ready', async (req, res, next) => {
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/admin/heis', heisRoutes);
 app.use('/api/v1/heis', heisRoutes);
+app.use('/api/v1/admin/industries', industryRoutes);
+app.use('/api/v1/industries', industryRoutes);
 app.use('/api/v1/government/admins', adminRoutes);
+app.use('/api/v1/government/overview', overviewRoutes);
 
 // 7. Route fallback (404)
 app.use((req, res, next) => {

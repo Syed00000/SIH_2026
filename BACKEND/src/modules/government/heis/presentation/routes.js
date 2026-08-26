@@ -3,7 +3,7 @@ import { universityController } from './controller.js';
 
 const router = Router();
 
-// Public / Protected Routes for HEI Management
+// Routes for HEI Management
 router.get('/', (req, res, next) => universityController.getUniversities(req, res, next));
 router.post('/', (req, res, next) => universityController.createUniversity(req, res, next));
 router.get('/:id', (req, res, next) => universityController.getUniversityById(req, res, next));

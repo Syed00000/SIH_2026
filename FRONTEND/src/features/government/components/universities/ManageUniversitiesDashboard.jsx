@@ -24,6 +24,7 @@ import { ViewUniversityDetails } from './ViewUniversityDetails.jsx';
 import { EditUniversityView } from './EditUniversityView.jsx';
 import { DeleteUniversityModal } from './EditUniversityModal.jsx';
 import { JHARKHAND_DISTRICTS_DATA } from '../../data/jharkhandGisData.js';
+import { TableSkeleton } from '../../../../shared/components/ui/tableSkeleton.jsx';
 
 export const ManageUniversitiesDashboard = ({ initialMode = 'list' }) => {
   const [viewMode, setViewMode] = useState(initialMode); // 'list' | 'add' | 'view' | 'edit'
@@ -434,12 +435,7 @@ export const ManageUniversitiesDashboard = ({ initialMode = 'list' }) => {
             </thead>
             <tbody className="divide-y divide-slate-100 text-xs">
               {loading ? (
-                <tr>
-                  <td colSpan="7" className="py-12 text-center text-slate-500">
-                    <div className="inline-block animate-spin w-5 h-5 border-2 border-slate-900 border-t-transparent rounded-full mb-2"></div>
-                    <div className="text-xs font-bold text-slate-700">Loading universities directly from database...</div>
-                  </td>
-                </tr>
+                <TableSkeleton rows={6} columns={7} />
               ) : records.length === 0 ? (
                 <tr>
                   <td colSpan="7" className="py-12 text-center text-slate-500">

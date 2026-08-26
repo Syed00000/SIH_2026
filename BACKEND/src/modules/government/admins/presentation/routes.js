@@ -7,8 +7,8 @@ import {
   updateAdmin,
   updateAdminStatus,
   deleteAdmin
-} from './adminController.js';
-import { rateLimiter } from '../../../shared/security/rate-limiter.js';
+} from './controller.js';
+import { rateLimiter } from '../../../../shared/security/rate-limiter.js';
 
 const router = Router();
 
@@ -28,4 +28,3 @@ router.patch('/:id/status', adminLimiter, updateAdminStatus);
 router.delete('/:id', adminLimiter, deleteAdmin);
 
 export default router;
-

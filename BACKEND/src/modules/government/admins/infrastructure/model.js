@@ -26,7 +26,7 @@ const adminSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
-    collection: 'admins' // Explicitly maps to 'admins' collection in MongoDB
+    collection: 'admins'
   }
 );
 
@@ -40,4 +40,5 @@ adminSchema.set('toJSON', {
 });
 
 export const Admin = mongoose.models.Admin || mongoose.model('Admin', adminSchema);
+export const MongooseAdmin = Admin;
 export default Admin;

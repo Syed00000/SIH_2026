@@ -6,6 +6,7 @@ import { RegisterForm } from '../features/auth/components/RegisterForm.jsx';
 import { VerifyEmail } from '../features/auth/components/VerifyEmail.jsx';
 import { ForgotPassword } from '../features/auth/components/ForgotPassword.jsx';
 import { ResetPassword } from '../features/auth/components/ResetPassword.jsx';
+import { IndustryRegistrationPage } from '../features/auth/components/IndustryRegistrationPage.jsx';
 import { DashboardContainer } from '../features/dashboard/components/DashboardContainer.jsx';
 
 export function Router() {
@@ -60,7 +61,8 @@ export function Router() {
 
   const renderComponent = () => {
     // 1. PUBLIC GUEST ROUTES (Redirect to /dashboard if already logged in)
-    if (['/login', '/register', '/forgot-password', '/reset-password', '/verify-email'].includes(currentPath)) {
+    const publicRoutes = ['/login', '/register', '/register/industry', '/apply-industry', '/forgot-password', '/reset-password', '/verify-email'];
+    if (publicRoutes.includes(currentPath)) {
       if (isAuthenticated) {
         return <DashboardContainer onNavigate={navigate} />;
       }
@@ -70,6 +72,9 @@ export function Router() {
           return <LoginForm onNavigate={navigate} />;
         case '/register':
           return <RegisterForm onNavigate={navigate} />;
+        case '/register/industry':
+        case '/apply-industry':
+          return <IndustryRegistrationPage onNavigate={navigate} />;
         case '/forgot-password':
           return <ForgotPassword onNavigate={navigate} />;
         case '/reset-password':

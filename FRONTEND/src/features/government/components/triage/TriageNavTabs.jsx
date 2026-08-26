@@ -6,29 +6,29 @@ export const TriageNavTabs = ({ activeTab, onSelectTab }) => {
   const tabs = [
     {
       id: 'classification',
-      title: 'Domain Auto-Classification',
-      description: 'Zero-shot deep classification & sector taxonomy mapping',
+      title: 'Domain Classification',
+      description: 'Automatic sector categorization & department routing',
       icon: Cpu,
       accentColor: 'border-blue-500 text-blue-600 bg-blue-50/60'
     },
     {
       id: 'override',
-      title: 'Manual Override',
-      description: 'Departmental rerouting, taxonomy updates & audit logging',
+      title: 'Department Override',
+      description: 'Manual reassignment, sector updates & audit tracking',
       icon: Sliders,
       accentColor: 'border-amber-500 text-amber-600 bg-amber-50/60'
     },
     {
       id: 'deduplication',
-      title: 'Deduplication Matrix',
-      description: 'Semantic cosine clustering & duplicate issue merging',
+      title: 'Duplicate Review',
+      description: 'Identify and merge identical citizen problem reports',
       icon: Layers,
       accentColor: 'border-emerald-500 text-emerald-600 bg-emerald-50/60'
     },
     {
       id: 'escalation',
       title: 'Priority Escalation',
-      description: 'Multi-factor risk scoring & SLA breach acceleration',
+      description: 'High-severity issues & fast-track department dispatch',
       icon: AlertTriangle,
       accentColor: 'border-rose-500 text-rose-600 bg-rose-50/60'
     }
