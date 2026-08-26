@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { JHARKHAND_DISTRICTS_LIST } from '../../data/mockGovernmentData.js';
 import { ADMIN_ROLES_LIST, ADMIN_STATUS_LIST } from '../../data/mockAdminData.js';
+import { TableSkeleton } from '../../../../shared/components/ui/tableSkeleton.jsx';
 
 const AVATAR_COLOR_MAP = {
   purple: 'bg-purple-100 text-purple-700 border-purple-200',
@@ -56,6 +57,7 @@ const getInitials = (name = '') => {
 
 export const AdminDirectoryTable = ({
   admins = [],
+  isLoading = false,
   onViewAdmin,
   onEditAdmin,
   onToggleStatus,
@@ -150,7 +152,9 @@ export const AdminDirectoryTable = ({
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100 text-xs">
-            {paginatedAdmins.length === 0 ? (
+            {isLoading ? (
+              <TableSkeleton rows={6} columns={7} />
+            ) : paginatedAdmins.length === 0 ? (
               <tr>
                 <td colSpan={7} className="py-12 text-center text-slate-400">
                   <UserCheck className="w-8 h-8 mx-auto text-slate-300 mb-2" />

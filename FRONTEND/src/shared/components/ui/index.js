@@ -8,3 +8,4 @@ export * from './tabs.jsx';
 export * from './progress.jsx';
 export * from './alert.jsx';
 export * from './skeleton.jsx';
+export * from './tableSkeleton.jsx';

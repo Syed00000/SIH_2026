@@ -25,10 +25,10 @@ export const PriorityAiTriageFeed = ({ feed = [], onApprove, onReject, onViewAll
       <div className="flex items-center justify-between pb-2 mb-2 border-b border-slate-100">
         <div>
           <h3 className="text-sm font-bold text-slate-900 tracking-tight">
-            Priority AI Triage Feed
+            Priority Problem Feed
           </h3>
           <p className="text-xs text-slate-500 font-medium">
-            Real-time problem classification & suggestions
+            Real-time problem review & department routing
           </p>
         </div>
         <button
@@ -121,7 +121,7 @@ export const PriorityAiTriageFeed = ({ feed = [], onApprove, onReject, onViewAll
           onClick={onViewAll}
           className="inline-flex items-center text-xs font-bold text-blue-600 hover:text-blue-700 hover:underline cursor-pointer"
         >
-          <span>View Full AI Triage Queue</span>
+          <span>View All Problem Submissions</span>
           <ArrowRight className="w-3.5 h-3.5 ml-1" />
         </button>
       </div>

@@ -19,6 +19,7 @@ import {
   History,
   ShieldCheck,
   Building2,
+  Briefcase,
   Plus,
   Award,
   Layers
@@ -47,7 +48,7 @@ export const GovernmentSidebar = ({
 
   const mainNavItems = [
     { id: 'overview', label: 'Overview', icon: LayoutDashboard },
-    { id: 'triage', label: 'AI Triage & Override', icon: Bot, isAi: true },
+    { id: 'triage', label: 'Problem Triage', icon: Layers },
     { id: 'heis', label: 'HEI Hub', icon: GraduationCap },
     { id: 'csr', label: 'CSR Grants', icon: IndianRupee },
     { id: 'gis', label: 'GIS Map', icon: Map },
@@ -57,6 +58,7 @@ export const GovernmentSidebar = ({
       icon: Users,
       subItems: [
         { id: 'governance_universities', label: 'Manage Universities', icon: Building2 },
+        { id: 'governance_industries', label: 'Manage Industries', icon: Briefcase },
         { id: 'users_admin', label: 'User Admin', icon: ShieldCheck },
         { id: 'users_audit', label: 'Audit Logs', icon: FileText }
       ]
@@ -140,21 +142,10 @@ export const GovernmentSidebar = ({
                   title={item.label}
                 >
                   <div className="flex items-center space-x-3 min-w-0">
-                    {item.isAi ? (
-                      <div
-                        className={`w-4 h-4 rounded flex items-center justify-center text-[9px] font-black tracking-tighter shrink-0 ${isParentActive && !hasSubItems
-                            ? 'border border-white text-white'
-                            : 'border border-slate-400 text-slate-600'
-                          }`}
-                      >
-                        AI
-                      </div>
-                    ) : (
-                      <IconComponent
-                        className={`w-4 h-4 shrink-0 ${isParentActive && !hasSubItems ? 'text-white' : 'text-slate-500'
-                          }`}
-                      />
-                    )}
+                    <IconComponent
+                      className={`w-4 h-4 shrink-0 ${isParentActive && !hasSubItems ? 'text-white' : 'text-slate-500'
+                        }`}
+                    />
                     {isSidebarExpanded && (
                       <span className="truncate tracking-tight">{item.label}</span>
                     )}

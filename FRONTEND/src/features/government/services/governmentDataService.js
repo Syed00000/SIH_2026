@@ -35,14 +35,27 @@ class GovernmentDataService {
     });
   }
 
+  async fetchLiveDatabaseStats() {
+    try {
+      const res = await fetch('http://localhost:3000/api/v1/government/overview/stats');
+      if (res.ok) {
+        const json = await res.json();
+        return json.data;
+      }
+    } catch {
+      // ignore
+    }
+    return null;
+  }
+
   getFilteredKpis(district = 'All', sector = 'All') {
     const approvedCount = this.getTriageFeed().filter(t => t.status === 'APPROVED').length;
     if (district === 'All' && sector === 'All') {
       const baseSolved = 10850 + approvedCount;
       return {
         problemsReceived: { value: "12,450", numeric: 12450, growthText: "+320 this week", growthDirection: "up" },
-        activeHeis: { value: "340", numeric: 340, growthText: "+18 this month", growthDirection: "up" },
-        csrFunds: { value: "₹4.2 Cr", numeric: 42000000, growthText: "+₹1.1 Cr this month", growthDirection: "up" },
+        activeHeis: { value: "12", numeric: 12, growthText: "100% Accredited", growthDirection: "up" },
+        csrFunds: { value: "₹0.00 Cr", numeric: 0, growthText: "Committed Funds", growthDirection: "up" },
         problemsSolved: { value: baseSolved.toLocaleString(), numeric: baseSolved, growthText: `+${410 + approvedCount} this week`, growthDirection: "up" }
       };
     }
@@ -50,8 +63,8 @@ class GovernmentDataService {
     const feat = JHARKHAND_GEOJSON.features.find(f => f.properties.name.toLowerCase() === district.toLowerCase());
     let baseProblems = feat ? feat.properties.problems : 12450;
     let baseSolved = feat ? feat.properties.solved + approvedCount : 10850 + approvedCount;
-    let baseHeis = feat ? feat.properties.activeHeis : 340;
-    let baseFunds = feat ? `₹${(feat.properties.problems * 0.03).toFixed(1)}L` : '₹4.2 Cr';
+    let baseHeis = feat ? feat.properties.activeHeis : 12;
+    let baseFunds = feat ? `₹0.00 Cr` : '₹0.00 Cr';
 
     if (sector !== 'All') {
       baseProblems = Math.round(baseProblems * 0.22);
@@ -60,8 +73,8 @@ class GovernmentDataService {
 
     return {
       problemsReceived: { value: baseProblems.toLocaleString(), numeric: baseProblems, growthText: "+28 this week", growthDirection: "up" },
-      activeHeis: { value: baseHeis.toString(), numeric: baseHeis, growthText: "+2 this month", growthDirection: "up" },
-      csrFunds: { value: baseFunds, numeric: 1200000, growthText: "+₹2.5L this month", growthDirection: "up" },
+      activeHeis: { value: baseHeis.toString(), numeric: baseHeis, growthText: "Operational", growthDirection: "up" },
+      csrFunds: { value: baseFunds, numeric: 1200000, growthText: "Committed", growthDirection: "up" },
       problemsSolved: { value: baseSolved.toLocaleString(), numeric: baseSolved, growthText: "+34 this week", growthDirection: "up" }
     };
   }

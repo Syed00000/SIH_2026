@@ -105,8 +105,57 @@ export const sendPasswordResetEmail = async ({ email, name, otp, code }) => {
   return info;
 };
 
+export const sendIndustryOnboardingEmail = async ({ email, organizationName, spocName, industryId, loginEmail, temporaryPassword }) => {
+  if (!email) throw new Error('Recipient email is required for industry onboarding notification.');
+
+  const mailOptions = {
+    from: `"JoharSetu Jharkhand Administration" <${emailUser}>`,
+    to: email,
+    subject: `🏛️ Welcome to JoharSetu — Industry & Partner Credentials for ${organizationName}`,
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px;">
+        <div style="text-align: center; margin-bottom: 20px; border-bottom: 2px solid #0d1b3e; padding-bottom: 16px;">
+          <h2 style="color: #0d1b3e; margin: 0;">Government of Jharkhand</h2>
+          <p style="color: #64748b; font-size: 13px; margin: 4px 0 0 0;">Department of Higher & Technical Education &bull; JoharSetu Innovation Hub</p>
+        </div>
+        
+        <div style="padding: 20px; background-color: #f8fafc; border-radius: 8px; border: 1px solid #cbd5e1;">
+          <h3 style="color: #0f172a; font-size: 16px; margin-top: 0;">Dear ${spocName || 'Nodal Representative'},</h3>
+          <p style="color: #334155; font-size: 14px; line-height: 1.6;">
+            Your organization <strong>${organizationName}</strong> has been officially registered and onboarded onto the <strong>JoharSetu Industry & Partner Portal</strong>.
+          </p>
+          
+          <div style="margin: 20px 0; background-color: #ffffff; border: 1px solid #e2e8f0; border-left: 4px solid #16a34a; padding: 16px; border-radius: 6px;">
+            <p style="margin: 4px 0; font-size: 13px; color: #475569;"><strong>Industry Entity ID:</strong> <span style="font-family: monospace; color: #0d1b3e;">${industryId}</span></p>
+            <p style="margin: 4px 0; font-size: 13px; color: #475569;"><strong>Login Username / Email:</strong> <span style="font-family: monospace; color: #0d1b3e;">${loginEmail}</span></p>
+            <p style="margin: 4px 0; font-size: 13px; color: #475569;"><strong>Temporary Access Key:</strong> <span style="font-family: monospace; color: #16a34a; font-weight: bold; background: #f0fdf4; padding: 2px 6px; border-radius: 4px;">${temporaryPassword}</span></p>
+          </div>
+
+          <p style="color: #475569; font-size: 13px; line-height: 1.5;">
+            Please log in at <a href="http://localhost:5173/login" style="color: #2563eb; font-weight: bold;">JoharSetu Portal</a> and update your password on your first login.
+          </p>
+          <p style="color: #dc2626; font-size: 12px; margin-bottom: 0;">
+            ⚠️ <em>For security purposes, do not share these credentials with unauthorized personnel.</em>
+          </p>
+        </div>
+
+        <div style="margin-top: 20px; text-align: center; color: #94a3b8; font-size: 11px;">
+          &copy; 2026 Government of Jharkhand. All rights reserved.
+        </div>
+      </div>
+    `
+  };
+
+  logger.info({ to: email, industryId }, 'Dispatching live SMTP industry onboarding email...');
+  const info = await transporter.sendMail(mailOptions);
+  logger.info({ messageId: info.messageId, recipient: email }, '✅ Live SMTP Industry Onboarding Email sent successfully!');
+  return info;
+};
+
 export default {
   transporter,
   sendVerificationEmail,
-  sendPasswordResetEmail
+  sendPasswordResetEmail,
+  sendIndustryOnboardingEmail
 };
+

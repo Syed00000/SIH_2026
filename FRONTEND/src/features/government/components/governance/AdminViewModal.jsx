@@ -1,8 +1,19 @@
-import React from 'react';
-import { X, ShieldCheck, Mail, Phone, MapPin, Calendar, Clock, User } from 'lucide-react';
+import React, { useState } from 'react';
+import { X, ShieldCheck, Mail, Phone, MapPin, Calendar, Clock, User, KeyRound, Eye, EyeOff, Copy, Check } from 'lucide-react';
 
 export const AdminViewModal = ({ isOpen, onClose, admin }) => {
+  const [showPassword, setShowPassword] = useState(false);
+  const [copiedField, setCopiedField] = useState(null);
+
   if (!isOpen || !admin) return null;
+
+  const handleCopy = (text, field) => {
+    navigator.clipboard.writeText(text);
+    setCopiedField(field);
+    setTimeout(() => setCopiedField(null), 2000);
+  };
+
+  const loginPassword = admin.password || 'Admin@Jharkhand2026!';
 
   return (
     <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
@@ -15,7 +26,7 @@ export const AdminViewModal = ({ isOpen, onClose, admin }) => {
             </div>
             <div>
               <h3 className="text-sm font-bold text-slate-900">Administrator Profile</h3>
-              <p className="text-[11px] text-slate-500 font-medium">Access details and jurisdiction</p>
+              <p className="text-[11px] text-slate-500 font-medium">Access details and credentials</p>
             </div>
           </div>
           <button
@@ -27,7 +38,7 @@ export const AdminViewModal = ({ isOpen, onClose, admin }) => {
         </div>
 
         {/* Body */}
-        <div className="p-6 space-y-5">
+        <div className="p-6 space-y-4">
           {/* Main User Banner */}
           <div className="flex items-center space-x-4 p-4 rounded-xl bg-slate-50 border border-slate-100">
             <div className="w-12 h-12 rounded-full bg-blue-600 text-white flex items-center justify-center text-base font-bold shadow-xs">
@@ -49,9 +60,59 @@ export const AdminViewModal = ({ isOpen, onClose, admin }) => {
             </div>
           </div>
 
+          {/* Credentials Box */}
+          <div className="p-3.5 bg-blue-50/70 border border-blue-200/80 rounded-xl space-y-2.5 text-xs">
+            <span className="font-bold text-slate-900 text-[11px] flex items-center space-x-1.5 border-b border-blue-200/60 pb-1.5">
+              <KeyRound className="w-3.5 h-3.5 text-blue-600" />
+              <span>Login Credentials</span>
+            </span>
+
+            {/* Email */}
+            <div>
+              <span className="text-[10px] text-slate-500 font-semibold block mb-0.5">Login Email / Username</span>
+              <div className="flex items-center justify-between bg-white px-2.5 py-1.5 rounded border border-blue-200">
+                <span className="font-mono font-bold text-slate-800 text-[11px] truncate mr-2">{admin.email}</span>
+                <button
+                  type="button"
+                  onClick={() => handleCopy(admin.email, 'email')}
+                  className="text-slate-400 hover:text-blue-600 p-0.5 cursor-pointer shrink-0"
+                  title="Copy Email"
+                >
+                  {copiedField === 'email' ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
+                </button>
+              </div>
+            </div>
+
+            {/* Password */}
+            <div>
+              <span className="text-[10px] text-slate-500 font-semibold block mb-0.5">Password</span>
+              <div className="flex items-center justify-between bg-white px-2.5 py-1.5 rounded border border-blue-200">
+                <span className="font-mono font-bold text-slate-800 text-[11px] tracking-wider">
+                  {showPassword ? loginPassword : '••••••••••••'}
+                </span>
+                <div className="flex items-center space-x-1 shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="text-slate-400 hover:text-slate-700 p-0.5 cursor-pointer"
+                  >
+                    {showPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleCopy(loginPassword, 'password')}
+                    className="text-slate-400 hover:text-blue-600 p-0.5 cursor-pointer"
+                  >
+                    {copiedField === 'password' ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
           {/* Details Grid */}
-          <div className="space-y-3 text-xs">
-            <div className="flex items-center justify-between py-2 border-b border-slate-100">
+          <div className="space-y-2.5 text-xs">
+            <div className="flex items-center justify-between py-1.5 border-b border-slate-100">
               <span className="text-slate-500 flex items-center space-x-2">
                 <Phone className="w-3.5 h-3.5 text-slate-400" />
                 <span>Contact Number</span>
@@ -59,7 +120,7 @@ export const AdminViewModal = ({ isOpen, onClose, admin }) => {
               <span className="font-bold text-slate-900">{admin.mobileNumber}</span>
             </div>
 
-            <div className="flex items-center justify-between py-2 border-b border-slate-100">
+            <div className="flex items-center justify-between py-1.5 border-b border-slate-100">
               <span className="text-slate-500 flex items-center space-x-2">
                 <MapPin className="w-3.5 h-3.5 text-slate-400" />
                 <span>Assigned District</span>
@@ -67,7 +128,7 @@ export const AdminViewModal = ({ isOpen, onClose, admin }) => {
               <span className="font-bold text-slate-900">{admin.district}</span>
             </div>
 
-            <div className="flex items-center justify-between py-2 border-b border-slate-100">
+            <div className="flex items-center justify-between py-1.5 border-b border-slate-100">
               <span className="text-slate-500 flex items-center space-x-2">
                 <Clock className="w-3.5 h-3.5 text-slate-400" />
                 <span>Last Login Session</span>
@@ -75,7 +136,7 @@ export const AdminViewModal = ({ isOpen, onClose, admin }) => {
               <span className="font-medium text-slate-700">{admin.lastLogin}</span>
             </div>
 
-            <div className="flex items-center justify-between py-2 border-b border-slate-100">
+            <div className="flex items-center justify-between py-1.5 border-b border-slate-100">
               <span className="text-slate-500 flex items-center space-x-2">
                 <ShieldCheck className="w-3.5 h-3.5 text-slate-400" />
                 <span>Account Status</span>
