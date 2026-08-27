@@ -10,5 +10,16 @@ export { CSRComplianceChecklist } from './CSRComplianceChecklist.jsx';
 export { CSRClosureReporting } from './CSRClosureReporting.jsx';
 export { CSRDisbursalModesTable } from './CSRDisbursalModesTable.jsx';
 export { AddProposalModal } from './AddProposalModal.jsx';
+export { ProposalDetailModal } from './ProposalDetailModal.jsx';
+export { PaymentDetailModal } from './PaymentDetailModal.jsx';
+export { InitiateDisbursalModal } from './InitiateDisbursalModal.jsx';
+export { EscrowVaultsModal } from './EscrowVaultsModal.jsx';
+export { TdsComplianceModal } from './TdsComplianceModal.jsx';
+export { GeoVerificationModal } from './GeoVerificationModal.jsx';
+export { Gfr12AModal } from './Gfr12AModal.jsx';
+export { CaAuditReportModal } from './CaAuditReportModal.jsx';
+export { GatewayConfigModal } from './GatewayConfigModal.jsx';
+export { UnspentSweepModal } from './UnspentSweepModal.jsx';
+export { SourceDetailsModal } from './SourceDetailsModal.jsx';
 
 export default CSRGrantsLifecycleDashboard;

@@ -898,6 +898,158 @@ export const exportUniversityDirectoryPdf = (universities = [], filters = {}) =>
   printWindow.document.close();
 };
 
+export const exportCsrLifecycleReportPdf = ({
+  proposals = [],
+  ledger = [],
+  filterSource = 'All Sources'
+} = {}) => {
+  const printWindow = window.open('', '_blank', 'width=950,height=750');
+  if (!printWindow) {
+    alert('Please allow popups to export the PDF report.');
+    return;
+  }
+
+  const currentDate = new Date().toLocaleDateString('en-IN', {
+    day: '2-digit',
+    month: 'long',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+
+  const html = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>CSR & Grants Fund Lifecycle Audit Report - Government of Jharkhand</title>
+  <style>
+    @page { size: A4 portrait; margin: 12mm 10mm; }
+    * { box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #0f172a; margin: 0; padding: 0; font-size: 11px; line-height: 1.4; }
+    .header { display: flex; justify-content: space-between; border-bottom: 2px solid #0d1b3e; padding-bottom: 10px; margin-bottom: 14px; }
+    .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 16px; }
+    .kpi-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px; }
+    .kpi-card .val { font-size: 16px; font-weight: bold; color: #0d1b3e; }
+    .kpi-card .lbl { font-size: 9.5px; color: #64748b; text-transform: uppercase; font-weight: bold; }
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 10.5px; }
+    th { background: #f1f5f9; color: #475569; font-weight: bold; text-align: left; padding: 7px 8px; border-bottom: 1px solid #cbd5e1; text-transform: uppercase; font-size: 9.5px; }
+    td { padding: 7px 8px; border-bottom: 1px solid #f1f5f9; }
+    .sec-title { font-size: 12px; font-weight: bold; text-transform: uppercase; color: #0d1b3e; border-bottom: 1px solid #e2e8f0; padding-bottom: 4px; margin-top: 16px; }
+    .footer { border-top: 1px solid #cbd5e1; margin-top: 25px; padding-top: 10px; display: flex; justify-content: space-between; font-size: 9px; color: #64748b; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div>
+      <h2 style="margin:0; font-size: 15px; text-transform: uppercase; color: #0d1b3e;">Government of Jharkhand</h2>
+      <p style="margin:2px 0 0 0; color:#475569; font-size:11px;">Department of Higher & Technical Education · Complete Fund Lifecycle Management</p>
+      <p style="margin:2px 0 0 0; font-weight: bold; color: #0369a1;">JOHARSETU CSR & GOVERNMENT GRANTS AUDIT DOSSIER</p>
+    </div>
+    <div style="text-align:right;">
+      <span style="background: #e0f2fe; color: #0369a1; padding: 3px 8px; border-radius: 4px; font-weight: bold; font-size: 10px;">Audit Active: 2026-27</span>
+      <p style="margin:6px 0 0 0; color:#64748b; font-size:9.5px;">Generated: ${currentDate}</p>
+      <p style="margin:2px 0 0 0; color:#64748b; font-size:9.5px;">Filter: ${filterSource}</p>
+    </div>
+  </div>
+
+  <div class="kpi-grid">
+    <div class="kpi-card">
+      <div class="lbl">Corporate CSR Pool</div>
+      <div class="val">₹68.5 Cr</div>
+      <div style="font-size:9px; color:#64748b;">14 Active Donors</div>
+    </div>
+    <div class="kpi-card">
+      <div class="lbl">Govt Grants Pool</div>
+      <div class="val">₹110.0 Cr</div>
+      <div style="font-size:9px; color:#64748b;">08 Active Schemes</div>
+    </div>
+    <div class="kpi-card">
+      <div class="lbl">Joint Co-Funding</div>
+      <div class="val">₹35.0 Cr</div>
+      <div style="font-size:9px; color:#64748b;">05 Active Projects</div>
+    </div>
+    <div class="kpi-card">
+      <div class="lbl">Escrow Lock-in Vaults</div>
+      <div class="val">12 Vaults</div>
+      <div style="font-size:9px; color:#16a34a;">Dual-Key Enforced</div>
+    </div>
+  </div>
+
+  <div class="sec-title">1. Approved Proposals & Due Diligence Pipeline</div>
+  <table>
+    <thead>
+      <tr>
+        <th>Code</th>
+        <th>Institution / Project</th>
+        <th>Source & Scheme</th>
+        <th>Due Diligence</th>
+        <th>Board Approval</th>
+        <th>MoU Stage</th>
+        <th>Sanctioned</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${proposals.map(p => `
+        <tr>
+          <td style="font-family: monospace; font-weight: bold; color: #0284c7;">${p.id}</td>
+          <td><strong>${p.institutionName}</strong></td>
+          <td>${p.sourceScheme}</td>
+          <td style="color: #16a34a; font-weight: 600;">${p.dueDiligence}</td>
+          <td>${p.boardApproval}</td>
+          <td>${p.mouExecution}</td>
+          <td style="font-family: monospace; font-weight: bold;">${p.allocatedAmount}</td>
+        </tr>
+      `).join('')}
+    </tbody>
+  </table>
+
+  <div class="sec-title">2. Banking Payment Transfer Ledger & UTR Reconciliation</div>
+  <table>
+    <thead>
+      <tr>
+        <th>Payment ID</th>
+        <th>Payer &rarr; Payee</th>
+        <th>Amount</th>
+        <th>Mode</th>
+        <th>UTR Reference</th>
+        <th>Maker-Checker</th>
+        <th>Bank Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${ledger.map(l => `
+        <tr>
+          <td style="font-family: monospace; font-weight: bold; color: #0284c7;">${l.id}</td>
+          <td>${l.payer} &rarr; <strong>${l.payee}</strong></td>
+          <td style="font-family: monospace; font-weight: bold;">${l.disbursedAmount}</td>
+          <td>${l.mode}</td>
+          <td style="font-family: monospace;">${l.utrNumber}</td>
+          <td style="color: #16a34a; font-weight: 600;">${l.makerCheckerSign}</td>
+          <td>${l.bankAckStatus}</td>
+        </tr>
+      `).join('')}
+    </tbody>
+  </table>
+
+  <div class="footer">
+    <div>Department of Higher & Technical Education, Government of Jharkhand &bull; Official Dossier</div>
+    <div>Confidential & Statutory Audit Compliant (Sec 135 / Schedule VII)</div>
+  </div>
+
+  <script>
+    window.onload = function() {
+      setTimeout(() => { window.print(); }, 200);
+    };
+  </script>
+</body>
+</html>
+  `;
+
+  printWindow.document.write(html);
+  printWindow.document.close();
+};
+
 export const exportGenericReportPdf = (title = 'Portal Report', data = {}) => {
   const printWindow = window.open('', '_blank', 'width=950,height=750');
   if (!printWindow) {
@@ -953,4 +1105,5 @@ export const exportGenericReportPdf = (title = 'Portal Report', data = {}) => {
   printWindow.document.write(html);
   printWindow.document.close();
 };
+
 

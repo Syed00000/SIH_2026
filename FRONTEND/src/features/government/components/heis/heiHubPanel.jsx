@@ -156,19 +156,20 @@ export const HeiHubPanel = ({ selectedDistrict = 'All', onSelectDistrict }) => {
       <AcademicStatsBanner stats={stats} />
 
       {/* Navigation Switcher */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-2 bg-slate-100/60 border border-slate-200/60 p-1 rounded-2xl">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-2 bg-slate-100/70 border border-slate-200/80 p-1 rounded-xl">
         {['1', '2', '3'].map((num) => {
           const title = num === '1' ? 'Allocation Override' : num === '2' ? 'Performance Leaderboard' : 'Milestone Review & Approvals';
           const sub = num === '1' ? 'Re-route / Re-assign problems' : num === '2' ? 'Track HEI performance' : 'Review and approve project progress';
+          const isActive = subActiveTab === num;
           return (
             <button
               key={num}
               onClick={() => setSubActiveTab(num)}
-              className={`flex items-center space-x-3 px-4 py-2.5 rounded-xl font-bold transition-all text-left cursor-pointer ${
-                subActiveTab === num ? 'bg-white text-slate-900 shadow-2xs border border-slate-200/50' : 'text-slate-500 hover:text-slate-800'
+              className={`flex items-center space-x-3 px-4 py-2.5 rounded-lg font-bold transition-all text-left cursor-pointer ${
+                isActive ? 'bg-white text-slate-900 shadow-xs border border-slate-200/90' : 'text-slate-500 hover:text-slate-800'
               }`}
             >
-              <span className="text-base font-black text-blue-600">{num}</span>
+              <span className={`text-base font-black ${isActive ? 'text-slate-900' : 'text-slate-400'}`}>{num}</span>
               <div>
                 <div className="text-xs leading-none">{title}</div>
                 <div className="text-[10px] text-slate-400 font-semibold mt-0.5">{sub}</div>
@@ -204,9 +205,9 @@ export const HeiHubPanel = ({ selectedDistrict = 'All', onSelectDistrict }) => {
         />
       )}
 
-      <div className="bg-slate-50 border border-slate-200/50 rounded-2xl p-3 flex items-center justify-center space-x-2">
-        <Info className="w-4 h-4 text-blue-500 shrink-0" />
-        <span className="text-[10.5px] text-slate-500 font-medium">All reassignments, approvals, and rejections are logged in Audit Trail.</span>
+      <div className="bg-slate-50 border border-slate-200/80 rounded-xl p-3 flex items-center justify-center space-x-2">
+        <Info className="w-4 h-4 text-slate-500 shrink-0" />
+        <span className="text-[10.5px] text-slate-600 font-medium">All reassignments, approvals, and rejections are logged in Audit Trail.</span>
       </div>
 
       <OverrideModal

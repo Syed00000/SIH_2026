@@ -25,15 +25,20 @@ import {
 
 import { ProposalDetailView } from './ProposalDetailView.jsx';
 import { SECTOR_OPTIONS, DISTRICT_OPTIONS, INITIAL_SOLUTION_PROPOSALS } from '../../data/projectsSolutionsData.js';
+import { projectCsrSyncService } from '../../services/projectCsrSyncService.js';
 
 export const SolutionProposalsPanel = () => {
-  const [proposals, setProposals] = useState(() => {
-    try {
-      const saved = localStorage.getItem('joharsetu_solution_proposals');
-      if (saved) return JSON.parse(saved);
-    } catch {}
-    return INITIAL_SOLUTION_PROPOSALS;
-  });
+  const [proposals, setProposals] = useState(() => projectCsrSyncService.getSolutionProposals());
+
+  // Listen to live CSR & project sync events
+  React.useEffect(() => {
+    const unsubscribe = projectCsrSyncService.subscribe((eventType, data) => {
+      if (data?.updatedSolProposals) {
+        setProposals(data.updatedSolProposals);
+      }
+    });
+    return unsubscribe;
+  }, []);
 
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedSector, setSelectedSector] = useState('All Sectors');
@@ -94,10 +99,22 @@ export const SolutionProposalsPanel = () => {
         : p
     );
     saveProposals(updated);
+
+    // Sync into CSR Grants Comprehensive Proposal Pipeline
+    try {
+      projectCsrSyncService.approveProposalFromProjects({
+        ...proposal,
+        status: 'Approved',
+        reviewerNotes: remarks
+      });
+    } catch (err) {
+      console.error('Failed to sync approved proposal to CSR:', err);
+    }
+
     if (viewingProposal && viewingProposal.id === proposal.id) {
       setViewingProposal(updated.find((p) => p.id === proposal.id));
     }
-    showToast(`Grant sanctioned for "${proposal.title}" (${proposal.id}).`);
+    showToast(`Grant sanctioned for "${proposal.title}" (${proposal.id}) & synced to CSR Grants pipeline.`);
   };
 
   // Action: Reject Proposal
@@ -108,10 +125,18 @@ export const SolutionProposalsPanel = () => {
         : p
     );
     saveProposals(updated);
+
+    // Synchronize rejection across CSR Grants & purge from Active Projects
+    try {
+      projectCsrSyncService.rejectProposalFromProjects(proposal, remarks);
+    } catch (err) {
+      console.error('Failed to sync rejected proposal to CSR:', err);
+    }
+
     if (viewingProposal && viewingProposal.id === proposal.id) {
       setViewingProposal(updated.find((p) => p.id === proposal.id));
     }
-    showToast(`Proposal "${proposal.id}" marked as rejected.`, 'info');
+    showToast(`Proposal "${proposal.id}" marked as REJECTED & synced to CSR Grants pipeline.`, 'info');
   };
 
   // Action: Delete Proposal
@@ -119,10 +144,17 @@ export const SolutionProposalsPanel = () => {
     if (window.confirm(`Are you sure you want to delete proposal ${proposalId}?`)) {
       const updated = proposals.filter((p) => p.id !== proposalId);
       saveProposals(updated);
+
+      try {
+        projectCsrSyncService.deleteCsrProposal(proposalId);
+      } catch (err) {
+        console.error('Failed to delete proposal in CSR:', err);
+      }
+
       if (viewingProposal && viewingProposal.id === proposalId) {
         setViewingProposal(null);
       }
-      showToast(`Proposal "${proposalId}" deleted.`);
+      showToast(`Proposal "${proposalId}" deleted across all modules.`);
     }
   };
 
