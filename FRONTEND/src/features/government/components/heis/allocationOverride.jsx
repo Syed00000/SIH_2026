@@ -39,7 +39,7 @@ export const AllocationOverride = ({
           <h3 className="font-bold text-slate-900 text-sm">1. Institutional Allocation Override</h3>
           <p className="text-[10.5px] text-slate-400 font-medium">Re-route challenges to suitable academic domains based on team competency.</p>
         </div>
-        <span className="text-[11px] text-blue-600 font-bold hover:underline cursor-pointer">View All</span>
+        <span className="text-[11px] text-slate-900 font-bold hover:underline cursor-pointer">View All</span>
       </div>
 
       {/* Filters */}
@@ -47,7 +47,7 @@ export const AllocationOverride = ({
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
-          className="bg-slate-50 border border-slate-200/90 rounded-xl px-2.5 py-1.5 text-[10.5px] font-bold text-slate-700 outline-hidden cursor-pointer"
+          className="bg-slate-50 border border-slate-200/90 rounded-md px-2.5 py-1.5 text-[10.5px] font-bold text-slate-700 outline-hidden cursor-pointer focus:ring-1 focus:ring-slate-900"
         >
           <option value="All">All Status</option>
           <option value="Reassignment Requested">Reassignment Requested</option>
@@ -59,7 +59,7 @@ export const AllocationOverride = ({
         <select
           value={sectorFilter}
           onChange={(e) => setSectorFilter(e.target.value)}
-          className="bg-slate-50 border border-slate-200/90 rounded-xl px-2.5 py-1.5 text-[10.5px] font-bold text-slate-700 outline-hidden cursor-pointer"
+          className="bg-slate-50 border border-slate-200/90 rounded-md px-2.5 py-1.5 text-[10.5px] font-bold text-slate-700 outline-hidden cursor-pointer focus:ring-1 focus:ring-slate-900"
         >
           <option value="All">All Sectors</option>
           <option value="Water">Water</option>
@@ -72,7 +72,7 @@ export const AllocationOverride = ({
         <select
           value={districtFilter}
           onChange={(e) => setDistrictFilter(e.target.value)}
-          className="bg-slate-50 border border-slate-200/90 rounded-xl px-2.5 py-1.5 text-[10.5px] font-bold text-slate-700 outline-hidden cursor-pointer"
+          className="bg-slate-50 border border-slate-200/90 rounded-md px-2.5 py-1.5 text-[10.5px] font-bold text-slate-700 outline-hidden cursor-pointer focus:ring-1 focus:ring-slate-900"
         >
           {JHARKHAND_DISTRICTS_LIST.map(dist => (
             <option key={dist} value={dist}>{dist === 'All' ? 'All Districts' : dist}</option>
@@ -86,7 +86,7 @@ export const AllocationOverride = ({
             placeholder="Search by Problem ID or Title..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-8 pr-3 py-1.5 border border-slate-200 focus:border-blue-400 outline-none bg-slate-50 rounded-xl text-[10.5px] font-medium text-slate-800 placeholder:text-slate-400"
+            className="w-full pl-8 pr-3 py-1.5 border border-slate-200 focus:border-slate-900 focus:ring-1 focus:ring-slate-900 outline-none bg-slate-50 rounded-md text-[10.5px] font-medium text-slate-800 placeholder:text-slate-400"
           />
         </div>
       </div>
@@ -145,7 +145,7 @@ export const AllocationOverride = ({
                   {['Pending', 'Reassignment Requested'].includes(item.status) ? (
                     <button
                       onClick={() => handleOverrideReview(item)}
-                      className="px-2.5 py-1 bg-slate-900 hover:bg-slate-800 text-white font-bold text-[10px] rounded-lg transition-colors cursor-pointer"
+                      className="px-2.5 py-1 bg-slate-900 hover:bg-black text-white font-bold text-[10px] rounded-md transition-colors cursor-pointer shadow-xs"
                     >
                       Review
                     </button>
@@ -155,7 +155,7 @@ export const AllocationOverride = ({
                         setSelectedRecord(item);
                         setReviewType('override-view');
                       }}
-                      className="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-[10px] rounded-lg border border-slate-200/60 transition-colors cursor-pointer"
+                      className="px-2.5 py-1 bg-white hover:bg-slate-50 text-slate-700 font-bold text-[10px] rounded-md border border-slate-200 transition-colors cursor-pointer shadow-2xs"
                     >
                       View
                     </button>
@@ -170,11 +170,11 @@ export const AllocationOverride = ({
       <div className="flex justify-between items-center border-t border-slate-100 pt-3 text-[10.5px] font-semibold text-slate-400">
         <span>Showing 1 to {filteredOverride.length} of {overrideData.length} records</span>
         <div className="flex space-x-1.5">
-          <button className="w-6 h-6 flex items-center justify-center rounded-lg bg-blue-600 text-white font-bold">1</button>
-          <button className="w-6 h-6 flex items-center justify-center rounded-lg border border-slate-200 hover:bg-slate-50 text-slate-600 font-bold">2</button>
-          <button className="w-6 h-6 flex items-center justify-center rounded-lg border border-slate-200 hover:bg-slate-50 text-slate-600 font-bold">3</button>
+          <button className="w-6 h-6 flex items-center justify-center rounded-md bg-slate-900 text-white font-bold shadow-xs">1</button>
+          <button className="w-6 h-6 flex items-center justify-center rounded-md border border-slate-200 hover:bg-slate-50 text-slate-600 font-bold">2</button>
+          <button className="w-6 h-6 flex items-center justify-center rounded-md border border-slate-200 hover:bg-slate-50 text-slate-600 font-bold">3</button>
           <span className="px-1 text-slate-400">...</span>
-          <button className="w-6 h-6 flex items-center justify-center rounded-lg border border-slate-200 hover:bg-slate-50 text-slate-600 font-bold">9</button>
+          <button className="w-6 h-6 flex items-center justify-center rounded-md border border-slate-200 hover:bg-slate-50 text-slate-600 font-bold">9</button>
         </div>
       </div>
     </div>

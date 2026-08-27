@@ -36,8 +36,8 @@ export const OverrideModal = ({
                   <span className="font-bold text-slate-800">{selectedRecord.currentHei}</span>
                 </div>
                 <div>
-                  <span className="text-[9.5px] text-slate-400 font-bold block uppercase font-bold text-blue-600">Suggested HEI</span>
-                  <span className="font-bold text-blue-700">{selectedRecord.suggestedHei}</span>
+                  <span className="text-[9.5px] text-slate-500 font-bold block uppercase">Suggested HEI</span>
+                  <span className="font-bold text-slate-900">{selectedRecord.suggestedHei}</span>
                 </div>
               </div>
 
@@ -46,7 +46,7 @@ export const OverrideModal = ({
                 <select
                   value={suggestedHeiSelection}
                   onChange={(e) => setSuggestedHeiSelection(e.target.value)}
-                  className="w-full px-3 py-1.8 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-700 cursor-pointer text-xs"
+                  className="w-full px-3 py-1.8 bg-slate-50 border border-slate-200 rounded-md font-semibold text-slate-700 cursor-pointer text-xs focus:ring-1 focus:ring-slate-900 focus:outline-none"
                 >
                   <option value="BIT Mesra">BIT Mesra</option>
                   <option value="NIT Jamshedpur">NIT Jamshedpur</option>
@@ -64,7 +64,7 @@ export const OverrideModal = ({
                   rows={3}
                   value={adminRemarks}
                   onChange={(e) => setAdminRemarks(e.target.value)}
-                  className="w-full px-3 py-2 border border-slate-200 rounded-xl bg-slate-50 font-medium text-slate-800 resize-none text-xs"
+                  className="w-full px-3 py-2 border border-slate-200 rounded-md bg-slate-50 font-medium text-slate-800 resize-none text-xs focus:ring-1 focus:ring-slate-900 focus:outline-none"
                 />
               </div>
             </div>
@@ -72,20 +72,20 @@ export const OverrideModal = ({
             <div className="flex justify-between pt-3 border-t border-slate-100">
               <button
                 onClick={() => submitOverrideAction(false)}
-                className="px-3.5 py-1.8 border border-red-200 text-red-600 hover:bg-red-50 rounded-xl font-bold transition-colors cursor-pointer"
+                className="px-3.5 py-1.8 border border-red-200 text-red-600 hover:bg-red-50 rounded-md font-bold transition-colors cursor-pointer"
               >
                 Decline & Keep Current
               </button>
               <div className="flex space-x-2">
                 <button
                   onClick={() => setSelectedRecord(null)}
-                  className="px-3.5 py-1.8 border border-slate-200 text-slate-500 rounded-xl font-bold hover:bg-slate-50 transition-colors cursor-pointer"
+                  className="px-3.5 py-1.8 border border-slate-200 text-slate-500 rounded-md font-bold hover:bg-slate-50 transition-colors cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={() => submitOverrideAction(true)}
-                  className="px-4 py-1.8 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold shadow-xs transition-colors cursor-pointer"
+                  className="px-4 py-1.8 bg-slate-900 hover:bg-black text-white rounded-md font-bold shadow-xs transition-colors cursor-pointer"
                 >
                   Approve Reassign
                 </button>

@@ -33,15 +33,19 @@ import { ProjectCertificateModal } from './ProjectCertificateModal.jsx';
 import { ValidationEmailModal } from './ValidationEmailModal.jsx';
 import { FinalProjectCompletionModal } from './FinalProjectCompletionModal.jsx';
 import { SECTOR_OPTIONS, DISTRICT_OPTIONS, INITIAL_ACTIVE_PROJECTS } from '../../data/projectsSolutionsData.js';
+import { projectCsrSyncService } from '../../services/projectCsrSyncService.js';
 
 export const ActiveProjectsPanel = () => {
-  const [projects, setProjects] = useState(() => {
-    try {
-      const saved = localStorage.getItem('joharsetu_active_projects');
-      if (saved) return JSON.parse(saved);
-    } catch {}
-    return INITIAL_ACTIVE_PROJECTS;
-  });
+  const [projects, setProjects] = useState(() => projectCsrSyncService.getActiveProjects());
+
+  React.useEffect(() => {
+    const unsubscribe = projectCsrSyncService.subscribe((eventType, data) => {
+      if (data?.updatedProjects) {
+        setProjects(data.updatedProjects);
+      }
+    });
+    return unsubscribe;
+  }, []);
 
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedSector, setSelectedSector] = useState('All Sectors');
@@ -327,64 +331,70 @@ export const ActiveProjectsPanel = () => {
       </div>
 
       {/* Top Metric Summary Cards with Exact Financial Breakdown */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-        <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-2xs">
-          <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3.5">
+        <div className="bg-white border border-slate-200/90 rounded-2xl p-4 shadow-2xs flex flex-col justify-between">
+          <span className="text-[10.5px] font-bold text-slate-500 uppercase tracking-wider block">
             Total Projects
           </span>
-          <div className="text-2xl font-bold text-slate-900 mt-1">{projects.length}</div>
-          <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-slate-100 text-slate-700 mt-1 inline-block">
+          <div className="text-2xl font-black text-slate-900 mt-1">{projects.length}</div>
+          <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 mt-2 self-start border border-slate-200/70">
             In Pipeline
           </span>
         </div>
 
-        <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-2xs">
-          <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">
-            Completed Projects
+        <div className="bg-white border border-slate-200/90 rounded-2xl p-4 shadow-2xs flex flex-col justify-between">
+          <span className="text-[10.5px] font-bold text-slate-500 uppercase tracking-wider block">
+            Completed
           </span>
-          <div className="text-2xl font-bold text-emerald-700 mt-1">{completedProjectsCount}</div>
-          <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-emerald-50 text-emerald-700 mt-1 inline-block">
-            100% Done
+          <div className="text-2xl font-black text-emerald-700 mt-1">{completedProjectsCount}</div>
+          <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 mt-2 self-start border border-emerald-200">
+            100% Done ✓
           </span>
         </div>
 
-        <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-2xs">
-          <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">
+        <div className="bg-white border border-slate-200/90 rounded-2xl p-4 shadow-2xs flex flex-col justify-between">
+          <span className="text-[10.5px] font-bold text-slate-500 uppercase tracking-wider block">
             In Progress
           </span>
-          <div className="text-2xl font-bold text-slate-900 mt-1">{projects.length - completedProjectsCount}</div>
-          <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-blue-50 text-blue-700 mt-1 inline-block">
+          <div className="text-2xl font-black text-blue-900 mt-1">{projects.length - completedProjectsCount}</div>
+          <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-blue-50 text-blue-700 mt-2 self-start border border-blue-200">
             Active Work
           </span>
         </div>
 
-        <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-2xs">
-          <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">
-            Total Sanctioned
+        <div className="bg-white border border-slate-200/90 rounded-2xl p-4 shadow-2xs flex flex-col justify-between">
+          <span className="text-[10.5px] font-bold text-slate-500 uppercase tracking-wider block">
+            Sanctioned Grant
           </span>
-          <div className="text-xl font-black text-slate-900 mt-1">₹ {financialTotals.totalSanctionedLakhs.toFixed(1)}L</div>
-          <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-slate-100 text-slate-700 mt-1 inline-block">
-            Approved Grant
-          </span>
-        </div>
-
-        <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-2xs">
-          <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">
-            Total Paid
-          </span>
-          <div className="text-xl font-black text-emerald-700 mt-1">₹ {financialTotals.totalDisbursedLakhs.toFixed(1)}L</div>
-          <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-emerald-50 text-emerald-700 mt-1 inline-block">
-            {financialTotals.overallPercentage}% Paid
+          <div className="text-xl font-black text-slate-900 mt-1 whitespace-nowrap">
+            ₹ {financialTotals.totalSanctionedLakhs.toFixed(1)}L
+          </div>
+          <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 mt-2 self-start border border-slate-200/70">
+            ₹ {(financialTotals.totalSanctionedLakhs / 100).toFixed(2)} Cr Total
           </span>
         </div>
 
-        <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-2xs">
-          <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">
-            Total Pending
+        <div className="bg-white border border-slate-200/90 rounded-2xl p-4 shadow-2xs flex flex-col justify-between">
+          <span className="text-[10.5px] font-bold text-slate-500 uppercase tracking-wider block">
+            Total Disbursed
           </span>
-          <div className="text-xl font-black text-amber-700 mt-1">₹ {financialTotals.totalPendingLakhs.toFixed(1)}L</div>
-          <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-amber-50 text-amber-700 mt-1 inline-block">
-            To Disburse
+          <div className="text-xl font-black text-emerald-700 mt-1 whitespace-nowrap">
+            ₹ {financialTotals.totalDisbursedLakhs.toFixed(1)}L
+          </div>
+          <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 mt-2 self-start border border-emerald-200">
+            {financialTotals.overallPercentage}% Released
+          </span>
+        </div>
+
+        <div className="bg-white border border-slate-200/90 rounded-2xl p-4 shadow-2xs flex flex-col justify-between">
+          <span className="text-[10.5px] font-bold text-slate-500 uppercase tracking-wider block">
+            Pending To Pay
+          </span>
+          <div className="text-xl font-black text-amber-700 mt-1 whitespace-nowrap">
+            ₹ {financialTotals.totalPendingLakhs.toFixed(1)}L
+          </div>
+          <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-amber-50 text-amber-700 mt-2 self-start border border-amber-200">
+            Escrow Balance
           </span>
         </div>
       </div>
@@ -482,16 +492,16 @@ export const ActiveProjectsPanel = () => {
 
       {/* Main Content: Table or Grid */}
       {viewMode === 'table' ? (
-        <div className="bg-white border border-slate-200 rounded-xl shadow-2xs overflow-hidden">
+        <div className="bg-white border border-slate-200/90 rounded-2xl shadow-2xs overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
+            <table className="w-full text-left border-collapse min-w-[1050px]">
               <thead>
-                <tr className="border-b border-slate-200 bg-slate-50 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
-                  <th className="py-3 px-4">Project & Institution</th>
-                  <th className="py-3 px-4">Delivery Stage</th>
-                  <th className="py-3 px-4">Current Status</th>
-                  <th className="py-3 px-4">Grant Funding (Mila / Diya / Pending)</th>
-                  <th className="py-3 px-4 text-center">Actions</th>
+                <tr className="border-b border-slate-200/80 bg-slate-50/80 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                  <th className="py-3.5 px-4 w-[28%]">PROJECT & INSTITUTION</th>
+                  <th className="py-3.5 px-4 w-[18%]">DELIVERY STAGE</th>
+                  <th className="py-3.5 px-4 w-[12%]">CURRENT STATUS</th>
+                  <th className="py-3.5 px-4 w-[26%]">GRANT FUNDING (SANCTIONED / PAID / PENDING)</th>
+                  <th className="py-3.5 px-4 w-[16%] text-right">ACTIONS</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 text-xs">
@@ -501,32 +511,34 @@ export const ActiveProjectsPanel = () => {
                   const fin = getGrantFinancials(prj.sanctionedGrant, prj.disbursedAmount);
 
                   return (
-                    <tr key={prj.id} className="hover:bg-slate-50/60 transition-colors group cursor-default">
+                    <tr key={prj.id} className="hover:bg-slate-50/70 transition-colors group cursor-default">
                       <td className="py-3.5 px-4">
-                        <div className="font-bold text-slate-900 group-hover:text-black">
+                        <div className="font-bold text-slate-900 group-hover:text-black line-clamp-1">
                           {prj.title}{' '}
                           <span className="font-mono text-slate-500 font-semibold text-[11px]">
                             ({prj.id})
                           </span>
                         </div>
-                        <div className="text-[11px] text-slate-500 flex items-center space-x-2 mt-0.5">
+                        <div className="text-[11px] text-slate-500 flex items-center space-x-2 mt-1">
                           <span className="font-medium text-slate-700 flex items-center space-x-1">
                             <Building2 className="w-3 h-3 text-slate-400" />
                             <span>{prj.hei}</span>
                           </span>
                           <span>•</span>
-                          <span>{prj.sector}</span>
+                          <span className="px-1.5 py-0.2 rounded bg-slate-100 text-slate-600 text-[10px] font-semibold">
+                            {prj.sector}
+                          </span>
                           <span>•</span>
                           <span className="font-semibold text-slate-800">{prj.district}</span>
                         </div>
                       </td>
 
-                      <td className="py-3.5 px-4">
+                      <td className="py-3.5 px-4 whitespace-nowrap">
                         <div className="font-semibold text-slate-800 flex items-center space-x-1.5">
                           <span>{prj.milestonePhase}</span>
                           {isDone && <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />}
                         </div>
-                        <div className="flex items-center space-x-2 mt-1">
+                        <div className="flex items-center space-x-2 mt-1.5">
                           <div className="w-24 bg-slate-100 h-1.5 rounded-full overflow-hidden">
                             <div
                               className="bg-slate-900 h-full rounded-full transition-all duration-300"
@@ -539,7 +551,7 @@ export const ActiveProjectsPanel = () => {
                         </div>
                       </td>
 
-                      <td className="py-3.5 px-4">
+                      <td className="py-3.5 px-4 whitespace-nowrap">
                         <span
                           className={`inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-bold border ${
                             isDone || prj.deploymentStatus?.includes('Completed')
@@ -553,40 +565,52 @@ export const ActiveProjectsPanel = () => {
                         </span>
                       </td>
 
-                      {/* Explicit 3-Way Financial Column */}
-                      <td className="py-3.5 px-4">
-                        <div className="space-y-0.5">
-                          <div className="flex items-center justify-between gap-2">
+                      {/* Clean 3-Row Financial Box with Strict Whitespace-Nowrap */}
+                      <td className="py-3 px-4 whitespace-nowrap">
+                        <div className="p-2.5 bg-slate-50/90 rounded-xl border border-slate-200/80 space-y-1 text-xs">
+                          <div className="flex items-center justify-between gap-4">
                             <span className="text-slate-500 font-medium text-[11px]">Sanctioned Total:</span>
-                            <span className="font-mono font-bold text-slate-900">{fin.sanctionedStr}</span>
+                            <div className="font-mono text-right flex items-center space-x-1 whitespace-nowrap">
+                              <strong className="text-slate-900 font-bold">{fin.sanctionedStr}</strong>
+                              <span className="text-[10px] text-slate-400 font-normal">({fin.sanctionedCrStr})</span>
+                            </div>
                           </div>
 
-                          <div className="flex items-center justify-between gap-2">
+                          <div className="flex items-center justify-between gap-4">
                             <span className="text-slate-500 font-medium text-[11px]">Paid / Disbursed:</span>
-                            <span className="font-mono font-bold text-emerald-700">{fin.disbursedStr} ({fin.percentage}%)</span>
+                            <div className="font-mono text-right flex items-center space-x-1 whitespace-nowrap">
+                              <strong className="text-emerald-700 font-bold">{fin.disbursedStr}</strong>
+                              <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-1 py-0.2 rounded border border-emerald-200">
+                                {fin.percentage}%
+                              </span>
+                            </div>
                           </div>
 
-                          <div className="flex items-center justify-between gap-2 pt-0.5 border-t border-slate-100">
+                          <div className="flex items-center justify-between gap-4 pt-1 border-t border-slate-200/70">
                             <span className="text-slate-500 font-medium text-[11px]">Pending Balance:</span>
                             {fin.isFullyPaid ? (
-                              <span className="font-bold text-[10px] text-emerald-700 bg-emerald-50 px-1.5 py-0.2 rounded">
+                              <span className="font-bold text-[10px] text-emerald-800 bg-emerald-100/80 px-2 py-0.5 rounded-md whitespace-nowrap">
                                 Fully Paid (100%) ✓
                               </span>
                             ) : (
-                              <span className="font-mono font-bold text-amber-700 bg-amber-50 px-1.5 py-0.2 rounded border border-amber-200">
-                                {fin.pendingStr} Pending
-                              </span>
+                              <div className="font-mono text-right flex items-center space-x-1 whitespace-nowrap">
+                                <strong className="text-amber-800 font-bold">{fin.pendingStr}</strong>
+                                <span className="text-[9.5px] font-bold text-amber-700 bg-amber-50 px-1.5 py-0.2 rounded border border-amber-200">
+                                  Pending
+                                </span>
+                              </div>
                             )}
                           </div>
                         </div>
                       </td>
 
-                      <td className="py-3.5 px-4 text-center">
-                        <div className="flex items-center justify-center space-x-1.5">
+                      {/* Sleek Action Buttons Row */}
+                      <td className="py-3.5 px-4 text-right whitespace-nowrap">
+                        <div className="flex items-center justify-end space-x-1.5">
                           <button
                             type="button"
                             onClick={() => setViewingProject(prj)}
-                            className="px-3 py-1 text-xs font-bold text-white bg-slate-900 hover:bg-slate-800 rounded-lg transition-colors cursor-pointer shadow-2xs"
+                            className="px-3 py-1.5 text-xs font-bold text-white bg-slate-900 hover:bg-slate-800 rounded-xl transition-colors cursor-pointer shadow-2xs"
                           >
                             Manage
                           </button>
@@ -595,7 +619,7 @@ export const ActiveProjectsPanel = () => {
                             <button
                               type="button"
                               onClick={() => setPayingProject(prj)}
-                              className="px-2.5 py-1 text-xs font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-lg transition-colors cursor-pointer"
+                              className="px-2.5 py-1.5 text-xs font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-xl transition-colors cursor-pointer shadow-2xs whitespace-nowrap"
                               title="Release Pending Payment"
                             >
                               Pay Grant
@@ -605,7 +629,7 @@ export const ActiveProjectsPanel = () => {
                           <button
                             type="button"
                             onClick={() => setEditingProject(prj)}
-                            className="p-1 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer border border-slate-200"
+                            className="p-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-colors cursor-pointer border border-slate-200"
                             title="Edit Project"
                           >
                             <Edit className="w-3.5 h-3.5" />
@@ -614,7 +638,7 @@ export const ActiveProjectsPanel = () => {
                           <button
                             type="button"
                             onClick={() => handleDeleteProject(prj.id)}
-                            className="p-1 text-rose-600 hover:text-rose-800 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer border border-rose-200"
+                            className="p-1.5 text-rose-600 hover:text-rose-800 hover:bg-rose-50 rounded-xl transition-colors cursor-pointer border border-rose-200"
                             title="Delete Project"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
@@ -675,19 +699,19 @@ export const ActiveProjectsPanel = () => {
                 {/* Financial 3-Way Box in Card */}
                 <div className="p-3 bg-slate-50 rounded-lg border border-slate-100 space-y-1 text-xs">
                   <div className="flex justify-between items-center text-[11px]">
-                    <span className="text-slate-500">Total Sanctioned:</span>
-                    <strong className="text-slate-900 font-mono">{fin.sanctionedStr}</strong>
+                    <span className="text-slate-500">Sanctioned:</span>
+                    <strong className="text-slate-900 font-mono">{fin.sanctionedStr} <span className="text-[9.5px] text-slate-400 font-normal">({fin.sanctionedCrStr})</span></strong>
                   </div>
                   <div className="flex justify-between items-center text-[11px]">
-                    <span className="text-slate-500">Paid so far:</span>
-                    <strong className="text-emerald-700 font-mono">{fin.disbursedStr} ({fin.percentage}%)</strong>
+                    <span className="text-slate-500">Paid:</span>
+                    <strong className="text-emerald-700 font-mono">{fin.disbursedStr} <span className="text-[9.5px] text-emerald-600 font-normal">({fin.disbursedCrStr})</span></strong>
                   </div>
                   <div className="flex justify-between items-center text-[11px] pt-1 border-t border-slate-200">
                     <span className="text-slate-600 font-bold">Pending:</span>
                     {fin.isFullyPaid ? (
                       <span className="text-emerald-700 font-bold text-[10px]">Fully Paid (100%) ✓</span>
                     ) : (
-                      <span className="text-amber-800 font-bold font-mono">{fin.pendingStr}</span>
+                      <span className="text-amber-800 font-bold font-mono">{fin.pendingStr} <span className="text-[9.5px] font-normal">({fin.pendingCrStr})</span></span>
                     )}
                   </div>
                 </div>

@@ -10,6 +10,7 @@ import {
   AlertCircle,
   Clock
 } from 'lucide-react';
+import { projectCsrSyncService } from '../../services/projectCsrSyncService.js';
 
 export const parseGrantLakhs = (grantStr) => {
   if (typeof grantStr === 'number') return grantStr;
@@ -31,10 +32,20 @@ export const getGrantFinancials = (sanctioned, disbursed) => {
   const percentage = sNum > 0 ? Math.min(100, Math.round((dNum / sNum) * 100)) : 0;
   const isFullyPaid = sNum > 0 && dNum >= sNum;
 
+  const sCr = (sNum / 100).toFixed(3).replace(/\.?0+$/, '');
+  const dCr = (dNum / 100).toFixed(3).replace(/\.?0+$/, '');
+  const pCr = (pNum / 100).toFixed(3).replace(/\.?0+$/, '');
+
   return {
     sanctionedLakhs: sNum,
     disbursedLakhs: dNum,
     pendingLakhs: pNum,
+    sanctionedCr: sNum / 100,
+    disbursedCr: dNum / 100,
+    pendingCr: pNum / 100,
+    sanctionedCrStr: `₹ ${sCr} Cr`,
+    disbursedCrStr: `₹ ${dCr} Cr`,
+    pendingCrStr: `₹ ${pCr} Cr`,
     percentage,
     isFullyPaid,
     sanctionedStr: formatGrantLakhs(sNum),
@@ -98,6 +109,20 @@ export const GrantPaymentModal = ({ project, isOpen, onClose, onConfirmPayment }
     };
 
     setTimeout(() => {
+      // Sync into projectCsrSyncService for real-time reflection in CSR Grants
+      try {
+        projectCsrSyncService.disburseGrantPayment({
+          projectId: project.id,
+          amountLakhs: payingNum,
+          trancheName,
+          paymentMode,
+          voucherRef,
+          remarks
+        });
+      } catch (err) {
+        console.error('Failed to sync payment into CSR ledger:', err);
+      }
+
       onConfirmPayment(project.id, {
         newDisbursedStr,
         newPercent: projectedPercentage,

@@ -11,7 +11,7 @@ export const PerformanceLeaderboard = ({ leaderboardData }) => {
               <h3 className="font-bold text-slate-900 text-sm">2. HEI Performance Leaderboard</h3>
               <p className="text-[10.5px] text-slate-400 font-medium">Rank index based on total allocated problems, successfully resolved solutions, and NEP credits.</p>
             </div>
-            <button className="text-[11px] text-blue-600 font-bold hover:underline cursor-pointer">View Full Leaderboard</button>
+            <button className="text-[11px] text-slate-900 font-bold hover:underline cursor-pointer">View Full Leaderboard</button>
           </div>
 
           <div className="overflow-x-auto">
@@ -51,7 +51,7 @@ export const PerformanceLeaderboard = ({ leaderboardData }) => {
         </div>
 
         {/* Highlights */}
-        <div className="grid grid-cols-4 gap-2 py-3.5 bg-blue-50/50 border border-blue-100 rounded-xl px-4 mt-4">
+        <div className="grid grid-cols-4 gap-2 py-3.5 bg-slate-50 border border-slate-200/80 rounded-xl px-4 mt-4">
           <div>
             <span className="text-[9px] uppercase font-bold text-slate-400 block tracking-wider">Top Performer</span>
             <span className="text-xs font-extrabold text-slate-900 block mt-0.5">BIT Mesra</span>
@@ -66,7 +66,7 @@ export const PerformanceLeaderboard = ({ leaderboardData }) => {
           </div>
           <div className="text-right">
             <span className="text-[9px] uppercase font-bold text-slate-400 block tracking-wider">Most Credits</span>
-            <span className="text-xs font-extrabold text-indigo-600 block mt-0.5">1,920 <span className="text-[10px] text-slate-400 font-semibold">(BIT Mesra)</span></span>
+            <span className="text-xs font-extrabold text-slate-900 block mt-0.5">1,920 <span className="text-[10px] text-slate-400 font-semibold">(BIT Mesra)</span></span>
           </div>
         </div>
       </div>
@@ -75,20 +75,20 @@ export const PerformanceLeaderboard = ({ leaderboardData }) => {
         <h4 className="font-bold text-slate-900 text-xs border-b border-slate-100 pb-2.5">Academic Leaderboard Rules</h4>
         <div className="space-y-3 font-medium text-slate-600">
           <div className="flex items-start">
-            <span className="w-5 h-5 rounded-full bg-blue-50 text-blue-600 font-bold flex items-center justify-center text-[10px] shrink-0 mr-2">1</span>
+            <span className="w-5 h-5 rounded-full bg-slate-100 text-slate-900 font-bold flex items-center justify-center text-[10px] shrink-0 mr-2">1</span>
             <p className="leading-relaxed"><strong>Assigned Weightage</strong>: Problems allocated to university labs hold primary points scaling.</p>
           </div>
           <div className="flex items-start">
-            <span className="w-5 h-5 rounded-full bg-blue-50 text-blue-600 font-bold flex items-center justify-center text-[10px] shrink-0 mr-2">2</span>
+            <span className="w-5 h-5 rounded-full bg-slate-100 text-slate-900 font-bold flex items-center justify-center text-[10px] shrink-0 mr-2">2</span>
             <p className="leading-relaxed"><strong>Credit Accrual</strong>: Student researchers earn academic credits mapped under NEP 2020 framework upon successful solution verification.</p>
           </div>
           <div className="flex items-start">
-            <span className="w-5 h-5 rounded-full bg-blue-50 text-blue-600 font-bold flex items-center justify-center text-[10px] shrink-0 mr-2">3</span>
+            <span className="w-5 h-5 rounded-full bg-slate-100 text-slate-900 font-bold flex items-center justify-center text-[10px] shrink-0 mr-2">3</span>
             <p className="leading-relaxed"><strong>Milestone Compliance</strong>: Rejections or delayed reviews decrease cumulative credit performance rating.</p>
           </div>
         </div>
         <div className="bg-slate-50 border border-slate-200/50 rounded-xl p-3 flex items-start space-x-2">
-          <Info className="w-4 h-4 text-blue-500 shrink-0 mt-0.5" />
+          <Info className="w-4 h-4 text-slate-500 shrink-0 mt-0.5" />
           <p className="text-[10.5px] text-slate-500 leading-relaxed font-medium">Rank positions are re-calibrated dynamically upon every milestone approval approval.</p>
         </div>
       </div>

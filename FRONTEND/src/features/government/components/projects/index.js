@@ -26,3 +26,5 @@ export { default as ActiveProjectDetailView } from './ActiveProjectDetailView.js
 export { default as ValidationEmailModal } from './ValidationEmailModal.jsx';
 export { default as ProjectCertificateModal } from './ProjectCertificateModal.jsx';
 export { default as FinalProjectCompletionModal } from './FinalProjectCompletionModal.jsx';
+export { default as InspectPrototypeModal } from './InspectPrototypeModal.jsx';
+

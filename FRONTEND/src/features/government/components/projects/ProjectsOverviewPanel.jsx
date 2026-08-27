@@ -30,8 +30,49 @@ import {
   HEI_IMPACT_PARTNERS,
   INNOVATION_LIFECYCLE_STEPS
 } from '../../data/projectsSolutionsData.js';
+import { projectCsrSyncService } from '../../services/projectCsrSyncService.js';
 
 export const ProjectsOverviewPanel = ({ onNavigateTab }) => {
+  const [projects, setProjects] = React.useState(() => projectCsrSyncService.getActiveProjects());
+  const [proposals, setProposals] = React.useState(() => projectCsrSyncService.getSolutionProposals());
+
+  React.useEffect(() => {
+    const unsubscribe = projectCsrSyncService.subscribe((eventType, data) => {
+      if (data?.updatedProjects) setProjects(data.updatedProjects);
+      if (data?.updatedSolProposals) setProposals(data.updatedSolProposals);
+    });
+    return unsubscribe;
+  }, []);
+
+  // Compute live KPIs
+  const liveKpis = {
+    ...PROJECTS_AND_SOLUTIONS_KPIS,
+    solutionProposals: proposals.length,
+    projectsApproved: proposals.filter((p) => p.status === 'Approved' || p.status === 'Verified').length,
+    inProgress: projects.length
+  };
+
+  // Compute live financial grant metrics
+  const totalSanctionedLakhs = projects.reduce((acc, p) => {
+    const val = parseFloat(String(p.sanctionedGrant || '0').replace(/[^\d.]/g, '')) || 0;
+    return acc + val;
+  }, 0);
+  const totalDisbursedLakhs = projects.reduce((acc, p) => {
+    const val = parseFloat(String(p.disbursedAmount || '0').replace(/[^\d.]/g, '')) || 0;
+    return acc + val;
+  }, 0);
+  const pendingLakhs = Math.max(0, totalSanctionedLakhs - totalDisbursedLakhs);
+  const livePercent = totalSanctionedLakhs > 0 ? Math.round((totalDisbursedLakhs / totalSanctionedLakhs) * 100) : 0;
+
+  const liveFinancials = {
+    ...FINANCIAL_GRANT_METRICS,
+    totalPoolCr: `₹ ${(totalSanctionedLakhs / 100).toFixed(2)} Cr`,
+    disbursedCr: `₹ ${(totalDisbursedLakhs / 100).toFixed(2)} Cr`,
+    pendingCr: `₹ ${(pendingLakhs / 100).toFixed(2)} Cr`,
+    disbursedPercentage: livePercent,
+    sanctionedProjectsCount: projects.length
+  };
+
   return (
     <div className="space-y-6 max-w-7xl mx-auto pb-12 select-none animate-fadeIn">
       {/* Top Banner */}
@@ -60,14 +101,14 @@ export const ProjectsOverviewPanel = ({ onNavigateTab }) => {
             className="px-4 py-2 text-xs font-bold text-white bg-slate-900 hover:bg-slate-800 rounded-xl transition-colors cursor-pointer flex items-center space-x-1.5 shadow-2xs"
           >
             <FileCheck className="w-4 h-4 text-emerald-400" />
-            <span>Review Proposals (86)</span>
+            <span>Review Proposals ({proposals.length})</span>
           </button>
         </div>
       </div>
 
       {/* 1. 6-Box KPI Metrics */}
       <ProjectKpiCards
-        kpis={PROJECTS_AND_SOLUTIONS_KPIS}
+        kpis={liveKpis}
         onKpiClick={(kpiId) => {
           if (kpiId === 'solution_proposals') onNavigateTab && onNavigateTab('projects_proposals');
           if (kpiId === 'in_progress') onNavigateTab && onNavigateTab('projects_active');

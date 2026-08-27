@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   CheckCircle2,
   Clock,
@@ -18,14 +18,24 @@ import {
 
 import { ProjectManageModal } from './ProjectManageModal.jsx';
 import { INITIAL_ACTIVE_PROJECTS } from '../../data/projectsSolutionsData.js';
+import { projectCsrSyncService } from '../../services/projectCsrSyncService.js';
 
 export const MilestonesMonitoringPanel = () => {
-  const [projects, setProjects] = useState(INITIAL_ACTIVE_PROJECTS);
+  const [projects, setProjects] = useState(() => projectCsrSyncService.getActiveProjects());
   const [selectedPhaseFilter, setSelectedPhaseFilter] = useState('All Stages');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedProject, setSelectedProject] = useState(null);
   const [isManageModalOpen, setIsManageModalOpen] = useState(false);
   const [notification, setNotification] = useState(null);
+
+  useEffect(() => {
+    const unsubscribe = projectCsrSyncService.subscribe((eventType, data) => {
+      if (data?.updatedProjects) {
+        setProjects(data.updatedProjects);
+      }
+    });
+    return unsubscribe;
+  }, []);
 
   const showToast = (msg, type = 'success') => {
     setNotification({ msg, type });

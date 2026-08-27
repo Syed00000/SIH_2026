@@ -1,5 +1,45 @@
 import React from 'react';
-import { Check, Clock, AlertTriangle, CheckCircle2, FileText, ArrowUpRight } from 'lucide-react';
+import { Clock, AlertTriangle, CheckCircle2, FileText } from 'lucide-react';
+
+const getStatusDisplay = (status) => {
+  switch (status) {
+    case 'Submitted':
+      return (
+        <span className="inline-flex items-center space-x-1.5 text-[11px] font-semibold text-blue-600">
+          <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
+          <span>Submitted</span>
+        </span>
+      );
+    case 'Under Review':
+      return (
+        <span className="inline-flex items-center space-x-1.5 text-[11px] font-semibold text-amber-600">
+          <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+          <span>Under Review</span>
+        </span>
+      );
+    case 'Changes Requested':
+      return (
+        <span className="inline-flex items-center space-x-1.5 text-[11px] font-semibold text-rose-600">
+          <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />
+          <span>Changes Req.</span>
+        </span>
+      );
+    case 'Approved':
+      return (
+        <span className="inline-flex items-center space-x-1.5 text-[11px] font-semibold text-emerald-600">
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+          <span>Approved</span>
+        </span>
+      );
+    default:
+      return (
+        <span className="inline-flex items-center space-x-1.5 text-[11px] font-semibold text-slate-600">
+          <span className="w-1.5 h-1.5 rounded-full bg-slate-400" />
+          <span>{status}</span>
+        </span>
+      );
+  }
+};
 
 export const MilestoneApprovals = ({
   filteredMilestones,
@@ -8,37 +48,36 @@ export const MilestoneApprovals = ({
   handleMilestoneReview,
   setSelectedRecord,
   setReviewType,
-  milestoneSummary,
-  recentApprovals
+  milestoneSummary
 }) => {
   const summaryCards = [
-    { label: 'Pending Review', count: milestoneSummary.submitted, color: 'text-blue-700 bg-blue-50/70 border-blue-200/80', icon: Clock },
-    { label: 'Under Review', count: milestoneSummary.underReview, color: 'text-amber-700 bg-amber-50/70 border-amber-200/80', icon: AlertTriangle },
-    { label: 'Changes Req.', count: milestoneSummary.changesRequested, color: 'text-rose-700 bg-rose-50/70 border-rose-200/80', icon: FileText },
-    { label: 'Approved', count: milestoneSummary.approved, color: 'text-emerald-700 bg-emerald-50/70 border-emerald-200/80', icon: CheckCircle2 }
+    { label: 'Pending Review', count: milestoneSummary.submitted, color: 'text-blue-600', icon: Clock },
+    { label: 'Under Review', count: milestoneSummary.underReview, color: 'text-amber-500', icon: AlertTriangle },
+    { label: 'Changes Req.', count: milestoneSummary.changesRequested, color: 'text-rose-500', icon: FileText },
+    { label: 'Approved', count: milestoneSummary.approved, color: 'text-emerald-500', icon: CheckCircle2 }
   ];
 
   return (
-    <div className="space-y-4">
-      {/* Top Metric Summary Cards */}
+    <div className="space-y-4 select-none">
+      {/* Top Metric Summary Cards - Clean Bare Icons without Background Boxes */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {summaryCards.map((stat, idx) => {
           const Icon = stat.icon;
           return (
             <div
               key={idx}
-              className="bg-white border border-slate-200/80 rounded-xl p-3 shadow-[0_1px_3px_rgba(15,23,42,0.03)] flex items-center justify-between"
+              className="bg-white border border-slate-200/90 rounded-xl p-3.5 shadow-2xs flex items-center justify-between"
             >
               <div>
-                <span className="text-[10.5px] font-semibold text-slate-400 block tracking-wide uppercase">
+                <span className="text-[10px] font-bold text-slate-400 block tracking-wider uppercase">
                   {stat.label}
                 </span>
-                <span className="text-xl font-black text-slate-900 leading-tight">
+                <span className="text-xl font-extrabold text-slate-900 leading-tight mt-0.5 block">
                   {stat.count}
                 </span>
               </div>
-              <div className={`p-2 rounded-lg border ${stat.color}`}>
-                <Icon className="w-4 h-4" />
+              <div className="shrink-0 pl-2">
+                <Icon className={`w-5 h-5 ${stat.color}`} />
               </div>
             </div>
           );
@@ -46,12 +85,12 @@ export const MilestoneApprovals = ({
       </div>
 
       {/* Main Table Container */}
-      <div className="bg-white border border-slate-200/80 rounded-xl shadow-[0_1px_3px_rgba(15,23,42,0.03)] p-4 space-y-3">
+      <div className="bg-white border border-slate-200/90 rounded-xl shadow-2xs p-4 space-y-3">
         {/* Header & Subtabs */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
           <div>
-            <h3 className="font-bold text-slate-900 text-sm">3. Milestone Review & Approvals</h3>
-            <p className="text-[10.5px] text-slate-400 font-medium">
+            <h3 className="font-bold text-slate-900 text-sm tracking-tight">3. Milestone Review & Approvals</h3>
+            <p className="text-[10.5px] text-slate-400 font-medium mt-0.5">
               Review and approve solution designs, lab analysis results, and pilot prototypes.
             </p>
           </div>
@@ -71,7 +110,7 @@ export const MilestoneApprovals = ({
                   onClick={() => setMilestoneTypeFilter(tab.id)}
                   className={`px-2.5 py-1 rounded-md transition-all cursor-pointer ${
                     isActive
-                      ? 'bg-white text-slate-900 font-bold shadow-xs'
+                      ? 'bg-slate-900 text-white font-bold shadow-xs'
                       : 'text-slate-500 hover:text-slate-800'
                   }`}
                 >
@@ -82,7 +121,7 @@ export const MilestoneApprovals = ({
           </div>
         </div>
 
-        {/* Clean Responsive Table with Zero Scrollbar & Zero Clipping */}
+        {/* Clean Responsive Table with Bare Status Indicators */}
         <div className="w-full overflow-hidden">
           <table className="w-full text-left text-xs border-collapse table-fixed">
             <thead>
@@ -115,25 +154,13 @@ export const MilestoneApprovals = ({
                     {item.date}
                   </td>
                   <td className="py-3 px-2.5">
-                    <span
-                      className={`inline-block px-2 py-0.5 rounded-full text-[9.5px] font-bold whitespace-nowrap ${
-                        item.status === 'Submitted'
-                          ? 'bg-blue-50 text-blue-700 border border-blue-200/80'
-                          : item.status === 'Under Review'
-                          ? 'bg-amber-50 text-amber-700 border border-amber-200/80'
-                          : item.status === 'Approved'
-                          ? 'bg-emerald-50 text-emerald-700 border border-emerald-200/80'
-                          : 'bg-rose-50 text-rose-700 border border-rose-200/80'
-                      }`}
-                    >
-                      {item.status}
-                    </span>
+                    {getStatusDisplay(item.status)}
                   </td>
                   <td className="py-3 px-3 text-right pr-3">
                     {item.status !== 'Approved' ? (
                       <button
                         onClick={() => handleMilestoneReview(item)}
-                        className="px-3 py-1 bg-slate-900 hover:bg-slate-800 text-white font-bold text-[10.5px] rounded-lg transition-colors cursor-pointer shadow-xs inline-flex items-center gap-0.5"
+                        className="px-3 py-1 bg-slate-900 hover:bg-black text-white font-bold text-[10.5px] rounded-md transition-colors cursor-pointer shadow-xs inline-flex items-center gap-0.5"
                       >
                         Review
                       </button>
@@ -143,7 +170,7 @@ export const MilestoneApprovals = ({
                           setSelectedRecord(item);
                           setReviewType('milestone-view');
                         }}
-                        className="px-3 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-[10.5px] rounded-lg border border-slate-200 transition-colors cursor-pointer inline-flex items-center gap-0.5"
+                        className="px-3 py-1 bg-white hover:bg-slate-50 text-slate-700 font-bold text-[10.5px] rounded-md border border-slate-200 transition-colors cursor-pointer shadow-2xs inline-flex items-center gap-0.5"
                       >
                         View
                       </button>
@@ -160,3 +187,4 @@ export const MilestoneApprovals = ({
 };
 
 export default MilestoneApprovals;
+
