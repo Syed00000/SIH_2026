@@ -4,7 +4,7 @@ import config from './shared/config/index.js';
 import logger from './shared/logger/index.js';
 import { connectMongo, closeMongo } from './infrastructure/database/mongo/client.js';
 import { initializeWorkers } from './infrastructure/queue/workers/email.worker.js';
-import { seedGovtAdmin } from './infrastructure/database/mongo/seed.js';
+import { seedGovtAdmin, seedUniversityDatabase } from './infrastructure/database/mongo/seed.js';
 
 let server;
 
@@ -12,7 +12,16 @@ const start = async () => {
   logger.info(`Starting server in ${config.NODE_ENV} mode...`);
 
   try {
-    // 1. Start HTTP Server immediately so port is instantly open (zero connection-refused cold starts)
+    // 1. Initialize Database & Seeders first so all collections and models are connected
+    try {
+      await connectMongo();
+      await seedGovtAdmin();
+      await seedUniversityDatabase();
+    } catch (dbErr) {
+      logger.error('Failed to initialize MongoDB connection:', dbErr);
+    }
+
+    // 2. Start HTTP Server
     server = http.createServer(app);
 
     server.on('error', (err) => {
@@ -30,16 +39,6 @@ const start = async () => {
         resolve();
       });
     });
-
-    // 2. Initialize Database & Background Services (Mongoose buffers queries seamlessly while connecting)
-    connectMongo()
-      .then(async () => {
-        // Auto-seed Government Admin once DB is connected
-        await seedGovtAdmin();
-      })
-      .catch((err) => {
-        logger.error('Failed to initialize MongoDB connection:', err);
-      });
 
     // 3. Initialize Background Workers
     initializeWorkers();

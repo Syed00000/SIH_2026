@@ -10,6 +10,8 @@ router.post('/challenges/:id/assign-faculty', (req, res, next) => universityCont
 
 router.get('/faculty', (req, res, next) => universityController.getFaculty(req, res, next));
 router.post('/faculty', (req, res, next) => universityController.createFaculty(req, res, next));
+router.patch('/faculty/:id', (req, res, next) => universityController.updateFaculty(req, res, next));
+router.put('/faculty/:id', (req, res, next) => universityController.updateFaculty(req, res, next));
 router.delete('/faculty/:id', (req, res, next) => universityController.deleteFaculty(req, res, next));
 
 router.get('/teams', (req, res, next) => universityController.getTeams(req, res, next));

@@ -33,13 +33,14 @@ export const DESIGN_TOKENS = {
 };
 
 export const STATUS_PILL_STYLES = {
-  Review: 'bg-slate-100 text-slate-900 border border-slate-300 font-bold',
+  Pending: 'bg-amber-50 text-amber-900 border border-amber-300 font-bold',
   Accepted: 'bg-emerald-50 text-emerald-800 border border-emerald-300 font-bold',
+  Rejected: 'bg-rose-50 text-rose-800 border border-rose-300 font-bold',
+  // Aliases
+  Review: 'bg-amber-50 text-amber-900 border border-amber-300 font-bold',
   'Faculty Pending': 'bg-amber-50 text-amber-900 border border-amber-300 font-bold',
-  Clarification: 'bg-slate-100 text-slate-700 border border-slate-300 font-semibold',
-  'In Progress': 'bg-slate-900 text-white font-bold',
-  Delayed: 'bg-rose-50 text-rose-800 border border-rose-300 font-bold',
-  Completed: 'bg-emerald-50 text-emerald-800 border border-emerald-300 font-bold',
+  'In Progress': 'bg-amber-50 text-amber-900 border border-amber-300 font-bold',
+  Clarification: 'bg-amber-50 text-amber-900 border border-amber-300 font-bold',
   Declined: 'bg-rose-50 text-rose-800 border border-rose-300 font-bold'
 };
 

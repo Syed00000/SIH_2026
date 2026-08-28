@@ -55,6 +55,15 @@ export class UniversityController {
     } catch (error) { next(error); }
   }
 
+  async updateFaculty(req, res, next) {
+    try {
+      const { id } = req.params;
+      const code = req.query.universityCode || req.user?.profile?.aisheCode || 'RUNI-JH';
+      const data = await universityService.updateFaculty(code, id, req.body);
+      res.status(200).json({ status: 'SUCCESS', message: 'Faculty updated successfully', data });
+    } catch (error) { next(error); }
+  }
+
   async deleteFaculty(req, res, next) {
     try {
       const { id } = req.params;

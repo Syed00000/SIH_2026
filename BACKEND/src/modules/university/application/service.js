@@ -22,8 +22,8 @@ export class UniversityService {
       district: c.district,
       priority: c.priority,
       status: c.status,
-      actionLabel: c.actionLabel || (c.status === 'Review' ? 'Review' : c.status === 'Faculty Pending' ? 'Assign' : 'View'),
-      actionText: c.actionLabel || (c.status === 'Review' ? 'Review' : c.status === 'Faculty Pending' ? 'Assign' : 'View'),
+      actionLabel: 'View',
+      actionText: 'View',
       assignedOn: c.assignedOn,
       deadline: c.deadline,
       problemStatement: c.problemStatement,
@@ -102,7 +102,7 @@ export class UniversityService {
     const mapped = (res.challenges || []).map((c) => ({
       ...c,
       id: c.challengeId,
-      actionText: c.actionLabel || (c.status === 'Review' ? 'Review' : c.status === 'Faculty Pending' ? 'Assign' : 'View')
+      actionText: 'View'
     }));
     return { ...res, challenges: mapped };
   }
@@ -121,6 +121,7 @@ export class UniversityService {
 
   async getFaculty(universityCode) { return await universityDashboardRepository.getFacultyByUniversity(universityCode); }
   async createFaculty(universityCode, data) { return await universityDashboardRepository.createFaculty(universityCode, data); }
+  async updateFaculty(universityCode, id, data) { return await universityDashboardRepository.updateFaculty(universityCode, id, data); }
   async deleteFaculty(universityCode, id) { return await universityDashboardRepository.deleteFaculty(universityCode, id); }
 
   async getProjects(universityCode) { return await universityDashboardRepository.getProjectsByUniversity(universityCode); }

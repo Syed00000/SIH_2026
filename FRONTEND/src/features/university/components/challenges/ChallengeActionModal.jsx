@@ -99,14 +99,22 @@ export const ChallengeActionModal = ({
                 </select>
               </div>
               <div>
-                <label className="font-bold text-slate-900 block mb-1">Remarks for Nodal Officer:</label>
+                <label className="font-bold text-slate-900 block mb-1">
+                  Remarks for Nodal Officer <span className="text-rose-600 font-bold">*</span>:
+                </label>
                 <textarea
-                  rows={2}
+                  required
+                  rows={3}
                   value={remarks}
                   onChange={(e) => setRemarks(e.target.value)}
-                  placeholder="Optional explanatory notes..."
-                  className="w-full p-2 bg-white border border-slate-200 rounded-none text-xs text-slate-900"
+                  placeholder="Type mandatory comments/reasons to enable decline..."
+                  className="w-full p-2 bg-white border border-slate-200 rounded-none text-xs text-slate-900 focus:border-slate-900 focus:outline-hidden"
                 />
+                {!remarks.trim() && (
+                  <p className="text-[10px] text-rose-600 mt-1 font-medium">
+                    * Please enter a comment above to enable the Confirm Decline button.
+                  </p>
+                )}
               </div>
             </div>
           )}
@@ -154,7 +162,12 @@ export const ChallengeActionModal = ({
             </button>
             <button
               type="submit"
-              className="px-3.5 py-1.5 bg-slate-900 hover:bg-black text-white text-xs font-bold rounded-none cursor-pointer shadow-xs"
+              disabled={(type === 'decline' && !remarks.trim()) || (type === 'clarify' && !remarks.trim())}
+              className={`px-3.5 py-1.5 text-xs font-bold rounded-none shadow-xs transition-colors ${
+                (type === 'decline' && !remarks.trim()) || (type === 'clarify' && !remarks.trim())
+                  ? 'bg-slate-200 text-slate-400 cursor-not-allowed border border-slate-300'
+                  : 'bg-slate-900 hover:bg-black text-white cursor-pointer'
+              }`}
             >
               {type === 'accept' && 'Confirm Acceptance'}
               {type === 'clarify' && 'Send Clarification'}

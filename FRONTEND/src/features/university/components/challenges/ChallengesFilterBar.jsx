@@ -24,11 +24,9 @@ export const ChallengesFilterBar = ({
           className="px-2 py-1.5 bg-white border border-slate-200 rounded-none text-xs text-slate-800 font-medium cursor-pointer"
         >
           <option value="All Status">All Status</option>
-          <option value="Review">Review</option>
+          <option value="Pending">Pending</option>
           <option value="Accepted">Accepted</option>
-          <option value="Faculty Pending">Faculty Pending</option>
-          <option value="Clarification">Clarification</option>
-          <option value="Declined">Declined</option>
+          <option value="Rejected">Rejected</option>
         </select>
 
         <select

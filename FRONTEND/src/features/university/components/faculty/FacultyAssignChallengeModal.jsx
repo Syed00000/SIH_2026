@@ -12,10 +12,11 @@ export const FacultyAssignChallengeModal = ({
   const [role, setRole] = useState('Primary Mentor');
   const [submitting, setSubmitting] = useState(false);
 
-  // Filter out challenges that are already assigned to this faculty
-  const availableChallenges = openChallenges.filter(
-    (c) => c.status === 'Faculty Pending' || c.status === 'Review' || !c.assignedFaculty?.name || c.assignedFaculty?.name === 'Unassigned'
-  );
+  // Filter only challenges that have been accepted by the institution
+  const availableChallenges = openChallenges.filter((c) => {
+    const s = String(c.status || '').toLowerCase();
+    return s.includes('accept') || s === 'completed';
+  });
 
   useEffect(() => {
     if (availableChallenges.length > 0) {
@@ -58,7 +59,7 @@ export const FacultyAssignChallengeModal = ({
         <form onSubmit={handleSubmit} className="p-4 space-y-3 text-xs text-slate-700">
           <div>
             <label className="block text-[10.5px] font-bold text-slate-900 uppercase mb-1">
-              Select Unallocated Grassroots Challenge
+              Select Accepted Grassroots Challenge
             </label>
             {availableChallenges.length > 0 ? (
               <select
@@ -75,7 +76,7 @@ export const FacultyAssignChallengeModal = ({
             ) : (
               <div className="p-3 bg-amber-50 border border-amber-200 text-amber-800 text-xs flex items-center space-x-1.5">
                 <AlertCircle className="w-4 h-4 text-amber-600 shrink-0" />
-                <span>All active challenges are currently assigned. No open unallocated challenges available.</span>
+                <span>No accepted challenges available for allocation. Please accept challenges from the Assigned Challenges panel first.</span>
               </div>
             )}
           </div>
