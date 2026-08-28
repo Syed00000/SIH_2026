@@ -40,24 +40,29 @@ export const CSRProposalPipelineTable = ({
   const [schemeFilter, setSchemeFilter] = useState('All');
   const [selectedProposal, setSelectedProposal] = useState(null);
 
-  const filtered = proposals.filter((p) => {
+  const safeProposals = Array.isArray(proposals) ? proposals : [];
+
+  const filtered = safeProposals.filter((p) => {
+    if (!p) return false;
     // 1. Search Query
     if (searchTerm.trim()) {
       const q = searchTerm.toLowerCase();
       const match =
-        p.id.toLowerCase().includes(q) ||
-        p.institutionName.toLowerCase().includes(q) ||
-        p.sourceScheme.toLowerCase().includes(q) ||
-        p.dueDiligence.toLowerCase().includes(q) ||
+        (p.id || '').toLowerCase().includes(q) ||
+        (p.institutionName || '').toLowerCase().includes(q) ||
+        (p.title || p.projectName || '').toLowerCase().includes(q) ||
+        (p.sourceScheme || '').toLowerCase().includes(q) ||
+        (p.dueDiligence || '').toLowerCase().includes(q) ||
         (p.district && p.district.toLowerCase().includes(q));
       if (!match) return false;
     }
 
     // 2. Scheme Filter
     if (schemeFilter !== 'All') {
-      if (schemeFilter === 'Corporate' && !p.sourceScheme.includes('Corporate')) return false;
-      if (schemeFilter === 'Govt' && !p.sourceScheme.includes('Govt')) return false;
-      if (schemeFilter === 'Joint' && !p.sourceScheme.includes('Joint')) return false;
+      const scheme = p.sourceScheme || '';
+      if (schemeFilter === 'Corporate' && !scheme.includes('Corporate')) return false;
+      if (schemeFilter === 'Govt' && !scheme.includes('Govt')) return false;
+      if (schemeFilter === 'Joint' && !scheme.includes('Joint')) return false;
     }
 
     // 3. Statutory Filter Card

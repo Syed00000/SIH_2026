@@ -16,8 +16,8 @@ import { projectCsrSyncService } from '../../services/projectCsrSyncService.js';
 
 export const CSRGrantsLifecycleDashboard = () => {
   const [activePhase, setActivePhase] = useState('phase_1_2');
-  const [proposals, setProposals] = useState(() => projectCsrSyncService.getCsrProposals());
-  const [ledger, setLedger] = useState(() => projectCsrSyncService.getCsrLedger());
+  const [proposals, setProposals] = useState(() => projectCsrSyncService.getCsrProposals() || []);
+  const [ledger, setLedger] = useState(() => projectCsrSyncService.getCsrLedger() || []);
   const [isDisbursalModalOpen, setIsDisbursalModalOpen] = useState(false);
   const [disbursalTargetProposal, setDisbursalTargetProposal] = useState(null);
   const [sourceFilter, setSourceFilter] = useState('All Sources');
@@ -26,28 +26,28 @@ export const CSRGrantsLifecycleDashboard = () => {
 
   useEffect(() => {
     return projectCsrSyncService.subscribe((eventType, data) => {
-      if (data?.updatedCsrLedger) setLedger(data.updatedCsrLedger);
-      if (data?.updatedCsrProposals) setProposals(data.updatedCsrProposals);
+      if (data?.updatedCsrLedger) setLedger(Array.isArray(data.updatedCsrLedger) ? data.updatedCsrLedger : []);
+      if (data?.updatedCsrProposals) setProposals(Array.isArray(data.updatedCsrProposals) ? data.updatedCsrProposals : []);
     });
   }, []);
 
   const handleUpdateProposal = (updatedProposal) => {
     const res = projectCsrSyncService.addOrUpdateCsrProposal(updatedProposal);
-    setProposals(res.updatedCsrProposals);
+    setProposals(Array.isArray(res) ? res : projectCsrSyncService.getCsrProposals() || []);
   };
 
   const handleDeleteProposal = (id) => {
     const updated = projectCsrSyncService.deleteCsrProposal(id);
-    setProposals(updated);
+    setProposals(Array.isArray(updated) ? updated : projectCsrSyncService.getCsrProposals() || []);
   };
 
   const handleAddNewDisbursal = (newPayment) => {
     const updated = projectCsrSyncService.recordDisbursal(newPayment);
-    setLedger(updated);
+    setLedger(Array.isArray(updated) ? updated : projectCsrSyncService.getCsrLedger() || []);
   };
 
   const handleAuthorizePayment = (paymentId) => {
-    const updated = ledger.map((item) =>
+    const updated = (ledger || []).map((item) =>
       item.id === paymentId ? { ...item, makerCheckerStatus: 'approved', bankStatus: 'ack' } : item
     );
     setLedger(updated);
@@ -59,11 +59,15 @@ export const CSRGrantsLifecycleDashboard = () => {
     setIsDisbursalModalOpen(true);
   };
 
-  const filteredProposals = proposals.filter((p) => {
+  const safeProposals = Array.isArray(proposals) ? proposals : [];
+
+  const filteredProposals = safeProposals.filter((p) => {
+    if (!p) return false;
     if (sourceFilter === 'All Sources') return true;
-    if (sourceFilter === 'Corporate CSR' && p.sourceScheme.includes('Corporate')) return true;
-    if (sourceFilter === 'Govt Grants' && p.sourceScheme.includes('Govt')) return true;
-    if (sourceFilter === 'Joint Co-Funding' && p.sourceScheme.includes('Joint')) return true;
+    const scheme = p.sourceScheme || '';
+    if (sourceFilter === 'Corporate CSR' && scheme.includes('Corporate')) return true;
+    if (sourceFilter === 'Govt Grants' && scheme.includes('Govt')) return true;
+    if (sourceFilter === 'Joint Co-Funding' && scheme.includes('Joint')) return true;
     return false;
   });
 

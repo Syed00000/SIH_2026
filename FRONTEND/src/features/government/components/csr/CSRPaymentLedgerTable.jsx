@@ -28,16 +28,19 @@ export const CSRPaymentLedgerTable = ({
   const [selectedPayment, setSelectedPayment] = useState(null);
   const [isInitiateModalOpen, setIsInitiateModalOpen] = useState(false);
 
-  const filtered = ledger.filter((row) => {
+  const safeLedger = Array.isArray(ledger) ? ledger : [];
+
+  const filtered = safeLedger.filter((row) => {
+    if (!row) return false;
     // 1. Search filter
     if (searchTerm.trim()) {
       const q = searchTerm.toLowerCase();
       const match =
-        row.id.toLowerCase().includes(q) ||
-        row.payer.toLowerCase().includes(q) ||
-        row.payee.toLowerCase().includes(q) ||
-        row.utrNumber.toLowerCase().includes(q) ||
-        row.mode.toLowerCase().includes(q);
+        (row.id || '').toLowerCase().includes(q) ||
+        (row.payer || '').toLowerCase().includes(q) ||
+        (row.payee || '').toLowerCase().includes(q) ||
+        (row.utrNumber || row.utr || '').toLowerCase().includes(q) ||
+        (row.mode || '').toLowerCase().includes(q);
       if (!match) return false;
     }
 
