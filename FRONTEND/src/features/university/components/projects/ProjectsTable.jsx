@@ -1,32 +1,5 @@
 import React, { useState } from 'react';
-import { Droplet, Compass, Leaf, HeartPulse, Sun, Users, MoreVertical, ChevronLeft, ChevronRight, Trash2 } from 'lucide-react';
-
-const getDomainIcon = (domain = '') => {
-  const d = domain.toLowerCase();
-  if (d.includes('water')) return <Droplet className="w-4 h-4 text-slate-800" />;
-  if (d.includes('infra') || d.includes('road')) return <Compass className="w-4 h-4 text-slate-800" />;
-  if (d.includes('environ') || d.includes('waste')) return <Leaf className="w-4 h-4 text-slate-800" />;
-  if (d.includes('health')) return <HeartPulse className="w-4 h-4 text-slate-800" />;
-  if (d.includes('energy') || d.includes('solar')) return <Sun className="w-4 h-4 text-slate-800" />;
-  return <Droplet className="w-4 h-4 text-slate-800" />;
-};
-
-const getDomainBadge = (domain = '') => {
-  const d = domain.toLowerCase();
-  if (d.includes('water')) return 'bg-slate-100 text-slate-900 border-slate-300';
-  if (d.includes('infra') || d.includes('road')) return 'bg-slate-100 text-slate-900 border-slate-300';
-  if (d.includes('environ') || d.includes('waste')) return 'bg-slate-100 text-slate-900 border-slate-300';
-  if (d.includes('health')) return 'bg-slate-100 text-slate-900 border-slate-300';
-  if (d.includes('energy') || d.includes('solar')) return 'bg-slate-100 text-slate-900 border-slate-300';
-  return 'bg-slate-100 text-slate-900 border-slate-300';
-};
-
-const getStatusBadge = (status = '') => {
-  if (status === 'In Progress') return 'bg-emerald-50 text-emerald-900 border-emerald-300';
-  if (status === 'Planning') return 'bg-slate-100 text-slate-900 border-slate-300';
-  if (status === 'Completed') return 'bg-purple-50 text-purple-900 border-purple-300';
-  return 'bg-rose-50 text-rose-900 border-rose-300';
-};
+import { Eye, Trash2, ChevronLeft, ChevronRight, ChevronDown, FolderGit2 } from 'lucide-react';
 
 export const ProjectsTable = ({
   projects = [],
@@ -36,171 +9,230 @@ export const ProjectsTable = ({
   loading = false
 }) => {
   const [currentPage, setCurrentPage] = useState(1);
-  const pageSize = 6;
+  const [itemsPerPage, setItemsPerPage] = useState(10);
 
-  const totalPages = Math.max(1, Math.ceil(projects.length / pageSize));
+  const totalRecords = projects.length;
+  const totalPages = Math.max(1, Math.ceil(totalRecords / itemsPerPage));
   const activePage = Math.min(currentPage, totalPages);
-  const startIndex = (activePage - 1) * pageSize;
-  const paginatedItems = projects.slice(startIndex, startIndex + pageSize);
+  const startIndex = (activePage - 1) * itemsPerPage;
+  const paginatedItems = projects.slice(startIndex, startIndex + itemsPerPage);
+
+  const getStatusColor = (status = '') => {
+    const s = status.toLowerCase();
+    if (s.includes('progress') || s.includes('track') || s.includes('active')) {
+      return { text: 'text-emerald-600', dot: 'bg-emerald-500' };
+    }
+    if (s.includes('complete')) {
+      return { text: 'text-purple-600', dot: 'bg-purple-500' };
+    }
+    if (s.includes('delay') || s.includes('risk') || s.includes('review')) {
+      return { text: 'text-amber-600', dot: 'bg-amber-500 animate-pulse' };
+    }
+    return { text: 'text-slate-600', dot: 'bg-slate-400' };
+  };
 
   return (
-    <div className="bg-white border border-slate-200 shadow-2xs select-none rounded-none overflow-hidden flex flex-col justify-between">
-      <div>
-        <div className="p-3 border-b border-slate-200 flex items-center justify-between bg-slate-50">
-          <h2 className="text-xs font-bold text-slate-900 tracking-tight uppercase">
-            Project List ({projects.length})
-          </h2>
-        </div>
-
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs text-slate-700">
-            <thead className="bg-slate-50 border-b border-slate-200 text-slate-700 font-bold uppercase tracking-wider text-[10.5px]">
+    <div className="border border-slate-200/90 rounded-lg overflow-hidden flex flex-col w-full shadow-2xs select-none bg-white">
+      <div className="overflow-x-auto w-full">
+        <table className="w-full text-left border-collapse min-w-[850px]">
+          <thead>
+            <tr className="border-b border-slate-100 bg-slate-50/60 text-[10.5px] font-bold text-slate-400 uppercase tracking-wider select-none">
+              <th className="py-2.5 px-2.5 w-[45px] text-center">#</th>
+              <th className="py-2.5 px-3 min-w-[210px]">Project / Innovation</th>
+              <th className="py-2.5 px-2.5 w-[140px]">Domain & Budget</th>
+              <th className="py-2.5 px-2.5 w-[160px]">Lead Mentor</th>
+              <th className="py-2.5 px-2.5 w-[140px]">Student Team</th>
+              <th className="py-2.5 px-2.5 w-[120px]">Timeline</th>
+              <th className="py-2.5 px-2.5 w-[95px]">Status</th>
+              <th className="py-2.5 px-3 w-[80px] text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-slate-100 text-xs">
+            {loading ? (
               <tr>
-                <th className="py-2.5 px-3">Project Details</th>
-                <th className="py-2.5 px-3">Challenge ID</th>
-                <th className="py-2.5 px-3">Domain</th>
-                <th className="py-2.5 px-3">Faculty Mentor</th>
-                <th className="py-2.5 px-3">Team</th>
-                <th className="py-2.5 px-3">Progress</th>
-                <th className="py-2.5 px-3">Status</th>
-                <th className="py-2.5 px-3">Deadline</th>
-                <th className="py-2.5 px-3 text-right">Action</th>
+                <td colSpan="8" className="py-12 text-center text-slate-400">
+                  <div className="font-semibold text-slate-600">Loading projects from database...</div>
+                </td>
               </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100 font-medium">
-              {loading ? (
-                [1, 2, 3, 4, 5, 6].map((i) => (
-                  <tr key={i} className="animate-pulse">
-                    <td colSpan={9} className="py-3 px-3">
-                      <div className="h-4 bg-slate-100 w-full" />
+            ) : paginatedItems.length === 0 ? (
+              <tr>
+                <td colSpan="8" className="py-12 text-center text-slate-400">
+                  <FolderGit2 className="w-7 h-7 text-slate-300 mx-auto mb-2" />
+                  <div className="font-semibold text-slate-600">No projects found</div>
+                </td>
+              </tr>
+            ) : (
+              paginatedItems.map((p, index) => {
+                const isSelected = selectedProjectId === (p.projectId || p._id);
+                const title = p.title || 'Project';
+                const firstLetter = title.charAt(0).toUpperCase();
+                const globalIndex = startIndex + index + 1;
+                const facultyName = p.facultyMentor?.name || p.leadMentor || 'Dr. Priya Sharma';
+                const facultyDept = p.facultyMentor?.department || 'Department of Engineering';
+                const statusStyle = getStatusColor(p.status || 'In Progress');
+
+                return (
+                  <tr
+                    key={p.projectId || p._id || index}
+                    onClick={() => onSelectProject(p)}
+                    className={`hover:bg-slate-50/70 transition-colors group select-none cursor-pointer ${
+                      isSelected ? 'bg-slate-100/60 border-l-4 border-l-slate-900' : ''
+                    }`}
+                  >
+                    {/* Index */}
+                    <td className="py-2.5 px-2.5 text-center font-mono text-[11px] font-semibold text-slate-400">
+                      {globalIndex}
+                    </td>
+
+                    {/* Main Entity Tile */}
+                    <td className="py-2.5 px-3">
+                      <div className="flex items-center space-x-2.5">
+                        <div className="w-7 h-7 rounded-md bg-slate-100 text-slate-700 font-bold text-[11px] flex items-center justify-center shrink-0 border border-slate-200/60">
+                          {firstLetter}
+                        </div>
+                        <div className="min-w-0 max-w-[210px]">
+                          <div
+                            className="font-bold text-slate-900 hover:text-slate-600 text-xs truncate leading-tight"
+                            title={title}
+                          >
+                            {title}
+                          </div>
+                          <div className="text-[10px] text-slate-400 font-mono mt-0.5 truncate">
+                            ID: {p.projectId} &bull; Ref: {p.challengeId || 'CHL-1024'}
+                          </div>
+                        </div>
+                      </div>
+                    </td>
+
+                    {/* Domain & Budget */}
+                    <td className="py-2.5 px-2.5">
+                      <div className="font-semibold text-slate-800 text-xs truncate max-w-[130px]" title={p.domain}>
+                        {p.domain}
+                      </div>
+                      <div className="text-[10px] text-slate-400 font-mono mt-0.5">{p.budget || '₹ 75,000'}</div>
+                    </td>
+
+                    {/* Lead Mentor */}
+                    <td className="py-2.5 px-2.5">
+                      <div className="font-bold text-slate-900 text-xs leading-tight truncate max-w-[150px]">
+                        {facultyName}
+                      </div>
+                      <div className="text-[10px] text-slate-400 mt-0.5 truncate max-w-[150px]">
+                        {facultyDept}
+                      </div>
+                    </td>
+
+                    {/* Student Team */}
+                    <td className="py-2.5 px-2.5">
+                      <div className="font-semibold text-slate-800 text-xs truncate max-w-[130px]" title={p.studentTeam}>
+                        {p.studentTeam || 'Innovation Team'}
+                      </div>
+                      <div className="text-[10px] text-slate-400 mt-0.5">
+                        {p.teamMembersCount || 5} Members
+                      </div>
+                    </td>
+
+                    {/* Timeline / Deadline */}
+                    <td className="py-2.5 px-2.5 whitespace-nowrap">
+                      <div className="font-semibold text-slate-800 text-xs">{p.deadline || '30 Nov 2026'}</div>
+                      <div className="text-[10px] text-slate-400 font-mono mt-0.5">{p.daysLeft || 'Active'}</div>
+                    </td>
+
+                    {/* Status */}
+                    <td className="py-2.5 px-2.5 whitespace-nowrap">
+                      <span className={`inline-flex items-center space-x-1.5 text-[11px] font-semibold ${statusStyle.text}`}>
+                        <span className={`w-1.5 h-1.5 rounded-full ${statusStyle.dot}`} />
+                        <span>{p.status || 'In Progress'}</span>
+                      </span>
+                    </td>
+
+                    {/* Actions */}
+                    <td className="py-2.5 px-3 text-right whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
+                      <div className="flex items-center justify-end space-x-1">
+                        <button
+                          type="button"
+                          onClick={() => onSelectProject(p)}
+                          className="p-1.5 text-slate-400 hover:text-slate-900 hover:bg-slate-100 rounded-md transition-colors cursor-pointer"
+                          title="View Details"
+                        >
+                          <Eye className="w-4 h-4" />
+                        </button>
+                        {onSoftDeleteProject && (
+                          <button
+                            type="button"
+                            onClick={() => onSoftDeleteProject(p)}
+                            className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-md transition-colors cursor-pointer"
+                            title="Archive Project"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        )}
+                      </div>
                     </td>
                   </tr>
-                ))
-              ) : paginatedItems.length === 0 ? (
-                <tr>
-                  <td colSpan={9} className="py-8 text-center text-slate-500 font-medium text-xs">
-                    No projects match your selected filters.
-                  </td>
-                </tr>
-              ) : (
-                paginatedItems.map((p) => {
-                  const isSelected = selectedProjectId === (p.projectId || p._id);
-                  const facultyName = p.facultyMentor?.name || p.leadMentor || 'Dr. Priya Sharma';
-                  const initials = facultyName.split(' ').map((w) => w[0]).join('').slice(0, 2).toUpperCase();
-
-                  return (
-                    <tr
-                      key={p.projectId || p._id}
-                      onClick={() => onSelectProject(p)}
-                      className={`hover:bg-slate-50 transition-colors cursor-pointer ${
-                        isSelected ? 'bg-slate-100 border-l-4 border-l-slate-900' : ''
-                      }`}
-                    >
-                      <td className="py-2.5 px-3">
-                        <div className="flex items-center space-x-2.5">
-                          <div className="w-7 h-7 rounded-none bg-slate-100 border border-slate-200 flex items-center justify-center shrink-0">
-                            {getDomainIcon(p.domain)}
-                          </div>
-                          <div className="font-bold text-slate-900 leading-tight max-w-[200px] truncate" title={p.title}>
-                            {p.title}
-                          </div>
-                        </div>
-                      </td>
-                      <td className="py-2.5 px-3 font-mono font-bold text-slate-700">{p.challengeId || 'CHL-1024'}</td>
-                      <td className="py-2.5 px-3">
-                        <span className={`px-2 py-0.5 text-[10.5px] font-bold border rounded-none ${getDomainBadge(p.domain)}`}>
-                          {p.domain}
-                        </span>
-                      </td>
-                      <td className="py-2.5 px-3">
-                        <div className="flex items-center space-x-2">
-                          <div className="w-6 h-6 rounded-full bg-slate-900 text-white flex items-center justify-center text-[10px] font-bold shrink-0">
-                            {initials}
-                          </div>
-                          <span className="font-semibold text-slate-900 text-[11.5px]">{facultyName}</span>
-                        </div>
-                      </td>
-                      <td className="py-2.5 px-3">
-                        <span className="flex items-center space-x-1 text-slate-700 font-mono text-xs">
-                          <Users className="w-3.5 h-3.5 text-slate-400" />
-                          <span>{p.teamMembersCount || 5}</span>
-                        </span>
-                      </td>
-                      <td className="py-2.5 px-3">
-                        <div className="w-24">
-                          <div className="flex justify-between items-center text-[10px] font-bold font-mono mb-0.5">
-                            <span>{p.progressPercentage || 50}%</span>
-                          </div>
-                          <div className="w-full bg-slate-100 h-1.5 border border-slate-200">
-                            <div className="bg-slate-900 h-1.5" style={{ width: `${p.progressPercentage || 50}%` }} />
-                          </div>
-                        </div>
-                      </td>
-                      <td className="py-2.5 px-3">
-                        <span className={`px-2 py-0.5 text-[10px] font-bold border rounded-none ${getStatusBadge(p.status)}`}>
-                          {p.status}
-                        </span>
-                      </td>
-                      <td className="py-2.5 px-3">
-                        <div className="text-[11px] font-medium text-slate-900">{p.deadline || '30 Nov 2026'}</div>
-                        <div className="text-[10px] text-rose-600 font-bold">{p.daysLeft || '192 days left'}</div>
-                      </td>
-                      <td className="py-2.5 px-3 text-right">
-                        <div className="flex items-center justify-end space-x-1" onClick={(e) => e.stopPropagation()}>
-                          <button
-                            onClick={() => onSelectProject(p)}
-                            className="px-2.5 py-1 bg-slate-900 hover:bg-black text-white text-xs font-bold rounded-none cursor-pointer transition-colors"
-                          >
-                            View
-                          </button>
-                          <button
-                            onClick={() => onSoftDeleteProject && onSoftDeleteProject(p)}
-                            title="Soft Delete / Archive Project"
-                            className="p-1 text-slate-400 hover:text-rose-600 cursor-pointer"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
-        </div>
+                );
+              })
+            )}
+          </tbody>
+        </table>
       </div>
 
-      <div className="px-3.5 py-2 border-t border-slate-200 flex items-center justify-between text-xs text-slate-500 bg-slate-50">
-        <div>Showing {projects.length === 0 ? 0 : startIndex + 1} to {Math.min(startIndex + pageSize, projects.length)} of {projects.length} projects</div>
-        <div className="flex items-center space-x-1">
-          <button
-            disabled={activePage === 1}
-            onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-            className="p-1 border border-slate-200 rounded-none hover:bg-slate-100 disabled:opacity-40 text-slate-600 cursor-pointer"
-          >
-            <ChevronLeft className="w-3.5 h-3.5" />
-          </button>
+      {/* Pagination Footer */}
+      <div className="p-3.5 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500 bg-slate-50/30">
+        <div>
+          Showing <span className="font-bold text-slate-800">{projects.length > 0 ? startIndex + 1 : 0}</span> to{' '}
+          <span className="font-bold text-slate-800">{Math.min(startIndex + itemsPerPage, totalRecords)}</span> of{' '}
+          <span className="font-bold text-slate-800">{totalRecords}</span> projects
+        </div>
 
-          {Array.from({ length: totalPages }, (_, i) => i + 1).map((pNum) => (
-            <button
-              key={pNum}
-              onClick={() => setCurrentPage(pNum)}
-              className={`w-6 h-6 rounded-none font-bold text-xs flex items-center justify-center cursor-pointer ${
-                activePage === pNum ? 'bg-slate-900 text-white' : 'border border-slate-200 hover:bg-slate-100 text-slate-700'
-              }`}
+        <div className="flex items-center space-x-2.5">
+          <div className="relative">
+            <select
+              value={itemsPerPage}
+              onChange={(e) => {
+                setItemsPerPage(Number(e.target.value));
+                setCurrentPage(1);
+              }}
+              className="bg-white border border-slate-200 rounded-md px-2 py-1 pr-6 text-xs font-medium text-slate-700 hover:border-slate-300 focus:outline-none cursor-pointer appearance-none shadow-2xs"
             >
-              {pNum}
-            </button>
-          ))}
+              <option value={5}>5 per page</option>
+              <option value={10}>10 per page</option>
+              <option value={20}>20 per page</option>
+            </select>
+            <ChevronDown className="w-3.5 h-3.5 text-slate-400 absolute right-1.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+          </div>
 
-          <button
-            disabled={activePage === totalPages || totalPages === 0}
-            onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-            className="p-1 border border-slate-200 rounded-none hover:bg-slate-100 disabled:opacity-40 text-slate-600 cursor-pointer"
-          >
-            <ChevronRight className="w-3.5 h-3.5" />
-          </button>
+          <div className="flex items-center space-x-1">
+            <button
+              disabled={activePage <= 1}
+              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+              className="w-7 h-7 rounded-md border border-slate-200 flex items-center justify-center text-slate-600 hover:bg-slate-50 disabled:opacity-40 cursor-pointer shadow-2xs"
+            >
+              <ChevronLeft className="w-3.5 h-3.5" />
+            </button>
+
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => (
+              <button
+                key={pageNum}
+                onClick={() => setCurrentPage(pageNum)}
+                className={`w-7 h-7 rounded-md text-xs font-bold transition-colors cursor-pointer ${
+                  activePage === pageNum
+                    ? 'bg-slate-900 text-white shadow-xs'
+                    : 'border border-slate-200 text-slate-700 hover:bg-slate-50'
+                }`}
+              >
+                {pageNum}
+              </button>
+            ))}
+
+            <button
+              disabled={activePage >= totalPages}
+              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+              className="w-7 h-7 rounded-md border border-slate-200 flex items-center justify-center text-slate-600 hover:bg-slate-50 disabled:opacity-40 cursor-pointer shadow-2xs"
+            >
+              <ChevronRight className="w-3.5 h-3.5" />
+            </button>
+          </div>
         </div>
       </div>
     </div>

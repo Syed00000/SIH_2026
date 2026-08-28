@@ -19,7 +19,7 @@ const NAV_ITEMS = [
   { id: 'dashboard', label: 'Dashboard', icon: Home },
   { id: 'challenges', label: 'Assigned Challenges', icon: Layers },
   { id: 'faculty', label: 'Faculty Mentors', icon: GraduationCap },
-  { id: 'projects', label: 'Projects', icon: Briefcase },
+  { id: 'projects', label: 'Projects Portfolio', icon: Briefcase },
   { id: 'partners', label: 'Industry Partners', icon: Handshake },
   { id: 'approvals', label: 'Approvals', icon: CheckCircle2 },
   { id: 'reports', label: 'Reports & Analytics', icon: BarChart3 },

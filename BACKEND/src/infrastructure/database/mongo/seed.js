@@ -2,6 +2,9 @@ import bcrypt from 'bcryptjs';
 import config from '../../../shared/config/index.js';
 import logger from '../../../shared/logger/index.js';
 import MongoUserRepository from '../../../modules/users/infrastructure/repository.js';
+import seedUniversityDatabase from './seedUniversity.js';
+
+export { seedUniversityDatabase };
 
 const userRepository = new MongoUserRepository();
 
@@ -91,6 +94,11 @@ export const seedGovtAdmin = async () => {
     logger.error('Failed to seed default users', error);
     return false;
   }
+};
+
+export const seedAll = async () => {
+  await seedGovtAdmin();
+  await seedUniversityDatabase();
 };
 
 export default seedGovtAdmin;

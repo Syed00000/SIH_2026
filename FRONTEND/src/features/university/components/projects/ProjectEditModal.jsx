@@ -63,17 +63,6 @@ export const ProjectEditModal = ({ isOpen, onClose, project, onUpdate }) => {
             />
           </div>
 
-          <div>
-            <label className="font-bold text-slate-700 block mb-1">Overall Progress ({progress}%)</label>
-            <input
-              type="range"
-              min="0"
-              max="100"
-              value={progress}
-              onChange={(e) => setProgress(e.target.value)}
-              className="w-full cursor-pointer accent-blue-600"
-            />
-          </div>
 
           <div className="grid grid-cols-2 gap-2.5">
             <div>

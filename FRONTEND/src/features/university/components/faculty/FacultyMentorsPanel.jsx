@@ -7,7 +7,7 @@ import { FacultyAddModal } from './FacultyAddModal.jsx';
 import { FacultyAssignChallengeModal } from './FacultyAssignChallengeModal.jsx';
 import { universityApiService } from '../../services/universityApiService.js';
 
-export const FacultyMentorsPanel = () => {
+export const FacultyMentorsPanel = ({ onNavigateTab, onSelectFacultyDetail, onSelectFacultyEdit }) => {
   const [facultyList, setFacultyList] = useState([]);
   const [projectsList, setProjectsList] = useState([]);
   const [challengesList, setChallengesList] = useState([]);
@@ -38,7 +38,7 @@ export const FacultyMentorsPanel = () => {
       if (prev && fList.some((f) => (f._id && f._id === prev._id) || f.email === prev.email)) {
         return fList.find((f) => (f._id && f._id === prev._id) || f.email === prev.email);
       }
-      return fList.length > 0 ? fList[0] : null;
+      return null;
     });
     setLoading(false);
   };
@@ -75,11 +75,54 @@ export const FacultyMentorsPanel = () => {
     }
   };
 
-  const handleConfirmAssign = async ({ faculty, challengeId }) => {
+  const handleConfirmAssign = async ({ faculty, challengeId, role }) => {
+    const targetEmail = faculty.email;
+    const targetName = faculty.name;
+    const targetId = faculty.id || faculty._id || faculty.facultyId;
+
+    // Immediately update local UI state for instant responsiveness
+    setFacultyList((prev) =>
+      prev.map((f) => {
+        const isMatch = (targetId && (f.id === targetId || f._id === targetId || f.facultyId === targetId)) ||
+                        (targetEmail && f.email === targetEmail) ||
+                        (targetName && f.name === targetName);
+        if (isMatch) {
+          return {
+            ...f,
+            availabilityStatus: 'In Project',
+            activeProjects: (Number(f.activeProjects) || 0) + 1,
+            assignedChallengeId: challengeId
+          };
+        }
+        return f;
+      })
+    );
+
+    setSelectedFaculty((prev) => {
+      if (!prev) return prev;
+      const isMatch = (targetId && (prev.id === targetId || prev._id === targetId || prev.facultyId === targetId)) ||
+                      (targetEmail && prev.email === targetEmail) ||
+                      (targetName && prev.name === targetName);
+      if (isMatch) {
+        return {
+          ...prev,
+          availabilityStatus: 'In Project',
+          activeProjects: (Number(prev.activeProjects) || 0) + 1,
+          assignedChallengeId: challengeId
+        };
+      }
+      return prev;
+    });
+
+    setChallengesList((prev) =>
+      prev.map((c) => (c.id === challengeId || c.challengeId === challengeId ? { ...c, assignedFaculty: { name: faculty.name, email: faculty.email, department: faculty.department } } : c))
+    );
+
     await universityApiService.assignFaculty(challengeId, 'RU001', {
       name: faculty.name,
       department: faculty.department,
-      email: faculty.email
+      email: faculty.email,
+      role: role || 'Primary Mentor'
     });
     await fetchFacultyAndProjects();
   };
@@ -89,12 +132,20 @@ export const FacultyMentorsPanel = () => {
     if (availabilityFilter !== 'All' && f.availabilityStatus !== availabilityFilter) return false;
     if (statusFilter !== 'All' && f.status !== statusFilter) return false;
     if (domainFilter !== 'All') {
-      const specs = f.specialization || [];
+      const specs = Array.isArray(f.specialization)
+        ? f.specialization
+        : typeof f.specialization === 'string'
+        ? f.specialization.split(',').map((s) => s.trim()).filter(Boolean)
+        : [];
       if (!specs.some((s) => s.toLowerCase().includes(domainFilter.toLowerCase()))) return false;
     }
     if (search.trim()) {
       const q = search.toLowerCase();
-      return f.name.toLowerCase().includes(q) || f.department.toLowerCase().includes(q) || (f.email && f.email.toLowerCase().includes(q));
+      return (
+        (f.name && f.name.toLowerCase().includes(q)) ||
+        (f.department && f.department.toLowerCase().includes(q)) ||
+        (f.email && f.email.toLowerCase().includes(q))
+      );
     }
     return true;
   });
@@ -127,31 +178,29 @@ export const FacultyMentorsPanel = () => {
         statusFilter={statusFilter}
         setStatusFilter={setStatusFilter}
         onResetFilters={handleResetFilters}
-        onOpenAddModal={() => setIsAddModalOpen(true)}
+        onOpenAddModal={() => {
+          if (onNavigateTab) onNavigateTab('onboard-faculty');
+          else setIsAddModalOpen(true);
+        }}
       />
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-3.5 items-start">
-        <div className={`${selectedFaculty ? 'lg:col-span-7' : 'lg:col-span-12'} transition-all`}>
-          <FacultyTable
-            facultyList={filtered}
-            selectedFacultyId={selectedFaculty?._id || selectedFaculty?.name}
-            onSelectFaculty={(f) => setSelectedFaculty(f)}
-            loading={loading}
-          />
-        </div>
-
-        {selectedFaculty && (
-          <div className="lg:col-span-5 sticky top-20">
-            <FacultyProfileDrawer
-              faculty={selectedFaculty}
-              projects={projectsList}
-              onClose={() => setSelectedFaculty(null)}
-              onAssignChallenge={() => setIsAssignModalOpen(true)}
-              onDeleteFaculty={handleDeleteFaculty}
-              onUnassignProject={handleUnassignProject}
-            />
-          </div>
-        )}
+      <div className="w-full">
+        <FacultyTable
+          facultyList={filtered}
+          selectedFacultyId={null}
+          onSelectFaculty={(f) => {
+            setSelectedFaculty(f);
+            if (onSelectFacultyDetail) onSelectFacultyDetail(f, projectsList, challengesList);
+            if (onNavigateTab) onNavigateTab('faculty-detail');
+          }}
+          onEditFaculty={(f) => {
+            setSelectedFaculty(f);
+            if (onSelectFacultyEdit) onSelectFacultyEdit(f);
+            else if (onSelectFacultyDetail) onSelectFacultyDetail(f, projectsList, challengesList);
+            if (onNavigateTab) onNavigateTab('edit-faculty');
+          }}
+          loading={loading}
+        />
       </div>
 
       <FacultyAddModal

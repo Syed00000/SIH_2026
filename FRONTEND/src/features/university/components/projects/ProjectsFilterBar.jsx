@@ -88,13 +88,6 @@ export const ProjectsFilterBar = ({
           <RotateCcw className="w-3 h-3 text-slate-400" />
           <span>Clear Filters</span>
         </button>
-        <button
-          onClick={onOpenCreateModal}
-          className="px-3.5 py-1.5 bg-slate-900 hover:bg-black text-white text-xs font-bold rounded-none flex items-center space-x-1 cursor-pointer transition-colors shadow-2xs"
-        >
-          <Plus className="w-3.5 h-3.5" />
-          <span>+ New Project</span>
-        </button>
       </div>
     </div>
   );

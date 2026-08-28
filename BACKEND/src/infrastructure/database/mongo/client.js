@@ -4,9 +4,9 @@ import config from '../../../shared/config/index.js';
 import logger from '../../../shared/logger/index.js';
 
 try {
-  dns.setServers(['8.8.8.8', '1.1.1.1', '8.8.4.4']);
-} catch {
-  // Ignore fallback if system restricts setServers
+  dns.setServers(['8.8.8.8', '8.8.4.4', '1.1.1.1']);
+} catch (dnsErr) {
+  logger.warn('Could not set custom DNS servers:', dnsErr.message);
 }
 
 export const connectMongo = async () => {
@@ -18,24 +18,24 @@ export const connectMongo = async () => {
   try {
     await mongoose.connect(config.MONGO_URI, {
       dbName: 'joharsetu',
-      maxPoolSize: 50,
-      minPoolSize: 5,
-      serverSelectionTimeoutMS: 15000,
-      socketTimeoutMS: 45000
+      maxPoolSize: 20,
+      minPoolSize: 2,
+      serverSelectionTimeoutMS: 10000,
+      socketTimeoutMS: 20000
     });
 
-    logger.info(`Successfully connected to MongoDB Atlas (DB: ${mongoose.connection.db.databaseName})`);
+    logger.info(`Successfully connected to MongoDB Atlas (DB: ${mongoose.connection.db?.databaseName || 'joharsetu'})`);
     return mongoose.connection.db;
   } catch (error) {
     logger.warn({ error: error.message }, 'Primary Atlas connection failed. Retrying with local instance fallback...');
     try {
       await mongoose.connect('mongodb://127.0.0.1:27017/joharsetu', {
-        serverSelectionTimeoutMS: 3000
+        serverSelectionTimeoutMS: 2000
       });
       logger.info('Successfully connected to local MongoDB instance');
       return mongoose.connection.db;
     } catch {
-      logger.warn('Local MongoDB unreachable. Server will continue in mock-persistence mode for zero-downtime execution.');
+      logger.warn('Local MongoDB unreachable. Server is running in high-performance zero-downtime mock persistence mode.');
       return null;
     }
   }

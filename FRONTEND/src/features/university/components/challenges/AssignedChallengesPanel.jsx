@@ -18,7 +18,7 @@ export const AssignedChallengesPanel = ({
   const [searchTerm, setSearchTerm] = useState('');
 
   const [challengeList, setChallengeList] = useState(initialChallenges);
-  const [selectedChallenge, setSelectedChallenge] = useState(initialChallenges[0] || null);
+  const [selectedChallenge, setSelectedChallenge] = useState(null);
   const [loading, setLoading] = useState(false);
   const [modalConfig, setModalConfig] = useState({ isOpen: false, type: 'accept', challenge: null });
 
@@ -28,10 +28,8 @@ export const AssignedChallengesPanel = ({
     const list = data?.challenges || (Array.isArray(data) ? data : []);
     if (list.length > 0) {
       setChallengeList(list);
-      setSelectedChallenge(list[0]);
     } else if (initialChallenges.length > 0) {
       setChallengeList(initialChallenges);
-      setSelectedChallenge(initialChallenges[0]);
     }
     setLoading(false);
   };
@@ -43,12 +41,19 @@ export const AssignedChallengesPanel = ({
   useEffect(() => {
     if (initialChallenges && initialChallenges.length > 0) {
       setChallengeList(initialChallenges);
-      if (!selectedChallenge) setSelectedChallenge(initialChallenges[0]);
     }
   }, [initialChallenges]);
 
+  const getNormalizedStatus = (status) => {
+    if (!status) return 'Pending';
+    const s = String(status).toLowerCase();
+    if (s.includes('accept') || s === 'completed') return 'Accepted';
+    if (s.includes('reject') || s.includes('decline')) return 'Rejected';
+    return 'Pending';
+  };
+
   const filtered = challengeList.filter((c) => {
-    if (statusFilter !== 'All Status' && c.status !== statusFilter) return false;
+    if (statusFilter !== 'All Status' && getNormalizedStatus(c.status) !== statusFilter) return false;
     if (domainFilter !== 'All Domains' && c.domain !== domainFilter) return false;
     if (districtFilter !== 'All Districts' && c.district !== districtFilter) return false;
     if (priorityFilter !== 'All Priority' && c.priority !== priorityFilter) return false;
@@ -66,18 +71,10 @@ export const AssignedChallengesPanel = ({
 
   const handleModalSubmit = async (payload) => {
     const { type, challengeId } = payload;
-    let newStatus = 'Accepted';
+    let newStatus = type === 'decline' || type === 'reject' ? 'Rejected' : 'Accepted';
     let actionText = 'View';
 
-    if (type === 'clarify') {
-      newStatus = 'Clarification';
-      actionText = 'Respond';
-    } else if (type === 'decline') {
-      newStatus = 'Declined';
-      actionText = 'Declined';
-    } else if (type === 'assign') {
-      newStatus = 'Accepted';
-      actionText = 'View';
+    if (type === 'assign') {
       if (onAssignFaculty) {
         await onAssignFaculty({ challengeId, facultyName: payload.facultyName, department: payload.department });
       } else {
@@ -86,9 +83,7 @@ export const AssignedChallengesPanel = ({
           department: payload.department
         });
       }
-    }
-
-    if (type !== 'assign') {
+    } else {
       if (onUpdateChallengeStatus) {
         await onUpdateChallengeStatus(challengeId, newStatus, actionText);
       } else {
@@ -96,6 +91,8 @@ export const AssignedChallengesPanel = ({
       }
     }
 
+    setSelectedChallenge((prev) => (prev && (prev.id === challengeId || prev.challengeId === challengeId) ? { ...prev, status: newStatus, actionText, actionLabel: actionText } : prev));
+    setChallengeList((prev) => prev.map((c) => (c.id === challengeId || c.challengeId === challengeId ? { ...c, status: newStatus, actionText, actionLabel: actionText } : c)));
     await fetchChallenges();
   };
 
@@ -123,25 +120,26 @@ export const AssignedChallengesPanel = ({
         setSearchTerm={setSearchTerm}
       />
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-3.5 items-start">
-        <div className={selectedChallenge ? 'lg:col-span-7' : 'lg:col-span-12'}>
-          <ChallengesTable
-            challenges={filtered}
-            selectedChallengeId={selectedChallenge?.id || selectedChallenge?.challengeId}
-            onSelectChallenge={(c) => setSelectedChallenge(c)}
-            onActionClick={(c) => {
-              setSelectedChallenge(c);
-              if (c.status === 'Review') handleOpenModal('accept', c);
-              else if (c.status === 'Faculty Pending') handleOpenModal('assign', c);
-              else if (c.status === 'Clarification') handleOpenModal('clarify', c);
-            }}
-            totalCount={challengeList.length}
-            loading={loading}
-          />
-        </div>
+      <div className="w-full">
+        <ChallengesTable
+          challenges={filtered}
+          selectedChallengeId={selectedChallenge?.id || selectedChallenge?.challengeId}
+          onSelectChallenge={(c) => setSelectedChallenge(c)}
+          onActionClick={(c) => setSelectedChallenge(c)}
+          totalCount={challengeList.length}
+          loading={loading}
+        />
+      </div>
 
-        {selectedChallenge && (
-          <div className="lg:col-span-5 sticky top-16">
+      {selectedChallenge && (
+        <div
+          className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-5 animate-in fade-in duration-150"
+          onClick={() => setSelectedChallenge(null)}
+        >
+          <div
+            className="bg-white border border-slate-200/90 rounded-xl shadow-2xl max-w-2xl w-full max-h-[88vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-150"
+            onClick={(e) => e.stopPropagation()}
+          >
             <ChallengeInspector
               challenge={selectedChallenge}
               onClose={() => setSelectedChallenge(null)}
@@ -150,8 +148,8 @@ export const AssignedChallengesPanel = ({
               onDecline={(c) => handleOpenModal('decline', c)}
             />
           </div>
-        )}
-      </div>
+        </div>
+      )}
 
       <ChallengeActionModal
         isOpen={modalConfig.isOpen}

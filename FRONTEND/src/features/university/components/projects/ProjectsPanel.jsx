@@ -7,7 +7,7 @@ import { ProjectCreateModal } from './ProjectCreateModal.jsx';
 import { ProjectEditModal } from './ProjectEditModal.jsx';
 import { universityApiService } from '../../services/universityApiService.js';
 
-export const ProjectsPanel = () => {
+export const ProjectsPanel = ({ onNavigateTab }) => {
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedProject, setSelectedProject] = useState(null);
@@ -24,11 +24,6 @@ export const ProjectsPanel = () => {
     const data = await universityApiService.getProjects('RU001');
     const list = Array.isArray(data) ? data : [];
     setProjects(list);
-    if (list.length > 0) {
-      setSelectedProject(list[0]);
-    } else {
-      setSelectedProject(null);
-    }
     setLoading(false);
   };
 
@@ -133,22 +128,31 @@ export const ProjectsPanel = () => {
         setFacultyFilter={setFacultyFilter}
         facultyOptions={facultyOptions}
         onResetFilters={handleResetFilters}
-        onOpenCreateModal={() => setIsCreateModalOpen(true)}
+        onOpenCreateModal={() => {
+          if (onNavigateTab) onNavigateTab('create-project');
+          else setIsCreateModalOpen(true);
+        }}
       />
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 items-start">
-        <div className={`${selectedProject ? 'lg:col-span-7' : 'lg:col-span-12'} transition-all`}>
-          <ProjectsTable
-            projects={filtered}
-            selectedProjectId={selectedProject?.projectId}
-            onSelectProject={(p) => setSelectedProject(p)}
-            onSoftDeleteProject={handleSoftDeleteProject}
-            loading={loading}
-          />
-        </div>
+      <div className="w-full">
+        <ProjectsTable
+          projects={filtered}
+          selectedProjectId={selectedProject?.projectId}
+          onSelectProject={(p) => setSelectedProject(p)}
+          onSoftDeleteProject={handleSoftDeleteProject}
+          loading={loading}
+        />
+      </div>
 
-        {selectedProject && (
-          <div className="lg:col-span-5 sticky top-20">
+      {selectedProject && (
+        <div
+          className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-5 animate-in fade-in duration-150"
+          onClick={() => setSelectedProject(null)}
+        >
+          <div
+            className="bg-white border border-slate-200/90 rounded-xl shadow-2xl max-w-2xl w-full max-h-[88vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-150"
+            onClick={(e) => e.stopPropagation()}
+          >
             <ProjectDrawer
               project={selectedProject}
               onClose={() => setSelectedProject(null)}
@@ -160,8 +164,8 @@ export const ProjectsPanel = () => {
               onMarkCompleted={handleMarkAsCompleted}
             />
           </div>
-        )}
-      </div>
+        </div>
+      )}
 
       <ProjectCreateModal
         isOpen={isCreateModalOpen}

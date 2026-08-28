@@ -1,21 +1,33 @@
 import apiClient from '../../../infrastructure/api/client.js';
 
-export const DEFAULT_UNIVERSITY_CODE = 'RUNI-JH';
+export const DEFAULT_UNIVERSITY_CODE = 'RU001';
 
 export const universityApiService = {
   async getDashboardSummary(universityCode = DEFAULT_UNIVERSITY_CODE) {
     try {
       const res = await apiClient.get(`university/dashboard?universityCode=${encodeURIComponent(universityCode)}`);
-      if (res?.data) return res.data;
+      if (res?.data && res.data.kpis) return res.data;
     } catch (err) { console.error('API getDashboardSummary error:', err.message); }
-    return null;
+    return {
+      name: 'Ranchi University',
+      kpis: {
+        assignedChallenges: { total: 0, reviewNeeded: 0 },
+        activeProjects: { total: 0, delayed: 0 },
+        facultyMentors: { total: 0, onLeave: 0 },
+        pendingApprovals: { total: 0 },
+        industryPartners: { total: 0 }
+      },
+      challenges: [],
+      projects: [],
+      faculty: []
+    };
   },
 
   async getAssignedChallenges(universityCode = DEFAULT_UNIVERSITY_CODE, params = {}) {
     try {
       const query = new URLSearchParams({ universityCode, ...params });
       const res = await apiClient.get(`university/challenges?${query.toString()}`);
-      if (res?.data) return res.data;
+      if (res?.data && (res.data.challenges?.length !== undefined || Array.isArray(res.data))) return res.data;
     } catch (err) { console.error('API getAssignedChallenges error:', err.message); }
     return { challenges: [], total: 0 };
   },
@@ -43,7 +55,7 @@ export const universityApiService = {
   async getFaculty(universityCode = DEFAULT_UNIVERSITY_CODE) {
     try {
       const res = await apiClient.get(`university/faculty?universityCode=${encodeURIComponent(universityCode)}`);
-      if (res?.data) return res.data;
+      if (res?.data && Array.isArray(res.data)) return res.data;
     } catch (err) { console.error('API getFaculty error:', err.message); }
     return [];
   },
@@ -54,6 +66,14 @@ export const universityApiService = {
       if (res?.data) return res.data;
     } catch (err) { console.error('API createFaculty error:', err.message); }
     return facultyData;
+  },
+
+  async updateFaculty(facultyId, updateData, universityCode = DEFAULT_UNIVERSITY_CODE) {
+    try {
+      const res = await apiClient.patch(`university/faculty/${encodeURIComponent(facultyId)}?universityCode=${encodeURIComponent(universityCode)}`, updateData);
+      if (res?.data) return res.data;
+    } catch (err) { console.error('API updateFaculty error:', err.message); }
+    return { facultyId, ...updateData };
   },
 
   async deleteFaculty(facultyId, universityCode = DEFAULT_UNIVERSITY_CODE) {
@@ -75,7 +95,7 @@ export const universityApiService = {
   async getProjects(universityCode = DEFAULT_UNIVERSITY_CODE) {
     try {
       const res = await apiClient.get(`university/projects?universityCode=${encodeURIComponent(universityCode)}`);
-      if (res?.data) return res.data;
+      if (res?.data && Array.isArray(res.data)) return res.data;
     } catch (err) { console.error('API getProjects error:', err.message); }
     return [];
   },
