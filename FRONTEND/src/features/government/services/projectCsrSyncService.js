@@ -1,5 +1,15 @@
 import apiClient from '../../../infrastructure/api/client.js';
 
+const formatBudget = (b) => {
+  if (!b) return '₹ 75,000';
+  if (typeof b === 'number') return `₹ ${b.toLocaleString('en-IN')}`;
+  if (typeof b === 'object') {
+    const amt = b.total || b.amount || b.sanctioned || 75000;
+    return `₹ ${Number(amt).toLocaleString('en-IN')}`;
+  }
+  return String(b);
+};
+
 class ProjectCsrSyncService {
   constructor() {
     this.listeners = new Set();
@@ -20,18 +30,22 @@ class ProjectCsrSyncService {
       const data = res.data?.data || res.data || [];
       const projectsList = Array.isArray(data) ? data : [];
 
-      this.activeProjects = projectsList.map((p) => ({
-        id: p.projectId || 'PRJ-101',
+      this.activeProjects = projectsList.map((p, idx) => ({
+        id: p.projectId || `PRJ-${idx + 101}`,
         title: p.title,
-        sector: p.domain,
-        district: 'Ranchi',
+        sector: p.domain || 'Technology',
+        district: p.district || 'Ranchi',
         hei: p.leadMentor ? `${p.leadMentor} (RU)` : 'Ranchi University',
         progress: p.progressPercentage || 60,
         status: p.status || 'On Track',
         stage: 'Field Pilot & Telemetry',
-        sanctionedGrant: p.budget || '₹ 75,000',
+        trlLevel: p.trlLevel || `TRL-${Math.min(9, (idx % 6) + 4)}`,
+        sanctionedGrant: formatBudget(p.budget),
         disbursedGrant: '₹ 50,000',
         telemetryStatus: 'Active Broadcast',
+        hardwareSpecs: 'Integrated embedded microcontroller with LoRaWAN wireless telemetry.',
+        teamLead: p.leadMentor || p.facultyMentor?.name || 'Dr. Priya Sharma',
+        problemOrigin: `${p.district || 'Ranchi'} Rural Community Area`,
         milestonesCount: { total: p.milestonesTotal || 7, completed: p.milestonesCompleted || 3 }
       }));
 
@@ -42,11 +56,11 @@ class ProjectCsrSyncService {
         title: p.title,
         projectTitle: p.title,
         projectName: p.title,
-        sector: p.domain,
-        district: 'Ranchi',
+        sector: p.domain || 'Technology',
+        district: p.district || 'Ranchi',
         hei: 'Ranchi University',
         facultyLead: p.leadMentor || p.facultyMentor?.name || 'Dr. Priya Sharma',
-        requestedGrant: p.budget || '₹ 75,000',
+        requestedGrant: formatBudget(p.budget),
         estimatedMonths: 6,
         status: p.status === 'Completed' ? 'Completed' : 'Approved',
         evaluationScore: 92.5 + idx
@@ -62,17 +76,17 @@ class ProjectCsrSyncService {
           projectTitle: p.title,
           projectName: p.title,
           title: p.title,
-          district: 'Ranchi',
+          district: p.district || 'Ranchi',
           sourceScheme: schemes[idx % schemes.length],
           donor: donors[idx % donors.length],
           dueDiligence: 'Verified & Cleared (Score: 94.5%)',
           dueDiligenceStatus: 'verified',
-          boardApproval: `Approved (${p.budget || '₹ 75,000'} Sanctioned)`,
+          boardApproval: `Approved (${formatBudget(p.budget)} Sanctioned)`,
           mouExecution: 'Tripartite MoU Executed',
           mouStatus: 'Executed',
           facultyLead: p.leadMentor || p.facultyMentor?.name || 'Dr. Priya Sharma',
-          budgetRequested: p.budget || '₹ 75,000',
-          budgetSanctioned: p.budget || '₹ 75,000',
+          budgetRequested: formatBudget(p.budget),
+          budgetSanctioned: formatBudget(p.budget),
           budgetBreakdown: [
             { category: 'Hardware & Sensor Rig Components', amount: '₹ 35,000' },
             { category: 'Lab & Prototype Fabrication', amount: '₹ 20,000' },
@@ -126,6 +140,117 @@ class ProjectCsrSyncService {
   recordDisbursal(payment) {
     this.csrLedger.unshift(payment);
     this.notify('DISBURSAL_CREATED', { payment, ledger: this.csrLedger, financials: this.getFinancials() });
+    return this.csrLedger;
+  }
+
+  advancePrototypeTrl(projectId) {
+    const project = this.activeProjects.find(p => p.id === projectId || p._id === projectId);
+    if (project) {
+      const currentLevel = parseInt(String(project.trlLevel || '4').replace('TRL-', ''), 10) || 4;
+      const nextLevel = Math.min(9, currentLevel + 1);
+      project.trlLevel = `TRL-${nextLevel}`;
+      project.progress = Math.min(100, Math.round((nextLevel / 9) * 100));
+      this.notify('DATA_SYNCED', {
+        updatedProjects: this.activeProjects
+      });
+    }
+    return [...this.activeProjects];
+  }
+
+  approveProposalFromProjects(payload) {
+    const { proposal, grantAmount, scheme, donor, reviewerNotes } = payload || {};
+    const propId = proposal?.id || payload?.id;
+    if (!propId) return;
+
+    this.solutionProposals = this.solutionProposals.map(p =>
+      p.id === propId ? { ...p, status: 'Approved', reviewerNotes: reviewerNotes || 'Approved for grant allocation.' } : p
+    );
+
+    const existingCsr = this.csrProposals.find(p => p.id === propId);
+    if (existingCsr) {
+      existingCsr.boardApproval = `Approved (${grantAmount || existingCsr.budgetSanctioned || '₹ 75,000'} Sanctioned)`;
+      if (scheme) existingCsr.sourceScheme = scheme;
+      if (donor) existingCsr.donor = donor;
+    }
+
+    this.notify('DATA_SYNCED', {
+      updatedSolProposals: this.solutionProposals,
+      updatedCsrProposals: this.csrProposals,
+      updatedProjects: this.activeProjects
+    });
+  }
+
+  rejectProposalFromProjects(proposal, remarks) {
+    const propId = proposal?.id;
+    if (!propId) return;
+
+    this.solutionProposals = this.solutionProposals.map(p =>
+      p.id === propId ? { ...p, status: 'Rejected', reviewerNotes: remarks || 'Rejected.' } : p
+    );
+
+    this.csrProposals = this.csrProposals.filter(p => p.id !== propId);
+
+    this.notify('DATA_SYNCED', {
+      updatedSolProposals: this.solutionProposals,
+      updatedCsrProposals: this.csrProposals
+    });
+  }
+
+  deleteCsrProposal(proposalId) {
+    this.csrProposals = this.csrProposals.filter(p => p.id !== proposalId);
+    this.solutionProposals = this.solutionProposals.filter(p => p.id !== proposalId);
+    this.notify('DATA_SYNCED', {
+      updatedSolProposals: this.solutionProposals,
+      updatedCsrProposals: this.csrProposals
+    });
+    return this.csrProposals;
+  }
+
+  addOrUpdateCsrProposal(updatedProposal) {
+    const idx = this.csrProposals.findIndex(p => p.id === updatedProposal.id);
+    if (idx >= 0) {
+      this.csrProposals[idx] = { ...this.csrProposals[idx], ...updatedProposal };
+    } else {
+      this.csrProposals.unshift(updatedProposal);
+    }
+    this.notify('DATA_SYNCED', {
+      updatedCsrProposals: this.csrProposals
+    });
+    return this.csrProposals;
+  }
+
+  disburseGrantPayment(paymentData) {
+    const { projectId, amountLakhs, trancheName, paymentMode, voucherRef, remarks } = paymentData || {};
+    const amountStr = `₹ ${(amountLakhs || 0.75).toFixed(2)} Lakhs`;
+    const newEntry = {
+      id: voucherRef || `PAY-${Date.now().toString().slice(-5)}`,
+      txId: `LED-${Date.now().toString().slice(-4)}`,
+      project: projectId,
+      tracking: `${projectId} Disbursal`,
+      amount: amountStr,
+      rawAmount: (amountLakhs || 0.75) * 100000,
+      mode: paymentMode || 'PFMS Direct Node',
+      utr: voucherRef || 'PFMS-TR-AUTO',
+      payer: 'Govt / CSR Joint Escrow',
+      payee: 'Ranchi University',
+      timestamp: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
+      makerCheckerStatus: 'approved',
+      makerChecker: 'Cleared by Finance Nodal Board',
+      bankStatus: 'ack',
+      bankAck: 'Node Acknowledged'
+    };
+    this.csrLedger.unshift(newEntry);
+
+    const project = this.activeProjects.find(p => p.id === projectId);
+    if (project) {
+      project.disbursedGrant = amountStr;
+    }
+
+    this.notify('DATA_SYNCED', {
+      updatedCsrLedger: this.csrLedger,
+      updatedProjects: this.activeProjects,
+      financials: this.getFinancials()
+    });
     return this.csrLedger;
   }
 

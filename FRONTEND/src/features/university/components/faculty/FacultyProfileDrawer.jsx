@@ -113,9 +113,11 @@ export const FacultyProfileDrawer = ({
             ) : (
               facultyProjects.map((p) => (
                 <div key={p.projectId || p.title} className="p-2.5 bg-slate-50 border border-slate-200 text-xs space-y-2">
-                  <div className="font-bold text-slate-900">{p.title} ({p.projectId || p.challengeId})</div>
                   <div className="text-[10.5px] text-slate-500 font-mono">
-                    Progress: {p.progressPercentage || 50}% • Status: {p.status || 'Active'} • Budget: {p.budget || '₹ 75,000'}
+                    Progress: {p.progressPercentage || 50}% • Status: {p.status || 'Active'} • Budget:{' '}
+                    {typeof p.budget === 'object'
+                      ? `₹ ${(p.budget.total || 75000).toLocaleString('en-IN')}`
+                      : (p.budget || '₹ 75,000')}
                   </div>
                   <div className="flex items-center justify-between pt-1.5 border-t border-slate-200">
                     <span className="text-[10px] text-slate-500 font-medium">Assigned Lead Mentor</span>

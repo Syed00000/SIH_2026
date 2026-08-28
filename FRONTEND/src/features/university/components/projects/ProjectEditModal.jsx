@@ -5,7 +5,11 @@ export const ProjectEditModal = ({ isOpen, onClose, project, onUpdate }) => {
   const [progress, setProgress] = useState(project?.progressPercentage || 64);
   const [status, setStatus] = useState(project?.status || 'In Progress');
   const [leadMentor, setLeadMentor] = useState(project?.leadMentor || 'Dr. Priya Sharma');
-  const [budget, setBudget] = useState(project?.budget || '₹ 75,000');
+  const [budget, setBudget] = useState(
+    typeof project?.budget === 'object'
+      ? `₹ ${(project?.budget?.total || 75000).toLocaleString('en-IN')}`
+      : (project?.budget || '₹ 75,000')
+  );
   const [milestonesDone, setMilestonesDone] = useState(project?.milestonesCompleted || 3);
   const [loading, setLoading] = useState(false);
 

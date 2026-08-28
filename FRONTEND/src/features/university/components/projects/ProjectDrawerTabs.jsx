@@ -39,7 +39,11 @@ export const ProjectDrawerTabs = ({ project, activeTab, onEdit, onEndProject, on
           </div>
           <div>
             <span className="text-[10px] text-slate-400 font-bold uppercase block">Budget</span>
-            <span className="font-bold text-slate-900">{project.budget || '₹ 75,000'}</span>
+            <span className="font-bold text-slate-900">
+              {typeof project.budget === 'object'
+                ? `₹ ${(project.budget.total || 75000).toLocaleString('en-IN')}`
+                : (project.budget || '₹ 75,000')}
+            </span>
           </div>
         </div>
 
