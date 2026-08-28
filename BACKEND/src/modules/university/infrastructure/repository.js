@@ -214,11 +214,11 @@ export class UniversityDashboardRepository {
       this.getProjectsByUniversity(code)
     ]);
 
-    const facultyMembersCount = facultyList.length || 128;
-    const activeTeamsCount = teamsList.length || 42;
-    const totalStudentsCount = teamsList.reduce((acc, t) => acc + (t.membersCount || 6), 0) || 6240;
-    const activeProjectsCount = projectsList.filter((p) => p.status !== 'Completed').length || 28;
-    const completedProjectsCount = projectsList.filter((p) => p.status === 'Completed').length || 18;
+    const facultyMembersCount = facultyList.length;
+    const activeTeamsCount = teamsList.length;
+    const totalStudentsCount = teamsList.reduce((acc, t) => acc + (t.membersCount || 5), 0);
+    const activeProjectsCount = projectsList.filter((p) => p.status !== 'Completed').length;
+    const completedProjectsCount = projectsList.filter((p) => p.status === 'Completed').length;
 
     // Aggregate department faculty counts dynamically if available
     const deptMap = {};

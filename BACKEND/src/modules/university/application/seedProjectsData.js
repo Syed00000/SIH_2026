@@ -2,12 +2,21 @@ export const FULL_PROJECTS_DATA = [
   {
     projectId: 'PRJ-1024',
     challengeId: 'CHL-1024',
+    universityCode: 'RU001',
     title: 'Water Quality Monitoring in Rural Areas',
-    domain: 'Water',
+    domain: 'Water & Sanitation',
+    district: 'Ranchi',
     status: 'In Progress',
+    stage: 'Field Pilot & Telemetry',
+    trlLevel: 'TRL-5',
     progressPercentage: 64,
     leadMentor: 'Dr. Priya Sharma',
-    facultyMentor: { name: 'Dr. Priya Sharma', department: 'Water Resources Engineering', email: 'priya.sharma@ru.ac.in' },
+    facultyMentor: {
+      name: 'Dr. Priya Sharma',
+      department: 'Water Resources Engineering',
+      email: 'priya.sharma@ru.ac.in',
+      phone: '+91 98351 22334'
+    },
     studentTeam: 'Aqua Sentinel',
     teamMembersCount: 5,
     teamMembers: [
@@ -15,12 +24,20 @@ export const FULL_PROJECTS_DATA = [
       { name: 'Neha Verma', role: 'IoT Hardware', department: 'Electronics', avatar: 'NV' },
       { name: 'Rahul Kumar', role: 'Data Analytics', department: 'Information Technology', avatar: 'RK' }
     ],
-    problemStatement: 'Unsafe drinking water in rural areas is causing waterborne diseases. There is no regular monitoring mechanism.',
-    budget: '₹ 75,000',
+    problemStatement: 'Unsafe drinking water in rural areas of Ranchi is causing waterborne diseases. Real-time IoT sensor network tracks arsenic, fluoride, and pH levels with LoRaWAN telemetry.',
+    budget: {
+      total: 75000,
+      utilized: 45000,
+      thisMonthExpense: 12000,
+      expenses: [
+        { description: 'Sensor rig & LoRa nodes', amount: 28000, date: '15 May 2026' },
+        { description: 'Water test reagents & calibration', amount: 17000, date: '22 May 2026' }
+      ]
+    },
     startDate: '20 May 2026',
     deadline: '30 Nov 2026',
     daysLeft: '192 days left',
-    milestonesTotal: 7,
+    milestonesTotal: 4,
     milestonesCompleted: 3,
     milestones: [
       { id: 'M-1', title: 'Problem Mapping & Field Survey', status: 'Completed', dueDate: '10 Jun 2026', completedBy: 'Ali Khan' },
@@ -28,112 +45,19 @@ export const FULL_PROJECTS_DATA = [
       { id: 'M-3', title: 'NABL Water Calibration Testing', status: 'Completed', dueDate: '15 Aug 2026', completedBy: 'Dr. Priya Sharma' },
       { id: 'M-4', title: 'LoRa Gateway Field Installation', status: 'In Progress', dueDate: '30 Sep 2026', completedBy: 'Rahul Kumar' }
     ],
+    impact: {
+      beneficiaries: 14500,
+      villages: 8,
+      efficiencyGain: 34
+    },
     documents: [
       { id: 'D-1', name: 'Survey Report.pdf', size: '2.4 MB', uploadedBy: 'Neha Verma', date: '21 May 2026' },
       { id: 'D-2', name: 'Sensor Calibration Log.pdf', size: '1.1 MB', uploadedBy: 'Ali Khan', date: '18 May 2026' }
     ],
     recentActivity: [
-      { text: "Milestone 'Data Collection' completed", user: 'Ali Khan', time: '22 May 2026, 11:30 AM', type: 'milestone' },
-      { text: "Document 'Survey Report.pdf' uploaded", user: 'Neha Verma', time: '21 May 2026, 04:15 PM', type: 'document' },
-      { text: "New comment on 'Analysis Phase'", user: 'Dr. Priya Sharma', time: '20 May 2026, 02:30 PM', type: 'comment' },
-      { text: 'Rahul Kumar joined the team', user: 'System', time: '19 May 2026, 09:10 AM', type: 'team' }
+      { text: "Milestone 'NABL Water Calibration Testing' completed", user: 'Dr. Priya Sharma', time: '22 May 2026, 11:30 AM', type: 'milestone' },
+      { text: "Document 'Sensor Calibration Log.pdf' uploaded", user: 'Ali Khan', time: '21 May 2026, 04:15 PM', type: 'document' },
+      { text: "New comment on 'LoRa Gateway Field Installation'", user: 'Rahul Kumar', time: '20 May 2026, 02:30 PM', type: 'comment' }
     ]
-  },
-  {
-    projectId: 'PRJ-1055',
-    challengeId: 'CHL-1055',
-    title: 'Rural Road Connectivity Improvement',
-    domain: 'Infrastructure',
-    status: 'In Progress',
-    progressPercentage: 42,
-    leadMentor: 'Dr. Rahul Kumar',
-    facultyMentor: { name: 'Dr. Rahul Kumar', department: 'Civil Engineering', email: 'rahul.kumar@ru.ac.in' },
-    studentTeam: 'Marg Setu Labs',
-    teamMembersCount: 6,
-    problemStatement: 'Unpaved tracks washed away during monsoon, cutting off 14 tribal hamlets.',
-    budget: '₹ 1,20,000',
-    startDate: '15 May 2026',
-    deadline: '15 Jan 2027',
-    daysLeft: '238 days left',
-    milestonesTotal: 6,
-    milestonesCompleted: 2
-  },
-  {
-    projectId: 'PRJ-1078',
-    challengeId: 'CHL-1078',
-    title: 'Solid Waste Management Solution',
-    domain: 'Environment',
-    status: 'In Progress',
-    progressPercentage: 80,
-    leadMentor: 'Dr. Sandeep Oraon',
-    facultyMentor: { name: 'Dr. Sandeep Oraon', department: 'Agriculture', email: 'sandeep.oraon@ru.ac.in' },
-    studentTeam: 'BioClean Tribe',
-    teamMembersCount: 4,
-    problemStatement: 'Organic waste conversion into bio-fertilizer for peri-urban farmer clusters.',
-    budget: '₹ 90,000',
-    startDate: '10 May 2026',
-    deadline: '20 Oct 2026',
-    daysLeft: '121 days left',
-    milestonesTotal: 5,
-    milestonesCompleted: 4
-  },
-  {
-    projectId: 'PRJ-1096',
-    challengeId: 'CHL-1096',
-    title: 'Rural Healthcare Accessibility',
-    domain: 'Healthcare',
-    status: 'In Progress',
-    progressPercentage: 75,
-    leadMentor: 'Dr. Neha Verma',
-    facultyMentor: { name: 'Dr. Neha Verma', department: 'Computer Science & Engineering', email: 'neha.verma@ru.ac.in' },
-    studentTeam: 'Sanjeevani AI',
-    teamMembersCount: 5,
-    problemStatement: 'Point-of-care vital telemetry van connected to Ranchi District Hospital.',
-    budget: '₹ 1,50,000',
-    startDate: '01 May 2026',
-    deadline: '10 Dec 2026',
-    daysLeft: '202 days left',
-    milestonesTotal: 8,
-    milestonesCompleted: 6
-  },
-  {
-    projectId: 'PRJ-1112',
-    challengeId: 'CHL-1112',
-    title: 'Solar Energy Usage in Govt Buildings',
-    domain: 'Energy',
-    status: 'Planning',
-    progressPercentage: 30,
-    leadMentor: 'Dr. Amit Singh',
-    facultyMentor: { name: 'Dr. Amit Singh', department: 'Mechanical Engineering', email: 'amit.singh@ru.ac.in' },
-    studentTeam: 'Urja Vikas',
-    teamMembersCount: 4,
-    problemStatement: 'Rooftop micro-inverter grid tie with smart cloud net-metering.',
-    budget: '₹ 2,00,000',
-    startDate: '20 May 2026',
-    deadline: '25 Feb 2027',
-    daysLeft: '279 days left',
-    milestonesTotal: 6,
-    milestonesCompleted: 1
-  },
-  {
-    projectId: 'PRJ-1101',
-    challengeId: 'CHL-1101',
-    title: 'Irrigation Water Management',
-    domain: 'Water',
-    status: 'Planning',
-    progressPercentage: 15,
-    leadMentor: 'Dr. Kavita Kumari',
-    facultyMentor: { name: 'Dr. Kavita Kumari', department: 'Chemistry', email: 'kavita.kumari@ru.ac.in' },
-    studentTeam: 'Jal Samriddhi',
-    teamMembersCount: 5,
-    problemStatement: 'Solar smart drip irrigation network with soil moisture sensors.',
-    budget: '₹ 85,000',
-    startDate: '22 May 2026',
-    deadline: '05 Mar 2027',
-    daysLeft: '287 days left',
-    milestonesTotal: 5,
-    milestonesCompleted: 1
   }
 ];
-
-export default FULL_PROJECTS_DATA;
