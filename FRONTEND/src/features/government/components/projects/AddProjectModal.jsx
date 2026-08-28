@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { X, Plus, Building2, MapPin, Layers, Award, IndianRupee } from 'lucide-react';
-import { SECTOR_OPTIONS, DISTRICT_OPTIONS } from '../../data/projectsSolutionsData.js';
+import { SECTOR_OPTIONS, DISTRICT_OPTIONS } from '../../data/projectConstants.js';
 
 export const AddProjectModal = ({ isOpen, onClose, onSubmit }) => {
   const [formData, setFormData] = useState({

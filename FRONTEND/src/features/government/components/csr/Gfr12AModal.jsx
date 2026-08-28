@@ -1,10 +1,7 @@
 import React from 'react';
 import { X, FileText, CheckCircle2, ShieldCheck, Printer, Download } from 'lucide-react';
-import { MOCK_CLOSURE_STEPS } from '../../data/mockCsrLifecycleData.js';
-
 export const Gfr12AModal = ({ isOpen, onClose }) => {
   if (!isOpen) return null;
-  const gfrData = MOCK_CLOSURE_STEPS[0];
 
   const handlePrint = () => {
     const printWin = window.open('', '_blank', 'width=850,height=750');

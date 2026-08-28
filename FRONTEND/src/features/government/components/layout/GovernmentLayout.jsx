@@ -26,7 +26,6 @@ import { exportAdminDirectoryPdf, exportIndustryDirectoryPdf, exportUniversityDi
 import { industryService } from '../../services/industryService.js';
 import { universityService } from '../../services/universityService.js';
 import { adminService } from '../../services/adminService.js';
-import { MOCK_ADMIN_RECORDS } from '../../data/mockAdminData.js';
 
 export const GovernmentLayout = ({ onLogout }) => {
   const getInitialTab = () => {

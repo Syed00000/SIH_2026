@@ -8,7 +8,7 @@ import {
   Save,
   CheckCircle2
 } from 'lucide-react';
-import { SECTOR_OPTIONS, DISTRICT_OPTIONS } from '../../data/projectsSolutionsData.js';
+import { SECTOR_OPTIONS, DISTRICT_OPTIONS } from '../../data/projectConstants.js';
 
 export const EditProjectModal = ({ project, isOpen, onClose, onSave }) => {
   const [formData, setFormData] = useState({

@@ -1,6 +1,6 @@
 import React from 'react';
 import { ChevronDown, Check } from 'lucide-react';
-import { JHARKHAND_DISTRICTS_LIST } from '../../data/mockGovernmentData.js';
+import { JHARKHAND_DISTRICTS_LIST } from '../../data/governmentConstants.js';
 
 export const SUPPORT_MODES_LIST = [
   'Funding',

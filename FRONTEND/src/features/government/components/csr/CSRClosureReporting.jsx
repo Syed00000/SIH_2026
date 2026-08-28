@@ -1,17 +1,21 @@
 import React, { useState } from 'react';
-import { CheckCircle2, ChevronRight, FileText, ShieldCheck, RefreshCcw } from 'lucide-react';
-import { MOCK_CLOSURE_STEPS } from '../../data/mockCsrLifecycleData.js';
+import { CheckCircle2, ChevronRight } from 'lucide-react';
 import { Gfr12AModal } from './Gfr12AModal.jsx';
 import { CaAuditReportModal } from './CaAuditReportModal.jsx';
 import { UnspentSweepModal } from './UnspentSweepModal.jsx';
 
+const CLOSURE_STEPS = [
+  { step: '1', title: 'GFR 12-A Utilization Certificate', desc: 'Statutory government compliance certifying project funds were spent for designated purposes.' },
+  { step: '2', title: 'Chartered Accountant Audit Statement', desc: 'Third-party CA ledger audit certifying invoices, vouchers, and zero cash compliance.' },
+  { step: '3', title: 'Unspent Grant Treasury Sweep', desc: 'Automatic sweep of residual grant funds back to state escrow node upon project closure.' }
+];
+
 export const CSRClosureReporting = () => {
-  const [selectedStepModal, setSelectedStepModal] = useState(null); // '1' (gfr), '2' (ca), '3' (sweep)
+  const [selectedStepModal, setSelectedStepModal] = useState(null);
 
   return (
     <>
-      <div className="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-2xs space-y-4">
-        {/* Header */}
+      <div className="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-2xs space-y-4 select-none">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
           <div>
             <h3 className="text-xs sm:text-sm font-bold text-slate-900 tracking-wider uppercase">
@@ -28,9 +32,8 @@ export const CSRClosureReporting = () => {
           </span>
         </div>
 
-        {/* 3 Step Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {MOCK_CLOSURE_STEPS.map((item) => (
+          {CLOSURE_STEPS.map((item) => (
             <div
               key={item.step}
               onClick={() => setSelectedStepModal(item.step)}
@@ -49,9 +52,7 @@ export const CSRClosureReporting = () => {
                 <ChevronRight className="w-4 h-4 text-slate-400 group-hover:translate-x-0.5 transition-transform" />
               </div>
 
-              <p className="text-[11px] text-slate-500 font-medium leading-relaxed">
-                {item.desc}
-              </p>
+              <p className="text-[11px] text-slate-500 font-medium leading-relaxed">{item.desc}</p>
 
               <div className="pt-1 text-[10.5px] font-bold text-blue-600 flex items-center space-x-1">
                 <span>View {item.step === '1' ? 'GFR 12-A Certificate' : item.step === '2' ? 'CA Audit Statement' : 'Sweep Ledger'}</span>
@@ -61,21 +62,9 @@ export const CSRClosureReporting = () => {
         </div>
       </div>
 
-      {/* Modals for each step */}
-      <Gfr12AModal
-        isOpen={selectedStepModal === '1'}
-        onClose={() => setSelectedStepModal(null)}
-      />
-
-      <CaAuditReportModal
-        isOpen={selectedStepModal === '2'}
-        onClose={() => setSelectedStepModal(null)}
-      />
-
-      <UnspentSweepModal
-        isOpen={selectedStepModal === '3'}
-        onClose={() => setSelectedStepModal(null)}
-      />
+      <Gfr12AModal isOpen={selectedStepModal === '1'} onClose={() => setSelectedStepModal(null)} />
+      <CaAuditReportModal isOpen={selectedStepModal === '2'} onClose={() => setSelectedStepModal(null)} />
+      <UnspentSweepModal isOpen={selectedStepModal === '3'} onClose={() => setSelectedStepModal(null)} />
     </>
   );
 };

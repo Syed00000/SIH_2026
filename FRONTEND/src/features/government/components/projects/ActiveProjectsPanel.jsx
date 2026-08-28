@@ -32,7 +32,7 @@ import { GrantPaymentModal, getGrantFinancials, formatGrantLakhs } from './Grant
 import { ProjectCertificateModal } from './ProjectCertificateModal.jsx';
 import { ValidationEmailModal } from './ValidationEmailModal.jsx';
 import { FinalProjectCompletionModal } from './FinalProjectCompletionModal.jsx';
-import { SECTOR_OPTIONS, DISTRICT_OPTIONS, INITIAL_ACTIVE_PROJECTS } from '../../data/projectsSolutionsData.js';
+import { SECTOR_OPTIONS, DISTRICT_OPTIONS } from '../../data/projectConstants.js';
 import { projectCsrSyncService } from '../../services/projectCsrSyncService.js';
 
 export const ActiveProjectsPanel = () => {

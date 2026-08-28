@@ -23,16 +23,11 @@ import { ProjectLeafletMap } from './ProjectLeafletMap.jsx';
 import { ProjectTelemetryCharts } from './ProjectTelemetryCharts.jsx';
 import { ProjectCertificateModal } from './ProjectCertificateModal.jsx';
 import { ValidationEmailModal } from './ValidationEmailModal.jsx';
-import { INITIAL_ACTIVE_PROJECTS, DISTRICT_OPTIONS } from '../../data/projectsSolutionsData.js';
+import { DISTRICT_OPTIONS } from '../../data/projectConstants.js';
+import { projectCsrSyncService } from '../../services/projectCsrSyncService.js';
 
 export const DeploymentTelemetryPanel = () => {
-  const [projects, setProjects] = useState(() => {
-    try {
-      const saved = localStorage.getItem('joharsetu_active_projects');
-      if (saved) return JSON.parse(saved);
-    } catch {}
-    return INITIAL_ACTIVE_PROJECTS;
-  });
+  const [projects, setProjects] = useState(() => projectCsrSyncService.getActiveProjects());
 
   const [selectedDistrict, setSelectedDistrict] = useState('All Districts');
   const [searchQuery, setSearchQuery] = useState('');

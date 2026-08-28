@@ -1,4 +1,5 @@
 import MongooseUniversity from './model.js';
+import { UniversityChallenge, UniversityProject } from '../../../university/infrastructure/model.js';
 
 export class UniversityRepository {
   async create(data) {
@@ -61,8 +62,26 @@ export class UniversityRepository {
       MongooseUniversity.countDocuments(query)
     ]);
 
+    // Live sync active challenges & projects count from university collections
+    const populated = await Promise.all(
+      records.map(async (u) => {
+        const [activeProjectsCount, activeChallengesCount] = await Promise.all([
+          UniversityProject.countDocuments({ universityCode: u.code, status: { $ne: 'Completed' } }),
+          UniversityChallenge.countDocuments({ universityCode: u.code, status: { $in: ['Review', 'Accepted', 'In Progress'] } })
+        ]);
+        return {
+          ...u,
+          quickSummary: {
+            ...u.quickSummary,
+            activeProjects: activeProjectsCount || u.quickSummary?.activeProjects || 0,
+            activeChallenges: activeChallengesCount || 0
+          }
+        };
+      })
+    );
+
     return {
-      records,
+      records: populated,
       total,
       page: Number(page),
       limit: Number(limit),
@@ -102,21 +121,15 @@ export class UniversityRepository {
       {
         $push: {
           auditLogs: {
-            ...logEntry,
-            timestamp: new Date()
+            action: logEntry.action,
+            performedBy: logEntry.performedBy || 'Government Admin',
+            timestamp: new Date(),
+            details: logEntry.details || ''
           }
         }
       },
       { new: true }
     );
-  }
-
-  async delete(id) {
-    return await MongooseUniversity.findByIdAndDelete(id);
-  }
-
-  async count() {
-    return await MongooseUniversity.countDocuments();
   }
 }
 

@@ -1,15 +1,19 @@
 import React, { useState } from 'react';
-import { Check, Zap, ChevronRight, Activity } from 'lucide-react';
-import { MOCK_DISBURSAL_MODES } from '../../data/mockCsrLifecycleData.js';
+import { Check, Zap, Activity } from 'lucide-react';
 import { GatewayConfigModal } from './GatewayConfigModal.jsx';
+
+const DISBURSAL_GATEWAYS = [
+  { channel: 'PFMS Direct Node', channelStyle: 'bg-blue-50 text-blue-800 border-blue-200', useCase: 'Direct University Node Grant Release', rules: 'Maker-Checker Approval Required', audit: '100% PFMS Audit Trail' },
+  { channel: 'RBI RTGS Bulk Node', channelStyle: 'bg-emerald-50 text-emerald-800 border-emerald-200', useCase: 'State Treasury Direct Account Credit', rules: 'Daily Limit: ₹5.00 Cr', audit: 'RBI UTR Number Verified' },
+  { channel: 'Corporate Escrow Sweep', channelStyle: 'bg-purple-50 text-purple-800 border-purple-200', useCase: 'Automated CSR Tranche Disbursal', rules: 'Triggered upon 100% milestone clearance', audit: 'Tripartite MoU Compliant' }
+];
 
 export const CSRDisbursalModesTable = () => {
   const [selectedGatewayMode, setSelectedGatewayMode] = useState(null);
 
   return (
     <>
-      <div className="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-2xs space-y-4">
-        {/* Header */}
+      <div className="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-2xs space-y-4 select-none">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <div>
             <h3 className="text-xs sm:text-sm font-bold text-slate-900 tracking-wider uppercase">
@@ -26,7 +30,6 @@ export const CSRDisbursalModesTable = () => {
           </span>
         </div>
 
-        {/* Table */}
         <div className="overflow-x-auto border border-slate-100 rounded-xl">
           <table className="w-full text-left border-collapse">
             <thead>
@@ -39,7 +42,7 @@ export const CSRDisbursalModesTable = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 text-xs">
-              {MOCK_DISBURSAL_MODES.map((row) => (
+              {DISBURSAL_GATEWAYS.map((row) => (
                 <tr
                   key={row.channel}
                   onClick={() => setSelectedGatewayMode(row)}
@@ -50,12 +53,8 @@ export const CSRDisbursalModesTable = () => {
                       {row.channel}
                     </span>
                   </td>
-                  <td className="py-3.5 px-4 font-semibold text-slate-800 text-[11px]">
-                    {row.useCase}
-                  </td>
-                  <td className="py-3.5 px-4 text-slate-600 font-medium text-[11px]">
-                    {row.rules}
-                  </td>
+                  <td className="py-3.5 px-4 font-semibold text-slate-800 text-[11px]">{row.useCase}</td>
+                  <td className="py-3.5 px-4 text-slate-600 font-medium text-[11px]">{row.rules}</td>
                   <td className="py-3.5 px-4 whitespace-nowrap">
                     <span className="inline-flex items-center space-x-1.5 font-bold text-emerald-700 text-[11px]">
                       <Check className="w-3.5 h-3.5 text-emerald-600" />

@@ -38,31 +38,28 @@ import ProposalReviewModal from './ProposalReviewModal.jsx';
 import ProjectManageModal from './ProjectManageModal.jsx';
 
 import {
-  PROJECTS_AND_SOLUTIONS_KPIS,
   SECTOR_OPTIONS,
   DISTRICT_OPTIONS,
-  INITIAL_SOLUTION_PROPOSALS,
-  INITIAL_ACTIVE_PROJECTS,
-  REGIONAL_DISTRICT_MAPPINGS,
-  INNOVATION_LIFECYCLE_STEPS,
-  FINANCIAL_GRANT_METRICS,
-  RECENT_ACTIVITY_TIMELINE,
-  ATTENTION_REQUIRED_ALERTS,
-  HEI_IMPACT_PARTNERS
-} from '../../data/projectsSolutionsData.js';
+  INNOVATION_LIFECYCLE_STEPS
+} from '../../data/projectConstants.js';
+import { projectCsrSyncService } from '../../services/projectCsrSyncService.js';
 
 export const ProjectsSolutionsDashboard = ({ initialTab = 'recent_proposals' }) => {
-  // Navigation Tabs: 'recent_proposals', 'in_progress', 'milestones', 'prototypes', 'deployment', 'regional', 'network_pipeline', 'overview'
   const [activeTab, setActiveTab] = useState(initialTab);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedSector, setSelectedSector] = useState('All Sectors');
   const [selectedDistrict, setSelectedDistrict] = useState('All Districts');
 
-  // Interactive Live Data State
-  const [kpis, setKpis] = useState(PROJECTS_AND_SOLUTIONS_KPIS);
-  const [proposals, setProposals] = useState(INITIAL_SOLUTION_PROPOSALS);
-  const [projects, setProjects] = useState(INITIAL_ACTIVE_PROJECTS);
-  const [regionalMappings] = useState(REGIONAL_DISTRICT_MAPPINGS);
+  const [proposals, setProposals] = useState(() => projectCsrSyncService.getSolutionProposals());
+  const [projects, setProjects] = useState(() => projectCsrSyncService.getActiveProjects());
+
+  useEffect(() => {
+    const unsubscribe = projectCsrSyncService.subscribe((eventType, data) => {
+      if (data?.updatedProjects) setProjects(data.updatedProjects);
+      if (data?.updatedSolProposals) setProposals(data.updatedSolProposals);
+    });
+    return unsubscribe;
+  }, []);
 
   // Modal States
   const [selectedProposal, setSelectedProposal] = useState(null);

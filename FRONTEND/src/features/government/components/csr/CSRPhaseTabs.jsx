@@ -1,10 +1,10 @@
 import React from 'react';
-import { MOCK_CSR_PHASES } from '../../data/mockCsrLifecycleData.js';
+import { CSR_PHASES } from '../../data/governmentConstants.js';
 
 export const CSRPhaseTabs = ({ activePhase = 'phase_1_2', onSelectPhase }) => {
   return (
     <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-      {MOCK_CSR_PHASES.map((phase) => {
+      {CSR_PHASES.map((phase) => {
         const isActive = activePhase === phase.id;
         return (
           <button

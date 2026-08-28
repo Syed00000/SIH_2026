@@ -1,10 +1,7 @@
 import React from 'react';
 import { X, ShieldCheck, CheckCircle2, FileText, Printer } from 'lucide-react';
-import { MOCK_CLOSURE_STEPS } from '../../data/mockCsrLifecycleData.js';
-
 export const CaAuditReportModal = ({ isOpen, onClose }) => {
   if (!isOpen) return null;
-  const caData = MOCK_CLOSURE_STEPS[1];
 
   const handlePrint = () => {
     const printWin = window.open('', '_blank', 'width=850,height=750');

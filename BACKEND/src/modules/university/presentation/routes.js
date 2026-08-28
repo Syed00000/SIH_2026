@@ -1,0 +1,29 @@
+import { Router } from 'express';
+import { universityController } from './controller.js';
+
+const router = Router();
+
+router.get('/dashboard', (req, res, next) => universityController.getDashboard(req, res, next));
+router.get('/challenges', (req, res, next) => universityController.getChallenges(req, res, next));
+router.patch('/challenges/:id/status', (req, res, next) => universityController.updateChallengeStatus(req, res, next));
+router.post('/challenges/:id/assign-faculty', (req, res, next) => universityController.assignFaculty(req, res, next));
+
+router.get('/faculty', (req, res, next) => universityController.getFaculty(req, res, next));
+router.post('/faculty', (req, res, next) => universityController.createFaculty(req, res, next));
+router.delete('/faculty/:id', (req, res, next) => universityController.deleteFaculty(req, res, next));
+
+router.get('/teams', (req, res, next) => universityController.getTeams(req, res, next));
+router.get('/projects', (req, res, next) => universityController.getProjects(req, res, next));
+router.post('/projects', (req, res, next) => universityController.createProject(req, res, next));
+router.patch('/projects/:id', (req, res, next) => universityController.updateProject(req, res, next));
+router.delete('/projects/:id', (req, res, next) => universityController.deleteProject(req, res, next));
+
+router.get('/partners', (req, res, next) => universityController.getPartners(req, res, next));
+router.get('/approvals', (req, res, next) => universityController.getApprovals(req, res, next));
+router.patch('/approvals/:id', (req, res, next) => universityController.updateApproval(req, res, next));
+router.get('/reports', (req, res, next) => universityController.getReports(req, res, next));
+router.get('/profile', (req, res, next) => universityController.getProfile(req, res, next));
+router.put('/profile', (req, res, next) => universityController.updateProfile(req, res, next));
+router.patch('/profile', (req, res, next) => universityController.updateProfile(req, res, next));
+
+export default router;

@@ -119,6 +119,49 @@ export class UniversityService {
         validity: '2028-12-31',
         nirfRanking: 50
       },
+      aisheCode: data.aisheCode || code,
+      tagline: data.tagline || `${name} is a premier higher education institution dedicated to academic excellence, research, and societal development.`,
+      about: data.about || `${name} has a rich legacy of academic excellence and research. We collaborate with industries, government and communities to develop innovative solutions for real-world challenges.`,
+      address: data.address || {
+        campus: `${name}, ${district}, Jharkhand`,
+        district: district,
+        state: 'Jharkhand',
+        pincode: '834001'
+      },
+      departments: data.departments || [
+        { name: 'Computer Science & Engineering', facultyCount: 18 },
+        { name: 'Civil Engineering', facultyCount: 14 },
+        { name: 'Electrical Engineering', facultyCount: 12 },
+        { name: 'Mechanical Engineering', facultyCount: 10 },
+        { name: 'Chemistry', facultyCount: 8 },
+        { name: 'Biotechnology', facultyCount: 6 },
+        { name: 'Environmental Science', facultyCount: 5 },
+        { name: 'Social Work', facultyCount: 4 }
+      ],
+      researchAreas: data.researchAreas || [
+        'Artificial Intelligence',
+        'IoT & Embedded Systems',
+        'Water Technology',
+        'Smart Agriculture',
+        'Renewable Energy',
+        'Public Health',
+        'Data Science',
+        'Environmental Studies',
+        'Materials Science'
+      ],
+      facilities: data.facilities || [
+        'AI & Data Science Lab',
+        'IoT & Embedded Systems Lab',
+        'Water Testing & Quality Lab',
+        'Renewable Energy Lab',
+        'Innovation & Incubation Centre',
+        '3D Printing & Prototyping Lab',
+        'Smart Classroom Facility'
+      ],
+      lastUpdatedBy: {
+        name: nodalOfficer.name.trim(),
+        updatedAt: new Date()
+      },
       nodalOfficer: {
         name: nodalOfficer.name.trim(),
         designation: nodalOfficer.designation || 'Registrar',

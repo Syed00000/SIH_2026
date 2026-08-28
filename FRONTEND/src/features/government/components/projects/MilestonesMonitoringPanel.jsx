@@ -17,7 +17,6 @@ import {
 } from 'lucide-react';
 
 import { ProjectManageModal } from './ProjectManageModal.jsx';
-import { INITIAL_ACTIVE_PROJECTS } from '../../data/projectsSolutionsData.js';
 import { projectCsrSyncService } from '../../services/projectCsrSyncService.js';
 
 export const MilestonesMonitoringPanel = () => {

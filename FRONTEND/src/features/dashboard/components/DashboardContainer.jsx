@@ -6,6 +6,7 @@ import { DashboardFooter } from './footer/DashboardFooter.jsx';
 import { CitizenDashboard } from './citizen/CitizenDashboard.jsx';
 import { AITriageDashboard } from '../../government/components/triage/AITriageDashboard.jsx';
 import { GovernmentLayout } from '../../government/components/layout/GovernmentLayout.jsx';
+import { UniversityLayout } from '../../university/components/layout/UniversityLayout.jsx';
 import { RoleProfile } from './RoleProfile.jsx';
 import { AccountSettings } from './AccountSettings.jsx';
 import { Button } from '../../../shared/components/ui/button.jsx';
@@ -64,7 +65,12 @@ export const DashboardContainer = ({ onNavigate }) => {
     }
   };
 
-  // Render Dedicated Government Admin Portal
+  // 1. Render Dedicated Government Admin Portal
+  const urlPortal = typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('portal') : null;
+  if (urlPortal === 'university' || role === 'UNIVERSITY' || role === 'HEI') {
+    return <UniversityLayout user={user} onLogout={handleLogout} />;
+  }
+
   if (role === 'GOVERNMENT' || role === 'ADMIN') {
     return <GovernmentLayout onLogout={handleLogout} />;
   }

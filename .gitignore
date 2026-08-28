@@ -73,6 +73,14 @@ desktop.ini
 *.sln
 *.sw?
 
-# Testing
+# Testing & Debug Scripts
 /coverage/
 .jest/
+test-*.js
+inspect-*.js
+set-password.js
+verify-all-users.js
+scratch/
+*.scratch.*
+.system_generated/
+.agents/

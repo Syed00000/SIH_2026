@@ -24,7 +24,7 @@ import {
 } from 'lucide-react';
 
 import { ProposalDetailView } from './ProposalDetailView.jsx';
-import { SECTOR_OPTIONS, DISTRICT_OPTIONS, INITIAL_SOLUTION_PROPOSALS } from '../../data/projectsSolutionsData.js';
+import { SECTOR_OPTIONS, DISTRICT_OPTIONS } from '../../data/projectConstants.js';
 import { projectCsrSyncService } from '../../services/projectCsrSyncService.js';
 
 export const SolutionProposalsPanel = () => {

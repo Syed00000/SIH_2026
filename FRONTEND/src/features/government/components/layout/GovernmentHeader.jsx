@@ -1,6 +1,6 @@
 import React from 'react';
 import { FileText, Bell, ChevronDown } from 'lucide-react';
-import { JHARKHAND_DISTRICTS_LIST, SECTORS_LIST } from '../../data/mockGovernmentData.js';
+import { JHARKHAND_DISTRICTS_LIST, SECTORS_LIST } from '../../data/governmentConstants.js';
 
 export const GovernmentHeader = ({
   selectedDistrict = 'All',

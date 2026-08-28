@@ -1,26 +1,7 @@
 import React, { useState } from 'react';
-import {
-  MapPin,
-  Radio,
-  Building2,
-  Activity,
-  Battery,
-  Wifi,
-  ShieldCheck,
-  AlertCircle,
-  ExternalLink,
-  ChevronRight,
-  Maximize2,
-  Layers,
-  Sparkles
-} from 'lucide-react';
-import { JHARKHAND_DISTRICTS_GEODATA } from '../../data/projectsSolutionsData.js';
+import { Radio, Building2, Activity, ChevronRight } from 'lucide-react';
 
-export const ProjectTelemetryMap = ({ activeDistrict = 'All Districts', onSelectDistrict, onSelectProject }) => {
-  const [selectedNode, setSelectedNode] = useState(JHARKHAND_DISTRICTS_GEODATA[0]);
-  const [filterStatus, setFilterStatus] = useState('All');
-
-  // Relative SVG layout coordinate mapping for Jharkhand districts
+export const ProjectTelemetryMap = ({ onSelectDistrict, onSelectProject }) => {
   const districtMapNodes = [
     { id: 'DHN', name: 'Dhanbad', x: 74, y: 48, activeProjects: 7, totalSensors: 48, status: 'Active Sync', leadHei: 'IIT ISM & BIT Sindri', liveMetric: 'CH4: 0.12% | Normal' },
     { id: 'RNC', name: 'Ranchi', x: 48, y: 56, activeProjects: 6, totalSensors: 42, status: 'Active Sync', leadHei: 'BIT Mesra & BAU', liveMetric: 'Storage Temp: 4.2°C' },
@@ -28,13 +9,11 @@ export const ProjectTelemetryMap = ({ activeDistrict = 'All Districts', onSelect
     { id: 'BOK', name: 'Bokaro', x: 68, y: 44, activeProjects: 3, totalSensors: 22, status: 'Active Sync', leadHei: 'Bokaro Tech Hub', liveMetric: 'Displacement: 0.4mm' },
     { id: 'DEO', name: 'Deoghar', x: 78, y: 24, activeProjects: 2, totalSensors: 14, status: 'Warning Sync', leadHei: 'AIIMS Deoghar', liveMetric: 'Battery Low: 14%' },
     { id: 'HAZ', name: 'Hazaribagh', x: 50, y: 38, activeProjects: 2, totalSensors: 16, status: 'Active Sync', leadHei: 'Vinoba Bhave Univ', liveMetric: 'Fluoride: 0.42 mg/L' },
-    { id: 'DUM', name: 'Dumka', x: 88, y: 28, activeProjects: 2, totalSensors: 12, status: 'Active Sync', leadHei: 'SKM University', liveMetric: 'NFC Nodes: 12 Active' },
-    { id: 'WES', name: 'West Singhbhum', x: 54, y: 82, activeProjects: 1, totalSensors: 8, status: 'Active Sync', leadHei: 'Kolhan University', liveMetric: 'Thermal: 34.2°C Safe' },
-    { id: 'PAL', name: 'Palamu', x: 22, y: 32, activeProjects: 1, totalSensors: 6, status: 'Active Sync', leadHei: 'NP University', liveMetric: 'Soil Moisture: 62%' },
-    { id: 'GIR', name: 'Giridih', x: 69, y: 32, activeProjects: 1, totalSensors: 8, status: 'Active Sync', leadHei: 'Giridih Nodal', liveMetric: 'Borewell TDS: 180' },
-    { id: 'RAM', name: 'Ramgarh', x: 54, y: 50, activeProjects: 1, totalSensors: 6, status: 'Active Sync', leadHei: 'Ramgarh Center', liveMetric: 'Bridge Strain: 0.02' },
-    { id: 'SER', name: 'Seraikela', x: 64, y: 72, activeProjects: 1, totalSensors: 6, status: 'Active Sync', leadHei: 'NIT Extension', liveMetric: 'Water pH: 7.2' }
+    { id: 'DUM', name: 'Dumka', x: 88, y: 28, activeProjects: 2, totalSensors: 12, status: 'Active Sync', leadHei: 'SKM University', liveMetric: 'NFC Nodes: 12 Active' }
   ];
+
+  const [selectedNode, setSelectedNode] = useState(districtMapNodes[0]);
+  const [filterStatus, setFilterStatus] = useState('All');
 
   const filteredNodes = districtMapNodes.filter((n) => {
     if (filterStatus === 'All') return true;
@@ -45,7 +24,6 @@ export const ProjectTelemetryMap = ({ activeDistrict = 'All Districts', onSelect
 
   return (
     <div className="bg-white border border-slate-200 rounded-2xl shadow-2xs overflow-hidden select-none">
-      {/* Header Bar */}
       <div className="p-4 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-50/70">
         <div className="flex items-center space-x-2">
           <div className="w-8 h-8 rounded-xl bg-slate-900 text-white flex items-center justify-center">
@@ -56,7 +34,7 @@ export const ProjectTelemetryMap = ({ activeDistrict = 'All Districts', onSelect
               Jharkhand Geospatial Telemetry & Sensor Network Map
             </h3>
             <p className="text-[11px] text-slate-500 font-medium">
-              Live broadcast from 140+ deployed IoT nodes across 12 monitoring zones
+              Live broadcast from 140+ deployed IoT nodes across monitoring zones
             </p>
           </div>
         </div>
@@ -79,32 +57,16 @@ export const ProjectTelemetryMap = ({ activeDistrict = 'All Districts', onSelect
         </div>
       </div>
 
-      {/* Interactive Map & Telemetry Inspector Split Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-0">
-        {/* Left: Geospatial Visualizer Surface */}
-        <div className="lg:col-span-8 p-6 bg-radial from-slate-900 to-slate-950 text-white relative min-h-[420px] flex items-center justify-center overflow-hidden">
-          {/* Subtle Grid Lines */}
+        <div className="lg:col-span-8 p-6 bg-radial from-slate-900 to-slate-950 text-white relative min-h-[380px] flex items-center justify-center overflow-hidden">
           <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff0a_1px,transparent_1px),linear-gradient(to_bottom,#ffffff0a_1px,transparent_1px)] bg-[size:24px_24px]" />
-
-          {/* Jharkhand State Background Outline Path */}
-          <svg className="w-full h-full max-h-[380px] max-w-[620px] relative z-10" viewBox="0 0 100 100">
-            {/* Ambient Connection Network Mesh */}
+          <svg className="w-full h-full max-h-[340px] max-w-[620px] relative z-10" viewBox="0 0 100 100">
             <g stroke="#334155" strokeWidth="0.4" strokeDasharray="1,1">
-              <line x1="48" y1="56" x2="74" y2="48" />
-              <line x1="48" y1="56" x2="72" y2="76" />
-              <line x1="74" y1="48" x2="78" y2="24" />
-              <line x1="48" y1="56" x2="50" y2="38" />
-              <line x1="78" y1="24" x2="88" y2="28" />
-              <line x1="72" y1="76" x2="54" y2="82" />
-              <line x1="50" y1="38" x2="22" y2="32" />
-              <line x1="74" y1="48" x2="68" y2="44" />
+              <line x1="48" y1="56" x2="74" y2="48" /><line x1="48" y1="56" x2="72" y2="76" /><line x1="74" y1="48" x2="78" y2="24" />
             </g>
-
-            {/* District Pins */}
             {filteredNodes.map((node) => {
               const isSelected = selectedNode?.id === node.id;
               const isWarning = node.status === 'Warning Sync';
-
               return (
                 <g
                   key={node.id}
@@ -114,81 +76,30 @@ export const ProjectTelemetryMap = ({ activeDistrict = 'All Districts', onSelect
                   }}
                   className="cursor-pointer transition-transform hover:scale-110"
                 >
-                  {/* Pulse Ring for Selected */}
                   {isSelected && (
-                    <circle
-                      cx={node.x}
-                      cy={node.y}
-                      r="5"
-                      fill="none"
-                      stroke={isWarning ? '#f87171' : '#34d399'}
-                      strokeWidth="0.6"
-                      className="animate-ping opacity-75"
-                    />
+                    <circle cx={node.x} cy={node.y} r="5" fill="none" stroke={isWarning ? '#f87171' : '#34d399'} strokeWidth="0.6" className="animate-ping opacity-75" />
                   )}
-
-                  {/* Pin Circle */}
-                  <circle
-                    cx={node.x}
-                    cy={node.y}
-                    r={isSelected ? '3.2' : '2.4'}
-                    fill={isSelected ? '#ffffff' : isWarning ? '#ef4444' : '#10b981'}
-                    stroke={isSelected ? '#0f172a' : '#1e293b'}
-                    strokeWidth="0.8"
-                  />
-
-                  {/* District Label */}
-                  <text
-                    x={node.x}
-                    y={node.y + 4.5}
-                    textAnchor="middle"
-                    fontSize="2.8"
-                    fill={isSelected ? '#ffffff' : '#94a3b8'}
-                    fontWeight={isSelected ? 'bold' : 'normal'}
-                    className="select-none pointer-events-none"
-                  >
+                  <circle cx={node.x} cy={node.y} r={isSelected ? '3.2' : '2.4'} fill={isSelected ? '#ffffff' : isWarning ? '#ef4444' : '#10b981'} stroke={isSelected ? '#0f172a' : '#1e293b'} strokeWidth="0.8" />
+                  <text x={node.x} y={node.y + 4.5} textAnchor="middle" fontSize="2.8" fill={isSelected ? '#ffffff' : '#94a3b8'} fontWeight={isSelected ? 'bold' : 'normal'} className="select-none pointer-events-none">
                     {node.name}
                   </text>
                 </g>
               );
             })}
           </svg>
-
-          {/* Bottom Overlay Legend */}
-          <div className="absolute bottom-4 left-4 z-20 bg-slate-900/90 backdrop-blur-md px-3 py-2 rounded-xl border border-slate-800 text-[10px] space-y-1">
-            <div className="flex items-center space-x-2">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 inline-block" />
-              <span className="text-slate-300">Active Sync (99.4% Uptime)</span>
-            </div>
-            <div className="flex items-center space-x-2">
-              <span className="w-2 h-2 rounded-full bg-rose-500 inline-block" />
-              <span className="text-slate-300">Warning (Battery / Packet Loss)</span>
-            </div>
-          </div>
         </div>
 
-        {/* Right: Detailed Node Inspector Panel */}
         <div className="lg:col-span-4 p-5 bg-white border-t lg:border-t-0 lg:border-l border-slate-200 flex flex-col justify-between space-y-4">
           {selectedNode ? (
             <div className="space-y-4">
-              <div className="flex items-start justify-between">
-                <div>
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                    Zone Telemetry Inspector
+              <div>
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Zone Telemetry Inspector</span>
+                <h4 className="text-base font-bold text-slate-900 mt-0.5">{selectedNode.name} District</h4>
+                <div className="flex items-center space-x-2 mt-1">
+                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${selectedNode.status === 'Active Sync' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-rose-50 text-rose-700 border-rose-200'}`}>
+                    {selectedNode.status}
                   </span>
-                  <h4 className="text-base font-bold text-slate-900 mt-0.5">{selectedNode.name} District</h4>
-                  <div className="flex items-center space-x-2 mt-1">
-                    <span
-                      className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
-                        selectedNode.status === 'Active Sync'
-                          ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                          : 'bg-rose-50 text-rose-700 border-rose-200'
-                      }`}
-                    >
-                      {selectedNode.status}
-                    </span>
-                    <span className="text-xs text-slate-500 font-mono">Node ID: {selectedNode.id}-GW-01</span>
-                  </div>
+                  <span className="text-xs text-slate-500 font-mono">Node ID: {selectedNode.id}-GW-01</span>
                 </div>
               </div>
 
@@ -211,9 +122,8 @@ export const ProjectTelemetryMap = ({ activeDistrict = 'All Districts', onSelect
                     <span>{selectedNode.liveMetric}</span>
                   </div>
                 </div>
-
                 <div className="p-3 bg-slate-50 rounded-xl border border-slate-100 space-y-1">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase block">Lead Technical University:</span>
+                  <span className="text-[10px] font-bold text-slate-400 uppercase block">Lead University:</span>
                   <div className="font-semibold text-slate-800 flex items-center space-x-1.5">
                     <Building2 className="w-3.5 h-3.5 text-slate-500" />
                     <span>{selectedNode.leadHei}</span>
@@ -222,17 +132,13 @@ export const ProjectTelemetryMap = ({ activeDistrict = 'All Districts', onSelect
               </div>
             </div>
           ) : (
-            <div className="text-center py-12 text-slate-400 text-xs">
-              Select a district pin on the map to inspect live IoT telemetry.
-            </div>
+            <div className="text-center py-12 text-slate-400 text-xs">Select a district pin on the map to inspect live IoT telemetry.</div>
           )}
 
           <div className="pt-3 border-t border-slate-100">
             <button
               type="button"
-              onClick={() => {
-                if (onSelectProject) onSelectProject(selectedNode);
-              }}
+              onClick={() => onSelectProject && onSelectProject(selectedNode)}
               className="w-full py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold transition-colors cursor-pointer flex items-center justify-center space-x-1.5 shadow-2xs"
             >
               <span>View All Projects in {selectedNode?.name}</span>

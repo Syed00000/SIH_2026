@@ -1,10 +1,7 @@
 import React from 'react';
 import { X, RefreshCcw, CheckCircle2, ShieldCheck, Landmark } from 'lucide-react';
-import { MOCK_CLOSURE_STEPS } from '../../data/mockCsrLifecycleData.js';
-
 export const UnspentSweepModal = ({ isOpen, onClose }) => {
   if (!isOpen) return null;
-  const sweepData = MOCK_CLOSURE_STEPS[2];
 
   return (
     <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4">

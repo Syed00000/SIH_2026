@@ -156,7 +156,7 @@ export const AreaProblemProfile = ({ project }) => {
               <span>Active Solution Roadmap by {project?.hei}</span>
             </span>
             <p className="font-semibold text-emerald-900 leading-relaxed">
-              {distData.currentSolution}
+              {project?.title ? `Direct field solution deployment for ${project.title} across ${distData.name} district.` : 'Active field solution roadmap deployed.'}
             </p>
           </div>
 

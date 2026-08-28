@@ -252,14 +252,14 @@ export const ProjectLeafletMap = ({
               <div className="p-3 bg-emerald-50/70 border border-emerald-200 rounded-lg space-y-1.5 text-emerald-950">
                 <span className="text-[10px] font-bold text-emerald-800 uppercase tracking-wider flex items-center space-x-1">
                   <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-                  <span>Active Innovation & University Solution:</span>
+                  <span>Lead Innovation & Academic Partner:</span>
                 </span>
                 <p className="text-xs text-emerald-900 font-semibold leading-relaxed">
-                  {activeDistrict.currentSolution}
+                  Designated Nodal University: {activeDistrict.leadHei}
                 </p>
                 <div className="text-[11px] text-emerald-800 pt-1 border-t border-emerald-200/60 flex items-center justify-between">
-                  <span>Lead HEI: <strong>{activeDistrict.leadHei}</strong></span>
-                  <span className="font-bold">{activeDistrict.activeProjectsCount} Projects Active</span>
+                  <span>Sector Focus: <strong>{activeDistrict.problemSector}</strong></span>
+                  <span className="font-bold">{activeDistrict.blocksCount} Blocks</span>
                 </div>
               </div>
 

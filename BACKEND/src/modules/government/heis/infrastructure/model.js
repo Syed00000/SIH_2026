@@ -146,6 +146,45 @@ const universitySchema = new mongoose.Schema(
       default: null,
       index: true
     },
+    aisheCode: {
+      type: String,
+      trim: true,
+      default: ''
+    },
+    tagline: {
+      type: String,
+      trim: true,
+      default: ''
+    },
+    about: {
+      type: String,
+      trim: true,
+      default: ''
+    },
+    address: {
+      campus: { type: String, default: '' },
+      district: { type: String, default: '' },
+      state: { type: String, default: 'Jharkhand' },
+      pincode: { type: String, default: '' }
+    },
+    departments: [
+      {
+        name: { type: String, required: true },
+        facultyCount: { type: Number, default: 0 }
+      }
+    ],
+    researchAreas: {
+      type: [String],
+      default: []
+    },
+    facilities: {
+      type: [String],
+      default: []
+    },
+    lastUpdatedBy: {
+      name: { type: String, default: 'Dr. Ankit Verma' },
+      updatedAt: { type: Date, default: Date.now }
+    },
     auditLogs: [
       {
         action: { type: String, required: true },

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Search, Droplet, Sprout, Heart, Hammer, Trash2 } from 'lucide-react';
-import { JHARKHAND_DISTRICTS_LIST } from '../../data/mockGovernmentData.js';
+import { JHARKHAND_DISTRICTS_LIST } from '../../data/governmentConstants.js';
 
 export const AllocationOverride = ({
   overrideData,
