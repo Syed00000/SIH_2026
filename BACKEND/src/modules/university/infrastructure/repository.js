@@ -83,13 +83,18 @@ export class UniversityDashboardRepository {
     const code = (universityCode || 'RU001').toUpperCase();
     const rawList = await UniversityFaculty.find({
       $or: [{ universityCode: code }, { universityCode: 'RU001' }, { universityCode: 'RUNI-JH' }]
-    }).sort({ createdAt: -1 }).lean();
+    }).sort({ name: 1 }).lean();
 
-    const seen = new Set();
+    const seenNames = new Set();
+    const seenEmails = new Set();
     return rawList.filter((f) => {
-      const key = (f.name || f.email || '').toLowerCase().trim();
-      if (seen.has(key)) return false;
-      seen.add(key);
+      const nameKey = (f.name || '').toLowerCase().trim();
+      const emailKey = (f.email || '').toLowerCase().trim();
+      if (!nameKey && !emailKey) return false;
+      if (nameKey && seenNames.has(nameKey)) return false;
+      if (emailKey && seenEmails.has(emailKey)) return false;
+      if (nameKey) seenNames.add(nameKey);
+      if (emailKey) seenEmails.add(emailKey);
       return true;
     });
   }
@@ -99,9 +104,14 @@ export class UniversityDashboardRepository {
     const nameKey = (facultyData.name || '').toLowerCase().trim();
     const emailKey = (facultyData.email || '').toLowerCase().trim();
     const existing = await UniversityFaculty.findOne({
-      $or: [{ name: new RegExp(`^${nameKey}$`, 'i') }, { email: new RegExp(`^${emailKey}$`, 'i') }]
+      $or: [
+        { universityCode: code, name: new RegExp(`^${nameKey}$`, 'i') },
+        { universityCode: code, email: new RegExp(`^${emailKey}$`, 'i') }
+      ]
     });
-    if (existing) return existing;
+    if (existing) {
+      return existing;
+    }
     return await UniversityFaculty.create({ ...facultyData, universityCode: code });
   }
 

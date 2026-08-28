@@ -84,6 +84,9 @@ const universityFacultySchema = new mongoose.Schema(
   { timestamps: true, collection: 'university_faculty' }
 );
 
+universityFacultySchema.index({ universityCode: 1, email: 1 }, { unique: true });
+universityFacultySchema.index({ universityCode: 1, name: 1 }, { unique: true });
+
 const universityTeamSchema = new mongoose.Schema(
   {
     teamCode: { type: String, required: true, index: true },

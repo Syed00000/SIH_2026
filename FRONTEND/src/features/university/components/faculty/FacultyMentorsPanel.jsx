@@ -34,11 +34,12 @@ export const FacultyMentorsPanel = () => {
     setFacultyList(fList);
     setProjectsList(pList);
     setChallengesList(cList);
-    if (fList.length > 0) {
-      setSelectedFaculty(fList[0]);
-    } else {
-      setSelectedFaculty(null);
-    }
+    setSelectedFaculty((prev) => {
+      if (prev && fList.some((f) => (f._id && f._id === prev._id) || f.email === prev.email)) {
+        return fList.find((f) => (f._id && f._id === prev._id) || f.email === prev.email);
+      }
+      return fList.length > 0 ? fList[0] : null;
+    });
     setLoading(false);
   };
 
