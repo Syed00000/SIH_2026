@@ -1,15 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../auth/AuthContext.jsx';
 import { CitizenHeader } from './components/CitizenHeader.jsx';
+import { CitizenSidebar } from './components/CitizenSidebar.jsx';
 import { CitizenHome } from './components/CitizenHome.jsx';
 import { CitizenMyChallenges } from './components/CitizenMyChallenges.jsx';
 import { CitizenUpdates } from './components/CitizenUpdates.jsx';
 import { CitizenProfile } from './components/CitizenProfile.jsx';
-import { CitizenBottomNav } from './components/CitizenBottomNav.jsx';
 import { SubmitChallengeModal } from './components/SubmitChallengeModal.jsx';
 import { CitizenChallengeDetailModal } from './components/CitizenChallengeDetailModal.jsx';
 import { citizenService } from './services/citizenService.js';
-import { Smartphone, Monitor, Sparkles } from 'lucide-react';
+import { exportGenericReportPdf } from '../government/services/exportPdfService.js';
 
 export const CitizenPortal = ({ user: propUser, onLogout }) => {
   const { user: authUser } = useAuth();
@@ -17,10 +17,14 @@ export const CitizenPortal = ({ user: propUser, onLogout }) => {
 
   const [activeTab, setActiveTab] = useState('home');
   const [activeStatusFilter, setActiveStatusFilter] = useState('All');
+  const [selectedDistrict, setSelectedDistrict] = useState('Ranchi');
+  const [selectedSector, setSelectedSector] = useState('All Sectors');
   const [isSubmitModalOpen, setIsSubmitModalOpen] = useState(false);
   const [selectedChallenge, setSelectedChallenge] = useState(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
-  const [isMobileFrameMode, setIsMobileFrameMode] = useState(true);
+
+  const [isSidebarExpanded, setIsSidebarExpanded] = useState(true);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const [stats, setStats] = useState(null);
   const [recentChallenge, setRecentChallenge] = useState(null);
@@ -52,7 +56,6 @@ export const CitizenPortal = ({ user: propUser, onLogout }) => {
   const handleChallengeSubmitted = (newChall) => {
     setRecentChallenge(newChall);
     loadData();
-    // Navigate to challenges tab to see the newly submitted challenge
     setActiveTab('challenges');
     setActiveStatusFilter('All');
   };
@@ -87,116 +90,128 @@ export const CitizenPortal = ({ user: propUser, onLogout }) => {
     }
   };
 
+  const handleExportPdf = () => {
+    exportGenericReportPdf({
+      title: 'Jharkhand Citizen Portal Summary',
+      subtitle: `District: ${selectedDistrict} | Sector: ${selectedSector}`,
+      data: [
+        { Parameter: 'Portal User', Value: user?.fullName || 'Citizen User' },
+        { Parameter: 'Mobile Number', Value: user?.mobileNumber || 'N/A' },
+        { Parameter: 'Email ID', Value: user?.email || 'N/A' },
+        { Parameter: 'Active Submissions', Value: stats?.activities?.submitted || 0 },
+        { Parameter: 'Under Review', Value: stats?.activities?.underReview || 0 },
+        { Parameter: 'In Progress R&D', Value: stats?.activities?.inProgress || 0 },
+        { Parameter: 'Resolved Impact', Value: stats?.activities?.resolved || 0 }
+      ]
+    });
+  };
+
   return (
-    <div className="min-h-screen bg-slate-100 flex flex-col items-center justify-start py-0 sm:py-6 text-slate-800 antialiased font-sans selection:bg-emerald-100 selection:text-emerald-900">
-      {/* Desktop Mode Toggle Bar */}
-      <div className="hidden sm:flex items-center justify-between w-full max-w-md px-3 mb-2 text-xs font-semibold text-slate-500">
-        <div className="flex items-center space-x-1.5 text-emerald-800 font-bold">
-          <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
-          <span>Jharkhand Citizen Portal</span>
-        </div>
-        <div className="flex items-center bg-white border border-slate-200 rounded-lg p-0.5 shadow-2xs">
-          <button
-            onClick={() => setIsMobileFrameMode(true)}
-            className={`px-2.5 py-1 rounded-md flex items-center space-x-1 transition-all cursor-pointer ${
-              isMobileFrameMode
-                ? 'bg-emerald-800 text-white font-bold shadow-2xs'
-                : 'text-slate-600 hover:text-slate-900'
-            }`}
-          >
-            <Smartphone className="w-3.5 h-3.5" />
-            <span>Mobile Device</span>
-          </button>
-          <button
-            onClick={() => setIsMobileFrameMode(false)}
-            className={`px-2.5 py-1 rounded-md flex items-center space-x-1 transition-all cursor-pointer ${
-              !isMobileFrameMode
-                ? 'bg-emerald-800 text-white font-bold shadow-2xs'
-                : 'text-slate-600 hover:text-slate-900'
-            }`}
-          >
-            <Monitor className="w-3.5 h-3.5" />
-            <span>Fluid View</span>
-          </button>
-        </div>
-      </div>
+    <div className="h-screen w-screen flex flex-col bg-[#f8fafc] text-slate-800 font-sans overflow-hidden select-none">
+      {/* 1. Top Header Navbar (Emblem, Title, Filters, Bell, User Avatar) */}
+      <CitizenHeader
+        selectedDistrict={selectedDistrict}
+        setSelectedDistrict={setSelectedDistrict}
+        selectedSector={selectedSector}
+        setSelectedSector={setSelectedSector}
+        onExportPdf={handleExportPdf}
+        unreadCount={unreadNotificationsCount}
+        onNotificationsClick={() => {
+          setActiveTab('updates');
+          setUnreadNotificationsCount(0);
+        }}
+        onSubmitClick={handleOpenSubmit}
+        user={user}
+        onLogout={onLogout}
+      />
 
-      {/* Main Container / Mobile Frame */}
-      <div
-        className={`w-full bg-[#f8fafc] transition-all duration-300 relative flex flex-col ${
-          isMobileFrameMode
-            ? 'max-w-[430px] min-h-[880px] sm:rounded-[40px] sm:shadow-[0_25px_60px_-15px_rgba(0,0,0,0.25)] sm:border-[10px] sm:border-slate-900 sm:ring-1 sm:ring-slate-800/10 overflow-hidden'
-            : 'max-w-3xl rounded-2xl shadow-lg border border-slate-200 overflow-hidden'
-        }`}
-      >
-        {/* Mobile Device Notch on Mobile Frame Mode */}
-        {isMobileFrameMode && (
-          <div className="hidden sm:flex justify-between items-center px-6 pt-2 text-[10px] font-bold text-slate-800 bg-white z-40">
-            <span>9:41</span>
-            <div className="w-24 h-4 bg-slate-900 rounded-full mx-auto" />
-            <div className="flex items-center space-x-1">
-              <span className="text-[9px]">5G</span>
-              <div className="w-4 h-2.5 border border-slate-700 rounded-xs p-0.5">
-                <div className="w-full h-full bg-slate-800" />
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* 1. Sticky Header with Emblem, Portal Title & Notification Badge */}
-        <CitizenHeader
-          unreadCount={unreadNotificationsCount}
-          onNotificationsClick={() => {
-            setActiveTab('updates');
-            setUnreadNotificationsCount(0);
-          }}
-        />
-
-        {/* 2. Main Scrollable Viewport */}
-        <main className="flex-1 p-3.5 sm:p-4 overflow-y-auto min-h-[500px]">
-          {activeTab === 'home' && (
-            <CitizenHome
-              stats={stats}
-              recentChallenge={recentChallenge}
-              onSubmitClick={handleOpenSubmit}
-              onSelectArea={handleSelectArea}
-              onSelectStatus={handleSelectStatus}
-              onViewAllChallenges={handleViewAllChallenges}
-              onSelectChallenge={handleSelectChallenge}
-              onSelectStayUpdatedTile={handleSelectStayUpdatedTile}
-            />
-          )}
-
-          {activeTab === 'challenges' && (
-            <CitizenMyChallenges
-              activeStatusFilter={activeStatusFilter}
-              onSelectChallenge={handleSelectChallenge}
-              onSubmitClick={handleOpenSubmit}
-            />
-          )}
-
-          {activeTab === 'updates' && (
-            <CitizenUpdates onSelectChallenge={handleSelectChallenge} />
-          )}
-
-          {activeTab === 'profile' && (
-            <CitizenProfile
-              user={user}
-              onChangeTab={setActiveTab}
-              onLogout={onLogout}
-            />
-          )}
-        </main>
-
-        {/* 3. Fixed Bottom Navigation Bar */}
-        <CitizenBottomNav
+      {/* 2. Middle Body: Left Sidebar + Main Content Viewport */}
+      <div className="flex-1 flex overflow-hidden relative">
+        {/* Left Sidebar Navigation */}
+        <CitizenSidebar
           activeTab={activeTab}
-          onChangeTab={setActiveTab}
+          setActiveTab={setActiveTab}
           onSubmitClick={handleOpenSubmit}
+          isSidebarExpanded={isSidebarExpanded}
+          setIsSidebarExpanded={setIsSidebarExpanded}
+          isMobileMenuOpen={isMobileMenuOpen}
+          setIsMobileMenuOpen={setIsMobileMenuOpen}
+          onLogout={onLogout}
         />
+
+        {/* Right Main Scrollable Viewport */}
+        <main className="flex-1 overflow-y-auto p-4 sm:p-6 bg-[#f8fafc] flex flex-col justify-between">
+          <div className="max-w-7xl mx-auto w-full">
+            {activeTab === 'home' && (
+              <CitizenHome
+                stats={stats}
+                recentChallenge={recentChallenge}
+                onSubmitClick={handleOpenSubmit}
+                onSelectArea={handleSelectArea}
+                onSelectStatus={handleSelectStatus}
+                onViewAllChallenges={handleViewAllChallenges}
+                onSelectChallenge={handleSelectChallenge}
+                onSelectStayUpdatedTile={handleSelectStayUpdatedTile}
+              />
+            )}
+
+            {(activeTab === 'challenges' || activeTab === 'challenges_all' || activeTab === 'challenges_review' || activeTab === 'challenges_progress') && (
+              <CitizenMyChallenges
+                activeStatusFilter={activeStatusFilter}
+                onSelectChallenge={handleSelectChallenge}
+                onSubmitClick={handleOpenSubmit}
+              />
+            )}
+
+            {activeTab === 'updates' && (
+              <CitizenUpdates onSelectChallenge={handleSelectChallenge} />
+            )}
+
+            {activeTab === 'profile' && (
+              <CitizenProfile
+                user={user}
+                onChangeTab={setActiveTab}
+                onLogout={onLogout}
+              />
+            )}
+
+            {activeTab === 'guidelines' && (
+              <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-2xs space-y-4 text-left">
+                <h2 className="text-base font-black text-slate-900 tracking-tight uppercase">
+                  Citizen Portal Guidelines & Help Desk
+                </h2>
+                <p className="text-xs text-slate-600 leading-relaxed">
+                  The JoharSetu Citizen Portal empowers residents across all 24 districts of Jharkhand to report grassroots infrastructure, agricultural, environmental, and public service problems.
+                </p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+                  <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-950 text-xs space-y-1">
+                    <strong className="font-bold block text-emerald-900">Triage & Verification Protocol:</strong>
+                    <span>Submitted challenges are AI-triaged and assigned to designated Nodal Universities within 48 hours.</span>
+                  </div>
+                  <div className="p-4 rounded-xl bg-blue-50 border border-blue-200 text-blue-950 text-xs space-y-1">
+                    <strong className="font-bold block text-blue-900">Toll-Free Helpline:</strong>
+                    <span>Call 1800-345-6789 or email citizen.support@joharsetu.gov.in for immediate assistance.</span>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* 3. Official Web Footer */}
+          <footer className="mt-8 border-t border-slate-200 pt-4 pb-2 text-center text-xs text-slate-500 max-w-7xl mx-auto w-full flex flex-col sm:flex-row items-center justify-between gap-2">
+            <div className="text-[11px] font-medium">
+              © {new Date().getFullYear()} Government of Jharkhand. Department of Higher & Technical Education. All rights reserved.
+            </div>
+            <div className="flex items-center space-x-4 text-[11px] font-semibold text-slate-600">
+              <button onClick={() => setActiveTab('home')} className="hover:text-slate-900 cursor-pointer">Overview</button>
+              <button onClick={() => setActiveTab('challenges')} className="hover:text-slate-900 cursor-pointer">My Challenges</button>
+              <button onClick={() => setActiveTab('guidelines')} className="hover:text-slate-900 cursor-pointer">Guidelines</button>
+            </div>
+          </footer>
+        </main>
       </div>
 
-      {/* 4. Modals */}
+      {/* Modals */}
       <SubmitChallengeModal
         isOpen={isSubmitModalOpen}
         onClose={() => setIsSubmitModalOpen(false)}
