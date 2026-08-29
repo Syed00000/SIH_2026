@@ -8,79 +8,47 @@ export const MyActivitiesTracker = ({ activities = {}, onStatusClick, onViewAllC
   const resolvedCount = activities.resolved ?? 0;
 
   const items = [
-    {
-      key: 'Submitted',
-      count: submittedCount,
-      label: 'Submitted',
-      icon: FileText,
-      circleBg: 'bg-emerald-50 text-emerald-600 border-emerald-200/80',
-      textColor: 'text-emerald-700'
-    },
-    {
-      key: 'Under Review',
-      count: underReviewCount,
-      label: 'Under Review',
-      icon: FileSearch,
-      circleBg: 'bg-amber-50 text-amber-600 border-amber-200/80',
-      textColor: 'text-amber-700'
-    },
-    {
-      key: 'In Progress',
-      count: inProgressCount,
-      label: 'In Progress',
-      icon: Users,
-      circleBg: 'bg-blue-50 text-blue-600 border-blue-200/80',
-      textColor: 'text-blue-700'
-    },
-    {
-      key: 'Resolved',
-      count: resolvedCount,
-      label: 'Resolved',
-      icon: CheckCircle2,
-      circleBg: 'bg-green-50 text-green-600 border-green-200/80',
-      textColor: 'text-green-700'
-    }
+    { key: 'Submitted', count: submittedCount, label: 'Submitted', icon: FileText, iconColor: 'text-emerald-600' },
+    { key: 'Under Review', count: underReviewCount, label: 'Under Review', icon: FileSearch, iconColor: 'text-amber-600' },
+    { key: 'In Progress', count: inProgressCount, label: 'In Progress', icon: Users, iconColor: 'text-blue-600' },
+    { key: 'Resolved', count: resolvedCount, label: 'Resolved', icon: CheckCircle2, iconColor: 'text-emerald-700' }
   ];
 
   return (
     <section className="space-y-2.5">
       {/* Section Header */}
       <div className="flex items-center justify-between">
-        <h3 className="text-[15px] font-extrabold text-slate-900 tracking-tight">
+        <h3 className="text-xs sm:text-sm font-extrabold text-slate-900 tracking-tight">
           My Activities
         </h3>
         <button
           onClick={onViewAllClick}
-          className="flex items-center text-xs font-bold text-emerald-700 hover:text-emerald-800 transition-colors cursor-pointer"
+          className="flex items-center text-[11px] sm:text-xs font-bold text-emerald-800 hover:text-emerald-900 transition-colors cursor-pointer"
         >
           <span>View All</span>
           <ChevronRight className="w-3.5 h-3.5 ml-0.5" />
         </button>
       </div>
 
-      {/* 4 Activity Metrics Row in single card */}
-      <div className="bg-white border border-slate-100 rounded-2xl p-2.5 shadow-2xs grid grid-cols-4 divide-x divide-slate-100">
+      {/* 4 Activity Metrics Row in single clean card */}
+      <div className="bg-white border border-slate-200/90 rounded-lg p-2.5 sm:p-3.5 shadow-2xs grid grid-cols-2 sm:grid-cols-4 divide-y sm:divide-y-0 sm:divide-x divide-slate-100 gap-1 sm:gap-0">
         {items.map((item) => {
           const Icon = item.icon;
           return (
             <button
               key={item.key}
               onClick={() => onStatusClick && onStatusClick(item.key)}
-              className="flex items-center justify-center space-x-2 px-1.5 py-1 text-left hover:bg-slate-50/80 rounded-xl transition-all cursor-pointer group"
+              className="flex items-center space-x-2.5 px-2 py-1.5 sm:px-3.5 sm:py-2 text-left hover:bg-emerald-50/40 rounded-md transition-all cursor-pointer group"
             >
-              {/* Circular Badge Icon */}
-              <div
-                className={`w-9 h-9 sm:w-10 sm:h-10 rounded-full border ${item.circleBg} flex items-center justify-center flex-shrink-0 transition-transform group-hover:scale-105`}
-              >
-                <Icon className="w-4 h-4 sm:w-5 sm:h-5" />
-              </div>
+              {/* Direct Icon with distinct vibrant colors */}
+              <Icon className={`w-4 h-4 sm:w-4.5 sm:h-4.5 ${item.iconColor} transition-transform group-hover:scale-110 shrink-0`} />
 
               {/* Number and Label */}
               <div className="flex flex-col min-w-0">
                 <span className="text-sm sm:text-base font-extrabold text-slate-900 leading-tight">
                   {item.count}
                 </span>
-                <span className="text-[10px] sm:text-[11px] font-medium text-slate-500 leading-tight truncate">
+                <span className="text-[10px] sm:text-xs font-medium text-slate-600 leading-tight whitespace-nowrap">
                   {item.label}
                 </span>
               </div>

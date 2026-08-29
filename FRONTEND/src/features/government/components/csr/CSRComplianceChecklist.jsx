@@ -1,15 +1,10 @@
 import React, { useState } from 'react';
 import { CheckCircle2, Clock, RefreshCw, MapPin } from 'lucide-react';
+import { MOCK_COMPLIANCE_CHECKLIST } from '../../data/mockCsrLifecycleData.js';
 import { GeoVerificationModal } from './GeoVerificationModal.jsx';
 
-const STATUTORY_CHECKLIST = [
-  { id: 'c1', title: 'MCA CSR-1 Registration & PFMS Node', subtitle: 'Verified statutory registration with Ministry of Corporate Affairs', status: 'Checked', statusType: 'checked' },
-  { id: 'c2', title: 'Physical & Field Pilot Verification', subtitle: 'District nodal officer geo-tagged field verification', status: 'In-progress', statusType: 'progress' },
-  { id: 'c3', title: 'Schedule VII Thematic Allocation Audit', subtitle: '100% compliant with Schedule VII rural innovation mandate', status: 'Checked', statusType: 'checked' }
-];
-
 export const CSRComplianceChecklist = () => {
-  const [checklist, setChecklist] = useState(STATUTORY_CHECKLIST);
+  const [checklist, setChecklist] = useState(MOCK_COMPLIANCE_CHECKLIST);
   const [isGeoModalOpen, setIsGeoModalOpen] = useState(false);
 
   const handleToggleItem = (item) => {
@@ -23,6 +18,8 @@ export const CSRComplianceChecklist = () => {
         if (c.id !== item.id) return c;
         if (c.statusType === 'checked') {
           return { ...c, status: 'In-progress', statusType: 'progress' };
+        } else if (c.statusType === 'progress') {
+          return { ...c, status: 'Checked', statusType: 'checked' };
         } else {
           return { ...c, status: 'Checked', statusType: 'checked' };
         }
@@ -38,6 +35,8 @@ export const CSRComplianceChecklist = () => {
               ...c,
               status: 'Checked',
               statusType: 'checked',
+              verifiedDate: geoData.date,
+              officer: geoData.inspector,
               notes: `Physical verification completed. GPS: ${geoData.coordinates}. ${geoData.remarks}`
             }
           : c
@@ -47,55 +46,37 @@ export const CSRComplianceChecklist = () => {
 
   return (
     <>
-      <div className="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-2xs space-y-4 flex flex-col justify-between h-full select-none">
+      <div className="bg-white rounded-lg p-5 border border-slate-200 shadow-xs space-y-4 flex flex-col justify-between h-full">
         <div className="space-y-3">
           <div className="flex items-center justify-between">
             <h3 className="text-xs sm:text-sm font-bold text-slate-900 tracking-wider uppercase">
-              VERIFICATION & COMPLIANCE CHECKLIST
+              Verification Checklist
             </h3>
-            <span className="text-[10px] font-bold text-slate-400">Click item to verify</span>
+            <span className="text-[11px] text-slate-500 font-normal">
+              Click item to verify
+            </span>
           </div>
 
-          <div className="space-y-2.5">
+          <div className="space-y-3.5">
             {checklist.map((item) => (
               <div
                 key={item.id}
-                onClick={() => handleToggleItem(item)}
-                className="p-3 bg-slate-50/70 border border-slate-200/80 rounded-xl flex items-center justify-between gap-2 shadow-2xs hover:bg-slate-50 hover:border-slate-300 transition-all cursor-pointer group"
+                className="p-4 bg-white border border-slate-200/90 rounded-lg flex flex-col justify-start gap-1"
               >
-                <div>
-                  <div className="flex items-center space-x-1.5">
-                    <span className="text-xs font-bold text-slate-800 group-hover:text-blue-600 transition-colors">
-                      {item.title}
-                    </span>
-                    {item.id === 'c2' && <MapPin className="w-3 h-3 text-emerald-600 inline" />}
-                  </div>
-                  {item.subtitle && <span className="text-[10px] text-slate-400 font-medium block">{item.subtitle}</span>}
-                  {item.notes && <span className="text-[9.5px] text-slate-500 line-clamp-1 block mt-0.5">{item.notes}</span>}
-                </div>
-
-                <div className="shrink-0">
-                  {item.statusType === 'checked' && (
-                    <span className="inline-flex items-center space-x-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200/80">
-                      <CheckCircle2 className="w-3 h-3 text-emerald-600" />
-                      <span>Checked</span>
-                    </span>
-                  )}
-                  {item.statusType === 'progress' && (
-                    <span className="inline-flex items-center space-x-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-rose-50 text-rose-700 border border-rose-200/80">
-                      <RefreshCw className="w-3 h-3 text-rose-600 animate-spin" />
-                      <span>In-progress</span>
-                    </span>
-                  )}
-                </div>
+                <span className="text-xs font-bold text-slate-950">
+                  {item.title}
+                </span>
+                <span className="text-[11.5px] text-slate-500 font-medium leading-relaxed">
+                  {item.notes}
+                </span>
               </div>
             ))}
           </div>
         </div>
 
         <div className="pt-3 border-t border-slate-100">
-          <p className="text-[10px] text-slate-400 italic leading-relaxed">
-            Statutory compliance tracking for CSR funding and state grant governance.
+          <p className="text-[11px] text-slate-500 font-normal leading-relaxed">
+            Applicable for both CSR Funding and Government Grants for statutory audit readiness.
           </p>
         </div>
       </div>

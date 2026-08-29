@@ -9,7 +9,6 @@ import { HeiHubPanel } from '../heis/heiHubPanel.jsx';
 import { ManageUniversitiesDashboard } from '../universities/ManageUniversitiesDashboard.jsx';
 import { ManageIndustriesDashboard } from '../industries/ManageIndustriesDashboard.jsx';
 import {
-  ProjectsOverviewPanel,
   ActiveProjectsPanel,
   SolutionProposalsPanel,
   MilestonesMonitoringPanel,
@@ -211,7 +210,7 @@ export const GovernmentLayout = ({ onLogout }) => {
         selectedSector={selectedSector}
         setSelectedSector={(sec) => setSelectedSector(sec)}
         onExportPdf={handleExportPdf}
-        notificationCount={triageFeed.filter(x => x.status === 'PENDING').length + 7}
+        notificationCount={7}
         isMobileMenuOpen={isMobileMenuOpen}
         setIsMobileMenuOpen={setIsMobileMenuOpen}
       />
@@ -231,7 +230,7 @@ export const GovernmentLayout = ({ onLogout }) => {
 
         {/* Content Area with Independent Scrolling & Bottom Footer */}
         <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden bg-white">
-          <main className="flex-1 p-3 md:p-4 overflow-y-auto min-h-0 bg-slate-50">
+          <main className="flex-1 p-3 md:p-4 overflow-y-auto overflow-x-hidden min-w-0 w-full min-h-0 bg-slate-50">
             {activeTab === 'overview' ? (
               <GovernmentOverview
                 kpis={kpis}
@@ -256,9 +255,7 @@ export const GovernmentLayout = ({ onLogout }) => {
                 selectedDistrict={selectedDistrict}
                 onSelectDistrict={(dist) => setSelectedDistrict(dist)}
               />
-            ) : activeTab === 'projects_solutions' || activeTab === 'projects_overview' ? (
-              <ProjectsOverviewPanel onNavigateTab={handleSetActiveTab} />
-            ) : activeTab === 'projects_active' ? (
+            ) : activeTab === 'projects_solutions' || activeTab === 'projects_overview' || activeTab === 'projects_active' ? (
               <ActiveProjectsPanel />
             ) : activeTab === 'projects_proposals' ? (
               <SolutionProposalsPanel />

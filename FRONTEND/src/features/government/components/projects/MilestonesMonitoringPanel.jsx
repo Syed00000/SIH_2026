@@ -14,7 +14,8 @@ import {
   Search,
   ExternalLink,
   Award,
-  Info
+  Info,
+  PlayCircle
 } from 'lucide-react';
 
 import { ProjectManageModal } from './ProjectManageModal.jsx';
@@ -148,48 +149,112 @@ export const MilestonesMonitoringPanel = () => {
         </h3>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-200 space-y-1.5">
-            <div className="flex justify-between text-xs font-bold">
-              <span className="text-slate-700">Phase 1: Architecture</span>
-              <span className="text-emerald-700">{phase1Pct}%</span>
+          {/* Card 1: Phase 1 */}
+          <div className="bg-white border border-slate-200/90 rounded-2xl p-4 shadow-2xs hover:shadow-xs transition-shadow flex flex-col justify-between h-[125px]">
+            <div>
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-extrabold text-slate-500 uppercase tracking-wider">
+                  Phase 1: Architecture
+                </span>
+                <Layers className="w-4 h-4 text-slate-400" />
+              </div>
+              <div className="mt-2.5 flex items-baseline justify-between">
+                <span className="text-xl font-black text-slate-900 tracking-tight font-sans">
+                  {phase1Pct}%
+                </span>
+                <span className="text-[10px] text-slate-600 font-bold flex items-center">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-1.5"></span>
+                  Active
+                </span>
+              </div>
+              <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden mt-2">
+                <div className="bg-emerald-600 h-full rounded-full transition-all duration-300" style={{ width: `${phase1Pct}%` }} />
+              </div>
             </div>
-            <div className="w-full bg-slate-200 h-2 rounded-full overflow-hidden">
-              <div className="bg-emerald-600 h-full rounded-full transition-all duration-300" style={{ width: `${phase1Pct}%` }} />
+            <div className="pt-2 border-t border-slate-100 text-[10px] text-slate-400 font-semibold">
+              {phase1Count} Projects Passed
             </div>
-            <span className="text-[10px] text-slate-500 block">{phase1Count} Projects Passed</span>
           </div>
 
-          <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-200 space-y-1.5">
-            <div className="flex justify-between text-xs font-bold">
-              <span className="text-slate-700">Phase 2: Prototype Build</span>
-              <span className="text-slate-900">{phase2Pct}%</span>
+          {/* Card 2: Phase 2 */}
+          <div className="bg-white border border-slate-200/90 rounded-2xl p-4 shadow-2xs hover:shadow-xs transition-shadow flex flex-col justify-between h-[125px]">
+            <div>
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-extrabold text-slate-500 uppercase tracking-wider">
+                  Phase 2: Prototype Build
+                </span>
+                <PlayCircle className="w-4 h-4 text-slate-400 animate-pulse" />
+              </div>
+              <div className="mt-2.5 flex items-baseline justify-between">
+                <span className="text-xl font-black text-slate-900 tracking-tight font-sans">
+                  {phase2Pct}%
+                </span>
+                <span className="text-[10px] text-slate-600 font-bold flex items-center">
+                  <span className="w-1.5 h-1.5 rounded-full bg-blue-500 mr-1.5"></span>
+                  Active
+                </span>
+              </div>
+              <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden mt-2">
+                <div className="bg-slate-900 h-full rounded-full transition-all duration-300" style={{ width: `${phase2Pct}%` }} />
+              </div>
             </div>
-            <div className="w-full bg-slate-200 h-2 rounded-full overflow-hidden">
-              <div className="bg-slate-900 h-full rounded-full transition-all duration-300" style={{ width: `${phase2Pct}%` }} />
+            <div className="pt-2 border-t border-slate-100 text-[10px] text-slate-400 font-semibold">
+              {phase2Count} Lab Verified
             </div>
-            <span className="text-[10px] text-slate-500 block">{phase2Count} Lab Verified</span>
           </div>
 
-          <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-200 space-y-1.5">
-            <div className="flex justify-between text-xs font-bold">
-              <span className="text-slate-700">Phase 3: Field Testing</span>
-              <span className="text-amber-700">{phase3Pct}%</span>
+          {/* Card 3: Phase 3 */}
+          <div className="bg-white border border-slate-200/90 rounded-2xl p-4 shadow-2xs hover:shadow-xs transition-shadow flex flex-col justify-between h-[125px]">
+            <div>
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-extrabold text-slate-500 uppercase tracking-wider">
+                  Phase 3: Field Testing
+                </span>
+                <Clock className="w-4 h-4 text-slate-400 animate-pulse" />
+              </div>
+              <div className="mt-2.5 flex items-baseline justify-between">
+                <span className="text-xl font-black text-slate-900 tracking-tight font-sans">
+                  {phase3Pct}%
+                </span>
+                <span className="text-[10px] text-slate-600 font-bold flex items-center">
+                  <span className="w-1.5 h-1.5 rounded-full bg-amber-500 mr-1.5"></span>
+                  Active
+                </span>
+              </div>
+              <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden mt-2">
+                <div className="bg-amber-500 h-full rounded-full transition-all duration-300" style={{ width: `${phase3Pct}%` }} />
+              </div>
             </div>
-            <div className="w-full bg-slate-200 h-2 rounded-full overflow-hidden">
-              <div className="bg-amber-500 h-full rounded-full transition-all duration-300" style={{ width: `${phase3Pct}%` }} />
+            <div className="pt-2 border-t border-slate-100 text-[10px] text-slate-400 font-semibold">
+              {phase3Count} Telemetry Active
             </div>
-            <span className="text-[10px] text-slate-500 block">{phase3Count} Telemetry Active</span>
           </div>
 
-          <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-200 space-y-1.5">
-            <div className="flex justify-between text-xs font-bold">
-              <span className="text-slate-700">Phase 4: State Scaling</span>
-              <span className="text-blue-700">{phase4Pct}%</span>
+          {/* Card 4: Phase 4 */}
+          <div className="bg-white border border-slate-200/90 rounded-2xl p-4 shadow-2xs hover:shadow-xs transition-shadow flex flex-col justify-between h-[125px]">
+            <div>
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-extrabold text-slate-500 uppercase tracking-wider">
+                  Phase 4: State Scaling
+                </span>
+                <CheckCircle2 className="w-4 h-4 text-slate-400" />
+              </div>
+              <div className="mt-2.5 flex items-baseline justify-between">
+                <span className="text-xl font-black text-slate-900 tracking-tight font-sans">
+                  {phase4Pct}%
+                </span>
+                <span className="text-[10px] text-slate-600 font-bold flex items-center">
+                  <span className="w-1.5 h-1.5 rounded-full bg-blue-500 mr-1.5"></span>
+                  Active
+                </span>
+              </div>
+              <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden mt-2">
+                <div className="bg-blue-600 h-full rounded-full transition-all duration-300" style={{ width: `${phase4Pct}%` }} />
+              </div>
             </div>
-            <div className="w-full bg-slate-200 h-2 rounded-full overflow-hidden">
-              <div className="bg-blue-600 h-full rounded-full transition-all duration-300" style={{ width: `${phase4Pct}%` }} />
+            <div className="pt-2 border-t border-slate-100 text-[10px] text-slate-400 font-semibold">
+              {phase4Count} State Validated
             </div>
-            <span className="text-[10px] text-slate-500 block">{phase4Count} State Validated</span>
           </div>
         </div>
       </div>
@@ -244,38 +309,29 @@ export const MilestonesMonitoringPanel = () => {
                 className="bg-white border border-slate-200 rounded-2xl p-5 shadow-2xs hover:shadow-xs hover:border-slate-300 transition-all flex flex-col md:flex-row md:items-center justify-between gap-4"
               >
                 <div className="flex items-start space-x-3.5 min-w-0">
-                  <div
-                    className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold text-xs flex-shrink-0 ${
-                      isCompleted
-                        ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                        : isInProgress
-                        ? 'bg-amber-50 text-amber-700 border border-amber-200'
-                        : 'bg-slate-100 text-slate-500 border border-slate-200'
-                    }`}
-                  >
+                  <div className="w-10 h-10 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-center font-bold text-xs text-slate-700 flex-shrink-0">
                     {m.id}
                   </div>
 
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
                       <h3 className="text-sm font-bold text-slate-900">{m.title}</h3>
-                      <span
-                        className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
+                      <div className="flex items-center space-x-1.5 text-xs font-bold text-slate-900 ml-1">
+                        <span className={`w-1.5 h-1.5 rounded-full ${
                           isCompleted
-                            ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                            ? 'bg-emerald-500'
                             : isInProgress
-                            ? 'bg-amber-50 text-amber-700 border-amber-200'
-                            : 'bg-slate-100 text-slate-600 border-slate-200'
-                        }`}
-                      >
-                        {m.status} ({m.progress}%)
-                      </span>
-                      <span className="font-mono text-[10px] font-bold bg-slate-100 px-2 py-0.5 rounded-md text-slate-700">
+                            ? 'bg-amber-500 animate-pulse'
+                            : 'bg-slate-400'
+                        } shrink-0`}></span>
+                        <span>{m.status} ({m.progress}%)</span>
+                      </div>
+                      <span className="font-mono text-[11px] font-bold text-slate-800 ml-1">
                         {m.trlLevel}
                       </span>
                     </div>
 
-                    <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-slate-500 mt-1">
+                    <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-slate-500 mt-1.5">
                       <span className="font-semibold text-slate-900">
                         {m.projectTitle} ({m.projectId})
                       </span>
@@ -314,7 +370,7 @@ export const MilestonesMonitoringPanel = () => {
                       setSelectedProject(m.parentProject);
                       setIsManageModalOpen(true);
                     }}
-                    className="px-3.5 py-1.5 text-xs font-bold text-slate-700 bg-white border border-slate-300 hover:bg-slate-50 rounded-xl transition-colors cursor-pointer flex items-center space-x-1"
+                    className="px-3.5 py-1.5 text-xs font-bold text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 rounded-xl transition-colors cursor-pointer flex items-center space-x-1"
                   >
                     <ShieldCheck className="w-3.5 h-3.5 text-slate-500" />
                     <span>Audit Dossier</span>

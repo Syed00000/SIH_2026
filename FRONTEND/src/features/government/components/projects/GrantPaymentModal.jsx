@@ -15,9 +15,30 @@ import { projectCsrSyncService } from '../../services/projectCsrSyncService.js';
 export const parseGrantLakhs = (grantStr) => {
   if (typeof grantStr === 'number') return grantStr;
   if (!grantStr) return 0;
-  const match = String(grantStr).replace(/,/g, '').match(/[\d.]+/);
-  return match ? parseFloat(match[0]) : 0;
+  const cleanStr = String(grantStr).replace(/,/g, '');
+  const match = cleanStr.match(/[\d.]+/);
+  if (!match) return 0;
+  const val = parseFloat(match[0]);
+  const lowerStr = cleanStr.toLowerCase();
+  
+  // If it mentions Lakhs/L, treat as Lakhs
+  if (lowerStr.includes('lakh') || lowerStr.includes(' l') || lowerStr.endsWith('l')) {
+    return val;
+  }
+  
+  // If it mentions Cr/Crore, convert Cr to Lakhs (1 Cr = 100 Lakhs)
+  if (lowerStr.includes('cr') || lowerStr.includes('crore')) {
+    return val * 100;
+  }
+  
+  // Otherwise, if it's a raw number >= 1000, assume it's raw Rupees and divide by 100,000 to get Lakhs
+  if (val >= 1000) {
+    return val / 100000;
+  }
+  
+  return val;
 };
+
 
 export const formatGrantLakhs = (num) => {
   const n = parseFloat(num);

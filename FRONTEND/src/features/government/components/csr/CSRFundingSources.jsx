@@ -21,8 +21,7 @@ export const CSRFundingSources = ({ onFilterBySource, selectedSourceFilter }) =>
       id: 'corporate_csr',
       title: 'A. Corporate CSR Funds (Sec 135)',
       description: 'Dedicated industry CSR innovation corpus for university problem-solving.',
-      poolAmount: `₹ ${(financials.corporateAllocation / 100000).toFixed(2)} Lakhs`,
-      disbursedAmount: '₹ 0.00 Lakhs',
+
       activeCount: 'Corporate Partnerships',
       iconColor: 'text-blue-600 bg-blue-50 border-blue-100',
       poolColor: 'text-blue-700 bg-blue-50/50',
@@ -32,8 +31,7 @@ export const CSRFundingSources = ({ onFilterBySource, selectedSourceFilter }) =>
       id: 'govt_grants',
       title: 'B. Government State Grants',
       description: 'Jharkhand State Innovation Council & Higher Education Dept R&D allocation.',
-      poolAmount: `₹ ${(financials.govtAllocation / 100000).toFixed(2)} Lakhs`,
-      disbursedAmount: '₹ 0.00 Lakhs',
+
       activeCount: 'State R&D Pool',
       iconColor: 'text-emerald-600 bg-emerald-50 border-emerald-100',
       poolColor: 'text-emerald-700 bg-emerald-50/50',
@@ -43,8 +41,7 @@ export const CSRFundingSources = ({ onFilterBySource, selectedSourceFilter }) =>
       id: 'joint_funding',
       title: 'C. Joint Co-Funding (PPP Model)',
       description: 'Matched Corporate-State Escrow Pool for rapid field scale-up and district rollout.',
-      poolAmount: `₹ ${(financials.totalCorpus / 100000).toFixed(2)} Lakhs`,
-      disbursedAmount: `₹ ${(financials.totalDisbursed / 100000).toFixed(2)} Lakhs`,
+
       activeCount: 'Active PPP Nodes',
       iconColor: 'text-purple-600 bg-purple-50 border-purple-100',
       poolColor: 'text-purple-700 bg-purple-50/50',
@@ -104,16 +101,7 @@ export const CSRFundingSources = ({ onFilterBySource, selectedSourceFilter }) =>
 
                 <p className="text-[11px] text-slate-600 leading-snug line-clamp-2">{src.description}</p>
 
-                <div className="pt-2 border-t border-slate-200/60 flex items-center justify-between text-xs">
-                  <div>
-                    <span className="text-[10px] text-slate-400 uppercase font-bold block">Fund Pool</span>
-                    <span className="font-black text-slate-900">{src.poolAmount}</span>
-                  </div>
-                  <div className="text-right">
-                    <span className="text-[10px] text-slate-400 uppercase font-bold block">Disbursed</span>
-                    <span className="font-bold text-emerald-700">{src.disbursedAmount}</span>
-                  </div>
-                </div>
+
               </div>
             );
           })}

@@ -1,18 +1,12 @@
 import React, { useState } from 'react';
 import {
   X,
-  Plus,
   MapPin,
-  FileText,
   User,
   Image as ImageIcon,
   CheckCircle2,
   AlertCircle,
   Loader2,
-  Sparkles,
-  Building,
-  Phone,
-  Mail,
   ShieldCheck
 } from 'lucide-react';
 import { citizenService } from '../services/citizenService.js';
@@ -121,12 +115,9 @@ export const SubmitChallengeModal = ({ isOpen, onClose, user, onSuccess }) => {
       setError('Please select a district in Jharkhand');
       return;
     }
-    if (!formData.submitterName.trim()) {
-      setError('Please enter your full name');
-      return;
-    }
 
     setLoading(true);
+
     try {
       const payload = {
         title: formData.title,
@@ -167,40 +158,35 @@ export const SubmitChallengeModal = ({ isOpen, onClose, user, onSuccess }) => {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-150">
-      <div className="bg-white w-full max-w-lg rounded-2xl shadow-xl border border-slate-100 flex flex-col max-h-[92vh] overflow-hidden">
-        {/* Header */}
-        <div className="px-4 py-3 bg-gradient-to-r from-[#064e3b] to-[#047857] text-white flex items-center justify-between flex-shrink-0">
-          <div className="flex items-center space-x-2">
-            <div className="w-8 h-8 rounded-full bg-white/15 flex items-center justify-center">
-              <Sparkles className="w-4 h-4 text-emerald-200" />
-            </div>
-            <div>
-              <h3 className="text-sm sm:text-base font-extrabold tracking-tight leading-tight">
-                Submit a Problem Statement
-              </h3>
-              <p className="text-[11px] text-emerald-100/90 leading-tight">
-                Jharkhand Societal Innovation Portal
-              </p>
-            </div>
+      <div className="bg-white w-full max-w-lg rounded-lg shadow-2xl border border-slate-200 flex flex-col max-h-[92vh] overflow-hidden text-left">
+        {/* Header - Pure Title without AI/Sparkles icon */}
+        <div className="px-5 py-3.5 bg-[#064e3b] text-white flex items-center justify-between flex-shrink-0">
+          <div>
+            <h3 className="text-base font-extrabold tracking-tight leading-snug">
+              Submit a Problem Statement
+            </h3>
+            <p className="text-xs text-emerald-100 font-medium">
+              Jharkhand Societal Innovation Portal
+            </p>
           </div>
           <button
             onClick={onClose}
-            className="p-1 rounded-full text-white/80 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+            className="p-1.5 rounded-md text-white/80 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Form Body or Success State */}
-        <div className="p-4 overflow-y-auto flex-1 space-y-4">
+        <div className="p-5 overflow-y-auto flex-1 space-y-4">
           {submittedChallenge ? (
             <div className="text-center py-6 space-y-4">
-              <div className="w-16 h-16 bg-emerald-50 border-2 border-emerald-500 rounded-full flex items-center justify-center mx-auto text-emerald-600 shadow-sm animate-bounce">
-                <CheckCircle2 className="w-9 h-9" />
+              <div className="w-14 h-14 bg-emerald-50 border-2 border-emerald-600 rounded-full flex items-center justify-center mx-auto text-emerald-700 shadow-2xs">
+                <CheckCircle2 className="w-8 h-8" />
               </div>
 
               <div className="space-y-1">
-                <h4 className="text-lg font-black text-slate-900">
+                <h4 className="text-base font-black text-slate-900">
                   Challenge Submitted Successfully!
                 </h4>
                 <p className="text-xs text-slate-500 max-w-xs mx-auto">
@@ -208,56 +194,56 @@ export const SubmitChallengeModal = ({ isOpen, onClose, user, onSuccess }) => {
                 </p>
               </div>
 
-              <div className="bg-emerald-50/70 border border-emerald-200/80 rounded-xl p-3.5 max-w-sm mx-auto text-left space-y-1.5">
+              <div className="bg-white border border-slate-200/90 rounded-lg p-4 max-w-sm mx-auto text-left space-y-2 shadow-2xs">
                 <div className="flex justify-between text-xs">
-                  <span className="font-semibold text-emerald-800">Challenge Reference ID:</span>
-                  <span className="font-mono font-black text-emerald-950">
+                  <span className="font-semibold text-slate-600">Challenge Reference ID:</span>
+                  <span className="font-mono font-bold text-slate-900">
                     {submittedChallenge.challengeId}
                   </span>
                 </div>
                 <div className="flex justify-between text-xs">
-                  <span className="font-semibold text-emerald-800">Current Status:</span>
-                  <span className="font-bold text-amber-700 bg-amber-100/80 px-2 py-0.5 rounded text-[10px]">
+                  <span className="font-semibold text-slate-600">Current Status:</span>
+                  <span className="font-bold text-amber-700">
                     {submittedChallenge.status || 'Under Review'}
                   </span>
                 </div>
                 <div className="flex justify-between text-xs">
-                  <span className="font-semibold text-emerald-800">Assigned Area:</span>
-                  <span className="font-bold text-emerald-900">
+                  <span className="font-semibold text-slate-600">Assigned Area:</span>
+                  <span className="font-bold text-slate-900">
                     {submittedChallenge.domain || formData.domain}
                   </span>
                 </div>
               </div>
 
-              <div className="pt-3">
+              <div className="pt-2">
                 <button
                   onClick={() => {
                     setSubmittedChallenge(null);
                     onClose();
                   }}
-                  className="w-full bg-[#047857] hover:bg-[#064e3b] text-white text-xs font-bold py-2.5 rounded-xl shadow-xs transition-all cursor-pointer"
+                  className="w-full bg-[#064e3b] hover:bg-[#047857] text-white text-xs font-bold py-2.5 rounded-lg shadow-2xs transition-all cursor-pointer"
                 >
                   View My Challenges
                 </button>
               </div>
             </div>
           ) : (
-            <form onSubmit={handleSubmit} className="space-y-4 text-left">
+            <form onSubmit={handleSubmit} className="space-y-5">
               {error && (
-                <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-center space-x-2">
+                <div className="p-3 rounded-lg bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-center space-x-2">
                   <AlertCircle className="w-4 h-4 flex-shrink-0" />
                   <span>{error}</span>
                 </div>
               )}
 
-              {/* 1. Problem Heading & Category */}
-              <div className="space-y-3 bg-slate-50/60 p-3 rounded-xl border border-slate-100">
-                <span className="text-[11px] font-bold text-emerald-800 uppercase tracking-wider block">
+              {/* 1. Problem Heading & Category (Clean Section Layout without Colored Container Boxes) */}
+              <div className="space-y-3 pb-4 border-b border-slate-100">
+                <span className="text-xs font-bold text-emerald-800 uppercase tracking-wider block">
                   1. Problem Overview
                 </span>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                  <label className="block text-xs font-bold text-slate-800 mb-1">
                     Problem Title / Heading <span className="text-rose-500">*</span>
                   </label>
                   <input
@@ -266,21 +252,21 @@ export const SubmitChallengeModal = ({ isOpen, onClose, user, onSuccess }) => {
                     value={formData.title}
                     onChange={handleChange}
                     placeholder="e.g., Poor Drainage and Waterlogging in Community Roads"
-                    className="w-full text-xs font-medium px-3 py-2 rounded-lg bg-white border border-slate-200 focus:outline-hidden focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600"
+                    className="w-full text-xs font-medium px-3.5 py-2.5 rounded-lg bg-white border border-slate-200/90 text-slate-900 focus:outline-none focus:border-slate-900 focus:ring-1 focus:ring-slate-900 transition-colors shadow-2xs"
                     required
                   />
                 </div>
 
-                <div className="grid grid-cols-2 gap-2.5">
+                <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1">
+                    <label className="block text-xs font-bold text-slate-800 mb-1">
                       Challenge Area <span className="text-rose-500">*</span>
                     </label>
                     <select
                       name="domain"
                       value={formData.domain}
                       onChange={handleChange}
-                      className="w-full text-xs font-medium px-3 py-2 rounded-lg bg-white border border-slate-200 focus:outline-hidden focus:border-emerald-600"
+                      className="w-full text-xs font-medium px-3 py-2.5 rounded-lg bg-white border border-slate-200/90 text-slate-900 focus:outline-none focus:border-slate-900 cursor-pointer shadow-2xs"
                     >
                       {DOMAINS.map((dom) => (
                         <option key={dom} value={dom}>
@@ -291,14 +277,14 @@ export const SubmitChallengeModal = ({ isOpen, onClose, user, onSuccess }) => {
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1">
+                    <label className="block text-xs font-bold text-slate-800 mb-1">
                       Severity / Priority
                     </label>
                     <select
                       name="priority"
                       value={formData.priority}
                       onChange={handleChange}
-                      className="w-full text-xs font-medium px-3 py-2 rounded-lg bg-white border border-slate-200 focus:outline-hidden focus:border-emerald-600"
+                      className="w-full text-xs font-medium px-3 py-2.5 rounded-lg bg-white border border-slate-200/90 text-slate-900 focus:outline-none focus:border-slate-900 cursor-pointer shadow-2xs"
                     >
                       <option value="Low">Low</option>
                       <option value="Medium">Medium</option>
@@ -309,7 +295,7 @@ export const SubmitChallengeModal = ({ isOpen, onClose, user, onSuccess }) => {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                  <label className="block text-xs font-bold text-slate-800 mb-1">
                     Detailed Problem Statement (Paragraph) <span className="text-rose-500">*</span>
                   </label>
                   <textarea
@@ -318,29 +304,29 @@ export const SubmitChallengeModal = ({ isOpen, onClose, user, onSuccess }) => {
                     value={formData.description}
                     onChange={handleChange}
                     placeholder="Describe the issue in detail: what is happening, where exactly is the problem, how long has it persisted, and how it impacts people..."
-                    className="w-full text-xs font-medium px-3 py-2 rounded-lg bg-white border border-slate-200 focus:outline-hidden focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600"
+                    className="w-full text-xs font-medium px-3.5 py-2.5 rounded-lg bg-white border border-slate-200/90 text-slate-900 focus:outline-none focus:border-slate-900 focus:ring-1 focus:ring-slate-900 transition-colors shadow-2xs"
                     required
                   />
                 </div>
               </div>
 
-              {/* 2. Address & Location */}
-              <div className="space-y-3 bg-slate-50/60 p-3 rounded-xl border border-slate-100">
-                <span className="text-[11px] font-bold text-emerald-800 uppercase tracking-wider block flex items-center">
-                  <MapPin className="w-3.5 h-3.5 mr-1" />
+              {/* 2. Address & Location (Clean Section Layout without Colored Container Boxes) */}
+              <div className="space-y-3 pb-4 border-b border-slate-100">
+                <span className="text-xs font-bold text-emerald-800 uppercase tracking-wider block flex items-center">
+                  <MapPin className="w-3.5 h-3.5 mr-1.5 text-slate-500" />
                   2. Location Details (Where is the problem?)
                 </span>
 
-                <div className="grid grid-cols-2 gap-2.5">
+                <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1">
+                    <label className="block text-xs font-bold text-slate-800 mb-1">
                       District <span className="text-rose-500">*</span>
                     </label>
                     <select
                       name="district"
                       value={formData.district}
                       onChange={handleChange}
-                      className="w-full text-xs font-medium px-3 py-2 rounded-lg bg-white border border-slate-200 focus:outline-hidden focus:border-emerald-600"
+                      className="w-full text-xs font-medium px-3 py-2.5 rounded-lg bg-white border border-slate-200/90 text-slate-900 focus:outline-none focus:border-slate-900 cursor-pointer shadow-2xs"
                       required
                     >
                       {JHARKHAND_DISTRICTS.map((dist) => (
@@ -352,7 +338,7 @@ export const SubmitChallengeModal = ({ isOpen, onClose, user, onSuccess }) => {
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1">
+                    <label className="block text-xs font-bold text-slate-800 mb-1">
                       Block / Sub-District
                     </label>
                     <input
@@ -361,14 +347,14 @@ export const SubmitChallengeModal = ({ isOpen, onClose, user, onSuccess }) => {
                       value={formData.block}
                       onChange={handleChange}
                       placeholder="e.g., Kanke, Torpa, Chas"
-                      className="w-full text-xs font-medium px-3 py-2 rounded-lg bg-white border border-slate-200 focus:outline-hidden focus:border-emerald-600"
+                      className="w-full text-xs font-medium px-3.5 py-2.5 rounded-lg bg-white border border-slate-200/90 text-slate-900 focus:outline-none focus:border-slate-900 shadow-2xs"
                     />
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-2.5">
+                <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1">
+                    <label className="block text-xs font-bold text-slate-800 mb-1">
                       Landmark / Area
                     </label>
                     <input
@@ -377,12 +363,12 @@ export const SubmitChallengeModal = ({ isOpen, onClose, user, onSuccess }) => {
                       value={formData.landmark}
                       onChange={handleChange}
                       placeholder="e.g., Near Morabadi Football Ground"
-                      className="w-full text-xs font-medium px-3 py-2 rounded-lg bg-white border border-slate-200 focus:outline-hidden focus:border-emerald-600"
+                      className="w-full text-xs font-medium px-3.5 py-2.5 rounded-lg bg-white border border-slate-200/90 text-slate-900 focus:outline-none focus:border-slate-900 shadow-2xs"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1">
+                    <label className="block text-xs font-bold text-slate-800 mb-1">
                       Pincode
                     </label>
                     <input
@@ -391,29 +377,29 @@ export const SubmitChallengeModal = ({ isOpen, onClose, user, onSuccess }) => {
                       value={formData.pincode}
                       onChange={handleChange}
                       placeholder="e.g., 834008"
-                      className="w-full text-xs font-medium px-3 py-2 rounded-lg bg-white border border-slate-200 focus:outline-hidden focus:border-emerald-600"
+                      className="w-full text-xs font-medium px-3.5 py-2.5 rounded-lg bg-white border border-slate-200/90 text-slate-900 focus:outline-none focus:border-slate-900 shadow-2xs"
                     />
                   </div>
                 </div>
               </div>
 
-              {/* 3. Submitter Details (Who are you?) */}
-              <div className="space-y-3 bg-slate-50/60 p-3 rounded-xl border border-slate-100">
-                <span className="text-[11px] font-bold text-emerald-800 uppercase tracking-wider block flex items-center">
-                  <User className="w-3.5 h-3.5 mr-1" />
+              {/* 3. Submitter Details (Clean Section Layout without Colored Container Boxes) */}
+              <div className="space-y-3 pb-4 border-b border-slate-100">
+                <span className="text-xs font-bold text-emerald-800 uppercase tracking-wider block flex items-center">
+                  <User className="w-3.5 h-3.5 mr-1.5 text-slate-500" />
                   3. Submitter Information (Who are you?)
                 </span>
 
-                <div className="grid grid-cols-2 gap-2.5">
+                <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1">
+                    <label className="block text-xs font-bold text-slate-800 mb-1">
                       Your Role / Designation <span className="text-rose-500">*</span>
                     </label>
                     <select
                       name="submitterRole"
                       value={formData.submitterRole}
                       onChange={handleChange}
-                      className="w-full text-xs font-medium px-3 py-2 rounded-lg bg-white border border-slate-200 focus:outline-hidden focus:border-emerald-600"
+                      className="w-full text-xs font-medium px-3 py-2.5 rounded-lg bg-white border border-slate-200/90 text-slate-900 focus:outline-none focus:border-slate-900 cursor-pointer shadow-2xs"
                     >
                       {SUBMITTER_ROLES.map((role) => (
                         <option key={role} value={role}>
@@ -424,7 +410,7 @@ export const SubmitChallengeModal = ({ isOpen, onClose, user, onSuccess }) => {
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1">
+                    <label className="block text-xs font-bold text-slate-800 mb-1">
                       Full Name <span className="text-rose-500">*</span>
                     </label>
                     <input
@@ -433,15 +419,15 @@ export const SubmitChallengeModal = ({ isOpen, onClose, user, onSuccess }) => {
                       value={formData.submitterName}
                       onChange={handleChange}
                       placeholder="e.g., Tauqueer Wasi"
-                      className="w-full text-xs font-medium px-3 py-2 rounded-lg bg-white border border-slate-200 focus:outline-hidden focus:border-emerald-600"
+                      className="w-full text-xs font-medium px-3.5 py-2.5 rounded-lg bg-white border border-slate-200/90 text-slate-900 focus:outline-none focus:border-slate-900 shadow-2xs"
                       required
                     />
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-2.5">
+                <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1">
+                    <label className="block text-xs font-bold text-slate-800 mb-1">
                       Mobile Number
                     </label>
                     <input
@@ -450,12 +436,12 @@ export const SubmitChallengeModal = ({ isOpen, onClose, user, onSuccess }) => {
                       value={formData.submitterPhone}
                       onChange={handleChange}
                       placeholder="10-digit mobile number"
-                      className="w-full text-xs font-medium px-3 py-2 rounded-lg bg-white border border-slate-200 focus:outline-hidden focus:border-emerald-600"
+                      className="w-full text-xs font-medium px-3.5 py-2.5 rounded-lg bg-white border border-slate-200/90 text-slate-900 focus:outline-none focus:border-slate-900 shadow-2xs"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1">
+                    <label className="block text-xs font-bold text-slate-800 mb-1">
                       Designation / Organization (Optional)
                     </label>
                     <input
@@ -464,16 +450,16 @@ export const SubmitChallengeModal = ({ isOpen, onClose, user, onSuccess }) => {
                       value={formData.designation}
                       onChange={handleChange}
                       placeholder="e.g., Village Representative / SHG"
-                      className="w-full text-xs font-medium px-3 py-2 rounded-lg bg-white border border-slate-200 focus:outline-hidden focus:border-emerald-600"
+                      className="w-full text-xs font-medium px-3.5 py-2.5 rounded-lg bg-white border border-slate-200/90 text-slate-900 focus:outline-none focus:border-slate-900 shadow-2xs"
                     />
                   </div>
                 </div>
               </div>
 
               {/* 4. Photo Evidence & Quick Preset */}
-              <div className="space-y-2.5 bg-slate-50/60 p-3 rounded-xl border border-slate-100">
-                <span className="text-[11px] font-bold text-emerald-800 uppercase tracking-wider block flex items-center">
-                  <ImageIcon className="w-3.5 h-3.5 mr-1" />
+              <div className="space-y-2.5">
+                <span className="text-xs font-bold text-emerald-800 uppercase tracking-wider block flex items-center">
+                  <ImageIcon className="w-3.5 h-3.5 mr-1.5 text-slate-500" />
                   4. Image / Photo Proof (Optional)
                 </span>
 
@@ -484,13 +470,13 @@ export const SubmitChallengeModal = ({ isOpen, onClose, user, onSuccess }) => {
                     value={formData.mediaUrl}
                     onChange={handleChange}
                     placeholder="Paste image URL (or select sample photo below)"
-                    className="w-full text-xs font-medium px-3 py-2 rounded-lg bg-white border border-slate-200 focus:outline-hidden focus:border-emerald-600"
+                    className="w-full text-xs font-medium px-3.5 py-2.5 rounded-lg bg-white border border-slate-200/90 text-slate-900 focus:outline-none focus:border-slate-900 shadow-2xs"
                   />
                 </div>
 
                 {/* Sample Presets */}
-                <div className="flex items-center space-x-2 pt-1">
-                  <span className="text-[10px] text-slate-500 font-semibold">Quick Photo Preset:</span>
+                <div className="flex items-center space-x-2 pt-0.5">
+                  <span className="text-xs text-slate-500 font-semibold">Quick Photo Preset:</span>
                   <button
                     type="button"
                     onClick={() =>
@@ -498,7 +484,7 @@ export const SubmitChallengeModal = ({ isOpen, onClose, user, onSuccess }) => {
                         'https://images.unsplash.com/photo-1515694346937-94d85e41e6f0?w=800&auto=format&fit=crop&q=60'
                       )
                     }
-                    className="text-[10px] px-2 py-0.5 bg-white border border-slate-200 hover:border-emerald-400 rounded-md font-medium text-slate-700 cursor-pointer"
+                    className="text-xs px-2.5 py-1 bg-white border border-slate-200 hover:border-slate-300 rounded-md font-medium text-slate-700 cursor-pointer shadow-2xs"
                   >
                     🛣️ Damaged Road
                   </button>
@@ -509,14 +495,14 @@ export const SubmitChallengeModal = ({ isOpen, onClose, user, onSuccess }) => {
                         'https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=800&auto=format&fit=crop&q=60'
                       )
                     }
-                    className="text-[10px] px-2 py-0.5 bg-white border border-slate-200 hover:border-emerald-400 rounded-md font-medium text-slate-700 cursor-pointer"
+                    className="text-xs px-2.5 py-1 bg-white border border-slate-200 hover:border-slate-300 rounded-md font-medium text-slate-700 cursor-pointer shadow-2xs"
                   >
                     💧 Water Issue
                   </button>
                 </div>
 
                 {formData.mediaUrl && (
-                  <div className="w-24 h-16 rounded-lg overflow-hidden border border-emerald-200 mt-2">
+                  <div className="w-24 h-16 rounded-lg overflow-hidden border border-slate-200 mt-2">
                     <img
                       src={formData.mediaUrl}
                       alt="Preview"
@@ -526,19 +512,19 @@ export const SubmitChallengeModal = ({ isOpen, onClose, user, onSuccess }) => {
                 )}
               </div>
 
-              {/* Submit CTA */}
-              <div className="pt-2 flex items-center space-x-2">
+              {/* Submit CTA Buttons */}
+              <div className="pt-3 flex items-center space-x-3">
                 <button
                   type="button"
                   onClick={onClose}
-                  className="flex-1 py-2.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-50 transition-colors cursor-pointer"
+                  className="flex-1 py-2.5 rounded-lg border border-slate-200 text-xs font-bold text-slate-700 hover:bg-slate-50 transition-colors cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={loading}
-                  className="flex-2 py-2.5 rounded-xl bg-gradient-to-r from-[#064e3b] to-[#047857] hover:from-[#047857] hover:to-[#059669] text-white text-xs font-bold shadow-xs transition-all flex items-center justify-center space-x-1.5 cursor-pointer disabled:opacity-70"
+                  className="flex-2 py-2.5 rounded-lg bg-[#064e3b] hover:bg-[#047857] text-white text-xs font-bold shadow-2xs transition-all flex items-center justify-center space-x-2 cursor-pointer disabled:opacity-70 active:scale-95"
                 >
                   {loading ? (
                     <>

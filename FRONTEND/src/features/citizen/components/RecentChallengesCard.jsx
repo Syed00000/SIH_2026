@@ -7,17 +7,17 @@ export const RecentChallengesCard = ({ challenge, onClick, onViewAllClick, onSub
     return (
       <section className="space-y-2.5">
         <div className="flex items-center justify-between">
-          <h3 className="text-[15px] font-extrabold text-slate-900 tracking-tight">
+          <h3 className="text-sm font-bold text-slate-900 tracking-tight">
             Recent Challenges
           </h3>
         </div>
         <div
           onClick={onSubmitClick || onViewAllClick}
-          className="bg-white border border-dashed border-slate-200 rounded-2xl p-5 text-center flex flex-col items-center justify-center space-y-1.5 cursor-pointer hover:border-emerald-300 transition-colors"
+          className="bg-white border border-dashed border-slate-200 rounded-lg p-5 text-center flex flex-col items-center justify-center space-y-1.5 cursor-pointer hover:border-slate-300 transition-colors"
         >
-          <PlusCircle className="w-6 h-6 text-emerald-600" />
+          <PlusCircle className="w-5 h-5 text-slate-400" />
           <h4 className="text-xs font-bold text-slate-800">No challenges submitted yet</h4>
-          <p className="text-[11px] text-slate-400">Be the first to submit a challenge from your district</p>
+          <p className="text-xs text-slate-500">Be the first to submit a challenge from your district</p>
         </div>
       </section>
     );
@@ -39,12 +39,12 @@ export const RecentChallengesCard = ({ challenge, onClick, onViewAllClick, onSub
     <section className="space-y-2.5">
       {/* Section Header */}
       <div className="flex items-center justify-between">
-        <h3 className="text-[15px] font-extrabold text-slate-900 tracking-tight">
+        <h3 className="text-sm font-bold text-slate-900 tracking-tight">
           Recent Challenges
         </h3>
         <button
           onClick={onViewAllClick}
-          className="flex items-center text-xs font-bold text-emerald-700 hover:text-emerald-800 transition-colors cursor-pointer"
+          className="flex items-center text-xs font-bold text-emerald-800 hover:text-emerald-900 transition-colors cursor-pointer"
         >
           <span>View All</span>
           <ChevronRight className="w-3.5 h-3.5 ml-0.5" />
@@ -54,10 +54,10 @@ export const RecentChallengesCard = ({ challenge, onClick, onViewAllClick, onSub
       {/* Main Challenge Card */}
       <div
         onClick={() => onClick && onClick(challenge)}
-        className="group relative bg-white border border-slate-100 hover:border-emerald-200 rounded-2xl p-3 shadow-2xs hover:shadow-xs transition-all duration-200 cursor-pointer flex items-center space-x-3 sm:space-x-3.5"
+        className="group relative bg-white border border-slate-200/80 hover:border-slate-300 rounded-lg p-3 shadow-2xs hover:shadow-xs transition-all duration-200 cursor-pointer flex items-center space-x-3.5"
       >
-        {/* Image Thumbnail with Floating Status Pill */}
-        <div className="relative w-24 h-24 sm:w-28 sm:h-28 rounded-xl overflow-hidden flex-shrink-0 bg-slate-100">
+        {/* Image Thumbnail */}
+        <div className="relative w-24 h-24 sm:w-28 sm:h-28 rounded-md overflow-hidden flex-shrink-0 bg-slate-100">
           <img
             src={challenge.mediaUrls?.[0]?.url || challenge.image || defaultRoadImg}
             alt={challenge.title}
@@ -67,9 +67,9 @@ export const RecentChallengesCard = ({ challenge, onClick, onViewAllClick, onSub
               e.target.src = defaultRoadImg;
             }}
           />
-          {/* Status Badge Tag at bottom of thumbnail */}
+          {/* Status Badge Tag */}
           <div className="absolute bottom-1.5 left-1.5 right-1.5">
-            <span className="block text-center text-[9px] font-extrabold px-1.5 py-0.5 rounded-md bg-white/95 text-emerald-700 backdrop-blur-xs shadow-xs border border-emerald-100">
+            <span className="block text-center text-[9px] font-extrabold px-1.5 py-0.5 rounded bg-white/95 text-slate-800 backdrop-blur-xs shadow-2xs border border-slate-200">
               {challenge.status || 'Under Review'}
             </span>
           </div>
@@ -83,14 +83,14 @@ export const RecentChallengesCard = ({ challenge, onClick, onViewAllClick, onSub
             </h4>
 
             {/* Location */}
-            <div className="flex items-center space-x-1 text-[11px] text-slate-500 font-medium mt-1">
+            <div className="flex items-center space-x-1 text-xs text-slate-500 font-medium mt-1">
               <MapPin className="w-3 h-3 text-slate-400 flex-shrink-0" />
               <span className="truncate">{locationText}</span>
             </div>
 
             {/* Submission Date */}
             {formattedDate && (
-              <div className="flex items-center space-x-1 text-[11px] text-slate-500 font-medium mt-0.5">
+              <div className="flex items-center space-x-1 text-xs text-slate-500 font-medium mt-0.5">
                 <Calendar className="w-3 h-3 text-slate-400 flex-shrink-0" />
                 <span>Submitted on {formattedDate}</span>
               </div>
@@ -99,14 +99,14 @@ export const RecentChallengesCard = ({ challenge, onClick, onViewAllClick, onSub
 
           {/* Domain Tag */}
           <div className="pt-0.5">
-            <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-100/80">
+            <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-800 border border-slate-200">
               {challenge.domain || 'Urban Development'}
             </span>
           </div>
         </div>
 
         {/* Right Arrow */}
-        <div className="flex-shrink-0 text-slate-400 group-hover:text-emerald-700 transition-colors pr-1">
+        <div className="flex-shrink-0 text-slate-400 group-hover:text-slate-900 transition-colors pr-1">
           <ChevronRight className="w-5 h-5" />
         </div>
       </div>
