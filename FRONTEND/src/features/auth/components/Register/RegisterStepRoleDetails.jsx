@@ -3,6 +3,7 @@ import { Button } from '../../../../shared/components/ui/button.jsx';
 import { RegisterCitizenFields } from './RegisterCitizenFields.jsx';
 import { RegisterUniversityFields } from './RegisterUniversityFields.jsx';
 import { RegisterIndustryFields } from './RegisterIndustryFields.jsx';
+import { ArrowLeft, ArrowRight } from 'lucide-react';
 
 export const RegisterStepRoleDetails = ({
   formData,
@@ -33,12 +34,21 @@ export const RegisterStepRoleDetails = ({
         />
       )}
 
-      <div className="flex space-x-3 pt-4">
-        <Button variant="secondary" onClick={onBack} className="w-1/3">
-          Back
+      <div className="flex items-center gap-3 pt-3">
+        <Button 
+          variant="secondary" 
+          onClick={onBack} 
+          className="w-1/3 py-2.5 font-bold flex items-center justify-center gap-1.5 rounded-xl border border-slate-300 hover:border-[#047857] hover:text-[#047857] transition-all duration-200"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          <span>Back</span>
         </Button>
-        <Button onClick={onNext} className="w-2/3">
-          Next: Review
+        <Button 
+          onClick={onNext} 
+          className="w-2/3 py-2.5 bg-[#007A61] hover:bg-[#009677] active:bg-[#00604d] text-white font-bold flex items-center justify-center gap-1.5 rounded-xl shadow-md shadow-[#007A61]/20 hover:shadow-lg hover:shadow-[#009677]/30 transition-all duration-200 cursor-pointer group"
+        >
+          <span>Next: Review</span>
+          <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
         </Button>
       </div>
     </div>

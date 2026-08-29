@@ -105,7 +105,7 @@ export const GovernmentSidebar = ({
         } ${isSidebarExpanded ? 'w-60' : 'w-16'}`}
     >
       <div className="space-y-3 overflow-y-auto pr-0.5">
-        {/* Header with Navigation Label & Hamburger/Cross Collapse Toggle */}
+        {/* Header */}
         <div className="flex items-center justify-between pb-1 px-1">
           {isSidebarExpanded && (
             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
@@ -120,8 +120,7 @@ export const GovernmentSidebar = ({
                 setIsSidebarExpanded(!isSidebarExpanded);
               }
             }}
-            className={`p-1.5 border border-slate-200 rounded-lg hover:bg-slate-50 text-slate-600 hover:text-slate-900 transition-colors bg-white cursor-pointer ${!isSidebarExpanded ? 'mx-auto' : ''
-              }`}
+            className={`p-1.5 border border-slate-200 rounded-lg hover:bg-slate-50 text-slate-600 hover:text-slate-900 transition-colors bg-white cursor-pointer ${!isSidebarExpanded ? 'mx-auto' : ''}`}
             title={isSidebarExpanded ? 'Collapse Sidebar' : 'Expand Sidebar'}
           >
             {isSidebarExpanded ? <X className="w-3.5 h-3.5" /> : <Menu className="w-3.5 h-3.5" />}
@@ -160,9 +159,9 @@ export const GovernmentSidebar = ({
                     isSidebarExpanded ? 'px-3 py-2.5 text-left' : 'p-2.5 justify-center'
                   } ${
                     isParentActive && !hasSubItems
-                      ? 'bg-slate-900 text-white shadow-xs'
+                      ? 'bg-[#007A61] text-white shadow-xs'
                       : isParentActive && hasSubItems
-                      ? 'bg-slate-100 text-slate-900'
+                      ? 'bg-[#007A61]/10 text-[#007A61]'
                       : 'text-slate-600 hover:bg-slate-100/70 hover:text-slate-900'
                   }`}
                   title={item.label}
@@ -170,7 +169,11 @@ export const GovernmentSidebar = ({
                   <div className="flex items-center space-x-3 min-w-0">
                     <IconComponent
                       className={`w-4 h-4 shrink-0 ${
-                        isParentActive && !hasSubItems ? 'text-white' : 'text-slate-500'
+                        isParentActive && !hasSubItems
+                          ? 'text-white'
+                          : isParentActive && hasSubItems
+                          ? 'text-[#007A61]'
+                          : 'text-slate-500'
                       }`}
                     />
                     {isSidebarExpanded && (
@@ -180,7 +183,7 @@ export const GovernmentSidebar = ({
 
                   {/* Dropdown Chevron */}
                   {hasSubItems && isSidebarExpanded && (
-                    <div className="shrink-0 text-slate-400">
+                    <div className={`shrink-0 ${isParentActive ? 'text-[#007A61]' : 'text-slate-400'}`}>
                       {isOpen ? (
                         <ChevronUp className="w-3.5 h-3.5" />
                       ) : (
@@ -192,7 +195,7 @@ export const GovernmentSidebar = ({
 
                 {/* Sub-Items Accordion Dropdown */}
                 {hasSubItems && isOpen && isSidebarExpanded && (
-                  <div className="space-y-0.5 pl-3 pt-0.5 pb-1 border-l-2 border-slate-100 ml-4">
+                  <div className="space-y-0.5 pl-3 pt-0.5 pb-1 border-l-2 border-[#007A61]/20 ml-4">
                     {item.subItems.map((sub) => {
                       const SubIcon = sub.icon;
                       const isSubActive = activeTab === sub.id;
@@ -206,8 +209,8 @@ export const GovernmentSidebar = ({
                           }}
                           className={`w-full flex items-center space-x-2.5 px-3 py-2 rounded-lg text-[11px] font-semibold transition-all cursor-pointer text-left ${
                             isSubActive
-                              ? 'bg-slate-900 text-white shadow-2xs font-bold'
-                              : 'text-slate-500 hover:text-slate-900 hover:bg-slate-100/60'
+                              ? 'bg-[#007A61] text-white shadow-2xs font-bold'
+                              : 'text-slate-500 hover:text-[#007A61] hover:bg-[#007A61]/8'
                           }`}
                         >
                           <SubIcon
@@ -227,12 +230,11 @@ export const GovernmentSidebar = ({
         </nav>
       </div>
 
-      {/* Bottom Logout Action */}
+      {/* Bottom Logout */}
       <div className="pt-2 border-t border-slate-100 bg-white">
         <button
           onClick={onLogout}
-          className={`w-full flex items-center rounded-xl text-xs font-bold text-red-600 hover:bg-red-50 transition-all cursor-pointer ${isSidebarExpanded ? 'px-3 py-2.5 space-x-2.5 text-left' : 'p-2.5 justify-center'
-            }`}
+          className={`w-full flex items-center rounded-xl text-xs font-bold text-red-600 hover:bg-red-50 transition-all cursor-pointer ${isSidebarExpanded ? 'px-3 py-2.5 space-x-2.5 text-left' : 'p-2.5 justify-center'}`}
           title="Logout"
         >
           <LogOut className="w-4 h-4 shrink-0 text-red-500" />
