@@ -10,7 +10,6 @@ import {
 import {
   JHARKHAND_STATE_GEOJSON,
   JHARKHAND_DISTRICTS_DATA,
-  GIS_HOTSPOT_PINS,
   PROBLEM_CATEGORIES
 } from '../../data/jharkhandGisData.js';
 import {
@@ -20,7 +19,7 @@ import {
   LegendCard,
   MapScaleBar
 } from './GisOverlays.jsx';
-
+import apiClient from '../../../../infrastructure/api/client.js';
 
 export const GisMapCanvas = ({
   viewType = 'heat_map',
@@ -45,47 +44,125 @@ export const GisMapCanvas = ({
   const baseTileLayerRef = useRef(null);
   const hasFittedInitialBounds = useRef(false);
 
-  const [tileMode, setTileMode] = useState('light'); // 'light', 'osm', 'satellite'
+  const [tileMode, setTileMode] = useState('light'); // 'light', 'satellite'
   const [hoveredDistrict, setHoveredDistrict] = useState(null);
-  const [selectedCategoriesList, setSelectedCategoriesList] = useState(
-    PROBLEM_CATEGORIES.map((c) => c.id)
-  );
+  const [projects, setProjects] = useState([]);
+
+  // Baseline empty districts data state (Zero/Clean)
+  const [districtsData, setDistrictsData] = useState(() => {
+    const baseline = {};
+    Object.keys(JHARKHAND_DISTRICTS_DATA).forEach((key) => {
+      baseline[key] = {
+        ...JHARKHAND_DISTRICTS_DATA[key],
+        overallScore: 0,
+        riskLevel: 'Zero / Clean',
+        totalProblems: 0,
+        resolvedProblems: 0,
+        pendingProblems: 0,
+        activeHeis: 0,
+        topProblemAreas: []
+      };
+    });
+    return baseline;
+  });
 
   const JHARKHAND_CENTER = [23.65, 85.55];
   const DEFAULT_ZOOM = 7.6;
 
-  // Compute color for a district based on its severity and active category filter
+  // Fetch real database data for the map
+  useEffect(() => {
+    const fetchMapData = async () => {
+      try {
+        const baseline = {};
+        Object.keys(JHARKHAND_DISTRICTS_DATA).forEach((key) => {
+          baseline[key] = {
+            ...JHARKHAND_DISTRICTS_DATA[key],
+            overallScore: 0,
+            riskLevel: 'Zero / Clean',
+            totalProblems: 0,
+            resolvedProblems: 0,
+            pendingProblems: 0,
+            activeHeis: 0,
+            topProblemAreas: []
+          };
+        });
+
+        // 1. Fetch active projects to extract problems & completed milestones
+        const res = await apiClient.get('university/projects?universityCode=RU001');
+        const dataList = res.data?.data || res.data || [];
+        const projectsList = Array.isArray(dataList) ? dataList : [];
+        setProjects(projectsList);
+
+        projectsList.forEach((p) => {
+          const dist = String(p.district || 'Ranchi').toLowerCase().trim();
+          if (baseline[dist]) {
+            baseline[dist].totalProblems += 1;
+            
+            // Count completed milestones
+            const completedCount = (p.milestones || []).filter(m => m.status === 'Completed').length;
+            baseline[dist].resolvedProblems += completedCount > 0 ? 1 : 0;
+            
+            // Recalculate score based on live problems count
+            baseline[dist].overallScore = Math.min(100, baseline[dist].totalProblems * 15);
+            baseline[dist].riskLevel = baseline[dist].totalProblems > 0 ? 'Active Need' : 'Zero / Clean';
+          }
+        });
+
+        // 2. Fetch active HEIs count from overview stats
+        const statsRes = await apiClient.get('government/overview/stats');
+        const stats = statsRes.data?.data || statsRes.data || {};
+        const heisByDist = stats.heisByDistrict || [];
+        heisByDist.forEach((item) => {
+          const dist = String(item._id || 'Ranchi').toLowerCase().trim();
+          if (baseline[dist]) {
+            baseline[dist].activeHeis = item.count || 0;
+          }
+        });
+
+        setDistrictsData(baseline);
+      } catch (err) {
+        console.warn('Failed to load dynamic GIS map data:', err);
+      }
+    };
+
+    fetchMapData();
+  }, []);
+
+  // Dynamically map database projects to problem hotspot pins
+  const hotspots = projects.map((p, idx) => ({
+    name: p.title,
+    lat: String(p.district).toLowerCase() === 'ranchi' ? 23.32 + (idx - 1) * 0.08 : 23.32,
+    lng: String(p.district).toLowerCase() === 'ranchi' ? 85.32 + (idx - 1) * 0.08 : 85.32,
+    severityScore: p.progressPercentage || 80,
+    severityLevel: 'High',
+    summary: p.domain || 'Technology',
+    district: p.district || 'Ranchi'
+  }));
+
+  // Compute color for a district based on overall score
   const getFeatureColor = useCallback(
     (distId) => {
-      const data = JHARKHAND_DISTRICTS_DATA[distId];
-      if (!data) return '#86efac';
+      const data = districtsData[distId];
+      if (!data) return '#22c55e';
 
-      let score = data.overallScore;
-      if (selectedCategory && selectedCategory !== 'all') {
-        score = data.categoryScores?.[selectedCategory] || score;
-      }
-
-      // Exact color mapping matching the reference image
-      if (score >= 81) return '#ef4444'; // Very High - Red (Garhwa, Godda, Dhanbad)
-      if (score >= 61) return '#fb923c'; // High - Orange (Deoghar, Bokaro, Pakur, East Singhbhum, Simdega)
-      if (score >= 41) return '#fde047'; // Moderate - Warm Yellow (Ranchi, Hazaribagh, Dumka, Jamtara, Chatra, Latehar, Ramgarh, Khunti, Seraikela)
-      if (score >= 21) return '#86efac'; // Low - Light Green (Koderma, Giridih, Sahibganj, Gumla, Lohardaga)
-      return '#22c55e'; // Very Low - Emerald Green (West Singhbhum)
+      let score = data.overallScore || 0;
+      if (score >= 81) return '#ef4444'; // Very High - Red
+      if (score >= 61) return '#fb923c'; // High - Orange
+      if (score >= 41) return '#fde047'; // Moderate - Yellow
+      if (score >= 21) return '#86efac'; // Low - Light Green
+      return '#22c55e'; // Very Low - Emerald Green
     },
-    [selectedCategory]
+    [districtsData]
   );
 
   // Check if a district matches the selected severity filter
   const matchesSeverityFilter = useCallback(
     (distId) => {
       if (selectedSeverity === 'all') return true;
-      const data = JHARKHAND_DISTRICTS_DATA[distId];
+      const data = districtsData[distId];
       if (!data) return true;
 
-      const score =
-        selectedCategory !== 'all'
-          ? data.categoryScores?.[selectedCategory] || data.overallScore
-          : data.overallScore;
+      const score = data.overallScore || 0;
 
       if (selectedSeverity === 'very_high') return score >= 81;
       if (selectedSeverity === 'high') return score >= 61 && score <= 80;
@@ -94,7 +171,7 @@ export const GisMapCanvas = ({
       if (selectedSeverity === 'very_low') return score <= 20;
       return true;
     },
-    [selectedSeverity, selectedCategory]
+    [selectedSeverity, districtsData]
   );
 
   // Initialize Leaflet Map
@@ -111,7 +188,6 @@ export const GisMapCanvas = ({
         maxZoom: 13
       });
 
-      // CartoDB Positron Light Tile Layer (clean, muted background)
       const baseTile = L.tileLayer(
         'https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png',
         {
@@ -144,19 +220,16 @@ export const GisMapCanvas = ({
     let newUrl = 'https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png';
     let subdomains = 'abcd';
 
-    if (tileMode === 'osm' || viewType === 'density') {
-      newUrl = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
-      subdomains = 'abc';
-    } else if (tileMode === 'satellite' || viewType === 'satellite') {
+    if (tileMode === 'satellite') {
       newUrl = 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}';
       subdomains = 'abc';
     }
 
     const newTile = L.tileLayer(newUrl, { subdomains, maxZoom: 19 }).addTo(mapInstanceRef.current);
     baseTileLayerRef.current = newTile;
-  }, [tileMode, viewType]);
+  }, [tileMode]);
 
-  // Update GeoJSON Districts Layer (Clean, crisp polygon colors matching the image)
+  // Update GeoJSON Districts Layer
   useEffect(() => {
     if (!mapInstanceRef.current) return;
 
@@ -198,8 +271,9 @@ export const GisMapCanvas = ({
               color: '#0f172a',
               fillOpacity: 0.98
             });
-            const data = JHARKHAND_DISTRICTS_DATA[feature.properties.id] || feature.properties;
-            setHoveredDistrict(data);
+            const distId = feature.properties.id;
+            const distData = districtsData[distId] || feature.properties;
+            setHoveredDistrict(distData);
           },
           mouseout: (e) => {
             geoLayer.resetStyle(e.target);
@@ -222,7 +296,6 @@ export const GisMapCanvas = ({
 
     geoJsonLayerRef.current = geoLayer;
 
-    // Fit bounds once on first load so the whole state is perfectly centered
     if (!hasFittedInitialBounds.current && mapInstanceRef.current) {
       try {
         const bounds = geoLayer.getBounds();
@@ -230,9 +303,7 @@ export const GisMapCanvas = ({
           mapInstanceRef.current.fitBounds(bounds, { padding: [25, 25] });
           hasFittedInitialBounds.current = true;
         }
-      } catch (err) {
-        // fallback
-      }
+      } catch (err) {}
     }
   }, [
     activeLayers.districtBoundary,
@@ -242,10 +313,11 @@ export const GisMapCanvas = ({
     selectedSeverity,
     getFeatureColor,
     matchesSeverityFilter,
-    onSelectDistrict
+    onSelectDistrict,
+    districtsData
   ]);
 
-  // Update District Text Labels (100% Sharp, perfectly positioned at centroids)
+  // Update District Text Labels
   useEffect(() => {
     if (!mapInstanceRef.current || !labelsLayerGroupRef.current) return;
 
@@ -253,7 +325,6 @@ export const GisMapCanvas = ({
 
     if (!activeLayers.districtLabels) return;
 
-    // Explicit centroid coordinates for all 24 districts matching the exact visual centers
     const DISTRICT_LABEL_COORDS = {
       garhwa: [24.08, 83.74],
       palamu: [24.20, 84.20],
@@ -281,7 +352,7 @@ export const GisMapCanvas = ({
       'east-singhbhum': [22.56, 86.50]
     };
 
-    Object.entries(JHARKHAND_DISTRICTS_DATA).forEach(([distId, dist]) => {
+    Object.entries(districtsData).forEach(([distId, dist]) => {
       const pos = DISTRICT_LABEL_COORDS[distId] || dist.center;
       if (!pos) return;
 
@@ -290,7 +361,6 @@ export const GisMapCanvas = ({
         selectedDistrict !== 'All Districts' &&
         dist.name.toLowerCase() === selectedDistrict.toLowerCase();
 
-      // Sharp, bold text label matching the reference image typography
       const labelHtml = `
         <div style="
           font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -320,9 +390,9 @@ export const GisMapCanvas = ({
         interactive: false
       }).addTo(labelsLayerGroupRef.current);
     });
-  }, [activeLayers.districtLabels, selectedDistrict]);
+  }, [activeLayers.districtLabels, selectedDistrict, districtsData]);
 
-  // Update Problem Hotspot Pin Markers (Matching the red location pin icon in the reference image)
+  // Update Problem Hotspot Pin Markers
   useEffect(() => {
     if (!mapInstanceRef.current || !hotspotsLayerGroupRef.current) return;
 
@@ -330,7 +400,7 @@ export const GisMapCanvas = ({
 
     if (!activeLayers.problemHotspots || viewType === 'choropleth') return;
 
-    const filteredHotspots = GIS_HOTSPOT_PINS.filter((pin) => {
+    const filteredHotspots = hotspots.filter((pin) => {
       if (
         selectedDistrict !== 'All Districts' &&
         pin.district.toLowerCase() !== selectedDistrict.toLowerCase()
@@ -341,12 +411,9 @@ export const GisMapCanvas = ({
     });
 
     filteredHotspots.forEach((pin) => {
-      // Red pin SVG matching the exact shape in the image
       const pinHtml = `
         <div style="position: relative; display: flex; align-items: center; justify-content: center; cursor: pointer; transform: translate(-50%, -100%);">
-          <!-- Outer Pulsing Glow -->
           <div style="position: absolute; bottom: 0px; width: 14px; height: 14px; background: rgba(220, 38, 38, 0.4); border-radius: 50%; animation: ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite;"></div>
-          <!-- Pin Body -->
           <div style="width: 24px; height: 28px; background: #dc2626; border: 2px solid #ffffff; border-radius: 50% 50% 50% 0; transform: rotate(-45deg); display: flex; align-items: center; justify-content: center; box-shadow: 0 3px 6px -1px rgba(0,0,0,0.35);">
             <div style="width: 7px; height: 7px; background: #ffffff; border-radius: 50%; transform: rotate(45deg);"></div>
           </div>
@@ -365,9 +432,8 @@ export const GisMapCanvas = ({
       const popupContent = `
         <div style="font-family: sans-serif; padding: 4px; max-width: 200px;">
           <div style="font-size: 12px; font-weight: 800; color: #0f172a; margin-bottom: 2px;">${pin.name}</div>
-          <div style="font-size: 10px; font-weight: 700; color: #dc2626; margin-bottom: 4px;">Severity: ${pin.severityScore}/100 (${pin.severityLevel})</div>
-          <div style="font-size: 10px; color: #475569; line-height: 1.3;">${pin.summary}</div>
-          <div style="margin-top: 6px; font-size: 9px; font-weight: 700; color: #2563eb; cursor: pointer;">Click district for full report &rarr;</div>
+          <div style="font-size: 10px; font-weight: 700; color: #dc2626; margin-bottom: 4px;">Progress: ${pin.severityScore}% (Active Project)</div>
+          <div style="font-size: 10px; color: #475569; line-height: 1.3;">Sector: ${pin.summary}</div>
         </div>
       `;
 
@@ -381,7 +447,7 @@ export const GisMapCanvas = ({
 
       marker.addTo(hotspotsLayerGroupRef.current);
     });
-  }, [activeLayers.problemHotspots, selectedDistrict, viewType, onSelectDistrict]);
+  }, [activeLayers.problemHotspots, selectedDistrict, viewType, onSelectDistrict, projects]);
 
   // Pan to selected district when selectedDistrict changes externally
   useEffect(() => {
@@ -406,25 +472,25 @@ export const GisMapCanvas = ({
       return;
     }
 
-    const distKey = Object.keys(JHARKHAND_DISTRICTS_DATA).find(
-      (k) => JHARKHAND_DISTRICTS_DATA[k].name.toLowerCase() === selectedDistrict.toLowerCase()
+    const distKey = Object.keys(districtsData).find(
+      (k) => districtsData[k].name.toLowerCase() === selectedDistrict.toLowerCase()
     );
 
-    if (distKey && JHARKHAND_DISTRICTS_DATA[distKey]) {
-      const data = JHARKHAND_DISTRICTS_DATA[distKey];
+    if (distKey && districtsData[distKey]) {
+      const data = districtsData[distKey];
       mapInstanceRef.current.flyTo(data.center, 9.2, {
         duration: 1
       });
     }
-  }, [selectedDistrict]);
+  }, [selectedDistrict, districtsData]);
 
   // Active district data for the right sidebar panel (fallback to Ranchi if All Districts)
   const activeDistrictData =
     selectedDistrict && selectedDistrict !== 'All Districts'
-      ? Object.values(JHARKHAND_DISTRICTS_DATA).find(
+      ? Object.values(districtsData).find(
           (d) => d.name.toLowerCase() === selectedDistrict.toLowerCase()
-        ) || JHARKHAND_DISTRICTS_DATA.ranchi
-      : JHARKHAND_DISTRICTS_DATA.ranchi;
+        ) || districtsData.ranchi
+      : districtsData.ranchi;
 
   const handleZoomIn = () => {
     if (mapInstanceRef.current) mapInstanceRef.current.zoomIn();
@@ -454,15 +520,11 @@ export const GisMapCanvas = ({
 
   return (
     <div className="w-full select-none">
-      {/* Full-Width Map Canvas — all overlays float on top */}
       <div className="relative w-full h-[680px] rounded-2xl overflow-visible border border-slate-200 shadow-sm bg-[#f0f4f8]">
-
-        {/* Leaflet Canvas (clipped inside rounded box) */}
         <div className="absolute inset-0 rounded-2xl overflow-hidden">
           <div ref={mapContainerRef} className="w-full h-full z-0" />
         </div>
 
-        {/* ── TOP-LEFT: Zoom Controls ── */}
         <div className="absolute top-4 left-4 z-[500] flex flex-col gap-1 bg-white/95 backdrop-blur-md p-1 rounded-xl border border-slate-200 shadow-md">
           <button
             type="button"
@@ -503,13 +565,11 @@ export const GisMapCanvas = ({
           </button>
         </div>
 
-        {/* ── TOP-LEFT: Layer + Heatmap pill overlays (below zoom controls) ── */}
         <div className="absolute top-4 left-14 z-[500] flex flex-col gap-2">
           <MapLayersCard layers={activeLayers} onToggleLayer={onToggleLayer} />
           <HeatmapIntensityCard />
         </div>
 
-        {/* ── TOP-RIGHT: Overview + Legend pill overlays ── */}
         <div className="absolute top-4 right-4 z-[500] flex flex-col items-end gap-2">
           <DistrictOverviewPanel
             districtData={activeDistrictData}
@@ -518,7 +578,6 @@ export const GisMapCanvas = ({
           <LegendCard />
         </div>
 
-        {/* ── BOTTOM CENTER: Hovered District Tooltip ── */}
         {hoveredDistrict && (
           <div className="absolute bottom-16 left-1/2 -translate-x-1/2 z-[500] bg-slate-900/90 backdrop-blur-sm text-white text-xs font-semibold px-3 py-1.5 rounded-full shadow-lg pointer-events-none whitespace-nowrap">
             {hoveredDistrict.name}
@@ -528,7 +587,6 @@ export const GisMapCanvas = ({
           </div>
         )}
 
-        {/* ── BOTTOM RIGHT: Scale Bar only ── */}
         <div className="absolute bottom-4 right-4 z-[500]">
           <MapScaleBar />
         </div>
@@ -538,4 +596,3 @@ export const GisMapCanvas = ({
 };
 
 export default GisMapCanvas;
-

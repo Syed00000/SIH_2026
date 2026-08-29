@@ -130,7 +130,7 @@ export const AdminDirectoryTable = ({
       </div>
 
       {/* Pagination Footer */}
-      <div className="p-3.5 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500 bg-slate-50/30">
+      <div className="p-3.5 border-t border-slate-100 flex flex-col md:flex-row items-center justify-between gap-3 text-xs text-slate-500 bg-slate-50/30">
         <div>
           Showing <span className="font-bold text-slate-800">{totalRecords > 0 ? startIndex + 1 : 0}</span> to{' '}
           <span className="font-bold text-slate-800">{endIndex}</span> of{' '}
