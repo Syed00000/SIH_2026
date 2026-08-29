@@ -9,7 +9,19 @@ import { CitizenProfile } from './components/CitizenProfile.jsx';
 import { SubmitChallengeModal } from './components/SubmitChallengeModal.jsx';
 import { CitizenChallengeDetailModal } from './components/CitizenChallengeDetailModal.jsx';
 import { citizenService } from './services/citizenService.js';
-import { exportGenericReportPdf } from '../government/services/exportPdfService.js';
+import { GovernmentFooter } from '../government/components/layout/GovernmentFooter.jsx';
+import {
+  Bell,
+  LogOut,
+  X,
+  Menu,
+  Plus,
+  Home,
+  FileText,
+  MessageSquare,
+  User,
+  ChevronDown
+} from 'lucide-react';
 
 export const CitizenPortal = ({ user: propUser, onLogout }) => {
   const { user: authUser } = useAuth();
@@ -17,18 +29,16 @@ export const CitizenPortal = ({ user: propUser, onLogout }) => {
 
   const [activeTab, setActiveTab] = useState('home');
   const [activeStatusFilter, setActiveStatusFilter] = useState('All');
-  const [selectedDistrict, setSelectedDistrict] = useState('Ranchi');
-  const [selectedSector, setSelectedSector] = useState('All Sectors');
   const [isSubmitModalOpen, setIsSubmitModalOpen] = useState(false);
   const [selectedChallenge, setSelectedChallenge] = useState(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
-
   const [isSidebarExpanded, setIsSidebarExpanded] = useState(true);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
+  const [isChallengesDropdownOpen, setIsChallengesDropdownOpen] = useState(true);
 
   const [stats, setStats] = useState(null);
   const [recentChallenge, setRecentChallenge] = useState(null);
-  const [unreadNotificationsCount, setUnreadNotificationsCount] = useState(3);
+  const [unreadNotificationsCount, setUnreadNotificationsCount] = useState(2);
 
   const loadData = async () => {
     try {
@@ -86,62 +96,42 @@ export const CitizenPortal = ({ user: propUser, onLogout }) => {
     } else if (tileId === 'guidelines') {
       alert('Official Guidelines: Citizen problem statements are triaged by the State Innovation Cell and matched with HEI faculty labs within 7 business days.');
     } else if (tileId === 'help') {
-      alert('Jharkhand Societal Innovation Citizen Helpline: 1800-345-6789 (Toll Free) | citizen.support@joharsetu.gov.in');
+      alert('Jharkhand Societal Innovation Citizen Helpline: 1800-345-6789 (Toll Free)');
     }
   };
 
-  const handleExportPdf = () => {
-    exportGenericReportPdf({
-      title: 'Jharkhand Citizen Portal Summary',
-      subtitle: `District: ${selectedDistrict} | Sector: ${selectedSector}`,
-      data: [
-        { Parameter: 'Portal User', Value: user?.fullName || 'Citizen User' },
-        { Parameter: 'Mobile Number', Value: user?.mobileNumber || 'N/A' },
-        { Parameter: 'Email ID', Value: user?.email || 'N/A' },
-        { Parameter: 'Active Submissions', Value: stats?.activities?.submitted || 0 },
-        { Parameter: 'Under Review', Value: stats?.activities?.underReview || 0 },
-        { Parameter: 'In Progress R&D', Value: stats?.activities?.inProgress || 0 },
-        { Parameter: 'Resolved Impact', Value: stats?.activities?.resolved || 0 }
-      ]
-    });
-  };
-
   return (
-    <div className="h-screen w-screen flex flex-col bg-[#f8fafc] text-slate-800 font-sans overflow-hidden select-none">
-      {/* 1. Top Header Navbar (Emblem, Title, Filters, Bell, User Avatar) */}
+    <div className="min-h-screen w-full flex flex-col bg-[#f8fafc] text-slate-800 font-sans select-none overflow-x-hidden">
+      
+      {/* 1. Desktop & Mobile Shared Header */}
       <CitizenHeader
-        selectedDistrict={selectedDistrict}
-        setSelectedDistrict={setSelectedDistrict}
-        selectedSector={selectedSector}
-        setSelectedSector={setSelectedSector}
-        onExportPdf={handleExportPdf}
         unreadCount={unreadNotificationsCount}
         onNotificationsClick={() => {
           setActiveTab('updates');
           setUnreadNotificationsCount(0);
         }}
-        onSubmitClick={handleOpenSubmit}
         user={user}
         onLogout={onLogout}
+        onMenuClick={() => setIsMobileDrawerOpen(true)}
       />
 
-      {/* 2. Middle Body: Left Sidebar + Main Content Viewport */}
+      {/* 2. Middle Body: Left Sidebar (Desktop) + Main Content Area */}
       <div className="flex-1 flex overflow-hidden relative">
-        {/* Left Sidebar Navigation */}
+        {/* Left Desktop Sidebar Navigation */}
         <CitizenSidebar
           activeTab={activeTab}
           setActiveTab={setActiveTab}
           onSubmitClick={handleOpenSubmit}
           isSidebarExpanded={isSidebarExpanded}
           setIsSidebarExpanded={setIsSidebarExpanded}
-          isMobileMenuOpen={isMobileMenuOpen}
-          setIsMobileMenuOpen={setIsMobileMenuOpen}
+          isMobileMenuOpen={isMobileDrawerOpen}
+          setIsMobileMenuOpen={setIsMobileDrawerOpen}
           onLogout={onLogout}
         />
 
-        {/* Right Main Scrollable Viewport */}
-        <main className="flex-1 overflow-y-auto p-4 sm:p-6 bg-[#f8fafc] flex flex-col justify-between">
-          <div className="max-w-7xl mx-auto w-full">
+        {/* Right Scrollable Main Viewport */}
+        <main className="flex-1 overflow-y-auto p-4 sm:p-6 bg-[#f8fafc] flex flex-col justify-between pb-20 md:pb-6">
+          <div className="max-w-6xl mx-auto w-full space-y-6">
             {activeTab === 'home' && (
               <CitizenHome
                 stats={stats}
@@ -168,50 +158,111 @@ export const CitizenPortal = ({ user: propUser, onLogout }) => {
             )}
 
             {activeTab === 'profile' && (
-              <CitizenProfile
-                user={user}
-                onChangeTab={setActiveTab}
-                onLogout={onLogout}
-              />
+              <CitizenProfile user={user} onChangeTab={setActiveTab} />
             )}
 
             {activeTab === 'guidelines' && (
-              <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-2xs space-y-4 text-left">
-                <h2 className="text-base font-black text-slate-900 tracking-tight uppercase">
-                  Citizen Portal Guidelines & Help Desk
-                </h2>
-                <p className="text-xs text-slate-600 leading-relaxed">
-                  The JoharSetu Citizen Portal empowers residents across all 24 districts of Jharkhand to report grassroots infrastructure, agricultural, environmental, and public service problems.
-                </p>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
-                  <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-950 text-xs space-y-1">
-                    <strong className="font-bold block text-emerald-900">Triage & Verification Protocol:</strong>
-                    <span>Submitted challenges are AI-triaged and assigned to designated Nodal Universities within 48 hours.</span>
+              <div className="space-y-4 text-left animate-fadeIn">
+                <div className="bg-white border border-slate-200/90 rounded-lg p-5 shadow-2xs space-y-2">
+                  <h3 className="text-base font-extrabold text-slate-900">
+                    Citizen Guidelines & Innovation Directives
+                  </h3>
+                  <p className="text-xs text-slate-600 leading-relaxed">
+                    The Jharkhand Societal Innovation Hub directly connects citizen problem statements with university R&D nodes and government nodal officers.
+                  </p>
+                </div>
+
+                <div className="bg-white border border-slate-200/90 rounded-lg p-5 shadow-2xs space-y-4">
+                  <div className="space-y-1">
+                    <h4 className="text-xs font-bold text-emerald-800">1. Problem Submission Scope</h4>
+                    <p className="text-xs text-slate-600">
+                      File challenges related to public infrastructure, water sanitation, rural electrification, healthcare, education, or urban governance.
+                    </p>
                   </div>
-                  <div className="p-4 rounded-xl bg-blue-50 border border-blue-200 text-blue-950 text-xs space-y-1">
-                    <strong className="font-bold block text-blue-900">Toll-Free Helpline:</strong>
-                    <span>Call 1800-345-6789 or email citizen.support@joharsetu.gov.in for immediate assistance.</span>
+                  <div className="space-y-1 border-t border-slate-100 pt-3">
+                    <h4 className="text-xs font-bold text-emerald-800">2. Review & Triage Process</h4>
+                    <p className="text-xs text-slate-600">
+                      Each submission is screened within 48 hours and assigned a unique Reference Code (e.g., CHL-JH-2026-XXXX).
+                    </p>
+                  </div>
+                  <div className="space-y-1 border-t border-slate-100 pt-3">
+                    <h4 className="text-xs font-bold text-emerald-800">3. Resolution & Tracking</h4>
+                    <p className="text-xs text-slate-600">
+                      Track faculty mentors and student teams working on solutions in real-time under 'My Challenges'.
+                    </p>
                   </div>
                 </div>
               </div>
             )}
           </div>
 
-          {/* 3. Official Web Footer */}
-          <footer className="mt-8 border-t border-slate-200 pt-4 pb-2 text-center text-xs text-slate-500 max-w-7xl mx-auto w-full flex flex-col sm:flex-row items-center justify-between gap-2">
-            <div className="text-[11px] font-medium">
-              © {new Date().getFullYear()} Government of Jharkhand. Department of Higher & Technical Education. All rights reserved.
-            </div>
-            <div className="flex items-center space-x-4 text-[11px] font-semibold text-slate-600">
-              <button onClick={() => setActiveTab('home')} className="hover:text-slate-900 cursor-pointer">Overview</button>
-              <button onClick={() => setActiveTab('challenges')} className="hover:text-slate-900 cursor-pointer">My Challenges</button>
-              <button onClick={() => setActiveTab('guidelines')} className="hover:text-slate-900 cursor-pointer">Guidelines</button>
-            </div>
-          </footer>
+          {/* Web Desktop Footer */}
+          <div className="mt-8 hidden md:block">
+            <GovernmentFooter />
+          </div>
         </main>
       </div>
 
-      {/* Modals */}
+      {/* 3. Bottom Navigation Bar for Mobile Screens ONLY (< 768px) */}
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 px-4 py-2 flex items-center justify-between z-40 shadow-lg">
+        {/* Home Tab */}
+        <button
+          onClick={() => setActiveTab('home')}
+          className={`flex flex-col items-center justify-center space-y-0.5 cursor-pointer ${
+            activeTab === 'home' ? 'text-[#047857] font-bold' : 'text-slate-500 hover:text-slate-800'
+          }`}
+        >
+          <Home className="w-5 h-5" />
+          <span className="text-[10px]">Home</span>
+        </button>
+
+        {/* My Challenges Tab */}
+        <button
+          onClick={() => {
+            setActiveTab('challenges');
+            setActiveStatusFilter('All');
+          }}
+          className={`flex flex-col items-center justify-center space-y-0.5 cursor-pointer ${
+            activeTab === 'challenges' ? 'text-[#047857] font-bold' : 'text-slate-500 hover:text-slate-800'
+          }`}
+        >
+          <FileText className="w-5 h-5" />
+          <span className="text-[10px]">My Challenges</span>
+        </button>
+
+        {/* Floating Center Green Submit Button */}
+        <button
+          onClick={handleOpenSubmit}
+          className="w-12 h-12 rounded-full bg-[#047857] hover:bg-[#064e3b] text-white flex items-center justify-center shadow-lg transform -translate-y-3 border-4 border-white cursor-pointer active:scale-95 transition-transform"
+          title="Submit a Challenge"
+        >
+          <Plus className="w-6 h-6 stroke-[3]" />
+        </button>
+
+        {/* Portal Updates Tab */}
+        <button
+          onClick={() => setActiveTab('updates')}
+          className={`flex flex-col items-center justify-center space-y-0.5 cursor-pointer ${
+            activeTab === 'updates' ? 'text-[#047857] font-bold' : 'text-slate-500 hover:text-slate-800'
+          }`}
+        >
+          <MessageSquare className="w-5 h-5" />
+          <span className="text-[10px]">Updates</span>
+        </button>
+
+        {/* Profile Tab */}
+        <button
+          onClick={() => setActiveTab('profile')}
+          className={`flex flex-col items-center justify-center space-y-0.5 cursor-pointer ${
+            activeTab === 'profile' ? 'text-[#047857] font-bold' : 'text-slate-500 hover:text-slate-800'
+          }`}
+        >
+          <User className="w-5 h-5" />
+          <span className="text-[10px]">Profile</span>
+        </button>
+      </nav>
+
+      {/* 4. Modals */}
       <SubmitChallengeModal
         isOpen={isSubmitModalOpen}
         onClose={() => setIsSubmitModalOpen(false)}
@@ -220,12 +271,9 @@ export const CitizenPortal = ({ user: propUser, onLogout }) => {
       />
 
       <CitizenChallengeDetailModal
-        isOpen={isDetailModalOpen}
         challenge={selectedChallenge}
-        onClose={() => {
-          setIsDetailModalOpen(false);
-          setSelectedChallenge(null);
-        }}
+        isOpen={isDetailModalOpen}
+        onClose={() => setIsDetailModalOpen(false)}
       />
     </div>
   );

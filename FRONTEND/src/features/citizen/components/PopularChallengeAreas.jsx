@@ -28,26 +28,26 @@ const AREAS = [
 
 export const PopularChallengeAreas = ({ onSelectArea, selectedArea }) => {
   const [showAll, setShowAll] = useState(false);
-  const displayedAreas = showAll ? AREAS : AREAS.slice(0, 10);
+  const displayedAreas = showAll ? AREAS : AREAS.slice(0, 8);
 
   return (
-    <section className="space-y-3">
+    <section className="space-y-2.5">
       {/* Section Header */}
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-extrabold text-slate-900 tracking-tight">
+        <h3 className="text-xs font-extrabold text-slate-900 tracking-tight">
           Popular Challenge Areas
         </h3>
         <button
           onClick={() => setShowAll(!showAll)}
-          className="flex items-center text-xs font-bold text-emerald-700 hover:text-emerald-800 transition-colors cursor-pointer"
+          className="flex items-center text-[11px] font-bold text-emerald-800 hover:text-emerald-900 transition-colors cursor-pointer"
         >
           <span>{showAll ? 'Show Less' : 'View All'}</span>
-          <ChevronRight className="w-3.5 h-3.5 ml-0.5" />
+          <ChevronRight className="w-3 h-3 ml-0.5" />
         </button>
       </div>
 
-      {/* Grid of 5 columns on desktop with distinct vibrant icon colors */}
-      <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5">
+      {/* Grid of 4 columns matching mobile screenshot (Image 1) */}
+      <div className="grid grid-cols-4 gap-2">
         {displayedAreas.map((area) => {
           const isSelected = selectedArea === area.id;
           const { Icon } = area;
@@ -56,17 +56,17 @@ export const PopularChallengeAreas = ({ onSelectArea, selectedArea }) => {
             <button
               key={area.id}
               onClick={() => onSelectArea && onSelectArea(area.id)}
-              className={`group flex flex-col items-center justify-center p-3.5 rounded-lg transition-all duration-150 cursor-pointer bg-white border ${
+              className={`group flex flex-col items-center justify-center p-2 rounded-lg transition-all duration-150 cursor-pointer bg-white border ${
                 isSelected
                   ? 'border-emerald-600 ring-1 ring-emerald-500 shadow-2xs'
-                  : 'border-slate-200/90 hover:border-emerald-300 hover:shadow-xs'
+                  : 'border-slate-200/90 hover:border-emerald-300 hover:shadow-2xs'
               }`}
             >
-              {/* Icon with multiple distinct colors */}
+              {/* Vibrant Multiple Color Icons */}
               <Icon className={`w-5 h-5 ${area.iconColor} transition-transform group-hover:scale-110`} />
 
               {/* Title */}
-              <span className="text-xs font-bold text-slate-800 text-center leading-tight mt-2 line-clamp-1 group-hover:text-emerald-900">
+              <span className="text-[10px] font-extrabold text-slate-800 text-center leading-tight mt-1.5 line-clamp-2">
                 {area.name}
               </span>
             </button>
