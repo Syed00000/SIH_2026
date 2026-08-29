@@ -4,10 +4,12 @@ import ProjectKpiCards from './ProjectKpiCards.jsx';
 import ProjectLeafletMap from './ProjectLeafletMap.jsx';
 import ProjectsOverviewLifecycle from './ProjectsOverviewLifecycle.jsx';
 import { projectCsrSyncService } from '../../services/projectCsrSyncService.js';
+import apiClient from '../../../../infrastructure/api/client.js';
 
 export const ProjectsOverviewPanel = ({ onNavigateTab }) => {
   const [projects, setProjects] = useState(() => projectCsrSyncService.getActiveProjects());
   const [proposals, setProposals] = useState(() => projectCsrSyncService.getSolutionProposals());
+  const [totalChallenges, setTotalChallenges] = useState(0);
 
   useEffect(() => {
     const unsubscribe = projectCsrSyncService.subscribe((eventType, data) => {
@@ -15,6 +17,21 @@ export const ProjectsOverviewPanel = ({ onNavigateTab }) => {
       if (data?.updatedSolProposals) setProposals(data.updatedSolProposals);
     });
     return unsubscribe;
+  }, []);
+
+  // Fetch real challenges count from backend
+  useEffect(() => {
+    const fetchChallenges = async () => {
+      try {
+        const res = await apiClient.get('university/challenges?universityCode=RU001&limit=1');
+        const total = res.data?.total ?? 0;
+        setTotalChallenges(total);
+      } catch (err) {
+        console.warn('Failed to fetch challenges count:', err);
+        setTotalChallenges(0);
+      }
+    };
+    fetchChallenges();
   }, []);
 
   const totalSanctionedLakhs = projects.reduce((acc, p) => {
@@ -29,18 +46,12 @@ export const ProjectsOverviewPanel = ({ onNavigateTab }) => {
   const livePercent = totalSanctionedLakhs > 0 ? Math.round((totalDisbursedLakhs / totalSanctionedLakhs) * 100) : 0;
 
   const liveKpis = {
-    totalChallenges: proposals.length + projects.length + 10,
-    totalChallengesChange: '+12 this month',
+    totalChallenges: totalChallenges,
     solutionProposals: proposals.length,
-    solutionProposalsChange: '+8 this month',
     projectsApproved: proposals.filter((p) => p.status === 'Approved' || p.status === 'Verified').length,
-    projectsApprovedChange: '+6 this month',
-    inProgress: projects.length,
-    inProgressChange: 'Active R&D',
-    deployed: projects.filter((p) => p.status === 'Completed').length || 2,
-    deployedChange: '+2 this month',
-    completed: projects.filter((p) => p.status === 'Completed').length,
-    completedChange: '+1 this month'
+    inProgress: projects.filter((p) => p.status === 'Active' || p.status === 'In Progress').length,
+    deployed: projects.filter((p) => p.status === 'Deployed').length,
+    completed: projects.filter((p) => p.status === 'Completed').length
   };
 
   const liveFinancials = {
@@ -50,6 +61,7 @@ export const ProjectsOverviewPanel = ({ onNavigateTab }) => {
     disbursedPercentage: livePercent,
     sanctionedProjectsCount: projects.length
   };
+
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto pb-12 select-none animate-fadeIn">
