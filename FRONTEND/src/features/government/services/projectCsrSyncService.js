@@ -34,70 +34,35 @@ class ProjectCsrSyncService {
         const totalMilestones = (p.milestones || []).length;
         const completedMilestones = (p.milestones || []).filter(m => m.status === 'Completed').length;
         
-        // Parse budget string (e.g. "₹ 7,50,000") to numeric value
-        const budgetStr = String(p.budget || '₹ 0');
-        const budgetVal = parseFloat(budgetStr.replace(/[^\d]/g, '')) || 0;
+        const budgetStr = String(p.budget || '0');
+        const budgetVal = parseFloat(budgetStr.replace(/[^\d.]/g, '')) || 0;
 
         return {
-          id: p.projectId || `PRJ-${idx + 101}`,
-          title: p.title,
-          sector: p.domain || 'Technology',
-          district: p.district || 'Ranchi',
-          hei: p.leadMentor ? `${p.leadMentor}` : 'University R&D Node',
+          id: p.projectId || p._id || `PRJ-${idx + 1}`,
+          title: p.title || 'Untitled Project',
+          sector: p.domain || p.sector || 'General',
+          district: p.district || 'N/A',
+          hei: p.leadMentor || p.facultyMentor?.name || p.universityCode || 'Nodal University',
           progress: p.progressPercentage || 0,
           status: p.status || 'Active',
-          stage: 'Field Implementation',
-          trlLevel: p.trlLevel || 'TRL-4',
+          stage: p.stage || 'R&D',
+          trlLevel: p.trlLevel || 'TRL-1',
           sanctionedGrant: formatBudget(p.budget),
           disbursedGrant: '₹ 0',
           disbursedAmount: '₹ 0',
           rawBudget: budgetVal,
-          telemetryStatus: 'Active',
-          hardwareSpecs: 'Integrated embedded telemetry unit.',
-          teamLead: p.leadMentor || p.facultyMentor?.name || 'Academic Mentor',
-          problemOrigin: `${p.district || 'Jharkhand'} Community Sector`,
+          telemetryStatus: p.telemetryStatus || 'Inactive',
+          hardwareSpecs: p.hardwareSpecs || '',
+          teamLead: p.leadMentor || p.facultyMentor?.name || '',
+          problemOrigin: p.problemOrigin || (p.district ? `${p.district} District` : ''),
           milestonesCount: { total: totalMilestones, completed: completedMilestones },
           milestones: p.milestones || []
         };
       });
 
-      this.solutionProposals = projectsList.map((p, idx) => ({
-        id: `PROP-${idx + 201}`,
-        instCode: p.universityCode || 'RUNI-JH',
-        institutionName: 'University Innovation Cell',
-        title: p.title,
-        projectTitle: p.title,
-        projectName: p.title,
-        sector: p.domain || 'Technology',
-        district: p.district || 'Jharkhand',
-        hei: 'University Innovation Cell',
-        facultyLead: p.leadMentor || p.facultyMentor?.name || 'Faculty Lead',
-        requestedGrant: formatBudget(p.budget),
-        estimatedMonths: 6,
-        status: p.status || 'Under Review',
-        evaluationScore: 90
-      }));
-
-      this.csrProposals = projectsList.map((p, idx) => ({
-        id: `PROP-${idx + 201}`,
-        instCode: p.universityCode || 'RUNI-JH',
-        institutionName: 'University Innovation Cell',
-        projectTitle: p.title,
-        projectName: p.title,
-        title: p.title,
-        district: p.district || 'Jharkhand',
-        sourceScheme: 'State Innovation Pool',
-        donor: 'Jharkhand Higher Education Grant',
-        dueDiligence: 'Under Verification',
-        dueDiligenceStatus: 'review',
-        boardApproval: `Sanctioned (${formatBudget(p.budget)})`,
-        mouExecution: 'Active MoU',
-        mouStatus: 'Active',
-        facultyLead: p.leadMentor || p.facultyMentor?.name || 'Faculty Lead',
-        budgetRequested: formatBudget(p.budget),
-        budgetSanctioned: formatBudget(p.budget),
-        budgetBreakdown: []
-      }));
+      // Pure empty arrays unless populated by real backend proposals
+      this.solutionProposals = [];
+      this.csrProposals = [];
 
       // Load manual session transactions from localStorage if any, filtering out old mock IDs
       const savedLedger = JSON.parse(localStorage.getItem('joharsetu_csr_ledger') || '[]')

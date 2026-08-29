@@ -1,4 +1,4 @@
-export { default as ProjectsOverviewPanel } from './ProjectsOverviewPanel.jsx';
+
 export { default as ActiveProjectsPanel } from './ActiveProjectsPanel.jsx';
 export { default as SolutionProposalsPanel } from './SolutionProposalsPanel.jsx';
 export { default as MilestonesMonitoringPanel } from './MilestonesMonitoringPanel.jsx';
