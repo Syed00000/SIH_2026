@@ -1,40 +1,10 @@
 import React from 'react';
-import { AlertCircle, Clock } from 'lucide-react';
-import { Card } from '../../../../shared/components/ui/card.jsx';
+import { AlertCircle, Clock, Info } from 'lucide-react';
+import { Card, CardContent } from '../../../../shared/components/ui/card.jsx';
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from '../../../../shared/components/ui/table.jsx';
 import { Badge } from '../../../../shared/components/ui/badge.jsx';
 
-export const EscalationQueueTable = () => {
-  const escalatedIssues = [
-    {
-      id: 'IS-2026-00521',
-      title: 'Contaminated Drinking Water in Village',
-      district: 'Dhanbad',
-      priority: 'Critical',
-      department: 'Drinking Water & Sanitation',
-      slaRemaining: '18h 40m',
-      status: 'Action In Progress'
-    },
-    {
-      id: 'IS-2026-00499',
-      title: 'Primary Health Centre Doctor Absent for 15 Days',
-      district: 'Garhwa',
-      priority: 'Urgent',
-      department: 'Health, Medical Education & Family Welfare',
-      slaRemaining: '34h 10m',
-      status: 'Assigned to CMO'
-    },
-    {
-      id: 'IS-2026-00472',
-      title: 'Bridge Culvert Collapsed on School Route',
-      district: 'Latehar',
-      priority: 'High',
-      department: 'Road Construction Department',
-      slaRemaining: '48h 00m',
-      status: 'Site Survey Ordered'
-    }
-  ];
-
+export const EscalationQueueTable = ({ escalatedIssues = [] }) => {
   const getPriorityBadge = (p) => {
     switch (p) {
       case 'Critical':
@@ -57,39 +27,46 @@ export const EscalationQueueTable = () => {
             Active Escalation Queue & SLA Monitor
           </h4>
         </div>
-        <Badge variant="danger" className="text-[10px] font-bold">
-          3 Urgent Incidents
+        <Badge variant={escalatedIssues.length > 0 ? "danger" : "info"} className="text-[10px] font-bold">
+          {escalatedIssues.length} Incidents
         </Badge>
       </div>
 
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Issue ID</TableHead>
-            <TableHead>Title</TableHead>
-            <TableHead>District</TableHead>
-            <TableHead>Priority</TableHead>
-            <TableHead>Assigned Department</TableHead>
-            <TableHead>SLA Time Remaining</TableHead>
-            <TableHead>Status</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {escalatedIssues.map((iss) => (
-            <TableRow key={iss.id}>
-              <TableCell className="font-bold text-slate-900 whitespace-nowrap">{iss.id}</TableCell>
-              <TableCell className="max-w-[200px] truncate font-medium">{iss.title}</TableCell>
-              <TableCell className="text-slate-600 whitespace-nowrap">{iss.district}</TableCell>
-              <TableCell className="whitespace-nowrap">{getPriorityBadge(iss.priority)}</TableCell>
-              <TableCell className="text-slate-600 truncate max-w-[160px]">{iss.department}</TableCell>
-              <TableCell className="font-bold text-red-600 whitespace-nowrap">
-                <span className="inline-flex items-center"><Clock className="w-3 h-3 mr-1" />{iss.slaRemaining}</span>
-              </TableCell>
-              <TableCell className="font-semibold text-slate-800 whitespace-nowrap">{iss.status}</TableCell>
+      {escalatedIssues.length === 0 ? (
+        <div className="p-6 text-center text-slate-500 text-xs">
+          <Info className="w-5 h-5 mx-auto text-slate-400 mb-1" />
+          No escalated incidents in the queue.
+        </div>
+      ) : (
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Issue ID</TableHead>
+              <TableHead>Title</TableHead>
+              <TableHead>District</TableHead>
+              <TableHead>Priority</TableHead>
+              <TableHead>Assigned Department</TableHead>
+              <TableHead>SLA Time Remaining</TableHead>
+              <TableHead>Status</TableHead>
             </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+          </TableHeader>
+          <TableBody>
+            {escalatedIssues.map((iss) => (
+              <TableRow key={iss.id}>
+                <TableCell className="font-bold text-slate-900 whitespace-nowrap">{iss.id}</TableCell>
+                <TableCell className="max-w-[200px] truncate font-medium">{iss.title}</TableCell>
+                <TableCell className="text-slate-600 whitespace-nowrap">{iss.district}</TableCell>
+                <TableCell className="whitespace-nowrap">{getPriorityBadge(iss.priority)}</TableCell>
+                <TableCell className="text-slate-600 truncate max-w-[160px]">{iss.department}</TableCell>
+                <TableCell className="font-bold text-red-600 whitespace-nowrap">
+                  <span className="inline-flex items-center"><Clock className="w-3 h-3 mr-1" />{iss.slaRemaining}</span>
+                </TableCell>
+                <TableCell className="font-semibold text-slate-800 whitespace-nowrap">{iss.status}</TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      )}
     </Card>
   );
 };

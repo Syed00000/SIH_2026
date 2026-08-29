@@ -9,7 +9,7 @@ export const OfficialPrintableDossier = ({
   selectedDistrict = 'All',
   selectedSector = 'All',
   kpis,
-  triageFeed = []
+  issues = []
 }) => {
   const currentDate = new Date().toLocaleDateString('en-IN', {
     day: '2-digit',
@@ -23,16 +23,7 @@ export const OfficialPrintableDossier = ({
     hour12: true
   });
 
-  const sampleIssues = [
-    { id: 'IS-2026-00481', title: 'Solar Microgrid Inverter Failure affecting 120 tribal households', district: 'Khunti', domain: 'Water Resources', confidence: '89%', subSector: 'Solar Drinking Pump', status: 'Auto-Routed' },
-    { id: 'IS-2026-00482', title: 'Heavy soil erosion endangering paddy terrace farming embankments', district: 'Ranchi', domain: 'Agriculture', confidence: '94%', subSector: 'Terrace Farming', status: 'Auto-Routed' },
-    { id: 'IS-2026-00485', title: 'Rural bridge approach washed away during flash stream flooding', district: 'Latehar', domain: 'Public Infrastructure', confidence: '91%', subSector: 'Bridges & Culverts', status: 'Review Required' },
-    { id: 'IS-2026-00488', title: 'Fluoride contamination detected in groundwater handpumps', district: 'Palamu', domain: 'Water Resources', confidence: '96%', subSector: 'Groundwater Quality', status: 'Auto-Routed' },
-    { id: 'IS-2026-00492', title: 'Primary Health Center lacks solar cold-chain for vaccines', district: 'Gumla', domain: 'Healthcare', confidence: '93%', subSector: 'Cold-Chain Logistics', status: 'Auto-Routed' },
-    { id: 'IS-2026-00495', title: 'Absence of 4G telecom network tower for tribal school e-learning', district: 'Simdega', domain: 'Public Infrastructure', confidence: '88%', subSector: 'Digital Connectivity', status: 'Review Required' },
-    { id: 'IS-2026-00501', title: 'Non-functional lift irrigation canal pump station on Koel River', district: 'Garhwa', domain: 'Agriculture', confidence: '92%', subSector: 'Lift Irrigation', status: 'Auto-Routed' },
-    { id: 'IS-2026-00504', title: 'Municipal leachate runoff polluting local water reservoir', district: 'Dhanbad', domain: 'Public Infrastructure', confidence: '87%', subSector: 'Solid Waste Management', status: 'Auto-Routed' }
-  ];
+  const sampleIssues = issues;
 
   return (
     <div id="printable-dossier" className="hidden print:block bg-white p-8 space-y-6 text-slate-900 w-full">

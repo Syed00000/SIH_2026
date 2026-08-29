@@ -33,65 +33,72 @@ export class UniversityService {
       locationDetails: c.locationDetails
     }));
 
-    const reviewNeededCount = allChallenges.filter((c) => c.status === 'Review').length;
+    const reviewNeededCount = allChallenges.filter((c) => c.status === 'Review' || c.status === 'Pending').length;
     const pendingApprovalsCount = approvals.filter((a) => a.status === 'Pending').length;
-    const activeProjectsCount = projects.filter((p) => p.status !== 'Completed').length;
+    const activeProjectsCount = projects.filter((p) => p.status !== 'Completed' && p.status !== 'Archived').length;
     const delayedProjectsCount = projects.filter((p) => p.status === 'Delayed').length;
-    const onTrackCount = projects.filter((p) => p.status === 'On Track' || p.status === 'In Progress').length || 5;
-    const atRiskCount = projects.filter((p) => p.status === 'At Risk' || p.status === 'Planning').length || 1;
+    const onTrackCount = projects.filter((p) => p.status === 'On Track' || p.status === 'In Progress').length;
+    const atRiskCount = projects.filter((p) => p.status === 'At Risk' || p.status === 'Planning').length;
     const completedCount = projects.filter((p) => p.status === 'Completed').length;
     const facultyCount = faculty.length;
     const onLeaveCount = faculty.filter((f) => f.availabilityStatus === 'On Leave').length;
 
-    const totalProj = projects.length || 6;
-    const defaultActivities = [
-      { text: "Dr. Priya Sharma assigned as Primary Mentor on PRJ-1024", type: 'acceptance', relativeTime: '2 hours ago' },
-      { text: "Milestone 'Field Data Collection' verified for PRJ-1055", type: 'milestone', relativeTime: '4 hours ago' },
-      { text: "Line-item grant proposal submitted for Ranchi Rural Solar Pod", type: 'proposal', relativeTime: '1 day ago' }
-    ];
-    const liveActivities = activities.length > 0 ? activities : defaultActivities;
+    const totalProj = projects.length;
+    const liveActivities = activities || [];
+
+    // Group domains directly from real challenges
+    const domainMap = {};
+    allChallenges.forEach((c) => {
+      if (c.domain) {
+        domainMap[c.domain] = (domainMap[c.domain] || 0) + 1;
+      }
+    });
+
+    const topDomains = Object.keys(domainMap).map((dom) => ({
+      name: dom,
+      count: domainMap[dom],
+      percent: allChallenges.length > 0 ? Math.round((domainMap[dom] / allChallenges.length) * 100) : 0
+    }));
 
     return {
-      name: university?.name || 'Ranchi University',
-      shortName: university?.shortName || 'RU',
-      district: university?.district || 'Ranchi',
+      name: university?.name || 'University Innovation Portal',
+      shortName: university?.shortName || code,
+      district: university?.district || '',
       university: {
         code,
-        name: university?.name || 'Ranchi University',
-        shortName: university?.shortName || 'RU',
-        district: university?.district || 'Ranchi',
-        nodalOfficer: university?.nodalOfficer || { name: 'Dr. Ankit Verma', designation: 'University Admin' }
+        name: university?.name || 'University Innovation Portal',
+        shortName: university?.shortName || code,
+        district: university?.district || '',
+        nodalOfficer: university?.nodalOfficer || null
       },
       challenges: allChallenges,
       kpis: {
         assignedChallenges: { total: challengesRes.total || allChallenges.length, reviewNeeded: reviewNeededCount },
-        activeProjects: { total: activeProjectsCount || 6, delayed: delayedProjectsCount },
-        facultyMentors: { total: facultyCount || 6, onLeave: onLeaveCount },
+        activeProjects: { total: activeProjectsCount, delayed: delayedProjectsCount },
+        facultyMentors: { total: facultyCount, onLeave: onLeaveCount },
         pendingApprovals: { total: pendingApprovalsCount, note: 'Requires action' },
-        industryPartners: { total: partners.length || 3, note: 'Active collaborations' }
+        industryPartners: { total: partners.length, note: 'Active collaborations' }
       },
       pendingActions: [
-        { id: 'pa-1', title: 'Challenges need review', count: reviewNeededCount || 3, actionText: 'Review Now', actionType: 'review_challenges', variant: 'blue' },
-        { id: 'pa-2', title: 'Approvals pending action', count: pendingApprovalsCount || 2, actionText: 'Review Approvals', actionType: 'pending_approvals', variant: 'amber' }
+        ...(reviewNeededCount > 0
+          ? [{ id: 'pa-1', title: 'Challenges need review', count: reviewNeededCount, actionText: 'Review Now', actionType: 'review_challenges', variant: 'blue' }]
+          : []),
+        ...(pendingApprovalsCount > 0
+          ? [{ id: 'pa-2', title: 'Approvals pending action', count: pendingApprovalsCount, actionText: 'Review Approvals', actionType: 'pending_approvals', variant: 'amber' }]
+          : [])
       ],
       projectProgressBreakdown: { onTrack: onTrackCount, atRisk: atRiskCount, delayed: delayedProjectsCount, completed: completedCount, total: totalProj },
       projectProgress: {
         totalProjects: totalProj,
         total: totalProj,
         breakdown: [
-          { status: 'On Track', count: onTrackCount, percentage: Math.round((onTrackCount / totalProj) * 100), color: '#0f172a' },
-          { status: 'At Risk', count: atRiskCount, percentage: Math.round((atRiskCount / totalProj) * 100), color: '#64748b' },
-          { status: 'Delayed', count: delayedProjectsCount, percentage: Math.round((delayedProjectsCount / totalProj) * 100), color: '#e11d48' },
-          { status: 'Completed', count: completedCount, percentage: Math.round((completedCount / totalProj) * 100), color: '#10b981' }
+          { status: 'On Track', count: onTrackCount, percentage: totalProj > 0 ? Math.round((onTrackCount / totalProj) * 100) : 0, color: '#0f172a' },
+          { status: 'At Risk', count: atRiskCount, percentage: totalProj > 0 ? Math.round((atRiskCount / totalProj) * 100) : 0, color: '#64748b' },
+          { status: 'Delayed', count: delayedProjectsCount, percentage: totalProj > 0 ? Math.round((delayedProjectsCount / totalProj) * 100) : 0, color: '#e11d48' },
+          { status: 'Completed', count: completedCount, percentage: totalProj > 0 ? Math.round((completedCount / totalProj) * 100) : 0, color: '#10b981' }
         ]
       },
-      topDomains: [
-        { name: 'Water Resources', count: Math.max(1, allChallenges.filter((c) => c.domain === 'Water').length), percent: 35 },
-        { name: 'Agriculture & Agro', count: Math.max(1, allChallenges.filter((c) => c.domain === 'Agriculture').length), percent: 25 },
-        { name: 'Infrastructure & GIS', count: Math.max(1, allChallenges.filter((c) => c.domain === 'Infrastructure').length), percent: 20 },
-        { name: 'Renewable Energy', count: Math.max(1, allChallenges.filter((c) => c.domain === 'Energy').length), percent: 10 },
-        { name: 'Environment', count: Math.max(1, allChallenges.filter((c) => c.domain === 'Environment').length), percent: 10 }
-      ],
+      topDomains,
       recentActivity: liveActivities,
       recentActivities: liveActivities
     };

@@ -1,14 +1,15 @@
 import React, { useState } from 'react';
-import { ArrowRight, ArrowUpDown, Building, X, CheckCircle2, IndianRupee, Award, School } from 'lucide-react';
+import { ArrowUpDown, School, Info } from 'lucide-react';
 
 export const TopActiveHeisTable = ({ heis = [], onViewAll }) => {
-  const [sortField, setSortField] = useState('solved'); // 'name', 'projects', 'solved'
+  const [sortField, setSortField] = useState('solved');
   const [sortAsc, setSortAsc] = useState(false);
-  const [selectedHei, setSelectedHei] = useState(null);
 
-  const sortedHeis = [...heis].sort((a, b) => {
-    let aVal = a[sortField];
-    let bVal = b[sortField];
+  const safeHeis = Array.isArray(heis) ? heis : [];
+
+  const sortedHeis = [...safeHeis].sort((a, b) => {
+    let aVal = a[sortField] || 0;
+    let bVal = b[sortField] || 0;
     if (typeof aVal === 'string') {
       return sortAsc ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
     }
@@ -23,8 +24,6 @@ export const TopActiveHeisTable = ({ heis = [], onViewAll }) => {
       setSortAsc(false);
     }
   };
-
-  const maxSolved = Math.max(...heis.map(h => h.solved || 1), 150);
 
   return (
     <div className="bg-white border border-slate-200/80 hover:border-slate-300/90 rounded-xl p-4 shadow-[0_1px_3px_rgba(15,23,42,0.03)] hover:shadow-[0_8px_24px_-6px_rgba(15,23,42,0.07)] flex flex-col justify-between h-full min-h-[340px] transition-all duration-300 relative">
@@ -59,16 +58,16 @@ export const TopActiveHeisTable = ({ heis = [], onViewAll }) => {
               </th>
               <th
                 onClick={() => handleSort('projects')}
-                className="pb-2 text-center font-bold cursor-pointer hover:text-slate-700"
+                className="pb-2 font-bold text-center cursor-pointer hover:text-slate-700"
               >
                 <div className="flex items-center justify-center space-x-1">
-                  <span>Projects</span>
+                  <span>Active</span>
                   <ArrowUpDown className="w-2.5 h-2.5 text-slate-400" />
                 </div>
               </th>
               <th
                 onClick={() => handleSort('solved')}
-                className="pb-2 text-right font-bold cursor-pointer hover:text-slate-700"
+                className="pb-2 font-bold text-right cursor-pointer hover:text-slate-700"
               >
                 <div className="flex items-center justify-end space-x-1">
                   <span>Solved</span>
@@ -78,102 +77,53 @@ export const TopActiveHeisTable = ({ heis = [], onViewAll }) => {
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-50">
-            {sortedHeis.slice(0, 5).map((hei, idx) => {
-              const solvePct = Math.min(100, Math.round(((hei.solved || 0) / maxSolved) * 100));
-              return (
-                <tr
-                  key={hei.id || idx}
-                  onClick={() => setSelectedHei(hei)}
-                  className="hover:bg-slate-50/80 transition-colors cursor-pointer group"
-                >
-                  <td className="py-2.5 font-bold text-slate-900 pr-2">
-                    <div className="flex items-center space-x-2">
-                      <span className="w-4 h-4 rounded-full bg-slate-100 text-slate-600 font-extrabold text-[9.5px] flex items-center justify-center shrink-0 group-hover:bg-purple-100 group-hover:text-purple-700 transition-colors">
-                        {idx + 1}
-                      </span>
-                      <div className="truncate max-w-[130px] sm:max-w-[160px] text-[11.5px] group-hover:text-blue-600 font-semibold">
-                        {hei.name}
-                      </div>
-                    </div>
-                  </td>
-                  <td className="py-2.5 text-center font-semibold text-slate-600 text-[11px]">
-                    <span className="bg-slate-50 border border-slate-200/60 px-1.5 py-0.5 rounded text-[10.5px]">
-                      {hei.projects}
+            {sortedHeis.length === 0 ? (
+              <tr>
+                <td colSpan="3" className="py-8 text-center text-slate-400 text-xs">
+                  <Info className="w-5 h-5 mx-auto text-slate-300 mb-1" />
+                  No HEI performance records found.
+                </td>
+              </tr>
+            ) : (
+              sortedHeis.map((hei, idx) => (
+                <tr key={hei.id || idx} className="hover:bg-slate-50/70 transition-colors">
+                  <td className="py-2.5 pr-2">
+                    <span className="font-bold text-slate-900 truncate block max-w-[140px] text-[11.5px]">
+                      {hei.name}
+                    </span>
+                    <span className="text-[10px] text-slate-400 font-medium">
+                      {hei.district || 'Jharkhand'}
                     </span>
                   </td>
-                  <td className="py-2.5 text-right font-bold text-slate-900 text-[11px]">
-                    <div className="flex items-center justify-end space-x-1.5">
-                      <span className="text-emerald-700 font-black">{hei.solved}</span>
-                      <div className="w-8 h-1 bg-slate-100 rounded-full overflow-hidden shrink-0">
-                        <div
-                          className="h-full bg-emerald-500 rounded-full"
-                          style={{ width: `${solvePct}%` }}
-                        />
-                      </div>
-                    </div>
+                  <td className="py-2.5 px-2 text-center">
+                    <span className="inline-flex items-center justify-center px-1.5 py-0.5 rounded-full text-[10.5px] font-bold bg-purple-50 text-purple-700 border border-purple-100">
+                      {hei.activeProjects || hei.projects || 0}
+                    </span>
+                  </td>
+                  <td className="py-2.5 pl-2 text-right">
+                    <span className="font-bold text-slate-900 text-xs">
+                      {hei.solvedChallenges || hei.solved || 0}
+                    </span>
                   </td>
                 </tr>
-              );
-            })}
+              ))
+            )}
           </tbody>
         </table>
       </div>
 
-      {/* Footer Link */}
+      {/* Footer Info */}
       <div className="pt-2.5 mt-1 border-t border-slate-100 flex items-center justify-between text-xs">
-        <div className="flex items-center space-x-1 text-[11px] text-slate-400 font-medium">
-          <Award className="w-3.5 h-3.5 text-amber-500" />
-          <span>Verified NIRF/NAAC</span>
-        </div>
+        <span className="text-[11px] text-slate-400 font-medium">
+          {sortedHeis.length} HEIs Tracked
+        </span>
         <button
           onClick={onViewAll}
-          className="inline-flex items-center text-[11.5px] font-bold text-blue-600 hover:text-blue-700 hover:underline cursor-pointer"
+          className="text-[11.5px] font-bold text-purple-700 hover:underline cursor-pointer"
         >
-          <span>View All HEIs</span>
-          <ArrowRight className="w-3 h-3 ml-1" />
+          View Full HEI Directory →
         </button>
       </div>
-
-      {/* HEI Detail Modal */}
-      {selectedHei && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4 z-50 animate-fadeIn">
-          <div className="bg-white rounded-2xl max-w-sm w-full p-5 border border-slate-200 shadow-xl space-y-4">
-            <div className="flex justify-between items-start border-b border-slate-100 pb-2.5">
-              <div>
-                <h4 className="text-sm font-bold text-slate-900">{selectedHei.name}</h4>
-                <p className="text-xs text-slate-500 font-medium">Lead District: {selectedHei.leadDistrict || 'Ranchi'}</p>
-              </div>
-              <button onClick={() => setSelectedHei(null)} className="text-slate-400 hover:text-slate-600 cursor-pointer">
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-
-            <div className="grid grid-cols-3 gap-2 py-1 text-center bg-slate-50 rounded-xl p-3">
-              <div>
-                <span className="text-[10px] text-slate-400 font-semibold block">Projects</span>
-                <span className="text-sm font-bold text-slate-900">{selectedHei.projects}</span>
-              </div>
-              <div>
-                <span className="text-[10px] text-slate-400 font-semibold block">Solved</span>
-                <span className="text-sm font-bold text-emerald-600">{selectedHei.solved}</span>
-              </div>
-              <div>
-                <span className="text-[10px] text-slate-400 font-semibold block">Grants</span>
-                <span className="text-sm font-bold text-amber-600">{selectedHei.fundsReceived || '₹35L'}</span>
-              </div>
-            </div>
-
-            <div className="flex justify-end pt-2 border-t border-slate-100">
-              <button
-                onClick={() => setSelectedHei(null)}
-                className="px-3.5 py-1.5 bg-slate-900 text-white rounded-lg text-xs font-semibold hover:bg-slate-800 cursor-pointer"
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

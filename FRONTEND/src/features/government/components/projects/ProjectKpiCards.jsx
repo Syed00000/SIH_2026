@@ -5,17 +5,18 @@ import {
   Award,
   PlayCircle,
   Rocket,
-  CheckCircle2,
-  TrendingUp
+  CheckCircle2
 } from 'lucide-react';
 
-export const ProjectKpiCards = ({ kpis, onKpiClick, activeFilter }) => {
+export const ProjectKpiCards = ({ kpis = {}, onKpiClick, activeFilter }) => {
+  const safeKpis = kpis || {};
+
   const cards = [
     {
       id: 'total_challenges',
       title: 'Total Challenges',
-      value: kpis.totalChallenges || 124,
-      change: kpis.totalChallengesChange || '+12 this month',
+      value: safeKpis.totalChallenges || 0,
+      change: safeKpis.totalChallenges > 0 ? `+${safeKpis.totalChallenges} Active` : 'Zero Inflow',
       icon: Layers,
       accentColor: 'text-slate-900',
       badgeBg: 'bg-slate-100 text-slate-700'
@@ -23,8 +24,8 @@ export const ProjectKpiCards = ({ kpis, onKpiClick, activeFilter }) => {
     {
       id: 'solution_proposals',
       title: 'Solution Proposals',
-      value: kpis.solutionProposals || 86,
-      change: kpis.solutionProposalsChange || '+8 this month',
+      value: safeKpis.solutionProposals || 0,
+      change: safeKpis.solutionProposals > 0 ? `+${safeKpis.solutionProposals} Submissions` : 'Awaiting Proposals',
       icon: FileCheck,
       accentColor: 'text-emerald-700',
       badgeBg: 'bg-emerald-50 text-emerald-700'
@@ -32,8 +33,8 @@ export const ProjectKpiCards = ({ kpis, onKpiClick, activeFilter }) => {
     {
       id: 'projects_approved',
       title: 'Projects Approved',
-      value: kpis.projectsApproved || 42,
-      change: kpis.projectsApprovedChange || '+6 this month',
+      value: safeKpis.projectsApproved || 0,
+      change: safeKpis.projectsApproved > 0 ? `${safeKpis.projectsApproved} Sanctioned` : 'Zero Approved',
       icon: Award,
       accentColor: 'text-slate-900',
       badgeBg: 'bg-slate-100 text-slate-700'
@@ -41,8 +42,8 @@ export const ProjectKpiCards = ({ kpis, onKpiClick, activeFilter }) => {
     {
       id: 'in_progress',
       title: 'In Progress',
-      value: kpis.inProgress || 28,
-      change: kpis.inProgressChange || 'Active R&D',
+      value: safeKpis.inProgress || 0,
+      change: safeKpis.inProgress > 0 ? `${safeKpis.inProgress} Active R&D` : 'Idle',
       icon: PlayCircle,
       accentColor: 'text-amber-700',
       badgeBg: 'bg-amber-50 text-amber-700'
@@ -50,8 +51,8 @@ export const ProjectKpiCards = ({ kpis, onKpiClick, activeFilter }) => {
     {
       id: 'deployed',
       title: 'Deployed',
-      value: kpis.deployed || 11,
-      change: kpis.deployedChange || '+2 this month',
+      value: safeKpis.deployed || 0,
+      change: safeKpis.deployed > 0 ? `${safeKpis.deployed} In Field` : 'Zero Deployed',
       icon: Rocket,
       accentColor: 'text-blue-700',
       badgeBg: 'bg-blue-50 text-blue-700'
@@ -59,8 +60,8 @@ export const ProjectKpiCards = ({ kpis, onKpiClick, activeFilter }) => {
     {
       id: 'completed',
       title: 'Completed',
-      value: kpis.completed || 7,
-      change: kpis.completedChange || '+1 this month',
+      value: safeKpis.completed || 0,
+      change: safeKpis.completed > 0 ? `${safeKpis.completed} Verified` : 'Zero Completed',
       icon: CheckCircle2,
       accentColor: 'text-emerald-700',
       badgeBg: 'bg-emerald-50 text-emerald-700'

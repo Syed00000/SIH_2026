@@ -8,6 +8,7 @@ import { ForgotPassword } from '../features/auth/components/ForgotPassword.jsx';
 import { ResetPassword } from '../features/auth/components/ResetPassword.jsx';
 import { IndustryRegistrationPage } from '../features/auth/components/IndustryRegistrationPage.jsx';
 import { DashboardContainer } from '../features/dashboard/components/DashboardContainer.jsx';
+import { CitizenPortal } from '../features/citizen/CitizenPortal.jsx';
 
 export function Router() {
   const { isAuthenticated, loading } = useAuth();
@@ -84,6 +85,11 @@ export function Router() {
         default:
           return <LoginForm onNavigate={navigate} />;
       }
+    }
+
+    // 2. CITIZEN DIRECT ROUTES (/citizen, /citizen-portal)
+    if (currentPath === '/citizen' || currentPath === '/citizen-portal') {
+      return <CitizenPortal onLogout={() => navigate('/login')} />;
     }
 
     // 3. PROTECTED ROUTES (/dashboard, /profile, /settings, /)

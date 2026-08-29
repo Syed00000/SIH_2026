@@ -1,43 +1,43 @@
 import React from 'react';
-import { ClipboardList, Building2, IndianRupee, CheckCircle2, TrendingUp, Sparkles } from 'lucide-react';
+import { ClipboardList, Building2, IndianRupee, CheckCircle2, TrendingUp } from 'lucide-react';
 
 export const KpiSummaryCards = ({ kpis }) => {
   const cards = [
     {
-      title: "Problems Received",
-      value: kpis?.problemsReceived?.value || "12,450",
-      growth: kpis?.problemsReceived?.growthText || "+320 this week",
+      title: 'Problems Received',
+      value: kpis?.problemsReceived?.value || '0',
+      growth: kpis?.problemsReceived?.growthText || 'Total Inflow',
       icon: ClipboardList,
-      accentColor: "#3b82f6",
-      bgLight: "bg-blue-50/70 text-blue-700 border-blue-100",
-      indicator: "Total Inflow"
+      accentColor: '#3b82f6',
+      bgLight: 'bg-blue-50/70 text-blue-700 border-blue-100',
+      indicator: 'Total Inflow'
     },
     {
-      title: "Active HEIs",
-      value: kpis?.activeHeis?.value || "12",
-      growth: kpis?.activeHeis?.growthText || "100% Accredited",
+      title: 'Active HEIs',
+      value: kpis?.activeHeis?.value || '0',
+      growth: kpis?.activeHeis?.growthText || 'Accredited HEIs',
       icon: Building2,
-      accentColor: "#8b5cf6",
-      bgLight: "bg-purple-50/70 text-purple-700 border-purple-100",
-      indicator: "All 24 Districts"
+      accentColor: '#8b5cf6',
+      bgLight: 'bg-purple-50/70 text-purple-700 border-purple-100',
+      indicator: 'All 24 Districts'
     },
     {
-      title: "CSR Funds Committed",
-      value: kpis?.csrFunds?.value || "₹0.00 Cr",
-      growth: kpis?.csrFunds?.growthText || "Committed Funds",
+      title: 'CSR Funds Committed',
+      value: kpis?.csrFunds?.value || '₹0.00 Cr',
+      growth: kpis?.csrFunds?.growthText || 'Committed Funds',
       icon: IndianRupee,
-      accentColor: "#f59e0b",
-      bgLight: "bg-amber-50/70 text-amber-700 border-amber-100",
-      indicator: "Govt. Approved"
+      accentColor: '#f59e0b',
+      bgLight: 'bg-amber-50/70 text-amber-700 border-amber-100',
+      indicator: 'Govt. Approved'
     },
     {
-      title: "Problems Solved",
-      value: kpis?.problemsSolved?.value || kpis?.solvedProblems?.value || "10,854",
-      growth: kpis?.problemsSolved?.growthText || "+414 this week",
+      title: 'Problems Solved',
+      value: kpis?.problemsSolved?.value || kpis?.solvedProblems?.value || '0',
+      growth: kpis?.problemsSolved?.growthText || 'Verified Solutions',
       icon: CheckCircle2,
-      accentColor: "#10b981",
-      bgLight: "bg-emerald-50/70 text-emerald-700 border-emerald-100",
-      indicator: "87.2% Resolution"
+      accentColor: '#10b981',
+      bgLight: 'bg-emerald-50/70 text-emerald-700 border-emerald-100',
+      indicator: 'Resolution Rate'
     }
   ];
 

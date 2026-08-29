@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { AlertTriangle, Check, User, MapPin } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { AlertTriangle, Check, User, MapPin, Info } from 'lucide-react';
 import { Card } from '../../../../shared/components/ui/card.jsx';
 import { Badge } from '../../../../shared/components/ui/badge.jsx';
 import { Button } from '../../../../shared/components/ui/button.jsx';
@@ -7,11 +7,16 @@ import { Textarea } from '../../../../shared/components/ui/textarea.jsx';
 
 export const EscalationActionPanel = ({ selectedIssue }) => {
   const [priorityLevel, setPriorityLevel] = useState('Critical');
-  const [remarks, setRemarks] = useState(
-    'Potential public health and drinking water contamination hazard. Immediate inspection required.'
-  );
+  const [remarks, setRemarks] = useState('');
   const [notifyDistrict, setNotifyDistrict] = useState(true);
   const [isEscalated, setIsEscalated] = useState(false);
+
+  useEffect(() => {
+    if (selectedIssue) {
+      setPriorityLevel(selectedIssue.priority || 'Critical');
+      setRemarks(`Priority escalation requested for ${selectedIssue.title || 'selected issue'}.`);
+    }
+  }, [selectedIssue]);
 
   const priorityOptions = [
     { id: 'Normal', label: 'Normal' },
@@ -26,15 +31,25 @@ export const EscalationActionPanel = ({ selectedIssue }) => {
     setTimeout(() => setIsEscalated(false), 3000);
   };
 
+  if (!selectedIssue) {
+    return (
+      <Card className="bg-white border-slate-200 p-6 shadow-2xs text-center text-slate-400 text-xs flex flex-col items-center justify-center min-h-[220px]">
+        <Info className="w-5 h-5 mb-2 text-slate-300" />
+        <h4 className="font-bold text-slate-700 text-xs">No Issue Selected for Escalation</h4>
+        <p className="text-[11px] text-slate-400 mt-0.5">Select a problem from the triage queue to escalate its SLA priority.</p>
+      </Card>
+    );
+  }
+
   return (
     <Card className="bg-white border-slate-200 p-4 shadow-2xs space-y-3">
       <div className="flex items-center justify-between pb-2 border-b border-slate-100">
         <div className="flex items-center space-x-2">
           <span className="font-extrabold text-slate-900 text-sm">
-            {selectedIssue?.id || 'IS-2026-00521'}
+            {selectedIssue.id}
           </span>
           <Badge variant="info" className="text-[10px] font-bold">
-            Current: Normal
+            Current: {selectedIssue.priority || 'Normal'}
           </Badge>
         </div>
         <span className="text-[10px] text-slate-400 font-medium">Issue Escalation Console</span>
@@ -42,11 +57,11 @@ export const EscalationActionPanel = ({ selectedIssue }) => {
 
       <div>
         <h4 className="font-bold text-slate-900 text-sm">
-          {selectedIssue?.title || 'Contaminated Drinking Water in Village'}
+          {selectedIssue.title}
         </h4>
         <div className="flex items-center space-x-3 text-xs text-slate-500 mt-1">
-          <span className="flex items-center"><User className="w-3 h-3 mr-1 text-slate-400" />{selectedIssue?.submittedBy || 'Ramesh Mahto'}</span>
-          <span className="flex items-center"><MapPin className="w-3 h-3 mr-1 text-slate-400" />{selectedIssue?.district || 'Dhanbad'}</span>
+          <span className="flex items-center"><User className="w-3 h-3 mr-1 text-slate-400" />{selectedIssue.submittedBy || 'Citizen'}</span>
+          <span className="flex items-center"><MapPin className="w-3 h-3 mr-1 text-slate-400" />{selectedIssue.district || 'Jharkhand'}</span>
         </div>
       </div>
 
@@ -99,7 +114,7 @@ export const EscalationActionPanel = ({ selectedIssue }) => {
             className="rounded text-blue-600 focus:ring-blue-500"
           />
           <span className="text-slate-700 text-xs font-semibold">
-            Send instant SMS/WhatsApp emergency alert to Deputy Commissioner (DC) Office
+            Send instant SMS alert to Deputy Commissioner (DC) Office
           </span>
         </label>
 

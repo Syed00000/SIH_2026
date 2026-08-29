@@ -1,11 +1,29 @@
 import React from 'react';
 import { Card } from '../../../../shared/components/ui/card.jsx';
 
-export const DepartmentRoutingMatrix = () => {
+export const DepartmentRoutingMatrix = ({ criticalCount = 0, urgentCount = 0, normalCount = 0 }) => {
   const routing = [
-    { level: 'Critical (L3)', sla: '24 Hours', action: 'DC / Principal Secretary SMS Broadcast', count: 3, color: 'text-red-700 bg-red-50 border-red-200' },
-    { level: 'Urgent (L2)', sla: '48 Hours', action: 'Nodal Officer Direct Auto-Assignment', count: 7, color: 'text-amber-700 bg-amber-50 border-amber-200' },
-    { level: 'High (L1)', sla: '5 Days', action: 'Standard Department Queue Placement', count: 14, color: 'text-blue-700 bg-blue-50 border-blue-200' }
+    {
+      level: 'Critical (L3)',
+      sla: '24 Hours',
+      action: 'DC / Principal Secretary SMS Broadcast',
+      count: criticalCount,
+      color: 'text-red-700 bg-red-50 border-red-200'
+    },
+    {
+      level: 'Urgent (L2)',
+      sla: '48 Hours',
+      action: 'Nodal Officer Direct Auto-Assignment',
+      count: urgentCount,
+      color: 'text-amber-700 bg-amber-50 border-amber-200'
+    },
+    {
+      level: 'High / Normal (L1)',
+      sla: '5 Days',
+      action: 'Standard Department Queue Placement',
+      count: normalCount,
+      color: 'text-blue-700 bg-blue-50 border-blue-200'
+    }
   ];
 
   return (

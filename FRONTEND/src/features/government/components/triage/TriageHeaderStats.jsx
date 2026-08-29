@@ -3,12 +3,12 @@ import { FileText, Clock, Edit3, Users } from 'lucide-react';
 import { Card } from '../../../../shared/components/ui/card.jsx';
 import { Badge } from '../../../../shared/components/ui/badge.jsx';
 
-export const TriageHeaderStats = () => {
+export const TriageHeaderStats = ({ triageCount = 0, overrideCount = 0, clusterCount = 0, avgConfidence = 0 }) => {
   const stats = [
     {
       title: 'Active Triage Queue',
-      value: '24',
-      subtext: 'Auto-Classified: 24 | Manual: 0',
+      value: String(triageCount),
+      subtext: `Auto-Classified: ${triageCount} | Manual: ${overrideCount}`,
       badge: 'Real-time Stream',
       badgeColor: 'bg-emerald-50 text-emerald-700 border-emerald-200',
       icon: FileText,
@@ -16,17 +16,17 @@ export const TriageHeaderStats = () => {
     },
     {
       title: 'Confidence Level',
-      value: '87.5%',
-      subtext: 'Avg Model Score: 87.5%',
-      badge: 'High Precision',
+      value: avgConfidence > 0 ? `${avgConfidence}%` : '—',
+      subtext: avgConfidence > 0 ? `Avg Model Score: ${avgConfidence}%` : 'Awaiting Inflow',
+      badge: 'Model Inference',
       badgeColor: 'bg-blue-50 text-blue-700 border-blue-200',
       icon: Clock,
       iconColor: 'text-emerald-600 bg-emerald-50'
     },
     {
       title: 'Manual Overrides',
-      value: '14.3%',
-      subtext: '3 Overrides Logged',
+      value: String(overrideCount),
+      subtext: `${overrideCount} Overrides Logged`,
       badge: 'Audit Active',
       badgeColor: 'bg-amber-50 text-amber-700 border-amber-200',
       icon: Edit3,
@@ -34,8 +34,8 @@ export const TriageHeaderStats = () => {
     },
     {
       title: 'Duplicate Clusters',
-      value: '6',
-      subtext: '18 Deduplicated Issues',
+      value: String(clusterCount),
+      subtext: `${clusterCount} Deduplicated Groups`,
       badge: 'Cosine Semantic',
       badgeColor: 'bg-purple-50 text-purple-700 border-purple-200',
       icon: Users,

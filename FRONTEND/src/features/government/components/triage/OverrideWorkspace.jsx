@@ -1,25 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { Droplet, ChevronDown, Check, ArrowRight, User, MapPin, Sliders } from 'lucide-react';
+import { Droplet, ChevronDown, Check, ArrowRight, User, MapPin, Sliders, Info } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '../../../../shared/components/ui/card.jsx';
 import { Badge } from '../../../../shared/components/ui/badge.jsx';
 import { Button } from '../../../../shared/components/ui/button.jsx';
 import { Textarea } from '../../../../shared/components/ui/textarea.jsx';
 
-export const OverrideWorkspace = ({ selectedIssue, issues, onSelectIssue, onApplyOverride }) => {
+export const OverrideWorkspace = ({ selectedIssue, issues = [], onSelectIssue, onApplyOverride }) => {
   const [targetDomain, setTargetDomain] = useState('Public Infrastructure');
-  const [justification, setJustification] = useState('Cross-departmental road survey required before civil repair.');
+  const [justification, setJustification] = useState('');
   const [retrainClassifier, setRetrainClassifier] = useState(true);
   const [isSuccess, setIsSuccess] = useState(false);
 
-  const issue = selectedIssue || issues?.[0] || {
-    id: 'IS-2026-00481',
-    title: 'Solar Microgrid Inverter Failure affecting 120 tribal households',
-    district: 'Khunti',
-    currentDomain: 'Water Resources',
-    confidence: 89,
-    submittedBy: 'Birsa Munda SHG',
-    description: 'The solar microgrid inverter feeding the borehole filtration setup malfunctioned.'
-  };
+  const issue = selectedIssue || (issues && issues.length > 0 ? issues[0] : null);
 
   const domainOptions = [
     { name: 'Water Resources & Supply', dept: 'Drinking Water & Sanitation Dept' },
@@ -32,12 +24,23 @@ export const OverrideWorkspace = ({ selectedIssue, issues, onSelectIssue, onAppl
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    if (!issue) return;
     setIsSuccess(true);
     setTimeout(() => {
       setIsSuccess(false);
       onApplyOverride?.({ issueId: issue.id, newDomain: targetDomain, justification, retrainClassifier });
     }, 2000);
   };
+
+  if (!issue) {
+    return (
+      <Card className="bg-white border-slate-200 shadow-2xs p-8 text-center text-slate-400 text-xs">
+        <Info className="w-6 h-6 mx-auto text-slate-300 mb-2" />
+        <h4 className="font-bold text-slate-700 text-xs">No Issue Selected for Reclassification</h4>
+        <p className="text-[11px] text-slate-400 mt-0.5">Select an issue from the live triage stream to modify its taxonomy domain.</p>
+      </Card>
+    );
+  }
 
   return (
     <Card className="bg-white border-slate-200 shadow-2xs">
@@ -58,54 +61,63 @@ export const OverrideWorkspace = ({ selectedIssue, issues, onSelectIssue, onAppl
           <div className="space-y-2.5 bg-slate-50/70 p-3 rounded border border-slate-200 text-xs">
             <div className="flex items-center justify-between">
               <span className="font-bold text-slate-700">Source Issue Details</span>
-              <Badge variant="info" className="text-[10px] font-bold">Current: {issue.domain || issue.currentDomain || 'Water'}</Badge>
+              <span className="font-mono text-slate-500 font-bold">{issue.id}</span>
             </div>
 
-            <h4 className="font-bold text-slate-900 text-xs">{issue.title}</h4>
-            <p className="text-slate-500 text-[11px] leading-relaxed line-clamp-3">{issue.description}</p>
+            <div>
+              <span className="text-[11px] text-slate-400 block font-medium">Problem Statement</span>
+              <h5 className="font-bold text-slate-900 mt-0.5 text-xs">{issue.title}</h5>
+            </div>
 
-            <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-200 text-[11px]">
+            <div className="grid grid-cols-2 gap-2 pt-1 border-t border-slate-200/60">
               <div>
-                <span className="text-slate-400 block text-[10px]">District & Location</span>
-                <span className="font-semibold text-slate-700 flex items-center mt-0.5">
-                  <MapPin className="w-3 h-3 mr-1 text-slate-400" />{issue.district}
-                </span>
+                <span className="text-[10.5px] text-slate-400 block font-medium">Current Sector</span>
+                <span className="font-extrabold text-blue-700 text-xs mt-0.5 block">{issue.currentDomain || issue.domain}</span>
               </div>
               <div>
-                <span className="text-slate-400 block text-[10px]">Reported By</span>
-                <span className="font-semibold text-slate-700 flex items-center mt-0.5">
-                  <User className="w-3 h-3 mr-1 text-slate-400" />{issue.submittedBy}
-                </span>
+                <span className="text-[10.5px] text-slate-400 block font-medium">District</span>
+                <span className="font-bold text-slate-700 text-xs mt-0.5 block">{issue.district || 'Jharkhand'}</span>
               </div>
             </div>
+
+            {issue.description && (
+              <p className="text-[11px] text-slate-600 leading-relaxed pt-1 border-t border-slate-200/60">
+                {issue.description}
+              </p>
+            )}
           </div>
 
           <div className="space-y-3 text-xs">
             <div>
-              <label className="block text-[11px] font-bold text-slate-700 mb-1">
-                Select Target Domain Taxonomy <span className="text-red-500">*</span>
+              <label className="block text-[11px] font-bold text-slate-700 mb-1.5">
+                New Target Department Domain <span className="text-red-500">*</span>
               </label>
-              <select
-                value={targetDomain}
-                onChange={(e) => setTargetDomain(e.target.value)}
-                className="w-full h-8 text-xs border border-slate-300 rounded px-2 bg-white text-slate-900 font-semibold focus:outline-none focus:ring-1 focus:ring-slate-900"
-              >
-                {domainOptions.map((opt, i) => (
-                  <option key={i} value={opt.name}>{opt.name} — {opt.dept}</option>
-                ))}
-              </select>
+              <div className="relative">
+                <select
+                  value={targetDomain}
+                  onChange={(e) => setTargetDomain(e.target.value)}
+                  className="w-full bg-white border border-slate-300 rounded-lg p-2 text-xs font-semibold text-slate-800 pr-8 focus:outline-none focus:border-amber-500"
+                >
+                  {domainOptions.map((d) => (
+                    <option key={d.name} value={d.name}>
+                      {d.name} ({d.dept})
+                    </option>
+                  ))}
+                </select>
+                <ChevronDown className="w-3.5 h-3.5 text-slate-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+              </div>
             </div>
 
             <div>
               <label className="block text-[11px] font-bold text-slate-700 mb-1">
-                Override Justification & Officer Remark <span className="text-red-500">*</span>
+                Officer Override Justification <span className="text-red-500">*</span>
               </label>
               <Textarea
                 rows={2}
                 required
                 value={justification}
                 onChange={(e) => setJustification(e.target.value)}
-                placeholder="Explain the technical or departmental reason for rerouting..."
+                placeholder="State administrative justification for taxonomy override..."
                 className="text-xs"
               />
             </div>
@@ -115,24 +127,28 @@ export const OverrideWorkspace = ({ selectedIssue, issues, onSelectIssue, onAppl
                 type="checkbox"
                 checked={retrainClassifier}
                 onChange={(e) => setRetrainClassifier(e.target.checked)}
-                className="rounded text-blue-600 focus:ring-blue-500"
+                className="rounded text-amber-600 focus:ring-amber-500"
               />
               <span className="text-slate-700 text-xs font-semibold">
-                Feed this correction to the DistilBERT AI fine-tuning loop (Zero-Shot Learning)
+                Queue for AI fine-tuning dataset
               </span>
             </label>
 
             {isSuccess && (
               <div className="flex items-center text-emerald-700 text-xs font-semibold bg-emerald-50 p-2 rounded border border-emerald-200">
                 <Check className="w-3.5 h-3.5 mr-1 text-emerald-600" />
-                Override submitted successfully! Department routing updated.
+                Issue reclassified to {targetDomain} and logged in audit history.
               </div>
             )}
 
             <div className="flex items-center justify-end space-x-2 pt-2 border-t border-slate-100">
-              <Button type="submit" size="sm" variant="primary" className="flex items-center gap-1">
-                <span>Confirm & Apply Override</span>
-                <ArrowRight className="w-3 h-3 ml-1" />
+              <Button
+                type="submit"
+                size="sm"
+                className="bg-amber-600 hover:bg-amber-700 text-white flex items-center gap-1"
+              >
+                <span>Commit Reclassification</span>
+                <ArrowRight className="w-3.5 h-3.5" />
               </Button>
             </div>
           </div>

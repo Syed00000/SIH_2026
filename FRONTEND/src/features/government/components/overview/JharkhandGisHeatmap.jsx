@@ -25,27 +25,24 @@ export const JharkhandGisHeatmap = ({ selectedDistrict = 'All', onSelectDistrict
 
   const [hoveredDistrict, setHoveredDistrict] = useState(null);
   const [cursorCoords, setCursorCoords] = useState({ lat: '23.6500', lng: '85.5500' });
-  const [basemapMode, setBasemapMode] = useState('canvas'); // 'canvas' | 'satellite' | 'topo'
-  const [showHotspots, setShowHotspots] = useState(true);
-  const [showLayersDropdown, setShowLayersDropdown] = useState(false);
+  const [basemapMode, setBasemapMode] = useState('canvas');
+  const [showHotspots, setShowHotspots] = useState(false);
 
   const JHARKHAND_CENTER = [23.65, 85.55];
   const DEFAULT_ZOOM = 7.4;
 
-  // Compute District Color based on score
+  // Compute District Color based on live problem density
   const getDistrictColor = useCallback((distId) => {
     const data = JHARKHAND_DISTRICTS_DATA[distId];
-    if (!data) return '#86efac';
-
-    const score = data.overallScore || 50;
-    if (score >= 81) return '#ef4444'; // Very High - Red
-    if (score >= 61) return '#fb923c'; // High - Orange
-    if (score >= 41) return '#fde047'; // Moderate - Warm Yellow
-    if (score >= 21) return '#86efac'; // Low - Light Green
-    return '#22c55e'; // Very Low - Emerald Green
+    if (!data) return '#22c55e';
+    const count = data.totalProblems || 0;
+    if (count >= 50) return '#ef4444';
+    if (count >= 20) return '#fb923c';
+    if (count >= 10) return '#fde047';
+    if (count >= 1) return '#86efac';
+    return '#22c55e';
   }, []);
 
-  // Update base tile layer on mode change
   const updateBasemap = (mode) => {
     if (!mapInstanceRef.current) return;
     setBasemapMode(mode);
@@ -72,10 +69,8 @@ export const JharkhandGisHeatmap = ({ selectedDistrict = 'All', onSelectDistrict
     newTileLayer.addTo(mapInstanceRef.current);
     newTileLayer.bringToBack();
     baseTileLayerRef.current = newTileLayer;
-    setShowLayersDropdown(false);
   };
 
-  // Initialize Map
   useEffect(() => {
     if (!mapContainerRef.current) return;
 
@@ -89,16 +84,14 @@ export const JharkhandGisHeatmap = ({ selectedDistrict = 'All', onSelectDistrict
         maxZoom: 13
       });
 
-      // Default Canvas Tile Layer
       const baseTile = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png', {
         subdomains: 'abcd',
         maxZoom: 19
       }).addTo(map);
       baseTileLayerRef.current = baseTile;
 
-      // Track mouse coordinates for GIS HUD safely
       map.on('mousemove', (e) => {
-        if (e && e.latlng && typeof e.latlng.lat === 'number' && typeof e.latlng.lng === 'number') {
+        if (e && e.latlng) {
           setCursorCoords({
             lat: e.latlng.lat.toFixed(4),
             lng: e.latlng.lng.toFixed(4)
@@ -106,149 +99,74 @@ export const JharkhandGisHeatmap = ({ selectedDistrict = 'All', onSelectDistrict
         }
       });
 
-      // Add High-Precision GeoJSON layer
-      const geoLayer = L.geoJSON(JHARKHAND_STATE_GEOJSON, {
-        style: (feature) => {
-          const distId = feature.id || feature.properties?.id;
-          const distData = JHARKHAND_DISTRICTS_DATA[distId] || {};
-          const isSelected =
-            selectedDistrict &&
-            selectedDistrict !== 'All' &&
-            distData.name?.toLowerCase() === selectedDistrict.toLowerCase();
-
-          return {
-            fillColor: getDistrictColor(distId),
-            weight: isSelected ? 2.8 : 1.2,
-            opacity: 1,
-            color: isSelected ? '#0f172a' : '#ffffff',
-            dashArray: isSelected ? '' : '2',
-            fillOpacity: isSelected ? 0.95 : 0.82
-          };
-        },
-        onEachFeature: (feature, layer) => {
-          const distId = feature.id || feature.properties?.id;
-          const distData = JHARKHAND_DISTRICTS_DATA[distId] || { name: feature.properties?.name || distId };
-
-          layer.on({
-            mouseover: (e) => {
-              const l = e.target;
-              l.setStyle({
-                weight: 2.8,
-                color: '#0f172a',
-                fillOpacity: 0.96
-              });
-              setHoveredDistrict({ ...distData, distId });
-            },
-            mouseout: (e) => {
-              geoLayer.resetStyle(e.target);
-              setHoveredDistrict(null);
-            },
-            click: () => {
-              if (onSelectDistrict && distData.name) {
-                onSelectDistrict(distData.name);
-              }
-            }
-          });
-
-          // Text label for district center
-          if (distData.name && Array.isArray(distData.center) && distData.center.length === 2) {
-            const labelIcon = L.divIcon({
-              className: 'district-gis-label',
-              html: `<div style="font-size: 9.5px; font-weight: 800; color: #0f172a; text-shadow: 0 1px 3px rgba(255,255,255,0.9), 0 -1px 3px rgba(255,255,255,0.9); pointer-events: none; transform: translate(-50%, -50%); text-align: center; white-space: nowrap;">${distData.name}</div>`,
-              iconSize: [60, 16],
-              iconAnchor: [30, 8]
-            });
-            L.marker(distData.center, { icon: labelIcon, interactive: false }).addTo(map);
-          }
-        }
-      }).addTo(map);
-
-      geoJsonLayerRef.current = geoLayer;
-
-      // Extract hotspots safely from JHARKHAND_DISTRICTS_DATA
-      const hotspotsGroup = L.layerGroup();
-      Object.values(JHARKHAND_DISTRICTS_DATA || {}).forEach((dist) => {
-        (dist.criticalHotspots || []).forEach((spot) => {
-          if (typeof spot.lat === 'number' && typeof spot.lng === 'number') {
-            const spotColor =
-              spot.severity === 'Very High'
-                ? '#dc2626'
-                : spot.severity === 'High'
-                ? '#ea580c'
-                : '#eab308';
-
-            const pinIcon = L.divIcon({
-              className: 'gis-hotspot-marker',
-              html: `
-                <div style="position: relative; width: 14px; height: 14px; display: flex; align-items: center; justify-content: center;">
-                  <span style="position: absolute; width: 14px; height: 14px; border-radius: 9999px; background-color: ${spotColor}; opacity: 0.4; animation: ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite;"></span>
-                  <span style="position: relative; width: 7px; height: 7px; border-radius: 9999px; background-color: ${spotColor}; border: 1.5px solid #ffffff; box-shadow: 0 1px 3px rgba(0,0,0,0.3);"></span>
-                </div>
-              `,
-              iconSize: [14, 14],
-              iconAnchor: [7, 7]
-            });
-
-            const marker = L.marker([spot.lat, spot.lng], { icon: pinIcon });
-            marker.bindTooltip(
-              `<strong>${spot.name}</strong><br/><span style="font-size:10px; color:#64748b;">${dist.name} • ${spot.category || 'Issue'}</span>`,
-              { direction: 'top', offset: [0, -6] }
-            );
-            hotspotsGroup.addLayer(marker);
-          }
-        });
-      });
-
-      hotspotsGroup.addTo(map);
-      hotspotsLayerRef.current = hotspotsGroup;
-
       mapInstanceRef.current = map;
     }
 
-    return () => {
-      if (mapInstanceRef.current) {
-        mapInstanceRef.current.remove();
-        mapInstanceRef.current = null;
+    if (JHARKHAND_STATE_GEOJSON) {
+      if (geoJsonLayerRef.current && mapInstanceRef.current) {
+        mapInstanceRef.current.removeLayer(geoJsonLayerRef.current);
       }
-    };
-  }, []);
 
-  // Update styles if selected district changes
-  useEffect(() => {
-    if (geoJsonLayerRef.current) {
-      geoJsonLayerRef.current.eachLayer((layer) => {
-        const feature = layer.feature;
-        const distId = feature?.id || feature?.properties?.id;
-        const distData = JHARKHAND_DISTRICTS_DATA[distId] || {};
-        const isSelected =
-          selectedDistrict &&
-          selectedDistrict !== 'All' &&
-          distData.name?.toLowerCase() === selectedDistrict.toLowerCase();
+      const layer = L.geoJSON(JHARKHAND_STATE_GEOJSON, {
+        style: (feature) => {
+          const distId = (feature.properties.id || feature.properties.dtname || '').toLowerCase().replace(/\s+/g, '_');
+          const isSelected = selectedDistrict.toLowerCase() === distId || selectedDistrict === feature.properties.name;
 
-        layer.setStyle({
-          fillColor: getDistrictColor(distId),
-          weight: isSelected ? 2.8 : 1.2,
-          opacity: 1,
-          color: isSelected ? '#0f172a' : '#ffffff',
-          fillOpacity: isSelected ? 0.95 : 0.82
-        });
+          return {
+            fillColor: getDistrictColor(distId),
+            fillOpacity: isSelected ? 0.75 : 0.45,
+            color: isSelected ? '#1e293b' : '#ffffff',
+            weight: isSelected ? 2.5 : 1.2,
+            dashArray: isSelected ? '' : '1',
+            lineJoin: 'round'
+          };
+        },
+        onEachFeature: (feature, featureLayer) => {
+          const distId = (feature.properties.id || feature.properties.dtname || '').toLowerCase().replace(/\s+/g, '_');
+          const distData = JHARKHAND_DISTRICTS_DATA[distId] || {
+            name: feature.properties.name || feature.properties.dtname,
+            totalProblems: 0,
+            resolvedProblems: 0,
+            activeHeis: 0,
+            riskLevel: 'Zero Inflow',
+            riskColor: '#22c55e',
+            demographics: { population: '—' }
+          };
+
+          featureLayer.on({
+            mouseover: (e) => {
+              const target = e.target;
+              target.setStyle({
+                fillOpacity: 0.8,
+                weight: 2,
+                color: '#0f172a'
+              });
+              target.bringToFront();
+              setHoveredDistrict({
+                ...distData,
+                name: distData.name || feature.properties.name
+              });
+            },
+            mouseout: (e) => {
+              if (geoJsonLayerRef.current) {
+                geoJsonLayerRef.current.resetStyle(e.target);
+              }
+              setHoveredDistrict(null);
+            },
+            click: () => {
+              const name = distData.name || feature.properties.name;
+              if (onSelectDistrict) {
+                onSelectDistrict(name);
+              }
+            }
+          });
+        }
       });
-    }
-  }, [selectedDistrict, getDistrictColor]);
 
-  // Toggle Hotspots visibility
-  useEffect(() => {
-    if (!mapInstanceRef.current || !hotspotsLayerRef.current) return;
-    if (showHotspots) {
-      if (!mapInstanceRef.current.hasLayer(hotspotsLayerRef.current)) {
-        hotspotsLayerRef.current.addTo(mapInstanceRef.current);
-      }
-    } else {
-      if (mapInstanceRef.current.hasLayer(hotspotsLayerRef.current)) {
-        mapInstanceRef.current.removeLayer(hotspotsLayerRef.current);
-      }
+      layer.addTo(mapInstanceRef.current);
+      geoJsonLayerRef.current = layer;
     }
-  }, [showHotspots]);
+  }, [getDistrictColor, onSelectDistrict, selectedDistrict]);
 
   const handleZoomIn = () => {
     if (mapInstanceRef.current) mapInstanceRef.current.zoomIn();
@@ -280,9 +198,8 @@ export const JharkhandGisHeatmap = ({ selectedDistrict = 'All', onSelectDistrict
           </div>
         </div>
 
-        {/* Professional GIS Controls */}
+        {/* GIS Controls */}
         <div className="flex items-center space-x-1.5">
-          {/* Basemap Segmented Toggle */}
           <div className="flex bg-slate-100 rounded-lg p-0.5 border border-slate-200/70 text-[10px] font-semibold">
             <button
               type="button"
@@ -318,24 +235,6 @@ export const JharkhandGisHeatmap = ({ selectedDistrict = 'All', onSelectDistrict
               Terrain
             </button>
           </div>
-
-          {/* Hotspots Toggle */}
-          <button
-            type="button"
-            onClick={() => setShowHotspots(!showHotspots)}
-            className={`px-2.5 py-1 rounded-lg text-[10.5px] font-semibold border transition-all cursor-pointer flex items-center gap-1.5 ${
-              showHotspots
-                ? 'bg-slate-900 border-slate-900 text-white shadow-xs'
-                : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
-            }`}
-          >
-            <span
-              className={`w-1.5 h-1.5 rounded-full ${
-                showHotspots ? 'bg-red-400 animate-pulse' : 'bg-slate-400'
-              }`}
-            />
-            <span>Hotspots</span>
-          </button>
         </div>
       </div>
 
@@ -378,36 +277,31 @@ export const JharkhandGisHeatmap = ({ selectedDistrict = 'All', onSelectDistrict
                 {hoveredDistrict.name}
               </span>
               <span
-                className="text-[9px] font-bold px-1.5 py-0.5 rounded border"
-                style={{
-                  backgroundColor: `${hoveredDistrict.riskColor || '#eab308'}20`,
-                  color: hoveredDistrict.riskColor || '#eab308',
-                  borderColor: `${hoveredDistrict.riskColor || '#eab308'}40`
-                }}
+                className="text-[9px] font-bold px-1.5 py-0.5 rounded border bg-emerald-500/20 text-emerald-400 border-emerald-500/40"
               >
-                {hoveredDistrict.riskLevel || 'Moderate'}
+                {hoveredDistrict.totalProblems > 0 ? 'Active Need' : 'Zero Inflow'}
               </span>
             </div>
             <div className="flex justify-between text-[11px] text-slate-300">
               <span>Total Problems:</span>
               <span className="font-bold text-white">
-                {(hoveredDistrict.totalProblems || 1200).toLocaleString()}
+                {(hoveredDistrict.totalProblems || 0).toLocaleString()}
               </span>
             </div>
             <div className="flex justify-between text-[11px] text-slate-300">
               <span>Resolved:</span>
               <span className="font-bold text-emerald-400">
-                {(hoveredDistrict.resolvedProblems || 1050).toLocaleString()}
+                {(hoveredDistrict.resolvedProblems || 0).toLocaleString()}
               </span>
             </div>
             <div className="flex justify-between text-[11px] text-slate-300">
               <span>Active HEIs:</span>
               <span className="font-bold text-purple-300">
-                {hoveredDistrict.activeHeis || 12}
+                {hoveredDistrict.activeHeis || 0}
               </span>
             </div>
             <div className="text-[9.5px] text-slate-400 pt-1 border-t border-slate-800 flex justify-between items-center">
-              <span>Population: {hoveredDistrict.demographics?.population || '2.4M'}</span>
+              <span>District Node</span>
               <span className="text-blue-400 font-semibold cursor-pointer">Click to filter</span>
             </div>
           </div>
@@ -420,23 +314,23 @@ export const JharkhandGisHeatmap = ({ selectedDistrict = 'All', onSelectDistrict
           </span>
           <div className="flex items-center space-x-1.5">
             <span className="w-2.5 h-2.5 rounded-xs bg-[#ef4444]" />
-            <span className="text-slate-600 font-medium">Very High (81-100)</span>
+            <span className="text-slate-600 font-medium">Very High (&gt;50)</span>
           </div>
           <div className="flex items-center space-x-1.5">
             <span className="w-2.5 h-2.5 rounded-xs bg-[#fb923c]" />
-            <span className="text-slate-600 font-medium">High (61-80)</span>
+            <span className="text-slate-600 font-medium">High (20-49)</span>
           </div>
           <div className="flex items-center space-x-1.5">
             <span className="w-2.5 h-2.5 rounded-xs bg-[#fde047]" />
-            <span className="text-slate-600 font-medium">Moderate (41-60)</span>
+            <span className="text-slate-600 font-medium">Moderate (10-19)</span>
           </div>
           <div className="flex items-center space-x-1.5">
             <span className="w-2.5 h-2.5 rounded-xs bg-[#86efac]" />
-            <span className="text-slate-600 font-medium">Low (21-40)</span>
+            <span className="text-slate-600 font-medium">Low (1-9)</span>
           </div>
           <div className="flex items-center space-x-1.5">
             <span className="w-2.5 h-2.5 rounded-xs bg-[#22c55e]" />
-            <span className="text-slate-600 font-medium">Very Low (0-20)</span>
+            <span className="text-slate-600 font-medium">Zero / Clean (0)</span>
           </div>
         </div>
 

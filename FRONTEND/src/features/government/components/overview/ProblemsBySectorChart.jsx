@@ -1,10 +1,15 @@
 import React, { useState } from 'react';
-import { ChevronDown, PieChart, Layers, ShieldCheck } from 'lucide-react';
+import { ChevronDown, PieChart, Layers, Info } from 'lucide-react';
 
-export const ProblemsBySectorChart = ({ sectors = [], selectedTimeframe = 'This Month', onChangeTimeframe, onSelectSector }) => {
+export const ProblemsBySectorChart = ({
+  sectors = [],
+  selectedTimeframe = 'This Month',
+  onChangeTimeframe,
+  onSelectSector
+}) => {
   const [hoveredSector, setHoveredSector] = useState(null);
 
-  const totalCount = sectors.reduce((acc, curr) => acc + (curr.count || 0), 0) || 12450;
+  const totalCount = sectors.reduce((acc, curr) => acc + (curr.count || 0), 0);
 
   // Donut SVG Parameters
   const radius = 38;
@@ -47,130 +52,106 @@ export const ProblemsBySectorChart = ({ sectors = [], selectedTimeframe = 'This 
       </div>
 
       {/* Center Donut & Legend Content */}
-      <div className="flex flex-col sm:flex-row items-center gap-4 py-1 flex-1">
-        {/* Donut SVG with interactive hover tooltips */}
-        <div className="relative w-28 h-28 shrink-0 flex items-center justify-center">
-          <svg viewBox="0 0 100 100" className="w-full h-full -rotate-90 filter drop-shadow-xs">
-            {/* Background base circle */}
-            <circle
-              cx={center}
-              cy={center}
-              r={radius}
-              fill="transparent"
-              stroke="#f1f5f9"
-              strokeWidth={strokeWidth}
-            />
-            {sectors.map((sector, index) => {
-              const pct = sector.percentage || 0;
-              const strokeDasharray = `${(pct / 100) * circumference} ${circumference}`;
-              const strokeDashoffset = -accumulatedPercent * circumference;
-              accumulatedPercent += pct / 100;
-              const isHovered = hoveredSector?.name === sector.name;
-
-              return (
-                <circle
-                  key={index}
-                  cx={center}
-                  cy={center}
-                  r={radius}
-                  fill="transparent"
-                  stroke={sector.color}
-                  strokeWidth={isHovered ? strokeWidth + 3 : strokeWidth}
-                  strokeDasharray={strokeDasharray}
-                  strokeDashoffset={strokeDashoffset}
-                  strokeLinecap="round"
-                  className="transition-all duration-200 cursor-pointer hover:opacity-90"
-                  onMouseEnter={() => setHoveredSector(sector)}
-                  onMouseLeave={() => setHoveredSector(null)}
-                  onClick={() => onSelectSector && onSelectSector(sector.name)}
-                />
-              );
-            })}
-          </svg>
-
-          {/* Center HUD */}
-          <div className="absolute inset-0 flex flex-col items-center justify-center text-center pointer-events-none px-1">
-            {hoveredSector ? (
-              <>
-                <span className="text-[8.5px] font-bold text-slate-500 uppercase tracking-wider truncate max-w-[65px]">
-                  {hoveredSector.name.split(' ')[0]}
-                </span>
-                <span className="text-xs font-black text-slate-900 leading-tight">
-                  {hoveredSector.percentage}%
-                </span>
-                <span className="text-[8px] text-slate-400 font-medium">
-                  {hoveredSector.count.toLocaleString()}
-                </span>
-              </>
-            ) : (
-              <>
-                <span className="text-[8px] font-bold text-slate-400 uppercase tracking-wider">Total</span>
-                <span className="text-xs font-extrabold text-slate-900 leading-tight">
-                  {totalCount >= 1000 ? `${(totalCount / 1000).toFixed(1)}k` : totalCount}
-                </span>
-                <span className="text-[8px] text-emerald-600 font-semibold">100%</span>
-              </>
-            )}
-          </div>
+      {sectors.length === 0 ? (
+        <div className="flex-1 flex flex-col items-center justify-center py-8 text-center text-slate-400 text-xs">
+          <Info className="w-5 h-5 mb-1.5 text-slate-300" />
+          <span>No sector problem distribution recorded yet.</span>
         </div>
+      ) : (
+        <div className="flex flex-col sm:flex-row items-center gap-4 py-1 flex-1">
+          {/* Donut SVG */}
+          <div className="relative w-28 h-28 shrink-0 flex items-center justify-center">
+            <svg viewBox="0 0 100 100" className="w-full h-full -rotate-90 filter drop-shadow-xs">
+              <circle
+                cx={center}
+                cy={center}
+                r={radius}
+                fill="transparent"
+                stroke="#f1f5f9"
+                strokeWidth={strokeWidth}
+              />
+              {sectors.map((sector, index) => {
+                const pct = sector.percentage || (totalCount > 0 ? ((sector.count || 0) / totalCount) * 100 : 0);
+                const strokeDasharray = `${(pct / 100) * circumference} ${circumference}`;
+                const strokeDashoffset = -accumulatedPercent * circumference;
+                accumulatedPercent += pct / 100;
+                const isHovered = hoveredSector?.name === sector.name;
 
-        {/* Breakdown List with dynamic progress bars - No Overflow! */}
-        <div className="flex-1 w-full space-y-1.5 min-w-0">
-          {sectors.map((item, idx) => {
-            const isHovered = hoveredSector?.name === item.name;
-            return (
+                return (
+                  <circle
+                    key={index}
+                    cx={center}
+                    cy={center}
+                    r={radius}
+                    fill="transparent"
+                    stroke={sector.color || '#3b82f6'}
+                    strokeWidth={isHovered ? strokeWidth + 2 : strokeWidth}
+                    strokeDasharray={strokeDasharray}
+                    strokeDashoffset={strokeDashoffset}
+                    className="transition-all duration-200 cursor-pointer"
+                    onMouseEnter={() => setHoveredSector(sector)}
+                    onMouseLeave={() => setHoveredSector(null)}
+                    onClick={() => onSelectSector && onSelectSector(sector.name)}
+                  />
+                );
+              })}
+            </svg>
+
+            {/* Inner Center Label */}
+            <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+              <span className="text-sm font-black text-slate-900 leading-none">
+                {hoveredSector ? hoveredSector.count : totalCount}
+              </span>
+              <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wider mt-0.5">
+                {hoveredSector ? 'Issues' : 'Total'}
+              </span>
+            </div>
+          </div>
+
+          {/* Sector Breakdown List */}
+          <div className="flex-1 w-full space-y-1.5 overflow-y-auto max-h-[160px] pr-1">
+            {sectors.map((sector, index) => (
               <div
-                key={idx}
-                onClick={() => onSelectSector && onSelectSector(item.name)}
-                onMouseEnter={() => setHoveredSector(item)}
+                key={index}
+                onClick={() => onSelectSector && onSelectSector(sector.name)}
+                onMouseEnter={() => setHoveredSector(sector)}
                 onMouseLeave={() => setHoveredSector(null)}
-                className={`group px-2 py-1 rounded-lg cursor-pointer transition-all duration-150 ${
-                  isHovered ? 'bg-slate-100/90 shadow-2xs' : 'hover:bg-slate-50'
+                className={`p-1.5 rounded-lg border flex items-center justify-between text-xs cursor-pointer transition-colors ${
+                  hoveredSector?.name === sector.name
+                    ? 'bg-slate-100 border-slate-300'
+                    : 'border-transparent hover:bg-slate-50'
                 }`}
               >
-                <div className="flex items-center justify-between text-[11px] gap-2 mb-0.5">
-                  <div className="flex items-center space-x-1.5 min-w-0">
-                    <span
-                      className="w-2 h-2 rounded-full shrink-0 shadow-2xs"
-                      style={{ backgroundColor: item.color }}
-                    />
-                    <span className="text-slate-700 font-semibold truncate group-hover:text-slate-900">
-                      {item.name}
-                    </span>
-                  </div>
-                  <div className="shrink-0 flex items-center space-x-1.5 font-bold text-slate-800 text-[10.5px]">
-                    <span>{item.count.toLocaleString()}</span>
-                    <span className="text-slate-400 font-medium text-[9.5px]">
-                      ({item.percentage}%)
-                    </span>
-                  </div>
-                </div>
-
-                {/* Progress bar line */}
-                <div className="w-full h-1 bg-slate-100 rounded-full overflow-hidden">
-                  <div
-                    className="h-full rounded-full transition-all duration-300"
-                    style={{
-                      width: `${item.percentage}%`,
-                      backgroundColor: item.color
-                    }}
+                <div className="flex items-center space-x-2 min-w-0">
+                  <span
+                    className="w-2.5 h-2.5 rounded-full shrink-0"
+                    style={{ backgroundColor: sector.color || '#3b82f6' }}
                   />
+                  <span className="font-semibold text-slate-700 truncate text-[11px]">
+                    {sector.name}
+                  </span>
+                </div>
+                <div className="text-right shrink-0">
+                  <span className="font-bold text-slate-900 text-[11px] mr-1.5">
+                    {sector.count}
+                  </span>
+                  <span className="text-[10px] text-slate-400 font-medium">
+                    ({sector.percentage || (totalCount > 0 ? Math.round(((sector.count || 0) / totalCount) * 100) : 0)}%)
+                  </span>
                 </div>
               </div>
-            );
-          })}
+            ))}
+          </div>
         </div>
-      </div>
+      )}
 
-      {/* Footer Status */}
-      <div className="pt-2.5 mt-1 border-t border-slate-100 flex items-center justify-between text-xs">
-        <div className="flex items-center space-x-1 text-[11px] text-slate-500 font-medium">
-          <ShieldCheck className="w-3.5 h-3.5 text-blue-600" />
-          <span>Verified Categorization</span>
-        </div>
-        <div className="font-bold text-slate-900 text-[11.5px]">
-          Total: <span className="font-extrabold text-blue-600">{totalCount.toLocaleString()}</span>
-        </div>
+      {/* Footer Info */}
+      <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-400 font-medium">
+        <span className="flex items-center">
+          <Layers className="w-3 h-3 mr-1 text-slate-400" />
+          {sectors.length} Active Sectors
+        </span>
+        <span className="text-slate-600 font-bold">100% Normalized</span>
       </div>
     </div>
   );

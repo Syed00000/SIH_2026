@@ -334,7 +334,7 @@ export const ProposalDetailModal = ({
               <div className="flex items-center justify-between bg-white p-4 rounded-xl border border-slate-200 shadow-2xs">
                 <div>
                   <span className="text-[10px] font-bold text-slate-400 uppercase block">Approved Grant Budget</span>
-                  <div className="text-base font-black text-slate-900 mt-0.5">{proposal.allocatedAmount || proposal.requestedGrant}</div>
+                  <div className="text-base font-black text-slate-900 mt-0.5">{proposal.budgetSanctioned || proposal.allocatedAmount || proposal.requestedGrant || proposal.budgetRequested || '₹ 0'}</div>
                 </div>
                 <span className="text-xs font-bold px-3 py-1.5 rounded-xl bg-slate-100 text-slate-700 border border-slate-200">
                   Itemized DPR Allocation
@@ -351,12 +351,21 @@ export const ProposalDetailModal = ({
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
-                    {[
-                      { item: 'Core Prototype Hardware Fabrication & Embedded Sensors', cost: '₹ 8.50 Lakhs', category: 'Hardware CapEx' },
-                      { item: 'Wireless LoRaWAN Nodes & Field Telemetry Rig', cost: '₹ 4.00 Lakhs', category: 'Sensors' },
-                      { item: 'Research Scholars / JRF Field Testing Stipends', cost: '₹ 3.60 Lakhs', category: 'Human Resource' },
-                      { item: 'NABL Certified Laboratory Benchmark Fees', cost: '₹ 2.40 Lakhs', category: 'Testing & Quality' }
-                    ].map((b, idx) => (
+                    {((proposal.dprBudgetItems && proposal.dprBudgetItems.length > 0)
+                      ? proposal.dprBudgetItems
+                      : (proposal.budgetBreakdown && proposal.budgetBreakdown.length > 0)
+                      ? proposal.budgetBreakdown.map((b) => ({
+                          item: b.item || b.description || b.category,
+                          category: b.category || 'General',
+                          cost: b.cost || b.amount || '—'
+                        }))
+                      : [
+                          { item: 'Core Prototype Hardware Fabrication & Embedded Sensors', cost: '₹ 8.50 Lakhs', category: 'Hardware CapEx' },
+                          { item: 'Wireless LoRaWAN Nodes & Field Telemetry Rig', cost: '₹ 4.00 Lakhs', category: 'Sensors' },
+                          { item: 'Research Scholars / JRF Field Testing Stipends', cost: '₹ 3.60 Lakhs', category: 'Human Resource' },
+                          { item: 'NABL Certified Laboratory Benchmark Fees', cost: '₹ 2.40 Lakhs', category: 'Testing & Quality' }
+                        ]
+                    ).map((b, idx) => (
                       <tr key={idx} className="hover:bg-slate-50/60">
                         <td className="py-3 px-4 font-semibold text-slate-900">{b.item}</td>
                         <td className="py-3 px-4">
