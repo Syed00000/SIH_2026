@@ -18,12 +18,12 @@ export const MyActivitiesTracker = ({ activities = {}, onStatusClick, onViewAllC
     <section className="space-y-2.5">
       {/* Section Header */}
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-extrabold text-slate-900 tracking-tight">
+        <h3 className="text-xs sm:text-sm font-extrabold text-slate-900 tracking-tight">
           My Activities
         </h3>
         <button
           onClick={onViewAllClick}
-          className="flex items-center text-xs font-bold text-emerald-700 hover:text-emerald-800 transition-colors cursor-pointer"
+          className="flex items-center text-[11px] sm:text-xs font-bold text-emerald-800 hover:text-emerald-900 transition-colors cursor-pointer"
         >
           <span>View All</span>
           <ChevronRight className="w-3.5 h-3.5 ml-0.5" />
@@ -31,24 +31,24 @@ export const MyActivitiesTracker = ({ activities = {}, onStatusClick, onViewAllC
       </div>
 
       {/* 4 Activity Metrics Row in single clean card */}
-      <div className="bg-white border border-slate-200/90 rounded-lg p-3.5 shadow-2xs grid grid-cols-2 sm:grid-cols-4 divide-y sm:divide-y-0 sm:divide-x divide-slate-100 gap-2 sm:gap-0">
+      <div className="bg-white border border-slate-200/90 rounded-lg p-2.5 sm:p-3.5 shadow-2xs grid grid-cols-2 sm:grid-cols-4 divide-y sm:divide-y-0 sm:divide-x divide-slate-100 gap-1 sm:gap-0">
         {items.map((item) => {
           const Icon = item.icon;
           return (
             <button
               key={item.key}
               onClick={() => onStatusClick && onStatusClick(item.key)}
-              className="flex items-center space-x-3 px-3.5 py-2 text-left hover:bg-emerald-50/40 rounded-md transition-all cursor-pointer group"
+              className="flex items-center space-x-2.5 px-2 py-1.5 sm:px-3.5 sm:py-2 text-left hover:bg-emerald-50/40 rounded-md transition-all cursor-pointer group"
             >
               {/* Direct Icon with distinct vibrant colors */}
-              <Icon className={`w-4.5 h-4.5 ${item.iconColor} transition-transform group-hover:scale-110 shrink-0`} />
+              <Icon className={`w-4 h-4 sm:w-4.5 sm:h-4.5 ${item.iconColor} transition-transform group-hover:scale-110 shrink-0`} />
 
               {/* Number and Label */}
               <div className="flex flex-col min-w-0">
-                <span className="text-base font-extrabold text-slate-900 leading-tight">
+                <span className="text-sm sm:text-base font-extrabold text-slate-900 leading-tight">
                   {item.count}
                 </span>
-                <span className="text-xs font-medium text-slate-500 leading-tight truncate">
+                <span className="text-[10px] sm:text-xs font-medium text-slate-600 leading-tight whitespace-nowrap">
                   {item.label}
                 </span>
               </div>
