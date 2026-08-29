@@ -1,18 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import {
   Search,
-  Filter,
   Plus,
   MapPin,
   Calendar,
-  Clock,
-  CheckCircle2,
+  ChevronRight,
   AlertCircle,
   Loader2,
-  ChevronRight
+  X
 } from 'lucide-react';
 import { citizenService } from '../services/citizenService.js';
-import defaultRoadImg from '../assets/road_challenge.jpg';
 
 const STATUS_FILTERS = ['All', 'Submitted', 'Under Review', 'In Progress', 'Resolved'];
 
@@ -46,80 +43,95 @@ export const CitizenMyChallenges = ({ onSelectChallenge, onSubmitClick, activeSt
   }, [statusFilter, searchTerm]);
 
   return (
-    <div className="space-y-4 text-left pb-20">
+    <div className="space-y-5 text-left pb-6 animate-fadeIn">
       {/* Header & Submit Button */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white border border-slate-200/90 rounded-lg p-5 shadow-2xs">
         <div>
           <h2 className="text-lg font-black text-slate-900 tracking-tight">
             My Submitted Challenges
           </h2>
-          <p className="text-xs text-slate-500 font-medium">
-            Track live government review & university solution status
+          <p className="text-xs text-slate-500 font-medium mt-0.5">
+            Track live government review, AI triage, and university solution progress
           </p>
         </div>
 
+        {/* New Challenge Button: White default, turns Green on hover */}
         <button
           onClick={onSubmitClick}
-          className="flex items-center space-x-1.5 bg-[#047857] hover:bg-[#064e3b] text-white text-xs font-bold px-3 py-2 rounded-xl shadow-xs transition-all cursor-pointer"
+          className="flex items-center justify-center space-x-2 bg-white hover:bg-[#064e3b] text-slate-900 hover:text-white border border-slate-200/90 hover:border-[#064e3b] text-xs font-bold px-4 py-2 rounded-lg shadow-2xs transition-all cursor-pointer active:scale-95 shrink-0"
         >
           <Plus className="w-4 h-4 stroke-[2.5]" />
           <span>New Challenge</span>
         </button>
       </div>
 
-      {/* Search Input */}
-      <div className="relative">
-        <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-        <input
-          type="text"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          placeholder="Search by challenge ID, problem, district..."
-          className="w-full pl-9 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-xs font-medium focus:outline-hidden focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600"
-        />
+      {/* Controls Bar: Search Input & Filter Tabs */}
+      <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
+        {/* Search Bar */}
+        <div className="relative flex-1">
+          <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+          <input
+            type="text"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            placeholder="Search by challenge ID, problem, district..."
+            className="w-full pl-9 pr-8 py-2.5 bg-white border border-slate-200/90 rounded-lg text-xs font-medium text-slate-800 placeholder-slate-400 focus:outline-none focus:border-slate-900 focus:ring-1 focus:ring-slate-900 transition-colors shadow-2xs"
+          />
+          {searchTerm && (
+            <button
+              onClick={() => setSearchTerm('')}
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-0.5 rounded cursor-pointer"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          )}
+        </div>
+
+        {/* Clean Filter Tabs Bar */}
+        <div className="flex items-center space-x-1 bg-white p-1 border border-slate-200/90 rounded-lg shadow-2xs overflow-x-auto">
+          {STATUS_FILTERS.map((st) => {
+            const isActive = statusFilter === st;
+            return (
+              <button
+                key={st}
+                onClick={() => setStatusFilter(st)}
+                className={`text-xs font-bold px-3.5 py-1.5 rounded-md whitespace-nowrap transition-all cursor-pointer ${
+                  isActive
+                    ? 'bg-[#064e3b] text-white shadow-2xs'
+                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                }`}
+              >
+                {st}
+              </button>
+            );
+          })}
+        </div>
       </div>
 
-      {/* Status Filter Horizontal Pills */}
-      <div className="flex items-center space-x-1.5 overflow-x-auto pb-1 no-scrollbar">
-        {STATUS_FILTERS.map((st) => (
-          <button
-            key={st}
-            onClick={() => setStatusFilter(st)}
-            className={`text-xs font-bold px-3 py-1.5 rounded-full whitespace-nowrap transition-colors cursor-pointer border ${
-              statusFilter === st
-                ? 'bg-emerald-800 text-white border-emerald-800 shadow-xs'
-                : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
-            }`}
-          >
-            {st}
-          </button>
-        ))}
-      </div>
-
-      {/* Challenges List */}
+      {/* Challenges List View */}
       {loading ? (
-        <div className="flex flex-col items-center justify-center py-12 text-slate-400 space-y-2">
-          <Loader2 className="w-6 h-6 animate-spin text-emerald-600" />
-          <span className="text-xs font-semibold">Loading challenges...</span>
+        <div className="flex flex-col items-center justify-center py-16 text-slate-400 space-y-2.5 bg-white border border-slate-200/90 rounded-lg shadow-2xs">
+          <Loader2 className="w-6 h-6 animate-spin text-emerald-700" />
+          <span className="text-xs font-semibold text-slate-600">Loading your submitted challenges...</span>
         </div>
       ) : challenges.length === 0 ? (
-        <div className="bg-white border border-dashed border-slate-200 rounded-2xl p-8 text-center space-y-3">
-          <div className="w-12 h-12 rounded-full bg-slate-50 text-slate-400 flex items-center justify-center mx-auto">
+        <div className="bg-white border border-slate-200/90 rounded-lg p-10 text-center space-y-3.5 shadow-2xs">
+          <div className="w-12 h-12 rounded-full bg-slate-50 text-slate-400 flex items-center justify-center mx-auto border border-slate-200">
             <AlertCircle className="w-6 h-6" />
           </div>
           <div>
-            <h4 className="text-sm font-bold text-slate-800">No challenges found</h4>
-            <p className="text-xs text-slate-500 max-w-xs mx-auto mt-0.5">
+            <h4 className="text-sm font-bold text-slate-900">No challenges found</h4>
+            <p className="text-xs text-slate-500 max-w-sm mx-auto mt-1">
               {statusFilter !== 'All'
-                ? `No problem statements under '${statusFilter}'.`
-                : 'You have not submitted any problem statements yet.'}
+                ? `No problem statements currently matched under status '${statusFilter}'.`
+                : 'You have not submitted any societal problem statements yet.'}
             </p>
           </div>
           <button
             onClick={onSubmitClick}
-            className="inline-flex items-center space-x-1 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold px-4 py-2 rounded-xl transition-all cursor-pointer"
+            className="inline-flex items-center space-x-1.5 bg-white hover:bg-[#064e3b] text-slate-900 hover:text-white border border-slate-200 hover:border-[#064e3b] text-xs font-bold px-4 py-2 rounded-lg transition-all cursor-pointer shadow-2xs"
           >
-            <Plus className="w-3.5 h-3.5" />
+            <Plus className="w-4 h-4 stroke-[2.5]" />
             <span>Submit Your First Problem</span>
           </button>
         </div>
@@ -132,64 +144,76 @@ export const CitizenMyChallenges = ({ onSelectChallenge, onSubmitClick, activeSt
                   month: 'short',
                   year: 'numeric'
                 })
-              : '14 May 2025';
+              : '29 Aug 2026';
+
+            const statusStr = ch.status || 'Under Review';
+            const isResolved = statusStr === 'Resolved';
+            const isInProgress = statusStr === 'In Progress';
+            const priorityStr = ch.priority || 'Critical';
 
             return (
               <div
                 key={ch.challengeId || ch._id}
                 onClick={() => onSelectChallenge(ch)}
-                className="group bg-white border border-slate-100 hover:border-emerald-200 rounded-2xl p-3.5 shadow-2xs hover:shadow-xs transition-all duration-200 cursor-pointer space-y-3"
+                className="group bg-white border border-slate-200/90 hover:border-emerald-400 rounded-lg p-4.5 shadow-2xs hover:shadow-xs transition-all duration-200 cursor-pointer space-y-3 text-left"
               >
-                {/* Top Row: Ref ID + Status */}
+                {/* Header Row: Pure text ID & Priority on Left, Pure text Status on Right (NO background boxes!) */}
                 <div className="flex items-center justify-between">
-                  <span className="font-mono text-[11px] font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-100">
-                    {ch.challengeId}
-                  </span>
+                  <div className="flex items-center space-x-3">
+                    <span className="font-mono text-xs font-bold text-slate-700">
+                      {ch.challengeId}
+                    </span>
+                    {priorityStr && (
+                      <span className="text-xs font-semibold text-rose-700">
+                        Priority: {priorityStr}
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Pure Status Text - NO Background Color Box! */}
                   <span
-                    className={`text-[10px] font-extrabold px-2 py-0.5 rounded-full ${
-                      ch.status === 'Resolved'
-                        ? 'bg-emerald-100 text-emerald-800'
-                        : ch.status === 'In Progress'
-                        ? 'bg-blue-100 text-blue-800'
-                        : 'bg-amber-100 text-amber-800'
+                    className={`text-xs font-extrabold ${
+                      isResolved
+                        ? 'text-emerald-700'
+                        : isInProgress
+                        ? 'text-blue-700'
+                        : 'text-amber-700'
                     }`}
                   >
-                    {ch.status || 'Under Review'}
+                    {statusStr}
                   </span>
                 </div>
 
-                {/* Middle: Title & Meta */}
-                <div className="space-y-1">
-                  <h3 className="text-xs sm:text-sm font-bold text-slate-900 group-hover:text-emerald-800 transition-colors line-clamp-2">
+                {/* Body Row: Title & Details */}
+                <div className="space-y-1.5">
+                  <h3 className="text-sm sm:text-base font-extrabold text-slate-900 group-hover:text-emerald-800 transition-colors leading-snug">
                     {ch.title}
                   </h3>
-                  <div className="flex flex-wrap items-center gap-2.5 text-[11px] text-slate-500">
-                    <span className="flex items-center space-x-1">
-                      <MapPin className="w-3 h-3 text-slate-400" />
+
+                  <div className="flex flex-wrap items-center gap-4 text-xs text-slate-500 font-medium">
+                    <span className="flex items-center space-x-1.5">
+                      <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                       <span>{ch.location?.district || ch.district || 'Ranchi'}, Jharkhand</span>
                     </span>
-                    <span className="flex items-center space-x-1">
-                      <Calendar className="w-3 h-3 text-slate-400" />
+                    <span className="flex items-center space-x-1.5">
+                      <Calendar className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                       <span>{formattedDate}</span>
                     </span>
                   </div>
                 </div>
 
-                {/* Milestone Progress Bar */}
-                <div className="pt-1 border-t border-slate-50 flex items-center justify-between">
-                  <div className="flex items-center space-x-1.5">
-                    <span className="inline-block px-2 py-0.5 rounded text-[10px] font-bold bg-indigo-50 text-indigo-700">
-                      {ch.domain || 'Urban Development'}
-                    </span>
-                    <span className="text-[10px] text-slate-400 font-medium">
-                      Priority: <strong className="text-slate-700">{ch.priority || 'Medium'}</strong>
+                {/* Footer Action Row: Pure Domain Text + Track CTA (NO background box behind Energy/Domain!) */}
+                <div className="pt-2 border-t border-slate-100 flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <span className="text-xs font-bold text-slate-700">
+                      {ch.domain || 'Energy'}
                     </span>
                   </div>
 
-                  <span className="text-xs text-emerald-700 font-bold flex items-center group-hover:translate-x-0.5 transition-transform">
-                    <span>Track</span>
-                    <ChevronRight className="w-3.5 h-3.5 ml-0.5" />
-                  </span>
+                  <button className="text-xs text-emerald-800 font-bold flex items-center space-x-1 group-hover:text-emerald-900 group-hover:translate-x-1 transition-all cursor-pointer">
+                    <span>Track Progress</span>
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
                 </div>
               </div>
             );

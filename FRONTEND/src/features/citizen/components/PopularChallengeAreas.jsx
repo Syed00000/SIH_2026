@@ -14,86 +14,16 @@ import {
 } from 'lucide-react';
 
 const AREAS = [
-  {
-    id: 'Education',
-    name: 'Education',
-    Icon: GraduationCap,
-    bgColor: 'bg-blue-50',
-    iconColor: 'text-blue-600',
-    borderColor: 'border-blue-100'
-  },
-  {
-    id: 'Healthcare',
-    name: 'Healthcare',
-    Icon: HeartPulse,
-    bgColor: 'bg-rose-50',
-    iconColor: 'text-rose-600',
-    borderColor: 'border-rose-100'
-  },
-  {
-    id: 'Agriculture',
-    name: 'Agriculture',
-    Icon: Sprout,
-    bgColor: 'bg-emerald-50',
-    iconColor: 'text-emerald-600',
-    borderColor: 'border-emerald-100'
-  },
-  {
-    id: 'Water Resources',
-    name: 'Water Resources',
-    Icon: Droplet,
-    bgColor: 'bg-sky-50',
-    iconColor: 'text-sky-600',
-    borderColor: 'border-sky-100'
-  },
-  {
-    id: 'Environment',
-    name: 'Environment',
-    Icon: Recycle,
-    bgColor: 'bg-teal-50',
-    iconColor: 'text-teal-600',
-    borderColor: 'border-teal-100'
-  },
-  {
-    id: 'Energy',
-    name: 'Energy',
-    Icon: Zap,
-    bgColor: 'bg-amber-50',
-    iconColor: 'text-amber-600',
-    borderColor: 'border-amber-100'
-  },
-  {
-    id: 'Urban Development',
-    name: 'Urban Development',
-    Icon: Building2,
-    bgColor: 'bg-indigo-50',
-    iconColor: 'text-indigo-600',
-    borderColor: 'border-indigo-100'
-  },
-  {
-    id: 'Accessibility',
-    name: 'Accessibility',
-    Icon: Accessibility,
-    bgColor: 'bg-cyan-50',
-    iconColor: 'text-cyan-600',
-    borderColor: 'border-cyan-100'
-  },
-  {
-    id: 'Public Administration',
-    name: 'Public Administration',
-    Icon: Landmark,
-    bgColor: 'bg-slate-50',
-    iconColor: 'text-slate-700',
-    borderColor: 'border-slate-200'
-  },
-  {
-    id: 'Rural Livelihoods',
-    name: 'Rural Livelihoods',
-    Icon: Handshake,
-    bgColor: 'bg-blue-50',
-    iconColor: 'text-blue-700',
-    borderColor: 'border-blue-100'
-  }
+  { id: 'Education', name: 'Education', Icon: GraduationCap, iconColor: 'text-blue-600' },
+  { id: 'Healthcare', name: 'Healthcare', Icon: HeartPulse, iconColor: 'text-rose-600' },
+  { id: 'Agriculture', name: 'Agriculture', Icon: Sprout, iconColor: 'text-emerald-600' },
+  { id: 'Water Resources', name: 'Water Resources', Icon: Droplet, iconColor: 'text-sky-600' },
+  { id: 'Environment', name: 'Environment', Icon: Recycle, iconColor: 'text-teal-600' },
+  { id: 'Energy', name: 'Energy', Icon: Zap, iconColor: 'text-amber-600' },
+  { id: 'Urban Development', name: 'Urban Development', Icon: Building2, iconColor: 'text-indigo-600' },
+  { id: 'Accessibility', name: 'Accessibility', Icon: Accessibility, iconColor: 'text-cyan-600' },
+  { id: 'Public Administration', name: 'Public Administration', Icon: Landmark, iconColor: 'text-violet-600' },
+  { id: 'Rural Livelihoods', name: 'Rural Livelihoods', Icon: Handshake, iconColor: 'text-blue-700' }
 ];
 
 export const PopularChallengeAreas = ({ onSelectArea, selectedArea }) => {
@@ -104,7 +34,7 @@ export const PopularChallengeAreas = ({ onSelectArea, selectedArea }) => {
     <section className="space-y-3">
       {/* Section Header */}
       <div className="flex items-center justify-between">
-        <h3 className="text-[15px] font-extrabold text-slate-900 tracking-tight">
+        <h3 className="text-sm font-extrabold text-slate-900 tracking-tight">
           Popular Challenge Areas
         </h3>
         <button
@@ -116,8 +46,8 @@ export const PopularChallengeAreas = ({ onSelectArea, selectedArea }) => {
         </button>
       </div>
 
-      {/* Grid of 5 columns on mobile / 5 on desktop matching mockup */}
-      <div className="grid grid-cols-5 gap-2 sm:gap-2.5">
+      {/* Grid of 5 columns on desktop with distinct vibrant icon colors */}
+      <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5">
         {displayedAreas.map((area) => {
           const isSelected = selectedArea === area.id;
           const { Icon } = area;
@@ -126,21 +56,17 @@ export const PopularChallengeAreas = ({ onSelectArea, selectedArea }) => {
             <button
               key={area.id}
               onClick={() => onSelectArea && onSelectArea(area.id)}
-              className={`group flex flex-col items-center justify-between p-2 sm:p-2.5 rounded-xl transition-all duration-150 cursor-pointer bg-white border ${
+              className={`group flex flex-col items-center justify-center p-3.5 rounded-lg transition-all duration-150 cursor-pointer bg-white border ${
                 isSelected
-                  ? 'border-emerald-600 ring-2 ring-emerald-500/20 shadow-xs'
-                  : 'border-slate-100 hover:border-slate-200 shadow-2xs hover:shadow-xs'
+                  ? 'border-emerald-600 ring-1 ring-emerald-500 shadow-2xs'
+                  : 'border-slate-200/90 hover:border-emerald-300 hover:shadow-xs'
               }`}
             >
-              {/* Icon Container */}
-              <div
-                className={`w-10 h-10 sm:w-11 sm:h-11 rounded-xl ${area.bgColor} ${area.borderColor} border flex items-center justify-center transition-transform group-hover:scale-105`}
-              >
-                <Icon className={`w-5 h-5 ${area.iconColor}`} />
-              </div>
+              {/* Icon with multiple distinct colors */}
+              <Icon className={`w-5 h-5 ${area.iconColor} transition-transform group-hover:scale-110`} />
 
               {/* Title */}
-              <span className="text-[10px] sm:text-[11px] font-semibold text-slate-700 text-center leading-tight mt-1.5 line-clamp-2">
+              <span className="text-xs font-bold text-slate-800 text-center leading-tight mt-2 line-clamp-1 group-hover:text-emerald-900">
                 {area.name}
               </span>
             </button>

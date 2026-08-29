@@ -1,53 +1,88 @@
 import React from 'react';
-import { Bell } from 'lucide-react';
+import { Bell, LogOut } from 'lucide-react';
 
-export const CitizenHeader = ({ unreadCount = 3, onNotificationsClick }) => {
+export const CitizenHeader = ({
+  unreadCount = 3,
+  onNotificationsClick,
+  user,
+  onLogout
+}) => {
   return (
-    <header className="w-full bg-white px-4 pt-3 pb-2 flex items-center justify-between border-b border-emerald-50/80 sticky top-0 z-30 shadow-xs">
-      <div className="flex items-center space-x-2.5">
-        {/* Jharkhand Emblem Logo */}
-        <div className="relative w-12 h-12 flex-shrink-0 flex items-center justify-center rounded-full bg-emerald-50 border border-emerald-200/80 shadow-2xs overflow-hidden">
-          <img
-            src="https://www.jharkhand.gov.in/images/jhlogo55.PNG"
-            alt="Government of Jharkhand Emblem"
-            className="w-10 h-10 object-contain"
-            onError={(e) => {
-              // Fallback clean government emblem SVG if image fails to load
-              e.target.onerror = null;
-              e.target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='46' fill='%23ecfdf5' stroke='%23047857' stroke-width='4'/%3E%3Ccircle cx='50' cy='50' r='38' fill='none' stroke='%23059669' stroke-width='2' stroke-dasharray='4,4'/%3E%3Cpath d='M50 20 L55 35 L70 35 L58 45 L62 60 L50 50 L38 60 L42 45 L30 35 L45 35 Z' fill='%23047857'/%3E%3Ctext x='50' y='76' font-size='10' font-weight='bold' fill='%23065f46' text-anchor='middle' font-family='sans-serif'%3EJHARKHAND%3C/text%3E%3C/svg%3E";
-            }}
-          />
-        </div>
-
-        {/* Portal Title & Subtitles */}
-        <div className="flex flex-col text-left">
-          <div className="flex items-baseline space-x-1.5 leading-tight">
-            <span className="text-[17px] font-black text-emerald-900 tracking-tight">
-              Jharkhand
-            </span>
-          </div>
-          <span className="text-[12px] font-bold text-emerald-950/80 leading-tight">
-            Societal Innovation Portal
-          </span>
-          <span className="text-[11px] font-extrabold text-emerald-600 tracking-wide leading-tight mt-0.5">
-            Citizen Portal
-          </span>
+    <header className="sticky top-0 z-30 w-full bg-white border-b border-slate-200/90 px-4 md:px-6 py-2 flex items-center justify-between flex-shrink-0 shadow-2xs">
+      {/* Left: Official Emblem & Department Typography */}
+      <div className="flex items-center space-x-3">
+        <img
+          src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a9/Emblem_of_Jharkhand.svg/240px-Emblem_of_Jharkhand.svg.png"
+          alt="Government of Jharkhand Emblem"
+          className="w-10 h-10 object-contain shrink-0"
+          onError={(e) => {
+            e.target.onerror = null;
+            e.target.src = 'https://www.jharkhand.gov.in/images/jhlogo55.PNG';
+          }}
+        />
+        <div className="leading-tight text-left">
+          <h1 className="font-extrabold text-slate-900 text-sm tracking-tight">
+            Government of Jharkhand
+          </h1>
+          <p className="text-xs text-slate-500 font-medium mt-0.5">
+            Department of Higher and Technical Education
+          </p>
         </div>
       </div>
 
-      {/* Notification Bell with Red Badge */}
-      <button
-        onClick={onNotificationsClick}
-        aria-label="View notifications"
-        className="relative p-2 rounded-full text-emerald-900 hover:bg-emerald-50 transition-colors cursor-pointer"
-      >
-        <Bell className="w-6 h-6 text-emerald-900 stroke-[2.2]" />
-        {unreadCount > 0 && (
-          <span className="absolute top-1 right-1 bg-red-500 text-white text-[10px] font-black rounded-full min-w-4 h-4 px-1 flex items-center justify-center shadow-xs animate-pulse">
-            {unreadCount}
-          </span>
-        )}
-      </button>
+      {/* Center: JOHARSETU CITIZEN PORTAL Branding */}
+      <div className="hidden lg:flex flex-col items-center justify-center text-center">
+        <span className="font-black text-[#0d1b3e] text-base tracking-wider uppercase leading-none">
+          JOHARSETU CITIZEN PORTAL
+        </span>
+        <span className="text-xs text-emerald-700 font-semibold tracking-normal mt-1 flex items-center space-x-1">
+          <span>Societal Innovation Hub</span>
+        </span>
+      </div>
+
+      {/* Right Controls: Notification Bell, User Avatar & Logout */}
+      <div className="flex items-center space-x-3">
+        {/* Notification Bell with Badge */}
+        <div className="relative">
+          <button
+            onClick={onNotificationsClick}
+            aria-label="View notifications"
+            className="p-2 rounded-lg text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-colors cursor-pointer relative"
+          >
+            <Bell className="w-4.5 h-4.5" />
+            {unreadCount > 0 && (
+              <span className="absolute top-1 right-1 w-4 h-4 bg-red-600 text-white text-[9px] font-extrabold rounded-full flex items-center justify-center border-2 border-white">
+                {unreadCount}
+              </span>
+            )}
+          </button>
+        </div>
+
+        {/* User Profile Avatar Pill */}
+        <div className="flex items-center space-x-2 border-l border-slate-200 pl-3">
+          <div className="w-8 h-8 rounded-full bg-emerald-800 text-white font-black text-xs flex items-center justify-center shadow-2xs shrink-0">
+            {user?.fullName ? user.fullName.charAt(0).toUpperCase() : 'C'}
+          </div>
+          <div className="hidden sm:flex flex-col text-left leading-none">
+            <span className="text-xs font-bold text-slate-900 truncate max-w-[120px]">
+              {user?.fullName || 'Citizen User'}
+            </span>
+            <span className="text-[10px] text-emerald-700 font-semibold mt-0.5">
+              Citizen
+            </span>
+          </div>
+
+          {onLogout && (
+            <button
+              onClick={onLogout}
+              title="Logout"
+              className="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg hover:bg-rose-50 transition-colors cursor-pointer"
+            >
+              <LogOut className="w-4 h-4" />
+            </button>
+          )}
+        </div>
+      </div>
     </header>
   );
 };

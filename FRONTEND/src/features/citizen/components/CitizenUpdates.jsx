@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Megaphone, Bell, CheckCircle2, ChevronRight, Clock, Sparkles } from 'lucide-react';
+import { Bell, ChevronRight, Clock } from 'lucide-react';
 import { citizenService } from '../services/citizenService.js';
 
 export const CitizenUpdates = ({ onSelectChallenge }) => {
@@ -21,12 +21,12 @@ export const CitizenUpdates = ({ onSelectChallenge }) => {
   }, []);
 
   return (
-    <div className="space-y-4 text-left pb-20">
-      <div>
+    <div className="space-y-4 text-left pb-6 animate-fadeIn">
+      <div className="bg-white border border-slate-200/90 rounded-lg p-5 shadow-2xs">
         <h2 className="text-lg font-black text-slate-900 tracking-tight">
           Portal Updates & Announcements
         </h2>
-        <p className="text-xs text-slate-500 font-medium">
+        <p className="text-xs text-slate-500 font-medium mt-0.5">
           Official responses, grant allocations, and milestone notifications
         </p>
       </div>
@@ -40,21 +40,21 @@ export const CitizenUpdates = ({ onSelectChallenge }) => {
                 onSelectChallenge({ challengeId: upd.challengeId });
               }
             }}
-            className={`p-3.5 rounded-2xl bg-white border transition-all duration-150 cursor-pointer shadow-2xs hover:shadow-xs space-y-2 ${
-              upd.isUnread ? 'border-emerald-200 ring-1 ring-emerald-500/10' : 'border-slate-100'
+            className={`p-4 rounded-lg bg-white border transition-all duration-150 cursor-pointer shadow-2xs hover:shadow-xs space-y-2 text-left ${
+              upd.isUnread ? 'border-emerald-300 ring-1 ring-emerald-500/10' : 'border-slate-200/90 hover:border-emerald-300'
             }`}
           >
             <div className="flex items-center justify-between">
-              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-100">
+              <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-md bg-emerald-50 text-emerald-900 border border-emerald-200/80">
                 {upd.category}
               </span>
-              <span className="text-[10px] text-slate-400 font-medium flex items-center">
-                <Clock className="w-3 h-3 mr-1" />
+              <span className="text-xs text-slate-400 font-medium flex items-center">
+                <Clock className="w-3.5 h-3.5 mr-1" />
                 {upd.timestamp}
               </span>
             </div>
 
-            <h3 className="text-xs sm:text-sm font-bold text-slate-900 leading-snug">
+            <h3 className="text-sm font-bold text-slate-900 leading-snug">
               {upd.title}
             </h3>
 
@@ -63,9 +63,9 @@ export const CitizenUpdates = ({ onSelectChallenge }) => {
             </p>
 
             {upd.challengeId && (
-              <div className="pt-1 flex items-center justify-between text-[11px] font-bold text-emerald-700">
+              <div className="pt-1 flex items-center justify-between text-xs font-bold text-emerald-800">
                 <span>View Challenge {upd.challengeId}</span>
-                <ChevronRight className="w-3.5 h-3.5" />
+                <ChevronRight className="w-4 h-4" />
               </div>
             )}
           </div>
