@@ -53,7 +53,7 @@ export const ProjectsSolutionsDashboard = ({ initialTab = 'recent_proposals' }) 
   const [proposals, setProposals] = useState(() => projectCsrSyncService.getSolutionProposals());
   const [projects, setProjects] = useState(() => projectCsrSyncService.getActiveProjects());
 
-  useEffect(() => {
+  React.useEffect(() => {
     const unsubscribe = projectCsrSyncService.subscribe((eventType, data) => {
       if (data?.updatedProjects) setProjects(data.updatedProjects);
       if (data?.updatedSolProposals) setProposals(data.updatedSolProposals);
@@ -200,41 +200,6 @@ export const ProjectsSolutionsDashboard = ({ initialTab = 'recent_proposals' }) 
         </div>
       )}
 
-      {/* Top Header Banner matching Reference Image 1 Header */}
-      <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <div className="flex items-center space-x-2 text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">
-            <span className="flex items-center space-x-1">
-              <Building2 className="w-3.5 h-3.5 text-slate-400" />
-              <span>Government of Jharkhand</span>
-            </span>
-            <span>•</span>
-            <span className="text-slate-700">Societal Innovation Hub</span>
-          </div>
-          <h1 className="text-lg font-black text-slate-900 tracking-tight">
-            INNOVATION LIFECYCLE MANAGEMENT
-          </h1>
-          <p className="text-xs text-slate-500 font-medium">
-            PROJECTS & SOLUTIONS DASHBOARD • STAGE GATE COMPLIANCE • TRL MONITORING
-          </p>
-        </div>
-
-        <div className="flex items-center space-x-2.5">
-          <button
-            type="button"
-            onClick={() => setActiveTab('recent_proposals')}
-            className={`px-4 py-2 text-xs font-bold rounded-xl transition-colors cursor-pointer flex items-center space-x-1.5 ${
-              activeTab === 'recent_proposals'
-                ? 'bg-slate-900 text-white shadow-2xs'
-                : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
-            }`}
-          >
-            <FileCheck className="w-4 h-4" />
-            <span>Solution Proposals ({proposals.length})</span>
-          </button>
-        </div>
-      </div>
-
       {/* 1. 6-Box Key Metrics Cards matching Image 1 & 5 */}
       <ProjectKpiCards
         kpis={kpis}
@@ -247,25 +212,26 @@ export const ProjectsSolutionsDashboard = ({ initialTab = 'recent_proposals' }) 
       />
 
       {/* 2. Unified Search, Filters & Action Controls */}
-      <div className="bg-white border border-slate-200 rounded-2xl p-3.5 shadow-2xs flex flex-col md:flex-row items-center gap-3">
+      {/* 2. Unified Search, Filters & Action Controls - Screenshot Match */}
+      <div className="bg-white border border-slate-200/80 rounded-2xl p-4 shadow-2xs flex items-center gap-3">
         {/* Search Bar */}
-        <div className="relative flex-1 w-full">
+        <div className="relative flex-1">
           <Search className="w-4 h-4 absolute left-3.5 top-1/2 transform -translate-y-1/2 text-slate-400" />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search title, ID or institution..."
-            className="w-full pl-9 pr-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-slate-800 focus:outline-hidden"
+            className="w-full pl-9 pr-3.5 py-2 bg-slate-50/50 border border-slate-100/80 rounded-xl text-xs font-medium text-slate-800 placeholder:text-slate-400 focus:bg-white focus:border-slate-300 focus:outline-hidden transition-all shadow-3xs"
           />
         </div>
 
-        {/* Sector Filter Dropdown matching Image 1 */}
-        <div className="w-full md:w-56">
+        {/* Sector Filter Dropdown */}
+        <div className="w-60">
           <select
             value={selectedSector}
             onChange={(e) => setSelectedSector(e.target.value)}
-            className="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-800 focus:bg-white focus:border-slate-800 focus:outline-hidden cursor-pointer"
+            className="w-full px-3.5 py-2 bg-slate-50/50 border border-slate-100/80 rounded-xl text-xs font-bold text-slate-700 focus:bg-white focus:border-slate-300 focus:outline-hidden cursor-pointer shadow-3xs"
           >
             {SECTOR_OPTIONS.map((sec) => (
               <option key={sec} value={sec}>
@@ -274,43 +240,15 @@ export const ProjectsSolutionsDashboard = ({ initialTab = 'recent_proposals' }) 
             ))}
           </select>
         </div>
-
-        {/* District Filter Dropdown */}
-        <div className="w-full md:w-48">
-          <select
-            value={selectedDistrict}
-            onChange={(e) => setSelectedDistrict(e.target.value)}
-            className="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-800 focus:bg-white focus:border-slate-800 focus:outline-hidden cursor-pointer"
-          >
-            {DISTRICT_OPTIONS.map((dist) => (
-              <option key={dist} value={dist}>
-                {dist}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        {/* Reset Filter Button */}
-        <button
-          type="button"
-          onClick={handleResetFilters}
-          className="px-3.5 py-2 text-xs font-bold text-slate-700 bg-white border border-slate-300 hover:bg-slate-50 rounded-xl transition-colors cursor-pointer flex items-center justify-center space-x-1.5 flex-shrink-0"
-        >
-          <RotateCcw className="w-3.5 h-3.5 text-slate-500" />
-          <span>Reset</span>
-        </button>
       </div>
 
       {/* 3. Navigation Tabs matching Reference Images 1, 2, 3, 4 */}
       <div className="flex flex-wrap items-center gap-2 border-b border-slate-200 pb-3">
         {[
-          { id: 'recent_proposals', label: 'Recent Proposals', icon: FileCheck },
-          { id: 'in_progress', label: 'Projects in Progress', icon: PlayCircle },
-          { id: 'milestones', label: 'Milestones', icon: CheckCircle2 },
-          { id: 'prototypes', label: 'Prototypes (TRL)', icon: Cpu },
-          { id: 'deployment', label: 'Deployment & Telemetry', icon: Rocket },
-          { id: 'regional', label: 'Regional Mapping & Status', icon: MapPin },
-          { id: 'network_pipeline', label: 'HEI Network & Pipeline', icon: Layers }
+          { id: 'recent_proposals', label: 'RECENT PROPOSALS', icon: FileCheck },
+          { id: 'in_progress', label: 'PROJECTS IN PROGRESS', icon: PlayCircle },
+          { id: 'regional', label: 'REGIONAL MAPPING & STATUS', icon: MapPin },
+          { id: 'network_pipeline', label: 'HEI NETWORK & PIPELINE', icon: Layers }
         ].map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
@@ -320,10 +258,10 @@ export const ProjectsSolutionsDashboard = ({ initialTab = 'recent_proposals' }) 
               key={tab.id}
               type="button"
               onClick={() => setActiveTab(tab.id)}
-              className={`px-4 py-2 text-xs font-bold rounded-xl transition-all cursor-pointer flex items-center space-x-2 ${
+              className={`px-4 py-2 text-[11px] font-bold rounded-lg transition-all cursor-pointer flex items-center space-x-2 ${
                 isActive
-                  ? 'bg-slate-900 text-white shadow-xs'
-                  : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50 hover:text-slate-900'
+                  ? 'bg-[#2563eb] text-white shadow-xs'
+                  : 'bg-white text-slate-500 hover:text-slate-900 border-none'
               }`}
             >
               <Icon className="w-3.5 h-3.5" />

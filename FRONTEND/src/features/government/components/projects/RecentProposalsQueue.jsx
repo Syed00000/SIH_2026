@@ -74,18 +74,12 @@ export const RecentProposalsQueue = ({
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between pb-1">
         <div>
-          <h2 className="text-xs font-black text-slate-900 uppercase tracking-widest">
-            Recently Submitted Solution Proposals - Extensive Queue
+          <h2 className="text-xs font-black text-slate-900 uppercase tracking-wider">
+            RECENTLY SUBMITTED SOLUTION PROPOSALS - EXTENSIVE QUEUE
           </h2>
-          <p className="text-[11px] text-slate-500 mt-0.5">
-            Verified academic & innovator proposals submitted for Jharkhand state challenges
-          </p>
         </div>
-        <span className="text-[11px] font-bold text-slate-500 bg-slate-100 px-2.5 py-1 rounded-full border border-slate-200">
-          {proposals.length} Proposals in Queue
-        </span>
       </div>
 
       <div className="space-y-3">
@@ -120,25 +114,12 @@ export const RecentProposalsQueue = ({
                     </span>
                   </div>
 
-                  <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-slate-500 mt-1">
-                    <span className="font-semibold text-slate-800 flex items-center space-x-1">
-                      <Building2 className="w-3.5 h-3.5 text-slate-400" />
-                      <span>{proposal.hei}</span>
-                    </span>
+                  <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-slate-400 font-medium text-xs mt-1.5">
+                    <span>{proposal.hei}</span>
                     <span>•</span>
-                    <span className="flex items-center space-x-1">
-                      <User className="w-3.5 h-3.5 text-slate-400" />
-                      <span>Team Lead: <strong className="text-slate-700">{proposal.teamLead}</strong></span>
-                    </span>
+                    <span>Team Lead: <strong className="text-slate-600 font-semibold">{proposal.teamLead}</strong></span>
                     <span>•</span>
-                    <span className="flex items-center space-x-1">
-                      <Clock className="w-3.5 h-3.5 text-slate-400" />
-                      <span>Submitted {proposal.submittedTime}</span>
-                    </span>
-                    <span>•</span>
-                    <span className="font-bold text-slate-900 bg-slate-50 px-2 py-0.5 rounded-md border border-slate-200">
-                      {proposal.requestedGrant}
-                    </span>
+                    <span>Submitted {proposal.submittedTime}</span>
                   </div>
                 </div>
               </div>
@@ -149,13 +130,12 @@ export const RecentProposalsQueue = ({
                   <button
                     type="button"
                     onClick={() => onApproveGrant && onApproveGrant(proposal)}
-                    className="px-3.5 py-1.5 text-xs font-bold text-white bg-slate-900 hover:bg-slate-800 rounded-xl transition-colors cursor-pointer flex items-center space-x-1.5 shadow-2xs"
+                    className="px-4 py-2 text-xs font-bold text-white bg-[#2563eb] hover:bg-blue-700 rounded-lg shadow-2xs transition-colors cursor-pointer"
                   >
-                    <Check className="w-3.5 h-3.5 text-emerald-400" />
                     <span>Approve Grant</span>
                   </button>
                 ) : (
-                  <span className="px-3 py-1 text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center space-x-1">
+                  <span className="px-4 py-2 text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-lg flex items-center space-x-1">
                     <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
                     <span>Grant Sanctioned</span>
                   </span>
@@ -164,9 +144,8 @@ export const RecentProposalsQueue = ({
                 <button
                   type="button"
                   onClick={() => onReviewProposal && onReviewProposal(proposal)}
-                  className="px-3.5 py-1.5 text-xs font-bold text-slate-700 bg-white border border-slate-300 hover:bg-slate-50 rounded-xl transition-colors cursor-pointer flex items-center space-x-1.5"
+                  className="px-4 py-2 text-xs font-bold text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 rounded-lg shadow-2xs transition-colors cursor-pointer"
                 >
-                  <Eye className="w-3.5 h-3.5 text-slate-500" />
                   <span>Review File</span>
                 </button>
               </div>

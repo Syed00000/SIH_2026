@@ -15,25 +15,100 @@ import {
   Radio,
   Info
 } from 'lucide-react';
+import apiClient from '../../../../infrastructure/api/client.js';
 
 export const JharkhandGisHeatmap = ({ selectedDistrict = 'All', onSelectDistrict }) => {
   const mapContainerRef = useRef(null);
   const mapInstanceRef = useRef(null);
   const geoJsonLayerRef = useRef(null);
-  const hotspotsLayerRef = useRef(null);
   const baseTileLayerRef = useRef(null);
 
   const [hoveredDistrict, setHoveredDistrict] = useState(null);
   const [cursorCoords, setCursorCoords] = useState({ lat: '23.6500', lng: '85.5500' });
   const [basemapMode, setBasemapMode] = useState('canvas');
-  const [showHotspots, setShowHotspots] = useState(false);
+
+  // Baseline empty districts data state (Zero/Clean)
+  const [districtsData, setDistrictsData] = useState(() => {
+    const baseline = {};
+    Object.keys(JHARKHAND_DISTRICTS_DATA).forEach((key) => {
+      baseline[key] = {
+        ...JHARKHAND_DISTRICTS_DATA[key],
+        overallScore: 0,
+        riskLevel: 'Zero / Clean',
+        totalProblems: 0,
+        resolvedProblems: 0,
+        pendingProblems: 0,
+        activeHeis: 0,
+        topProblemAreas: []
+      };
+    });
+    return baseline;
+  });
 
   const JHARKHAND_CENTER = [23.65, 85.55];
   const DEFAULT_ZOOM = 7.4;
 
+  // Fetch real database data for the map
+  useEffect(() => {
+    const fetchMapData = async () => {
+      try {
+        const baseline = {};
+        Object.keys(JHARKHAND_DISTRICTS_DATA).forEach((key) => {
+          baseline[key] = {
+            ...JHARKHAND_DISTRICTS_DATA[key],
+            overallScore: 0,
+            riskLevel: 'Zero / Clean',
+            totalProblems: 0,
+            resolvedProblems: 0,
+            pendingProblems: 0,
+            activeHeis: 0,
+            topProblemAreas: []
+          };
+        });
+
+        // 1. Fetch active projects to extract problems & completed milestones
+        const res = await apiClient.get('university/projects?universityCode=RU001');
+        const projects = res.data?.data || res.data || [];
+        const projectsList = Array.isArray(projects) ? projects : [];
+
+        projectsList.forEach((p) => {
+          const dist = String(p.district || 'Ranchi').toLowerCase().trim();
+          if (baseline[dist]) {
+            baseline[dist].totalProblems += 1;
+            
+            // Count completed milestones
+            const completedCount = (p.milestones || []).filter(m => m.status === 'Completed').length;
+            baseline[dist].resolvedProblems += completedCount > 0 ? 1 : 0;
+            
+            // Recalculate score based on live problems count
+            baseline[dist].overallScore = Math.min(100, baseline[dist].totalProblems * 15);
+            baseline[dist].riskLevel = baseline[dist].totalProblems > 0 ? 'Active Need' : 'Zero / Clean';
+          }
+        });
+
+        // 2. Fetch active HEIs count from overview stats
+        const statsRes = await apiClient.get('government/overview/stats');
+        const stats = statsRes.data?.data || statsRes.data || {};
+        const heisByDist = stats.heisByDistrict || [];
+        heisByDist.forEach((item) => {
+          const dist = String(item._id || 'Ranchi').toLowerCase().trim();
+          if (baseline[dist]) {
+            baseline[dist].activeHeis = item.count || 0;
+          }
+        });
+
+        setDistrictsData(baseline);
+      } catch (err) {
+        console.warn('Failed to load dynamic GIS map data:', err);
+      }
+    };
+
+    fetchMapData();
+  }, []);
+
   // Compute District Color based on live problem density
   const getDistrictColor = useCallback((distId) => {
-    const data = JHARKHAND_DISTRICTS_DATA[distId];
+    const data = districtsData[distId];
     if (!data) return '#22c55e';
     const count = data.totalProblems || 0;
     if (count >= 50) return '#ef4444';
@@ -41,7 +116,7 @@ export const JharkhandGisHeatmap = ({ selectedDistrict = 'All', onSelectDistrict
     if (count >= 10) return '#fde047';
     if (count >= 1) return '#86efac';
     return '#22c55e';
-  }, []);
+  }, [districtsData]);
 
   const updateBasemap = (mode) => {
     if (!mapInstanceRef.current) return;
@@ -123,12 +198,12 @@ export const JharkhandGisHeatmap = ({ selectedDistrict = 'All', onSelectDistrict
         },
         onEachFeature: (feature, featureLayer) => {
           const distId = (feature.properties.id || feature.properties.dtname || '').toLowerCase().replace(/\s+/g, '_');
-          const distData = JHARKHAND_DISTRICTS_DATA[distId] || {
+          const distData = districtsData[distId] || {
             name: feature.properties.name || feature.properties.dtname,
             totalProblems: 0,
             resolvedProblems: 0,
             activeHeis: 0,
-            riskLevel: 'Zero Inflow',
+            riskLevel: 'Zero / Clean',
             riskColor: '#22c55e',
             demographics: { population: '—' }
           };
@@ -166,7 +241,7 @@ export const JharkhandGisHeatmap = ({ selectedDistrict = 'All', onSelectDistrict
       layer.addTo(mapInstanceRef.current);
       geoJsonLayerRef.current = layer;
     }
-  }, [getDistrictColor, onSelectDistrict, selectedDistrict]);
+  }, [getDistrictColor, onSelectDistrict, selectedDistrict, districtsData]);
 
   const handleZoomIn = () => {
     if (mapInstanceRef.current) mapInstanceRef.current.zoomIn();
@@ -279,7 +354,7 @@ export const JharkhandGisHeatmap = ({ selectedDistrict = 'All', onSelectDistrict
               <span
                 className="text-[9px] font-bold px-1.5 py-0.5 rounded border bg-emerald-500/20 text-emerald-400 border-emerald-500/40"
               >
-                {hoveredDistrict.totalProblems > 0 ? 'Active Need' : 'Zero Inflow'}
+                {hoveredDistrict.totalProblems > 0 ? 'Active Need' : 'Zero / Clean'}
               </span>
             </div>
             <div className="flex justify-between text-[11px] text-slate-300">

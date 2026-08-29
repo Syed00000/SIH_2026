@@ -228,121 +228,205 @@ export const SolutionProposalsPanel = () => {
 
       {/* Top Metric Summary Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-5 gap-3">
-        <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-2xs">
-          <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">
-            Total Submissions
-          </span>
-          <div className="text-2xl font-bold text-slate-900 mt-1">{proposals.length}</div>
-          <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-slate-100 text-slate-700 mt-1 inline-block">
-            +8 this month
-          </span>
-        </div>
-
-        <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-2xs">
-          <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">
-            Pending Review
-          </span>
-          <div className="text-2xl font-bold text-amber-700 mt-1">
-            {proposals.filter((p) => p.status === 'Pending Review' || p.status === 'New Submission').length}
+        {/* Card 1: Total Submissions */}
+        <div className="bg-white border border-slate-200/90 rounded-2xl p-4 shadow-2xs hover:shadow-xs transition-shadow flex flex-col justify-between h-[125px]">
+          <div>
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-extrabold text-slate-500 uppercase tracking-wider">
+                Total Submissions
+              </span>
+              <FileText className="w-4 h-4 text-slate-400" />
+            </div>
+            <div className="mt-2 flex items-baseline justify-between">
+              <span className="text-2xl font-black text-slate-900 tracking-tight font-sans">
+                {proposals.length}
+              </span>
+              <span className="text-[10px] text-slate-600 font-bold flex items-center">
+                <span className="w-1.5 h-1.5 rounded-full bg-slate-400 mr-1.5"></span>
+                +8 this month
+              </span>
+            </div>
           </div>
-          <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-amber-50 text-amber-700 mt-1 inline-block">
-            Awaiting Committee
-          </span>
-        </div>
-
-        <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-2xs">
-          <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">
-            High Priority
-          </span>
-          <div className="text-2xl font-bold text-red-700 mt-1">
-            {proposals.filter((p) => p.status === 'High Priority').length}
+          <div className="pt-1.5 border-t border-slate-100 text-[10px] text-slate-400 font-medium">
+            Academic & innovator pipeline
           </div>
-          <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-red-50 text-red-700 mt-1 inline-block">
-            Critical Need
-          </span>
         </div>
 
-        <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-2xs">
-          <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">
-            Approved Grants
-          </span>
-          <div className="text-2xl font-bold text-emerald-700 mt-1">
-            {proposals.filter((p) => p.status === 'Approved' || p.status === 'Verified').length}
+        {/* Card 2: Pending Review */}
+        <div className="bg-white border border-slate-200/90 rounded-2xl p-4 shadow-2xs hover:shadow-xs transition-shadow flex flex-col justify-between h-[125px]">
+          <div>
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-extrabold text-slate-500 uppercase tracking-wider">
+                Pending Review
+              </span>
+              <Clock className="w-4 h-4 text-slate-400" />
+            </div>
+            <div className="mt-2 flex items-baseline justify-between">
+              <span className="text-2xl font-black text-slate-900 tracking-tight font-sans">
+                {proposals.filter((p) => p.status === 'Pending Review' || p.status === 'New Submission').length}
+              </span>
+              <span className="text-[10px] text-slate-600 font-bold flex items-center">
+                <span className="w-1.5 h-1.5 rounded-full bg-amber-500 mr-1.5 animate-pulse"></span>
+                Awaiting
+              </span>
+            </div>
           </div>
-          <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-emerald-50 text-emerald-700 mt-1 inline-block">
-            Sanctioned
-          </span>
+          <div className="pt-1.5 border-t border-slate-100 text-[10px] text-slate-400 font-medium">
+            Awaiting selection committee
+          </div>
         </div>
 
-        <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-2xs">
-          <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">
-            Avg Score
-          </span>
-          <div className="text-2xl font-bold text-slate-900 mt-1">91.4 / 100</div>
-          <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-blue-50 text-blue-700 mt-1 inline-block">
-            Evaluated
-          </span>
+        {/* Card 3: High Priority */}
+        <div className="bg-white border border-slate-200/90 rounded-2xl p-4 shadow-2xs hover:shadow-xs transition-shadow flex flex-col justify-between h-[125px]">
+          <div>
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-extrabold text-slate-500 uppercase tracking-wider">
+                High Priority
+              </span>
+              <AlertCircle className="w-4 h-4 text-slate-400" />
+            </div>
+            <div className="mt-2 flex items-baseline justify-between">
+              <span className="text-2xl font-black text-slate-900 tracking-tight font-sans">
+                {proposals.filter((p) => p.status === 'High Priority').length}
+              </span>
+              <span className="text-[10px] text-slate-600 font-bold flex items-center">
+                <span className="w-1.5 h-1.5 rounded-full bg-red-500 mr-1.5"></span>
+                Critical
+              </span>
+            </div>
+          </div>
+          <div className="pt-1.5 border-t border-slate-100 text-[10px] text-slate-400 font-medium">
+            Requires immediate triage
+          </div>
+        </div>
+
+        {/* Card 4: Approved Grants */}
+        <div className="bg-white border border-slate-200/90 rounded-2xl p-4 shadow-2xs hover:shadow-xs transition-shadow flex flex-col justify-between h-[125px]">
+          <div>
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-extrabold text-slate-500 uppercase tracking-wider">
+                Approved Grants
+              </span>
+              <CheckCircle2 className="w-4 h-4 text-slate-400" />
+            </div>
+            <div className="mt-2 flex items-baseline justify-between">
+              <span className="text-2xl font-black text-slate-900 tracking-tight font-sans">
+                {proposals.filter((p) => p.status === 'Approved' || p.status === 'Verified').length}
+              </span>
+              <span className="text-[10px] text-slate-600 font-bold flex items-center">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-1.5"></span>
+                Sanctioned
+              </span>
+            </div>
+          </div>
+          <div className="pt-1.5 border-t border-slate-100 text-[10px] text-slate-400 font-medium">
+            Grant accounts active
+          </div>
+        </div>
+
+        {/* Card 5: Avg Score */}
+        <div className="bg-white border border-slate-200/90 rounded-2xl p-4 shadow-2xs hover:shadow-xs transition-shadow flex flex-col justify-between h-[125px]">
+          <div>
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-extrabold text-slate-500 uppercase tracking-wider">
+                Avg Score
+              </span>
+              <Award className="w-4 h-4 text-slate-400" />
+            </div>
+            <div className="mt-2 flex items-baseline justify-between">
+              <span className="text-2xl font-black text-slate-900 tracking-tight font-sans">
+                91.4
+              </span>
+              <span className="text-[10px] text-slate-600 font-bold flex items-center">
+                <span className="w-1.5 h-1.5 rounded-full bg-blue-500 mr-1.5"></span>
+                Evaluated
+              </span>
+            </div>
+          </div>
+          <div className="pt-1.5 border-t border-slate-100 text-[10px] text-slate-400 font-medium">
+            Top-tier feasibility index
+          </div>
         </div>
       </div>
 
-      {/* Filter Toolbar */}
-      <div className="bg-white border border-slate-200 rounded-xl p-3.5 shadow-2xs flex flex-col md:flex-row items-center gap-3">
-        <div className="relative flex-1 w-full">
-          <Search className="w-4 h-4 absolute left-3.5 top-1/2 transform -translate-y-1/2 text-slate-400" />
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search proposal title, ID, team lead, or university..."
-            className="w-full pl-9 pr-3.5 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-medium text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-slate-800 focus:outline-hidden"
-          />
-        </div>
+      {/* Filter Toolbar & Status Filter Tabs */}
+      <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-2xs space-y-4">
+        {/* Row 1: Status Tabs and View switcher */}
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-3">
+          <div className="flex items-center space-x-2 overflow-x-auto">
+            <button
+              type="button"
+              onClick={() => setSelectedStatus('All Status')}
+              className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
+                selectedStatus === 'All Status'
+                  ? 'bg-[#0f172a] text-white shadow-2xs'
+                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+              }`}
+            >
+              All Proposals ({proposals.length})
+            </button>
+            <button
+              type="button"
+              onClick={() => setSelectedStatus('New Submission')}
+              className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
+                selectedStatus === 'New Submission'
+                  ? 'bg-[#0f172a] text-white shadow-2xs'
+                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+              }`}
+            >
+              New Submission ({proposals.filter((p) => p.status === 'New Submission').length})
+            </button>
+            <button
+              type="button"
+              onClick={() => setSelectedStatus('Pending Review')}
+              className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
+                selectedStatus === 'Pending Review'
+                  ? 'bg-[#0f172a] text-white shadow-2xs'
+                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+              }`}
+            >
+              Pending Review ({proposals.filter((p) => p.status === 'Pending Review').length})
+            </button>
+            <button
+              type="button"
+              onClick={() => setSelectedStatus('High Priority')}
+              className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
+                selectedStatus === 'High Priority'
+                  ? 'bg-[#0f172a] text-white shadow-2xs'
+                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+              }`}
+            >
+              High Priority ({proposals.filter((p) => p.status === 'High Priority').length})
+            </button>
+            <button
+              type="button"
+              onClick={() => setSelectedStatus('Under Evaluation')}
+              className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
+                selectedStatus === 'Under Evaluation'
+                  ? 'bg-[#0f172a] text-white shadow-2xs'
+                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+              }`}
+            >
+              Under Evaluation ({proposals.filter((p) => p.status === 'Under Evaluation').length})
+            </button>
+            <button
+              type="button"
+              onClick={() => setSelectedStatus('Approved')}
+              className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
+                selectedStatus === 'Approved'
+                  ? 'bg-[#0f172a] text-white shadow-2xs'
+                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+              }`}
+            >
+              Approved ({proposals.filter((p) => p.status === 'Approved' || p.status === 'Verified').length})
+            </button>
+          </div>
 
-        <div className="w-full md:w-48">
-          <select
-            value={selectedSector}
-            onChange={(e) => setSelectedSector(e.target.value)}
-            className="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-bold text-slate-800 focus:bg-white focus:border-slate-800 focus:outline-hidden cursor-pointer"
-          >
-            {SECTOR_OPTIONS.map((sec) => (
-              <option key={sec} value={sec}>
-                {sec}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div className="w-full md:w-40">
-          <select
-            value={selectedStatus}
-            onChange={(e) => setSelectedStatus(e.target.value)}
-            className="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-bold text-slate-800 focus:bg-white focus:border-slate-800 focus:outline-hidden cursor-pointer"
-          >
-            <option value="All Status">All Status</option>
-            <option value="New Submission">New Submission</option>
-            <option value="Pending Review">Pending Review</option>
-            <option value="High Priority">High Priority</option>
-            <option value="Under Evaluation">Under Evaluation</option>
-            <option value="Verified">Verified</option>
-            <option value="Approved">Approved</option>
-          </select>
-        </div>
-
-        <div className="flex items-center space-x-1.5 shrink-0">
-          <button
-            type="button"
-            onClick={handleResetFilters}
-            className="p-2 text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer border border-slate-200"
-            title="Reset Filters"
-          >
-            <RotateCcw className="w-4 h-4" />
-          </button>
-
-          <div className="border border-slate-200 rounded-lg p-0.5 bg-slate-50 flex items-center">
+          <div className="border border-slate-200 rounded-xl p-0.5 bg-slate-50 flex items-center shadow-2xs">
             <button
               type="button"
               onClick={() => setViewMode('cards')}
-              className={`p-1.5 rounded transition-colors cursor-pointer ${
+              className={`p-2 rounded-lg transition-all cursor-pointer ${
                 viewMode === 'cards' ? 'bg-white shadow-xs text-slate-900 font-bold' : 'text-slate-400 hover:text-slate-700'
               }`}
               title="Cards Queue View"
@@ -352,7 +436,7 @@ export const SolutionProposalsPanel = () => {
             <button
               type="button"
               onClick={() => setViewMode('table')}
-              className={`p-1.5 rounded transition-colors cursor-pointer ${
+              className={`p-2 rounded-lg transition-all cursor-pointer ${
                 viewMode === 'table' ? 'bg-white shadow-xs text-slate-900 font-bold' : 'text-slate-400 hover:text-slate-700'
               }`}
               title="Table View"
@@ -360,6 +444,53 @@ export const SolutionProposalsPanel = () => {
               <Table className="w-4 h-4" />
             </button>
           </div>
+        </div>
+
+        {/* Row 2: Search Box and Select Filter inputs */}
+        <div className="flex flex-col md:flex-row items-center gap-3">
+          <div className="relative flex-1 w-full">
+            <Search className="w-4 h-4 absolute left-3.5 top-1/2 transform -translate-y-1/2 text-slate-400" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search proposal title, ID, team lead, or university..."
+              className="w-full pl-9 pr-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-800 focus:bg-white focus:border-slate-400 focus:outline-hidden shadow-2xs transition-all"
+            />
+          </div>
+
+          <div className="w-full md:w-56">
+            <select
+              value={selectedSector}
+              onChange={(e) => setSelectedSector(e.target.value)}
+              className="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 focus:bg-white focus:border-slate-400 focus:outline-hidden cursor-pointer shadow-2xs"
+            >
+              {SECTOR_OPTIONS.map((sec) => (
+                <option key={sec} value={sec}>{sec}</option>
+              ))}
+            </select>
+          </div>
+
+          <div className="w-full md:w-52">
+            <select
+              value={selectedDistrict}
+              onChange={(e) => setSelectedDistrict(e.target.value)}
+              className="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 focus:bg-white focus:border-slate-400 focus:outline-hidden cursor-pointer shadow-2xs"
+            >
+              {DISTRICT_OPTIONS.map((dist) => (
+                <option key={dist} value={dist}>{dist}</option>
+              ))}
+            </select>
+          </div>
+
+          <button
+            type="button"
+            onClick={handleResetFilters}
+            className="p-2 text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-all cursor-pointer border border-slate-200 shadow-2xs shrink-0"
+            title="Reset Filters"
+          >
+            <RotateCcw className="w-4 h-4" />
+          </button>
         </div>
       </div>
 
@@ -385,13 +516,18 @@ export const SolutionProposalsPanel = () => {
                       <span className="font-mono text-[11px] font-bold text-slate-500">
                         ({proposal.id})
                       </span>
-                      <span
-                        className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${getStatusBadge(
-                          proposal.status
-                        )}`}
-                      >
-                        {proposal.status}
-                      </span>
+                      <div className="flex items-center space-x-1.5 text-[11px] font-bold text-slate-900 ml-1">
+                        <span className={`w-1.5 h-1.5 rounded-full ${
+                          proposal.status === 'Approved' || proposal.status === 'Verified'
+                            ? 'bg-emerald-500'
+                            : proposal.status === 'High Priority'
+                            ? 'bg-red-500'
+                            : proposal.status === 'Pending Review'
+                            ? 'bg-amber-500'
+                            : 'bg-blue-500'
+                        } shrink-0`}></span>
+                        <span>{proposal.status}</span>
+                      </div>
                     </div>
 
                     <p className="text-xs text-slate-600 mt-1.5 line-clamp-2">
@@ -410,7 +546,7 @@ export const SolutionProposalsPanel = () => {
                       <span>•</span>
                       <span>{proposal.district}</span>
                       <span>•</span>
-                      <span className="font-mono font-bold text-slate-900 bg-slate-50 px-2 py-0.5 rounded border border-slate-200">
+                      <span className="font-mono font-bold text-slate-900">
                         {proposal.requestedGrant}
                       </span>
                     </div>
@@ -422,22 +558,22 @@ export const SolutionProposalsPanel = () => {
                     <button
                       type="button"
                       onClick={() => handleApproveGrant(proposal)}
-                      className="px-3.5 py-1.5 text-xs font-bold text-white bg-slate-900 hover:bg-slate-800 rounded-lg transition-colors cursor-pointer flex items-center space-x-1.5 shadow-2xs"
+                      className="px-3.5 py-1.5 text-xs font-bold text-white bg-slate-900 hover:bg-slate-800 rounded-xl transition-colors cursor-pointer flex items-center space-x-1.5 shadow-2xs"
                     >
                       <Check className="w-3.5 h-3.5 text-emerald-400" />
                       <span>Approve Grant</span>
                     </button>
                   ) : (
-                    <span className="px-3 py-1 text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-lg flex items-center space-x-1">
-                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                    <div className="flex items-center space-x-1.5 text-xs font-bold text-emerald-700 px-1 py-0.5">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-600" />
                       <span>Sanctioned</span>
-                    </span>
+                    </div>
                   )}
 
                   <button
                     type="button"
                     onClick={() => setViewingProposal(proposal)}
-                    className="px-3.5 py-1.5 text-xs font-bold text-slate-700 bg-white border border-slate-300 hover:bg-slate-50 rounded-lg transition-colors cursor-pointer flex items-center space-x-1.5"
+                    className="px-3.5 py-1.5 text-xs font-bold text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 rounded-xl transition-colors cursor-pointer flex items-center space-x-1.5"
                   >
                     <Eye className="w-3.5 h-3.5 text-slate-500" />
                     <span>Review DPR</span>
@@ -446,7 +582,7 @@ export const SolutionProposalsPanel = () => {
                   <button
                     type="button"
                     onClick={() => handleDeleteProposal(proposal.id)}
-                    className="p-1.5 text-rose-600 hover:text-rose-800 hover:bg-rose-50 rounded-lg border border-rose-200 transition-colors cursor-pointer"
+                    className="p-1.5 text-rose-600 hover:text-rose-800 hover:bg-rose-50 rounded-xl border border-rose-200 transition-colors cursor-pointer"
                     title="Delete Proposal"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
@@ -489,23 +625,32 @@ export const SolutionProposalsPanel = () => {
                       {prop.requestedGrant}
                     </td>
                     <td className="py-3.5 px-4">
-                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${getStatusBadge(prop.status)}`}>
-                        {prop.status}
-                      </span>
+                      <div className="flex items-center space-x-1.5 text-xs font-bold text-slate-900">
+                        <span className={`w-1.5 h-1.5 rounded-full ${
+                          prop.status === 'Approved' || prop.status === 'Verified'
+                            ? 'bg-emerald-500'
+                            : prop.status === 'High Priority'
+                            ? 'bg-red-500'
+                            : prop.status === 'Pending Review'
+                            ? 'bg-amber-500'
+                            : 'bg-blue-500'
+                        } shrink-0`}></span>
+                        <span>{prop.status}</span>
+                      </div>
                     </td>
                     <td className="py-3.5 px-4 text-center">
                       <div className="flex items-center justify-center space-x-1.5">
                         <button
                           type="button"
                           onClick={() => setViewingProposal(prop)}
-                          className="px-3 py-1 text-xs font-bold text-white bg-slate-900 hover:bg-slate-800 rounded-lg transition-colors cursor-pointer shadow-2xs"
+                          className="px-3 py-1.5 text-xs font-bold text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 rounded-xl transition-colors cursor-pointer"
                         >
                           Review DPR
                         </button>
                         <button
                           type="button"
                           onClick={() => handleDeleteProposal(prop.id)}
-                          className="p-1 text-rose-600 hover:text-rose-800 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer border border-rose-200"
+                          className="p-1.5 text-rose-600 hover:text-rose-800 hover:bg-rose-50 rounded-xl border border-rose-200 transition-colors cursor-pointer"
                           title="Delete Proposal"
                         >
                           <Trash2 className="w-3.5 h-3.5" />

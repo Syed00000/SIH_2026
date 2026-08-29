@@ -1,133 +1,159 @@
 import React from 'react';
-import { X, Building2, Landmark, Handshake, CheckCircle2, DollarSign, Award, ExternalLink, Zap } from 'lucide-react';
+import { X, Building2, Landmark, Handshake, CheckCircle2, ShieldCheck, FileText, ArrowUpRight } from 'lucide-react';
 
-export const SourceDetailsModal = ({ isOpen, onClose, sourceData, displayUnit = 'dual' }) => {
+const ICONS = {
+  corporate_csr: Building2,
+  govt_grants: Landmark,
+  joint_funding: Handshake
+};
+
+export const SourceDetailsModal = ({ isOpen, onClose, sourceData }) => {
   if (!isOpen || !sourceData) return null;
 
+  const IconComponent = ICONS[sourceData.id] || Building2;
+
   return (
-    <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 animate-fadeIn select-none">
-      <div className="bg-white rounded-2xl max-w-2xl w-full shadow-2xl border border-slate-200 overflow-hidden animate-scaleUp flex flex-col max-h-[90vh]">
-        {/* Modal Header */}
-        <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+    <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-5 animate-fadeIn select-none">
+      <div className="bg-white rounded-lg max-w-3xl w-full shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[90vh]">
+        {/* Header - Pure Text & Monochrome Icon */}
+        <div className="px-5 py-4 border-b border-slate-200 flex items-center justify-between bg-white">
           <div className="flex items-center space-x-2.5">
-            <div className={`p-2 rounded-xl border ${sourceData.iconColor}`}>
-              <Building2 className="w-5 h-5" />
-            </div>
+            <IconComponent className="w-5 h-5 text-slate-900 shrink-0" />
             <div>
-              <h3 className="text-sm font-bold text-slate-900">{sourceData.title}</h3>
-              <p className="text-[11px] text-slate-500 font-medium">Real-Time Allocation Portfolio & Live Disbursed Breakdown</p>
+              <h3 className="text-sm sm:text-base font-bold text-slate-900">{sourceData.title}</h3>
+              <p className="text-xs text-slate-500 font-normal">
+                {sourceData.statutoryRef || 'Fund Inflow Portfolio & Escrow Disbursal Breakdown'}
+              </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="w-7 h-7 rounded-lg border border-slate-200 flex items-center justify-center text-slate-400 hover:text-slate-700 cursor-pointer"
+            className="w-8 h-8 rounded-md border border-slate-200 hover:bg-slate-50 flex items-center justify-center text-slate-900 cursor-pointer"
           >
-            <X className="w-4 h-4" />
+            <X className="w-4 h-4 text-slate-900" />
           </button>
         </div>
 
         {/* Modal Body */}
-        <div className="p-6 overflow-y-auto space-y-5 text-xs">
+        <div className="p-5 overflow-y-auto space-y-4 text-xs flex-1 bg-white">
           {/* Summary KPI Cards */}
           <div className="grid grid-cols-3 gap-3">
-            <div className="bg-slate-50 border border-slate-200 rounded-xl p-3">
-              <span className="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">Total Pool</span>
-              <span className="text-sm sm:text-base font-extrabold text-slate-900 block mt-0.5">
+            <div className="bg-white border border-slate-200 rounded-lg p-3.5 shadow-xs">
+              <span className="text-[10px] uppercase font-bold text-slate-500 block tracking-wider">Total Pool</span>
+              <span className="text-base font-bold text-slate-900 block mt-1">
                 {sourceData.poolAmount}
               </span>
-              <span className="text-[10px] text-slate-500 font-medium">{sourceData.poolAmountLakhs}</span>
+              <span className="text-[10.5px] text-slate-500 font-normal">Approved State Corpus</span>
             </div>
-            <div className="bg-blue-50/60 border border-blue-100 rounded-xl p-3">
-              <span className="text-[10px] uppercase font-bold text-blue-500 block tracking-wider">Committed</span>
-              <span className="text-sm sm:text-base font-extrabold text-blue-900 block mt-0.5">
+
+            <div className="bg-white border border-slate-200 rounded-lg p-3.5 shadow-xs">
+              <span className="text-[10px] uppercase font-bold text-slate-500 block tracking-wider">Committed Funds</span>
+              <span className="text-base font-bold text-slate-900 block mt-1">
                 {sourceData.committedAmount || '₹54.2 Cr'}
               </span>
-              <span className="text-[10px] text-blue-700 font-medium">₹ {(sourceData.totalCommittedLakhs || 5420).toFixed(2)} Lakhs</span>
+              <span className="text-[10.5px] text-slate-500 font-normal">Bound under MoA / Sanctions</span>
             </div>
-            <div className="bg-emerald-50/60 border border-emerald-100 rounded-xl p-3">
-              <span className="text-[10px] uppercase font-bold text-emerald-600 block tracking-wider">Disbursed</span>
-              <span className="text-sm sm:text-base font-extrabold text-emerald-900 block mt-0.5">
+
+            <div className="bg-white border border-slate-200 rounded-lg p-3.5 shadow-xs">
+              <span className="text-[10.5px] uppercase font-bold text-slate-500 block tracking-wider">Disbursed to HEIs</span>
+              <span className="text-base font-bold text-slate-900 block mt-1">
                 {sourceData.disbursedAmount || '₹22.8 Cr'}
               </span>
-              <span className="text-[10px] text-emerald-700 font-medium">{sourceData.disbursedAmountLakhs}</span>
+              <span className="text-[10.5px] text-slate-500 font-normal">Transferred to Project Escrows</span>
             </div>
           </div>
 
-          {/* Live Projects under this Scheme */}
+          {/* Primary Inflows & Contributors Table */}
+          <div className="bg-white border border-slate-200 rounded-lg overflow-hidden shadow-xs">
+            <div className="p-3 border-b border-slate-200 bg-slate-50 flex items-center justify-between">
+              <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
+                Contributor & Scheme Inflows
+              </h4>
+              <span className="text-[11px] text-slate-500 font-medium">
+                {sourceData.activeCount}
+              </span>
+            </div>
+
+            <table className="w-full text-left text-xs border-collapse">
+              <thead>
+                <tr className="border-b border-slate-200 bg-slate-50 text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+                  <th className="py-2.5 px-3">Donor / Scheme Name</th>
+                  <th className="py-2.5 px-3">Focus Sector</th>
+                  <th className="py-2.5 px-3">Sanction / Ref No.</th>
+                  <th className="py-2.5 px-3">Committed</th>
+                  <th className="py-2.5 px-3 text-right">Inflow Received</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {sourceData.topDonors?.map((donor, idx) => (
+                  <tr key={idx} className="hover:bg-slate-50/60">
+                    <td className="py-2.5 px-3 font-semibold text-slate-900">{donor.name}</td>
+                    <td className="py-2.5 px-3 text-slate-600 font-normal">{donor.sector}</td>
+                    <td className="py-2.5 px-3 font-mono text-[11px] text-slate-700">{donor.refNo || 'MCA-REG'}</td>
+                    <td className="py-2.5 px-3 font-mono font-medium text-slate-900">{donor.committed}</td>
+                    <td className="py-2.5 px-3 text-right font-mono font-bold text-slate-900">{donor.received || donor.committed}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Live Projects Funded Under This Pool */}
           {sourceData.matchingProjects && sourceData.matchingProjects.length > 0 && (
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider flex items-center space-x-1.5">
-                  <Zap className="w-3.5 h-3.5 text-amber-500" />
-                  <span>Live Active Projects Funded via This Pool</span>
+            <div className="bg-white border border-slate-200 rounded-lg overflow-hidden shadow-xs">
+              <div className="p-3 border-b border-slate-200 bg-slate-50 flex items-center justify-between">
+                <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
+                  Active Projects Funded via This Pool
                 </h4>
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200">
-                  {sourceData.matchingProjects.length} Active
+                <span className="text-[11px] text-slate-500 font-medium">
+                  {sourceData.matchingProjects.length} Active Deployments
                 </span>
               </div>
 
-              <div className="border border-slate-200 rounded-xl overflow-hidden divide-y divide-slate-100 max-h-48 overflow-y-auto">
-                {sourceData.matchingProjects.map((prj) => (
-                  <div key={prj.id} className="p-3 bg-white hover:bg-slate-50 flex items-center justify-between text-xs transition-colors">
-                    <div className="space-y-0.5">
-                      <div className="flex items-center space-x-2">
-                        <span className="font-mono font-bold text-[10px] text-blue-600">{prj.id}</span>
-                        <span className="font-bold text-slate-900">{prj.title}</span>
-                      </div>
-                      <span className="text-[11px] text-slate-500">{prj.hei} ({prj.district})</span>
-                    </div>
-                    <div className="text-right">
-                      <span className="font-mono font-bold text-slate-900 block">{prj.disbursedAmount}</span>
-                      <span className="text-[10px] font-bold text-emerald-700">
-                        {prj.paymentPercentage || 0}% Disbursed
-                      </span>
-                    </div>
-                  </div>
-                ))}
-              </div>
+              <table className="w-full text-left text-xs border-collapse">
+                <thead>
+                  <tr className="border-b border-slate-200 bg-slate-50 text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+                    <th className="py-2.5 px-3">Project ID & Title</th>
+                    <th className="py-2.5 px-3">Implementing Institution</th>
+                    <th className="py-2.5 px-3">Sanctioned Share</th>
+                    <th className="py-2.5 px-3 text-right">Disbursed Amount</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {sourceData.matchingProjects.map((prj) => (
+                    <tr key={prj.id} className="hover:bg-slate-50/60">
+                      <td className="py-2.5 px-3">
+                        <span className="font-mono font-bold text-slate-900 block">{prj.id}</span>
+                        <span className="text-slate-600 font-normal line-clamp-1">{prj.title}</span>
+                      </td>
+                      <td className="py-2.5 px-3 text-slate-700 font-medium">
+                        {prj.hei} ({prj.district})
+                      </td>
+                      <td className="py-2.5 px-3 font-mono text-slate-900 font-medium">{prj.sanctionedGrant || '₹ 25.0 L'}</td>
+                      <td className="py-2.5 px-3 text-right font-mono font-bold text-slate-900">{prj.disbursedAmount}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           )}
 
-          {/* Corporate Donors Roster */}
-          <div>
-            <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider mb-2">
-              Primary Corporate Donors & Schemes
-            </h4>
-            <div className="border border-slate-200 rounded-xl overflow-hidden divide-y divide-slate-100">
-              {sourceData.topDonors?.map((donor, idx) => (
-                <div key={idx} className="p-3 bg-white hover:bg-slate-50 flex items-center justify-between text-xs transition-colors">
-                  <div className="space-y-0.5">
-                    <span className="font-bold text-slate-900 block">{donor.name}</span>
-                    <span className="text-[11px] text-slate-500 font-medium">{donor.sector}</span>
-                  </div>
-                  <div className="text-right">
-                    <span className="font-mono font-bold text-slate-900 block">{donor.committed}</span>
-                    <span className="inline-flex items-center space-x-1 text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
-                      <CheckCircle2 className="w-2.5 h-2.5" />
-                      <span>{donor.status}</span>
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Statutory Framework */}
-          <div className="bg-slate-50 border border-slate-200 rounded-xl p-3.5 space-y-1">
-            <h5 className="text-[11px] font-bold text-slate-800 uppercase tracking-wide">Statutory Governance Framework</h5>
-            <p className="text-[11px] text-slate-600 leading-relaxed font-medium">
-              All contributions are governed under Section 135 of the Companies Act 2013 and Schedule VII Item (ii) Higher Education, Scientific Research & Innovation. Vetted through MCA portal e-form CSR-1.
+          {/* Statutory Governance Note */}
+          <div className="bg-white border border-slate-200 rounded-lg p-3.5 space-y-1 shadow-xs">
+            <h5 className="text-xs font-bold text-slate-900 uppercase tracking-wider">Statutory Audit Framework</h5>
+            <p className="text-[11px] text-slate-600 leading-relaxed font-normal">
+              All fund flows are routed strictly through public-sector escrow accounts under Schedule VII Section 135 norms and audited by independent Chartered Accountants with GFR 12-A certification.
             </p>
           </div>
         </div>
 
         {/* Footer */}
-        <div className="px-6 py-3.5 border-t border-slate-100 bg-slate-50/50 flex items-center justify-end">
+        <div className="px-5 py-3 border-t border-slate-200 bg-white flex items-center justify-end">
           <button
             onClick={onClose}
-            className="px-4 py-2 rounded-xl text-xs font-bold bg-slate-900 hover:bg-slate-800 text-white cursor-pointer"
+            className="px-4 py-1.5 rounded-md text-xs font-semibold bg-slate-900 hover:bg-slate-800 text-white cursor-pointer shadow-xs"
           >
-            Close Window
+            Close Details
           </button>
         </div>
       </div>

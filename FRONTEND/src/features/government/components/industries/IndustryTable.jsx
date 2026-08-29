@@ -73,7 +73,7 @@ export const IndustryTable = ({
       </div>
 
       {/* Pagination Footer */}
-      <div className="p-3.5 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500 bg-slate-50/30">
+      <div className="p-3.5 border-t border-slate-100 flex flex-col md:flex-row items-center justify-between gap-3 text-xs text-slate-500 bg-slate-50/30">
         <div>
           Showing <span className="font-bold text-slate-800">{industries.length > 0 ? (currentPage - 1) * itemsPerPage + 1 : 0}</span> to{' '}
           <span className="font-bold text-slate-800">{Math.min(currentPage * itemsPerPage, totalRecords)}</span> of{' '}
