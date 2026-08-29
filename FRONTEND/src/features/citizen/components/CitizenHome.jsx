@@ -17,7 +17,7 @@ export const CitizenHome = ({
   onSelectStayUpdatedTile
 }) => {
   return (
-    <div className="space-y-6 pb-6 text-left">
+    <div className="space-y-4 pb-20 text-left">
       {/* 1. Hero Innovation Banner */}
       <CitizenHeroBanner onSubmitClick={onSubmitClick} />
 
