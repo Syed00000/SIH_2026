@@ -8,6 +8,7 @@ import { CitizenPortal } from '../../citizen/CitizenPortal.jsx';
 import { AITriageDashboard } from '../../government/components/triage/AITriageDashboard.jsx';
 import { GovernmentLayout } from '../../government/components/layout/GovernmentLayout.jsx';
 import { UniversityLayout } from '../../university/components/layout/UniversityLayout.jsx';
+import { NodalPortal } from '../../nodal/NodalPortal.jsx';
 import { RoleProfile } from './RoleProfile.jsx';
 import { AccountSettings } from './AccountSettings.jsx';
 import { Button } from '../../../shared/components/ui/button.jsx';
@@ -70,6 +71,10 @@ export const DashboardContainer = ({ onNavigate }) => {
   const urlPortal = typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('portal') : null;
   if (urlPortal === 'citizen' || role === 'CITIZEN') {
     return <CitizenPortal user={user} onLogout={handleLogout} />;
+  }
+
+  if (urlPortal === 'nodal' || role === 'NODAL' || role.includes('NODAL')) {
+    return <NodalPortal user={user} onLogout={handleLogout} />;
   }
 
   if (urlPortal === 'university' || role === 'UNIVERSITY' || role === 'HEI') {
