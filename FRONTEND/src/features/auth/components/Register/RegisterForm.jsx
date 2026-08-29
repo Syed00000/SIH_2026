@@ -140,18 +140,27 @@ export const RegisterForm = ({ onNavigate }) => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-slate-50">
-      <Card className="w-full max-w-2xl bg-white border border-slate-200 shadow-sm rounded-xl">
-        <CardHeader className="text-center pb-4">
-          <CardTitle className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900">
-            Create JoharSetu Account
+    <div className="min-h-screen flex items-start justify-center pt-4 pb-8 px-3 sm:px-4 bg-slate-50">
+      <Card className="w-full max-w-xl bg-white border border-slate-200 shadow-md rounded-2xl">
+        {/* Compact Header with Smaller Logo */}
+        <CardHeader className="text-center pb-2.5 pt-4 px-4 border-b border-slate-100 bg-slate-50/50">
+          <div className="flex justify-center mb-1">
+            <img
+              src="https://www.jharkhand.gov.in/images/jhlogo55.PNG"
+              alt="Government of Jharkhand"
+              className="w-9 h-9 object-contain drop-shadow-xs"
+            />
+          </div>
+          <CardTitle className="text-lg sm:text-xl font-bold tracking-tight text-slate-900">
+            JoharSetu Registration Portal
           </CardTitle>
-          <CardDescription className="text-slate-500 text-sm mt-1">
-            Multi-step role registration portal
+          <CardDescription className="text-slate-500 text-[11px] mt-0.5 font-medium">
+            Department of Higher & Technical Education, Government of Jharkhand
           </CardDescription>
         </CardHeader>
 
-        <CardContent className="space-y-6">
+        {/* Scrollable Card Content */}
+        <CardContent className="space-y-4 px-5 pt-4 pb-5 overflow-y-auto max-h-[calc(100vh-180px)]">
           <RegisterStepper step={step} totalSteps={5} />
 
           {errorMessage && (
@@ -209,12 +218,12 @@ export const RegisterForm = ({ onNavigate }) => {
             />
           )}
 
-          <div className="text-center text-xs text-slate-500 font-medium pt-2 border-t border-slate-100">
+          <div className="text-center text-[11.5px] text-slate-500 font-medium pt-2.5 border-t border-slate-100">
             Already have an account?{' '}
             <button
               type="button"
               onClick={() => (onNavigate ? onNavigate('/login') : (window.location.href = '/login'))}
-              className="font-bold text-slate-900 hover:underline ml-1 cursor-pointer"
+              className="font-bold text-[#007A61] hover:text-[#005a47] hover:underline ml-1 cursor-pointer"
             >
               Sign In
             </button>

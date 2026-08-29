@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useAuth } from '../AuthContext.jsx';
 import { Button } from '../../../shared/components/ui/button.jsx';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../../../shared/components/ui/card.jsx';
-import { Eye, EyeOff, AlertCircle, Lock, Mail } from 'lucide-react';
+import { Eye, EyeOff, AlertCircle, Lock, Mail, ArrowRight } from 'lucide-react';
 
 export const LoginForm = ({ onNavigate }) => {
   const { login } = useAuth();
@@ -135,49 +135,52 @@ export const LoginForm = ({ onNavigate }) => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-slate-50">
-      <Card className="w-full max-w-md bg-white border border-slate-200 shadow-sm rounded-xl overflow-hidden">
-        <CardHeader className="text-center pb-4 pt-6">
-          <div className="flex justify-center mb-3">
+    <div className="min-h-screen flex items-center justify-center p-3 sm:p-4 bg-slate-50">
+      <Card className="w-full max-w-md bg-white border border-slate-200 shadow-md rounded-2xl overflow-hidden">
+        {/* Compact Official Header */}
+        <CardHeader className="text-center pb-2.5 pt-4 px-4 border-b border-slate-100 bg-slate-50/50">
+          <div className="flex justify-center mb-1">
             <img
               src="https://www.jharkhand.gov.in/images/jhlogo55.PNG"
               alt="Government of Jharkhand"
-              className="w-14 h-14 object-contain drop-shadow-xs"
+              className="w-9 h-9 object-contain drop-shadow-xs"
             />
           </div>
-          <CardTitle className="text-2xl font-bold tracking-tight text-slate-900">JoharSetu Portal</CardTitle>
-          <CardDescription className="text-slate-500 text-xs mt-1">
+          <CardTitle className="text-lg sm:text-xl font-bold tracking-tight text-slate-900">
+            JoharSetu Portal
+          </CardTitle>
+          <CardDescription className="text-slate-500 text-[11px] mt-0.5 font-medium">
             Department of Higher & Technical Education, Government of Jharkhand
           </CardDescription>
         </CardHeader>
 
-        <CardContent className="space-y-4 px-6 pb-6">
+        <CardContent className="space-y-4 px-5 pt-4 pb-5">
           {/* Alert Message */}
           {errorMessage && (
             <div
               role="alert"
-              className="flex items-start gap-2.5 p-3 rounded-lg bg-red-50 border border-red-200 text-red-800 text-xs font-medium transition-all animate-fadeIn"
+              className="flex items-start gap-2.5 p-3 rounded-xl bg-red-50 border border-red-200 text-red-800 text-xs font-medium transition-all animate-fadeIn"
             >
               <AlertCircle className="w-4 h-4 text-red-600 shrink-0 mt-0.5" />
               <div className="space-y-0.5">
-                <p className="font-semibold text-xs uppercase tracking-wider text-red-900">Login Failed</p>
+                <p className="font-bold text-xs uppercase tracking-wider text-red-900">Login Failed</p>
                 <p className="text-xs text-red-700 leading-relaxed">{errorMessage}</p>
               </div>
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-3.5">
             {/* Email Field */}
             <div>
               <label
                 htmlFor="login-email"
-                className="text-xs font-semibold uppercase tracking-wider text-slate-600 block mb-1.5"
+                className="text-xs font-bold uppercase tracking-wider text-slate-700 block mb-1.5"
               >
                 Email Address
               </label>
               <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
-                  <Mail className="w-4 h-4" />
+                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
+                  <Mail className="w-4 h-4 stroke-[2]" />
                 </div>
                 <input
                   id="login-email"
@@ -187,16 +190,16 @@ export const LoginForm = ({ onNavigate }) => {
                   onChange={handleEmailChange}
                   placeholder="name@example.com"
                   aria-invalid={!!fieldErrors.email || !!errorMessage}
-                  className={`w-full pl-9 pr-3 py-2 text-sm text-slate-900 bg-white border rounded-md transition-all focus:outline-none focus:ring-1 font-medium ${
+                  className={`w-full pl-10 pr-3.5 py-2.5 text-sm font-semibold text-slate-900 bg-white border rounded-lg transition-all focus:outline-none placeholder:text-slate-400 placeholder:font-normal shadow-2xs ${
                     fieldErrors.email || errorMessage
-                      ? 'border-red-400 focus:border-red-600 focus:ring-red-600'
-                      : 'border-slate-200 focus:border-slate-900 focus:ring-slate-900'
+                      ? 'border-red-500 focus:border-red-600 focus:ring-2 focus:ring-red-500/20'
+                      : 'border-slate-300 hover:border-slate-400 focus:border-[#007A61] focus:ring-2 focus:ring-[#007A61]/15'
                   }`}
                 />
               </div>
               {fieldErrors.email && (
-                <p className="text-xs text-red-600 font-medium mt-1 flex items-center gap-1">
-                  <AlertCircle className="w-3 h-3 shrink-0" />
+                <p className="text-xs text-red-600 font-semibold mt-1 flex items-center gap-1">
+                  <AlertCircle className="w-3.5 h-3.5 shrink-0" />
                   <span>{fieldErrors.email}</span>
                 </p>
               )}
@@ -207,7 +210,7 @@ export const LoginForm = ({ onNavigate }) => {
               <div className="flex justify-between items-center mb-1.5">
                 <label
                   htmlFor="login-password"
-                  className="text-xs font-semibold uppercase tracking-wider text-slate-600"
+                  className="text-xs font-bold uppercase tracking-wider text-slate-700"
                 >
                   Password
                 </label>
@@ -216,14 +219,14 @@ export const LoginForm = ({ onNavigate }) => {
                   onClick={() =>
                     onNavigate ? onNavigate('/forgot-password') : (window.location.href = '/forgot-password')
                   }
-                  className="text-xs font-semibold text-slate-600 hover:text-slate-950 transition-colors"
+                  className="text-xs font-bold text-[#007A61] hover:text-[#005a47] hover:underline transition-colors cursor-pointer"
                 >
                   Forgot Password?
                 </button>
               </div>
               <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
-                  <Lock className="w-4 h-4" />
+                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
+                  <Lock className="w-4 h-4 stroke-[2]" />
                 </div>
                 <input
                   id="login-password"
@@ -233,10 +236,10 @@ export const LoginForm = ({ onNavigate }) => {
                   onChange={handlePasswordChange}
                   placeholder="••••••••"
                   aria-invalid={!!fieldErrors.password || !!errorMessage}
-                  className={`w-full pl-9 pr-10 py-2 text-sm text-slate-900 bg-white border rounded-md transition-all focus:outline-none focus:ring-1 font-medium ${
+                  className={`w-full pl-10 pr-11 py-2.5 text-sm font-semibold text-slate-900 bg-white border rounded-lg transition-all focus:outline-none placeholder:text-slate-400 placeholder:font-normal shadow-2xs ${
                     fieldErrors.password || errorMessage
-                      ? 'border-red-400 focus:border-red-600 focus:ring-red-600'
-                      : 'border-slate-200 focus:border-slate-900 focus:ring-slate-900'
+                      ? 'border-red-500 focus:border-red-600 focus:ring-2 focus:ring-red-500/20'
+                      : 'border-slate-300 hover:border-slate-400 focus:border-[#007A61] focus:ring-2 focus:ring-[#007A61]/15'
                   }`}
                 />
                 <button
@@ -244,14 +247,14 @@ export const LoginForm = ({ onNavigate }) => {
                   aria-label={showPassword ? 'Hide password' : 'Show password'}
                   title={showPassword ? 'Hide password' : 'Show password'}
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-600 transition-colors focus:outline-none"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-slate-500 hover:text-slate-800 transition-colors focus:outline-none cursor-pointer"
                 >
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
               {fieldErrors.password && (
-                <p className="text-xs text-red-600 font-medium mt-1 flex items-center gap-1">
-                  <AlertCircle className="w-3 h-3 shrink-0" />
+                <p className="text-xs text-red-600 font-semibold mt-1 flex items-center gap-1">
+                  <AlertCircle className="w-3.5 h-3.5 shrink-0" />
                   <span>{fieldErrors.password}</span>
                 </p>
               )}
@@ -264,19 +267,20 @@ export const LoginForm = ({ onNavigate }) => {
                   type="checkbox"
                   checked={rememberMe}
                   onChange={(e) => setRememberMe(e.target.checked)}
-                  className="w-4 h-4 rounded border-slate-300 text-slate-900 focus:ring-slate-900"
+                  className="w-4 h-4 rounded border-slate-300 text-[#007A61] focus:ring-[#007A61] cursor-pointer"
                 />
-                <span className="text-xs text-slate-600 font-medium">Stay signed in for 30 days</span>
+                <span className="text-xs text-slate-700 font-semibold">Stay signed in for 30 days</span>
               </label>
             </div>
 
-            {/* Submit Button */}
+            {/* Submit Button: #007A61 Default, #009677 Hover */}
             <Button
               type="submit"
               isLoading={isSubmitting}
-              className="w-full py-2.5 rounded-md text-sm font-semibold mt-2"
+              className="w-full py-2.5 bg-[#007A61] hover:bg-[#009677] active:bg-[#00604d] text-white text-sm font-bold flex items-center justify-center gap-2 rounded-xl shadow-md shadow-[#007A61]/20 hover:shadow-lg hover:shadow-[#009677]/30 mt-2 cursor-pointer transition-all duration-200 group"
             >
-              Sign In to Dashboard
+              <span>Sign In to Dashboard</span>
+              <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
             </Button>
           </form>
 
@@ -287,20 +291,20 @@ export const LoginForm = ({ onNavigate }) => {
               <button
                 type="button"
                 onClick={() => (onNavigate ? onNavigate('/register') : (window.location.href = '/register'))}
-                className="font-bold text-slate-900 hover:underline ml-1 cursor-pointer"
+                className="font-bold text-[#007A61] hover:text-[#005a47] hover:underline ml-1 cursor-pointer"
               >
                 Create Account
               </button>
             </div>
-            <div className="pt-1 border-t border-slate-100/80 text-[11.5px]">
+            <div className="pt-1.5 border-t border-slate-100 text-[11.5px]">
               <span className="text-slate-500">Industry / Partner Organization? </span>
               <button
                 type="button"
                 onClick={() => (onNavigate ? onNavigate('/register/industry') : (window.location.href = '/register/industry'))}
-                className="font-bold text-blue-600 hover:underline cursor-pointer inline-flex items-center"
+                className="font-bold text-[#007A61] hover:text-[#005a47] hover:underline cursor-pointer inline-flex items-center gap-1"
               >
                 <span>Apply for Industry Onboarding</span>
-                <span className="ml-1 text-[9.5px] bg-blue-50 text-blue-700 font-bold px-1.5 py-0.2 rounded border border-blue-200">Govt. Review</span>
+                <span className="text-[9.5px] text-slate-400 font-semibold italic tracking-wide">• Govt. Review Required</span>
               </button>
             </div>
           </div>
