@@ -147,7 +147,7 @@ export const GovernmentSidebar = ({
                       }
                       toggleDropdown(item.id);
                       if (item.id === 'projects_solutions') {
-                        setActiveTab && setActiveTab('projects_solutions');
+                        setActiveTab && setActiveTab('projects_active');
                       } else if (item.id === 'user_governance') {
                         setActiveTab && setActiveTab('governance_universities');
                       }

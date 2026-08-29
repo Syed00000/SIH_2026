@@ -9,7 +9,6 @@ import { HeiHubPanel } from '../heis/heiHubPanel.jsx';
 import { ManageUniversitiesDashboard } from '../universities/ManageUniversitiesDashboard.jsx';
 import { ManageIndustriesDashboard } from '../industries/ManageIndustriesDashboard.jsx';
 import {
-  ProjectsOverviewPanel,
   ActiveProjectsPanel,
   SolutionProposalsPanel,
   MilestonesMonitoringPanel,
@@ -256,9 +255,7 @@ export const GovernmentLayout = ({ onLogout }) => {
                 selectedDistrict={selectedDistrict}
                 onSelectDistrict={(dist) => setSelectedDistrict(dist)}
               />
-            ) : activeTab === 'projects_solutions' || activeTab === 'projects_overview' ? (
-              <ProjectsOverviewPanel onNavigateTab={handleSetActiveTab} />
-            ) : activeTab === 'projects_active' ? (
+            ) : activeTab === 'projects_solutions' || activeTab === 'projects_overview' || activeTab === 'projects_active' ? (
               <ActiveProjectsPanel />
             ) : activeTab === 'projects_proposals' ? (
               <SolutionProposalsPanel />
