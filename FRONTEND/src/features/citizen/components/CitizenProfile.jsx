@@ -32,7 +32,7 @@ export const CitizenProfile = ({ user, onChangeTab, onLogout }) => {
   const citizenEmail = user?.email || 'tauqueer.citizen@joharsetu.gov.in';
 
   return (
-    <div className="space-y-4 text-left pb-20">
+    <div className="space-y-4 text-left pb-6">
       {/* Citizen ID Card */}
       <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#064e3b] via-[#047857] to-[#065f46] text-white p-5 shadow-md">
         <div className="flex items-center space-x-3.5">

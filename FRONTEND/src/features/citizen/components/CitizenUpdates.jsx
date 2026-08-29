@@ -21,7 +21,7 @@ export const CitizenUpdates = ({ onSelectChallenge }) => {
   }, []);
 
   return (
-    <div className="space-y-4 text-left pb-20">
+    <div className="space-y-4 text-left pb-6">
       <div>
         <h2 className="text-lg font-black text-slate-900 tracking-tight">
           Portal Updates & Announcements

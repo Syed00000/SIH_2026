@@ -46,7 +46,7 @@ export const CitizenMyChallenges = ({ onSelectChallenge, onSubmitClick, activeSt
   }, [statusFilter, searchTerm]);
 
   return (
-    <div className="space-y-4 text-left pb-20">
+    <div className="space-y-4 text-left pb-6">
       {/* Header & Submit Button */}
       <div className="flex items-center justify-between">
         <div>
