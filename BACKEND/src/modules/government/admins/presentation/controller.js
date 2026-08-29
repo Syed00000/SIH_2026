@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
 import Admin from '../infrastructure/model.js';
+import MongooseUser from '../../../users/infrastructure/model.js';
 import { NotFoundError, ValidationError } from '../../../../shared/errors/AppError.js';
 import logger from '../../../../shared/logger/index.js';
 import bcrypt from 'bcryptjs';
@@ -123,7 +124,28 @@ export const createAdmin = async (req, res, next) => {
     });
 
     await newAdmin.save();
-    logger.info({ msg: 'Admin created successfully in MongoDB', adminId: newAdmin._id, email: newAdmin.email });
+
+    // Automatically sync login credentials with users authentication collection
+    const authRole = role.toLowerCase().includes('nodal') ? 'NODAL' : 'GOVERNMENT';
+    await MongooseUser.findOneAndUpdate(
+      { email: newAdmin.email },
+      {
+        fullName: newAdmin.fullName,
+        mobileNumber: newAdmin.mobileNumber,
+        passwordHash: passwordHash,
+        role: authRole,
+        accountStatus: newAdmin.status === 'Active' ? 'ACTIVE' : 'SUSPENDED',
+        emailVerification: { verified: true, verifiedAt: new Date() },
+        profile: {
+          institutionName: newAdmin.assignedDepartment,
+          nodalOfficerDesignation: newAdmin.role,
+          preferredLanguage: 'HINDI'
+        }
+      },
+      { upsert: true, new: true }
+    );
+
+    logger.info({ msg: 'Admin created & user auth synchronized successfully in MongoDB', adminId: newAdmin._id, email: newAdmin.email });
 
     res.status(201).json({
       success: true,

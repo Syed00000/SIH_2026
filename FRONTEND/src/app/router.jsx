@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { RootLayout } from './layout.jsx';
 import { useAuth } from '../features/auth/AuthContext.jsx';
+import { ProtectedRoute } from './ProtectedRoute.jsx';
 import { LoginForm } from '../features/auth/components/LoginForm.jsx';
 import { RegisterForm } from '../features/auth/components/Register/RegisterForm.jsx';
 import { VerifyEmail } from '../features/auth/components/VerifyEmail.jsx';
@@ -9,9 +10,12 @@ import { ResetPassword } from '../features/auth/components/ResetPassword.jsx';
 import { IndustryRegistrationPage } from '../features/auth/components/IndustryRegistrationPage.jsx';
 import { DashboardContainer } from '../features/dashboard/components/DashboardContainer.jsx';
 import { CitizenPortal } from '../features/citizen/CitizenPortal.jsx';
+import { NodalPortal } from '../features/nodal/NodalPortal.jsx';
+import { UniversityLayout } from '../features/university/components/layout/UniversityLayout.jsx';
+import { GovernmentLayout } from '../features/government/components/layout/GovernmentLayout.jsx';
 
 export function Router() {
-  const { isAuthenticated, loading } = useAuth();
+  const { user, isAuthenticated, loading, logout } = useAuth();
   const [currentPath, setCurrentPath] = useState(window.location.pathname);
   const [queryParams, setQueryParams] = useState({});
 
@@ -36,11 +40,12 @@ export function Router() {
     }
     window.history.pushState({}, '', url);
     setCurrentPath(path);
-    if (searchObj) {
-      setQueryParams(searchObj);
-    } else {
-      setQueryParams({});
-    }
+    setQueryParams(searchObj || {});
+  };
+
+  const handleLogout = async () => {
+    await logout();
+    navigate('/login');
   };
 
   // Show loading indicator during initial auth resolution
@@ -62,7 +67,16 @@ export function Router() {
 
   const renderComponent = () => {
     // 1. PUBLIC GUEST ROUTES (Redirect to /dashboard if already logged in)
-    const publicRoutes = ['/login', '/register', '/register/industry', '/apply-industry', '/forgot-password', '/reset-password', '/verify-email'];
+    const publicRoutes = [
+      '/login',
+      '/register',
+      '/register/industry',
+      '/apply-industry',
+      '/forgot-password',
+      '/reset-password',
+      '/verify-email'
+    ];
+
     if (publicRoutes.includes(currentPath)) {
       if (isAuthenticated) {
         return <DashboardContainer onNavigate={navigate} />;
@@ -87,18 +101,49 @@ export function Router() {
       }
     }
 
-    // 2. CITIZEN DIRECT ROUTES (/citizen, /citizen-portal)
+    // 2. PROTECTED DEDICATED PORTAL ROUTES
+    // (a) Citizen Portal
     if (currentPath === '/citizen' || currentPath === '/citizen-portal') {
-      return <CitizenPortal onLogout={() => navigate('/login')} />;
+      return (
+        <ProtectedRoute allowedRoles={['CITIZEN', 'GOVERNMENT', 'ADMIN']} onNavigate={navigate}>
+          <CitizenPortal user={user} onLogout={handleLogout} />
+        </ProtectedRoute>
+      );
     }
 
-    // 3. PROTECTED ROUTES (/dashboard, /profile, /settings, /)
-    // Redirect to /login if not authenticated
-    if (!isAuthenticated) {
-      return <LoginForm onNavigate={navigate} />;
+    // (b) Nodal Officer Portal
+    if (currentPath === '/nodal' || currentPath === '/nodal-portal') {
+      return (
+        <ProtectedRoute allowedRoles={['NODAL', 'GOVERNMENT', 'ADMIN']} onNavigate={navigate}>
+          <NodalPortal user={user} onLogout={handleLogout} />
+        </ProtectedRoute>
+      );
     }
 
-    return <DashboardContainer onNavigate={navigate} />;
+    // (c) University / HEI Portal
+    if (currentPath === '/university' || currentPath === '/hei' || currentPath === '/university-portal') {
+      return (
+        <ProtectedRoute allowedRoles={['UNIVERSITY', 'HEI', 'GOVERNMENT', 'ADMIN']} onNavigate={navigate}>
+          <UniversityLayout user={user} onLogout={handleLogout} />
+        </ProtectedRoute>
+      );
+    }
+
+    // (d) Government Admin Console
+    if (currentPath === '/government' || currentPath === '/admin' || currentPath === '/admin-portal') {
+      return (
+        <ProtectedRoute allowedRoles={['GOVERNMENT', 'ADMIN', 'SUPER_ADMIN']} onNavigate={navigate}>
+          <GovernmentLayout onLogout={handleLogout} />
+        </ProtectedRoute>
+      );
+    }
+
+    // 3. DEFAULT PROTECTED ROUTE (/dashboard, /, /profile)
+    return (
+      <ProtectedRoute onNavigate={navigate}>
+        <DashboardContainer onNavigate={navigate} />
+      </ProtectedRoute>
+    );
   };
 
   return <RootLayout>{renderComponent()}</RootLayout>;
