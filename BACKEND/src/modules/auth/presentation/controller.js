@@ -45,7 +45,7 @@ export const resendOtpSchema = {
 
 export const loginSchema = {
   body: z.object({
-    email: z.string().trim().email('Invalid email address').toLowerCase(),
+    email: z.string().trim().min(2, 'Email, University Code, or Mobile number is required'),
     password: z.string().min(1, 'Password is required')
   })
 };

@@ -69,6 +69,55 @@ export class MongoUserRepository extends UserRepository {
     return null;
   }
 
+  async findByIdentifier(identifier) {
+    if (!identifier) return null;
+    const clean = identifier.trim();
+    const lower = clean.toLowerCase();
+
+    if (mongoose.connection.readyState === 1) {
+      // 1. Direct email match
+      let doc = await MongooseUser.findOne({ email: lower }).select('+passwordHash');
+      if (doc) return this._toEntity(doc);
+
+      // 2. Mobile match
+      doc = await MongooseUser.findOne({ mobileNumber: clean }).select('+passwordHash');
+      if (doc) return this._toEntity(doc);
+
+      // 3. AISHE / Code match in profile
+      doc = await MongooseUser.findOne({
+        $or: [
+          { 'profile.aisheCode': { $regex: new RegExp(`^${clean}$`, 'i') } },
+          { 'profile.code': { $regex: new RegExp(`^${clean}$`, 'i') } }
+        ]
+      }).select('+passwordHash');
+      if (doc) return this._toEntity(doc);
+
+      // 4. University entity lookup
+      try {
+        const MongooseUniversity = (await import('../../government/heis/infrastructure/model.js')).default;
+        const uni = await MongooseUniversity.findOne({
+          $or: [
+            { code: { $regex: new RegExp(`^${clean}$`, 'i') } },
+            { aisheCode: { $regex: new RegExp(`^${clean}$`, 'i') } },
+            { universityEmail: lower },
+            { 'nodalOfficer.email': lower }
+          ]
+        });
+        if (uni) {
+          const targetEmail = (uni.nodalOfficer?.email || uni.universityEmail)?.toLowerCase();
+          if (targetEmail) {
+            doc = await MongooseUser.findOne({ email: targetEmail }).select('+passwordHash');
+            if (doc) return this._toEntity(doc);
+          }
+        }
+      } catch (uniErr) {
+        // Continue fallback
+      }
+    }
+
+    return this.findByEmail(lower);
+  }
+
   async save(user) {
     const normalizedEmail = user.email ? user.email.toLowerCase() : null;
     if (mongoose.connection.readyState === 1) {
