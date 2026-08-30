@@ -4,18 +4,9 @@ import {
   MapPin,
   Calendar,
   Building,
-  User,
   CheckCircle2,
-  Clock,
-  ArrowRight,
-  Shield,
-  Phone,
-  Mail,
-  AlertTriangle,
-  GraduationCap,
-  Download,
-  CheckCircle,
-  FileCheck
+  Loader2,
+  Download
 } from 'lucide-react';
 import { exportChallengeDossierPdf } from '../../../shared/utils/pdfExport.js';
 import defaultRoadImg from '../assets/road_challenge.jpg';
@@ -53,36 +44,38 @@ export const CitizenChallengeDetailModal = ({ challenge, isOpen, onClose }) => {
       step: 3,
       title: 'University / HEI Assigned',
       description: 'Assigned to relevant university research lab & mentor.',
-      status: isAccepted ? 'COMPLETED' : assignedUni.name ? 'CURRENT' : 'PENDING',
-      updatedBy: 'Department of Higher & Technical Education',
-      remarks: assignedUni.name
-        ? isAccepted
-          ? `Accepted by ${assignedUni.name} for R&D prototyping.`
-          : isDeclined
-          ? `Declined by ${assignedUni.name}. State Nodal Officer reviewing for immediate reallocation.`
-          : `Assigned to ${assignedUni.name}. Waiting for University Acceptance.`
-        : 'Awaiting Nodal triage & HEI allocation.',
+      status: assignedUni.name ? (isAccepted ? 'COMPLETED' : 'CURRENT') : 'PENDING',
+      updatedBy: assignedUni.name || 'Higher & Technical Education',
+      remarks: isAccepted ? `Accepted by ${assignedUni.name}` : 'Awaiting confirmation',
       completedAt: null
     },
     {
       step: 4,
-      title: 'Solution in Progress',
-      description: 'Faculty mentor and student innovation team implementing pilot.',
-      status: isAccepted ? 'CURRENT' : challenge.status === 'Resolved' ? 'COMPLETED' : 'PENDING',
-      updatedBy: 'University Faculty Lead',
-      remarks: isAccepted ? 'Active solution prototyping underway.' : 'Awaiting university acceptance.',
+      title: 'Prototype & Solution Development',
+      description: 'Faculty mentors and student innovators building targeted solution.',
+      status: challenge.status === 'In Progress' ? 'CURRENT' : 'PENDING',
+      updatedBy: 'R&D Innovation Lab',
+      remarks: 'Engineering and field validation phase',
       completedAt: null
     },
     {
       step: 5,
-      title: 'Resolved & Deployed',
-      description: 'Action completed and verified on ground with citizen feedback.',
+      title: 'Field Deployment & Resolved',
+      description: 'Solution deployed on-ground with societal impact verification.',
       status: challenge.status === 'Resolved' ? 'COMPLETED' : 'PENDING',
-      updatedBy: 'District Administration',
-      remarks: '',
+      updatedBy: 'District Nodal Officer',
+      remarks: 'Final impact assessment completed',
       completedAt: challenge.resolvedAt || null
     }
   ];
+
+  const handleDownloadDossier = () => {
+    try {
+      exportChallengeDossierPdf(challenge);
+    } catch {
+      window.print();
+    }
+  };
 
   const formattedDate = challenge.submittedAt
     ? new Date(challenge.submittedAt).toLocaleDateString('en-GB', {
@@ -92,76 +85,77 @@ export const CitizenChallengeDetailModal = ({ challenge, isOpen, onClose }) => {
       })
     : '29 Aug 2026';
 
-  const locationText =
-    challenge.location?.fullAddress ||
-    `${challenge.location?.landmark ? challenge.location.landmark + ', ' : ''}${
-      challenge.location?.block ? challenge.location.block + ', ' : ''
-    }${challenge.location?.district || 'Ranchi'}, Jharkhand`;
-
-  const statusStr = challenge.status || 'Under Review';
-
-  const handleDownloadDossier = () => {
-    exportChallengeDossierPdf(challenge);
-  };
-
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-150">
-      <div className="bg-white w-full max-w-lg rounded-2xl shadow-2xl border border-slate-200 flex flex-col max-h-[90vh] overflow-hidden text-left my-auto">
-        {/* Modal Header */}
-        <div className="px-5 py-3.5 bg-[#064e3b] text-white flex items-center justify-between flex-shrink-0">
-          <div className="flex items-center space-x-2.5">
-            <span className="font-mono text-xs font-bold tracking-wider text-emerald-100">
+      <div className="bg-white w-full max-w-2xl rounded-2xl shadow-2xl border border-slate-200 flex flex-col max-h-[92vh] overflow-hidden text-left">
+        {/* Header */}
+        <div className="px-5 py-4 bg-white border-b border-slate-200/90 flex items-center justify-between flex-shrink-0">
+          <div className="flex items-center space-x-2.5 min-w-0">
+            <span className="text-xs font-bold text-emerald-950 bg-emerald-900/5 px-2.5 py-1 rounded-md border border-emerald-900/10">
               {chlId}
             </span>
-            <span className="text-xs text-emerald-300">&bull;</span>
-            <span className="text-xs font-bold text-emerald-100">
-              {challenge.domain || 'Energy'}
+            <span className="text-xs font-bold text-slate-500 truncate">
+              {challenge.domain || 'Urban Development'}
             </span>
           </div>
+
           <button
             onClick={onClose}
-            className="p-1 rounded-md text-white/80 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        {/* Content Area */}
-        <div className="p-5 overflow-y-auto flex-1 space-y-4">
-          {/* Main Title & Pure Text Status */}
+        {/* Modal Scrollable Body */}
+        <div className="p-5 sm:p-6 overflow-y-auto flex-1 space-y-4">
           <div className="space-y-2">
-            <div className="flex items-start justify-between gap-3">
-              <h3 className="text-base sm:text-lg font-extrabold text-slate-900 leading-snug">
-                {challenge.title}
-              </h3>
-              <span className="flex-shrink-0 text-xs font-bold text-emerald-800">
-                {statusStr}
-              </span>
-            </div>
+            <h3 className="text-base sm:text-lg font-black text-slate-900 leading-snug">
+              {challenge.title}
+            </h3>
 
-            <div className="flex flex-wrap items-center gap-3 text-xs text-slate-500 font-medium">
+            <div className="flex flex-wrap items-center gap-3 text-xs text-slate-600 font-medium">
               <span className="flex items-center space-x-1.5">
-                <MapPin className="w-3.5 h-3.5 text-slate-400" />
-                <span>{locationText}</span>
+                <MapPin className="w-4 h-4 text-emerald-700 shrink-0" />
+                <span>
+                  {challenge.location?.district || challenge.district || 'Ranchi'}, Jharkhand
+                  {challenge.location?.block ? ` (${challenge.location.block})` : ''}
+                </span>
               </span>
+
               <span className="flex items-center space-x-1.5">
-                <Calendar className="w-3.5 h-3.5 text-slate-400" />
-                <span>Filed on {formattedDate}</span>
+                <Calendar className="w-4 h-4 text-emerald-700 shrink-0" />
+                <span>{formattedDate}</span>
               </span>
             </div>
           </div>
 
-          {/* Detailed Problem Statement */}
-          <div className="bg-slate-50 p-4 rounded-xl border border-slate-200/80 space-y-1">
+          {/* Issue Photo */}
+          {(challenge.mediaUrls?.[0]?.url || challenge.image) && (
+            <div className="rounded-xl overflow-hidden border border-slate-200 shadow-2xs max-h-48">
+              <img
+                src={challenge.mediaUrls?.[0]?.url || challenge.image || defaultRoadImg}
+                alt="Problem snapshot"
+                className="w-full h-48 object-cover"
+                onError={(e) => {
+                  e.target.onerror = null;
+                  e.target.src = defaultRoadImg;
+                }}
+              />
+            </div>
+          )}
+
+          {/* Description */}
+          <div className="bg-slate-50/80 p-4 rounded-xl border border-slate-200/70 space-y-1">
             <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">
               Problem Description
             </span>
-            <p className="text-xs text-slate-800 leading-relaxed font-normal whitespace-pre-line">
-              {challenge.description}
+            <p className="text-xs text-slate-700 leading-relaxed font-medium whitespace-pre-line">
+              {challenge.description || 'No detailed description provided.'}
             </p>
           </div>
 
-          {/* Assigned University & Acceptance Status Card */}
+          {/* Assigned University */}
           {assignedUni.name && (
             <div className="p-3.5 bg-emerald-50/70 border border-emerald-200 rounded-xl space-y-2 text-xs">
               <div className="flex items-center justify-between">
@@ -176,11 +170,7 @@ export const CitizenChallengeDetailModal = ({ challenge, isOpen, onClose }) => {
                     ? 'bg-rose-100 text-rose-800 border-rose-300'
                     : 'bg-amber-100 text-amber-800 border-amber-300'
                 }`}>
-                  {isAccepted
-                    ? 'Accepted by University'
-                    : isDeclined
-                    ? 'Declined by University (Reassigning)'
-                    : 'Waiting for University Acceptance'}
+                  {isAccepted ? 'Accepted' : isDeclined ? 'Declined' : 'Pending Review'}
                 </span>
               </div>
               <div className="grid grid-cols-2 gap-2 pt-1 border-t border-emerald-200/60 text-slate-700">
@@ -189,7 +179,7 @@ export const CitizenChallengeDetailModal = ({ challenge, isOpen, onClose }) => {
                   <span className="font-bold text-slate-900">{assignedUni.name}</span>
                 </div>
                 <div>
-                  <span className="text-slate-400 text-[10.5px] block font-medium">Department / Mentor</span>
+                  <span className="text-slate-400 text-[10.5px] block font-medium">Department</span>
                   <span className="font-bold text-slate-900">{assignedUni.department || 'Innovation Lab'}</span>
                 </div>
               </div>
@@ -197,70 +187,65 @@ export const CitizenChallengeDetailModal = ({ challenge, isOpen, onClose }) => {
           )}
 
           {/* Milestone Status Tracker */}
-          <div className="space-y-2.5">
-            <span className="text-xs font-bold text-slate-900 uppercase tracking-wider block flex items-center">
-              <Clock className="w-3.5 h-3.5 mr-1.5 text-emerald-800" />
-              Live Milestone & Resolution Progress
-            </span>
+          <div className="space-y-3 pt-1">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold text-slate-900 uppercase tracking-wider">
+                Resolution Progress Timeline
+              </span>
+              <span className="text-[11px] font-semibold text-slate-400">5 Stages</span>
+            </div>
 
-            <div className="bg-white border border-slate-200/90 rounded-xl p-3.5 space-y-3.5">
+            <div className="bg-white border border-slate-200/90 rounded-xl p-4 space-y-4 shadow-2xs">
               {milestones.map((ms, idx) => {
                 const isCompleted = ms.status === 'COMPLETED';
                 const isCurrent = ms.status === 'CURRENT';
 
                 return (
                   <div key={idx} className="flex items-start space-x-3 relative">
-                    {/* Connecting line */}
                     {idx < milestones.length - 1 && (
                       <div
-                        className={`absolute left-[13px] top-[24px] bottom-[-14px] w-[2px] ${
+                        className={`absolute left-[13px] top-[26px] bottom-[-16px] w-[2px] ${
                           isCompleted ? 'bg-emerald-600' : 'bg-slate-200'
                         }`}
                       />
                     )}
 
-                    {/* Step Icon Indicator */}
                     <div
-                      className={`w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 z-10 ${
+                      className={`w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 z-10 font-bold text-xs ${
                         isCompleted
-                          ? 'bg-[#064e3b] text-white'
+                          ? 'bg-emerald-600 text-white shadow-xs'
                           : isCurrent
-                          ? 'bg-amber-600 text-white animate-pulse ring-4 ring-amber-100'
+                          ? 'bg-[#047857] text-white shadow-sm ring-4 ring-emerald-100'
                           : 'bg-slate-100 text-slate-400 border border-slate-200'
                       }`}
                     >
                       {isCompleted ? (
                         <CheckCircle2 className="w-4 h-4" />
+                      ) : isCurrent ? (
+                        <Loader2 className="w-4 h-4 animate-spin text-white" />
                       ) : (
-                        <span className="text-xs font-bold">{ms.step || idx + 1}</span>
+                        <span>{ms.step || idx + 1}</span>
                       )}
                     </div>
 
-                    {/* Step Text */}
-                    <div className="flex-1 min-w-0 text-left pt-0.5">
+                    <div className="flex-1 min-w-0 pt-0.5">
                       <div className="flex items-center justify-between">
-                        <h4
-                          className={`text-xs font-bold ${
-                            isCompleted || isCurrent ? 'text-slate-900' : 'text-slate-500'
-                          }`}
-                        >
+                        <h4 className={`text-xs font-bold ${isCompleted || isCurrent ? 'text-slate-900' : 'text-slate-500'}`}>
                           {ms.title}
                         </h4>
                         {isCompleted && (
-                          <span className="text-[10px] text-emerald-700 font-semibold">Done</span>
+                          <span className="text-[10px] text-emerald-700 font-bold bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+                            Done
+                          </span>
                         )}
                         {isCurrent && (
-                          <span className="text-[10px] text-amber-700 font-semibold">In Progress</span>
+                          <span className="inline-flex items-center space-x-1 text-[10px] text-emerald-800 font-bold bg-emerald-100/90 px-2.5 py-0.5 rounded-full border border-emerald-300 shadow-2xs">
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse"></span>
+                            <span>In Progress</span>
+                          </span>
                         )}
                       </div>
-                      <p className="text-[11px] text-slate-500 leading-snug mt-0.5">
-                        {ms.remarks || ms.description}
-                      </p>
-                      {ms.updatedBy && (
-                        <span className="text-[10px] text-slate-400 font-medium block mt-0.5">
-                          Updated by: {ms.updatedBy}
-                        </span>
-                      )}
+                      <p className="text-[11px] text-slate-500 leading-snug mt-0.5 font-medium">{ms.description}</p>
                     </div>
                   </div>
                 );
@@ -269,7 +254,7 @@ export const CitizenChallengeDetailModal = ({ challenge, isOpen, onClose }) => {
           </div>
         </div>
 
-        {/* Modal Footer with Download Dossier Receipt */}
+        {/* Footer */}
         <div className="p-3.5 bg-slate-50 border-t border-slate-200/90 flex items-center justify-between gap-2 text-xs">
           <button
             onClick={handleDownloadDossier}
@@ -281,7 +266,7 @@ export const CitizenChallengeDetailModal = ({ challenge, isOpen, onClose }) => {
 
           <button
             onClick={onClose}
-            className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl shadow-2xs transition-colors cursor-pointer"
+            className="px-4 py-2 bg-emerald-800 hover:bg-emerald-900 text-white font-bold rounded-xl shadow-2xs transition-colors cursor-pointer"
           >
             Close
           </button>

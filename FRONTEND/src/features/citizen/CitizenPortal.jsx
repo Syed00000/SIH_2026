@@ -36,19 +36,41 @@ export const CitizenPortal = ({ user: propUser, onLogout }) => {
   const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
   const [isChallengesDropdownOpen, setIsChallengesDropdownOpen] = useState(true);
 
+  const [activeDomainFilter, setActiveDomainFilter] = useState('All');
   const [stats, setStats] = useState(null);
   const [recentChallenge, setRecentChallenge] = useState(null);
   const [unreadNotificationsCount, setUnreadNotificationsCount] = useState(2);
 
   const loadData = async () => {
     try {
-      const [statsData, challengesRes] = await Promise.all([
+      const [statsData, myChallRes, publicChallRes] = await Promise.all([
         citizenService.fetchStats(),
+        citizenService.fetchMyChallenges(),
         citizenService.fetchChallenges({ limit: 1 })
       ]);
-      setStats(statsData);
-      if (challengesRes.challenges && challengesRes.challenges.length > 0) {
-        setRecentChallenge(challengesRes.challenges[0]);
+
+      const myChallenges = myChallRes.challenges || [];
+      const computedActivities = {
+        submitted: myChallenges.filter((c) => (c.status || '').toLowerCase() === 'submitted').length,
+        underReview: myChallenges.filter((c) => (c.status || '').toLowerCase() === 'under review').length,
+        inProgress: myChallenges.filter((c) => (c.status || '').toLowerCase() === 'in progress').length,
+        resolved: myChallenges.filter((c) => (c.status || '').toLowerCase() === 'resolved').length,
+        total: myChallenges.length
+      };
+
+      const finalStats = {
+        activities: (statsData?.activities?.total > 0)
+          ? statsData.activities
+          : (myChallenges.length > 0 ? computedActivities : statsData?.activities || { submitted: 0, underReview: 0, inProgress: 0, resolved: 0, total: 0 }),
+        overallImpact: statsData?.overallImpact || { challengesSubmitted: myChallenges.length || 2, universitiesEngaged: 86, industryPartners: 124 }
+      };
+
+      setStats(finalStats);
+
+      if (myChallenges.length > 0) {
+        setRecentChallenge(myChallenges[0]);
+      } else if (publicChallRes.challenges && publicChallRes.challenges.length > 0) {
+        setRecentChallenge(publicChallRes.challenges[0]);
       }
     } catch (err) {
       console.warn('Citizen data fetch error:', err);
@@ -60,7 +82,7 @@ export const CitizenPortal = ({ user: propUser, onLogout }) => {
   }, []);
 
   const handleOpenSubmit = () => {
-    setIsSubmitModalOpen(true);
+    setActiveTab('submit');
   };
 
   const handleChallengeSubmitted = (newChall) => {
@@ -68,15 +90,18 @@ export const CitizenPortal = ({ user: propUser, onLogout }) => {
     loadData();
     setActiveTab('challenges');
     setActiveStatusFilter('All');
+    setActiveDomainFilter('All');
   };
 
   const handleSelectArea = (areaName) => {
+    setActiveDomainFilter(areaName || 'All');
     setActiveTab('challenges');
     setActiveStatusFilter('All');
   };
 
   const handleSelectStatus = (statusName) => {
-    setActiveStatusFilter(statusName);
+    setActiveStatusFilter(statusName || 'All');
+    setActiveDomainFilter('All');
     setActiveTab('challenges');
   };
 
@@ -101,7 +126,7 @@ export const CitizenPortal = ({ user: propUser, onLogout }) => {
   };
 
   return (
-    <div className="min-h-screen w-full flex flex-col bg-[#f8fafc] text-slate-800 font-sans select-none overflow-x-hidden">
+    <div className="h-screen w-full flex flex-col bg-[#f4f8f5] text-slate-800 font-sans select-none overflow-hidden">
       
       {/* 1. Desktop & Mobile Shared Header */}
       <CitizenHeader
@@ -116,7 +141,7 @@ export const CitizenPortal = ({ user: propUser, onLogout }) => {
       />
 
       {/* 2. Middle Body: Left Sidebar (Desktop) + Main Content Area */}
-      <div className="flex-1 flex overflow-hidden relative">
+      <div className="flex-1 flex overflow-hidden min-h-0 relative">
         {/* Left Desktop Sidebar Navigation */}
         <CitizenSidebar
           activeTab={activeTab}
@@ -127,10 +152,11 @@ export const CitizenPortal = ({ user: propUser, onLogout }) => {
           isMobileMenuOpen={isMobileDrawerOpen}
           setIsMobileMenuOpen={setIsMobileDrawerOpen}
           onLogout={onLogout}
+          isSubmitOpen={isSubmitModalOpen}
         />
 
         {/* Right Scrollable Main Viewport */}
-        <main className="flex-1 overflow-y-auto p-4 sm:p-6 bg-[#f8fafc] flex flex-col justify-between pb-20 md:pb-6">
+        <main className="flex-1 overflow-y-auto p-4 sm:p-6 bg-[#f4f8f5] flex flex-col justify-between pb-20 md:pb-6">
           <div className="max-w-6xl mx-auto w-full space-y-6">
             {activeTab === 'home' && (
               <CitizenHome
@@ -148,8 +174,22 @@ export const CitizenPortal = ({ user: propUser, onLogout }) => {
             {(activeTab === 'challenges' || activeTab === 'challenges_all' || activeTab === 'challenges_review' || activeTab === 'challenges_progress') && (
               <CitizenMyChallenges
                 activeStatusFilter={activeStatusFilter}
+                setActiveStatusFilter={setActiveStatusFilter}
+                activeDomainFilter={activeDomainFilter}
+                setActiveDomainFilter={setActiveDomainFilter}
                 onSelectChallenge={handleSelectChallenge}
                 onSubmitClick={handleOpenSubmit}
+              />
+            )}
+
+            {activeTab === 'submit' && (
+              <SubmitChallengeModal
+                isOpen={true}
+                isInline={true}
+                user={user}
+                defaultDomain={activeDomainFilter !== 'All' ? activeDomainFilter : 'Urban Development'}
+                onClose={() => setActiveTab('home')}
+                onSuccess={handleChallengeSubmitted}
               />
             )}
 
@@ -263,13 +303,6 @@ export const CitizenPortal = ({ user: propUser, onLogout }) => {
       </nav>
 
       {/* 4. Modals */}
-      <SubmitChallengeModal
-        isOpen={isSubmitModalOpen}
-        onClose={() => setIsSubmitModalOpen(false)}
-        user={user}
-        onSuccess={handleChallengeSubmitted}
-      />
-
       <CitizenChallengeDetailModal
         challenge={selectedChallenge}
         isOpen={isDetailModalOpen}
