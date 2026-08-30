@@ -62,11 +62,11 @@ export const ChallengesTable = ({
                 const title = c.title || 'Challenge';
                 const firstLetter = title.charAt(0).toUpperCase();
                 const globalIndex = startIndex + index + 1;
-                const skills = Array.isArray(c.requiredSkills)
+                const skills = Array.isArray(c.requiredSkills) && c.requiredSkills.length > 0
                   ? c.requiredSkills
-                  : typeof c.requiredSkills === 'string'
+                  : typeof c.requiredSkills === 'string' && c.requiredSkills.trim()
                   ? c.requiredSkills.split(',').map((s) => s.trim())
-                  : ['IoT Sensors', 'Telemetry'];
+                  : [c.domain || 'Field Research', 'Ground Innovation'];
 
                 return (
                   <tr

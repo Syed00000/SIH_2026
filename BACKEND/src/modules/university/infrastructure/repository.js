@@ -10,6 +10,7 @@ import {
 } from './model.js';
 import MongooseUniversity from '../../government/heis/infrastructure/model.js';
 import MongooseIndustry from '../../government/industries/infrastructure/model.js';
+import { CitizenChallenge } from '../../citizen/infrastructure/model.js';
 
 export class UniversityDashboardRepository {
   isDbReady() {
@@ -53,16 +54,59 @@ export class UniversityDashboardRepository {
     }
     const skip = (Number(page) - 1) * Number(limit);
     try {
-      const [challenges, total] = await Promise.all([
+      const [uniChallenges, total, citizenChallenges] = await Promise.all([
         UniversityChallenge.find(query).sort({ assignedOn: -1 }).skip(skip).limit(Number(limit)).lean(),
-        UniversityChallenge.countDocuments(query)
+        UniversityChallenge.countDocuments(query),
+        CitizenChallenge.find({
+          'assignedUniversity.id': code
+        }).sort({ submittedAt: -1 }).limit(Number(limit)).lean()
       ]);
+
+      const seenIds = new Set((uniChallenges || []).map((c) => c.challengeId));
+      const mappedCitizen = (citizenChallenges || [])
+        .filter((cit) => !seenIds.has(cit.challengeId))
+        .map((cit) => ({
+          challengeId: cit.challengeId,
+          id: cit.challengeId,
+          universityCode: code,
+          title: cit.title,
+          domain: cit.domain,
+          district: cit.location?.district || 'Ranchi',
+          priority: cit.priority || 'Medium',
+          status: cit.status === 'In Progress' ? 'Accepted' : cit.status === 'Submitted' || cit.status === 'Under Review' ? 'Review' : cit.status,
+          assignedOn: cit.submittedAt || cit.createdAt || new Date(),
+          deadline: 'Active Review',
+          problemStatement: cit.description,
+          description: cit.description,
+          affectedPopulation: cit.impactMetrics?.affectedPopulation || '~ 5,000 Citizens',
+          aiCategory: cit.domain,
+          requiredSkills: ['Ground Engineering', 'Data Analytics', 'Field Telemetry'],
+          submitter: cit.submitter,
+          location: cit.location,
+          milestones: cit.milestones,
+          mediaUrls: cit.mediaUrls,
+          locationDetails: {
+            block: cit.location?.block || 'Sadar Block',
+            panchayatOrWard: cit.location?.panchayatOrWard || '',
+            landmark: cit.location?.landmark || '',
+            fullAddress: cit.location?.fullAddress || '',
+            coordinates: cit.location?.coordinates || ''
+          },
+          assignedFaculty: cit.assignedUniversity?.mentorName ? {
+            name: cit.assignedUniversity.mentorName,
+            department: cit.assignedUniversity.department
+          } : null,
+          actionLabel: 'View'
+        }));
+
+      const combined = [...(uniChallenges || []), ...mappedCitizen];
+
       return {
-        challenges: challenges || [],
-        total: total || 0,
+        challenges: combined,
+        total: (total || 0) + mappedCitizen.length,
         page: Number(page),
         limit: Number(limit),
-        totalPages: Math.ceil((total || 0) / Number(limit)) || 1
+        totalPages: Math.ceil(((total || 0) + mappedCitizen.length) / Number(limit)) || 1
       };
     } catch (err) {
       return { challenges: [], total: 0, page: Number(page), limit: Number(limit), totalPages: 1 };
@@ -251,9 +295,50 @@ export class UniversityDashboardRepository {
 
   async updateChallengeStatus(challengeId, universityCode, status, actionLabel, metadata = {}) {
     try {
-      const res = await UniversityChallenge.findOneAndUpdate({ challengeId }, { $set: { status, actionLabel: actionLabel || status, ...metadata } }, { new: true });
+      const res = await UniversityChallenge.findOneAndUpdate(
+        { challengeId },
+        { $set: { status, actionLabel: actionLabel || status, ...metadata } },
+        { new: true }
+      );
+
+      const uniDoc = await MongooseUniversity.findOne({ code: (universityCode || '').toUpperCase() }).lean();
+      const resolvedUniName = uniDoc?.name || uniDoc?.legalName || universityCode || 'Assigned University';
+
+      const isAccepted = status === 'Accepted';
+      const isDeclined = status === 'Rejected' || status === 'Declined';
+      const citizenStatus = isAccepted ? 'In Progress' : isDeclined ? 'Under Review' : status === 'Resolved' ? 'Resolved' : 'Under Review';
+
+      const updatePayload = {
+        status: citizenStatus,
+        'assignedUniversity.acceptanceStatus': isAccepted ? 'Accepted' : isDeclined ? 'Declined' : 'Pending Review',
+        'assignedUniversity.declineReason': isDeclined ? (metadata.declineReason || 'Declined by University - Awaiting State Nodal Reallocation') : '',
+        'acceptanceStatus': isAccepted ? 'Accepted' : isDeclined ? 'Declined' : 'Pending Review'
+      };
+
+      if (isAccepted) {
+        updatePayload['milestones.1.status'] = 'COMPLETED';
+        updatePayload['milestones.1.completedAt'] = new Date();
+        updatePayload['milestones.2.status'] = 'COMPLETED';
+        updatePayload['milestones.2.completedAt'] = new Date();
+        updatePayload['milestones.2.remarks'] = `Accepted by ${resolvedUniName}. Problem allocation finalized for research and prototyping.`;
+        updatePayload['milestones.3.status'] = 'CURRENT';
+        updatePayload['milestones.3.remarks'] = `Active solution development in progress at ${resolvedUniName}.`;
+      } else if (isDeclined) {
+        updatePayload['milestones.2.status'] = 'PENDING';
+        updatePayload['milestones.2.completedAt'] = null;
+        updatePayload['milestones.2.remarks'] = `Declined by ${resolvedUniName}. State Nodal Officer reviewing for immediate reassignment.`;
+        updatePayload['milestones.3.status'] = 'PENDING';
+      }
+
+      await CitizenChallenge.findOneAndUpdate(
+        { challengeId },
+        { $set: updatePayload }
+      );
+
       if (res) return res;
-    } catch (err) {}
+    } catch (err) {
+      console.warn('Error updating challenge status in DB:', err);
+    }
     return { challengeId, status, actionLabel };
   }
 
@@ -270,8 +355,36 @@ export class UniversityDashboardRepository {
           { $set: { availabilityStatus: 'In Project' }, $inc: { activeProjects: 1 } }
         );
       }
+
+      const uniDoc = await MongooseUniversity.findOne({ code: (universityCode || '').toUpperCase() }).lean();
+      const resolvedUniName = uniDoc?.name || uniDoc?.legalName || universityCode || 'Assigned University';
+
+      // Synchronize Citizen Challenge milestone progression in database
+      await CitizenChallenge.findOneAndUpdate(
+        { challengeId },
+        {
+          $set: {
+            status: 'In Progress',
+            'assignedUniversity.id': universityCode,
+            'assignedUniversity.name': resolvedUniName,
+            'assignedUniversity.department': facultyInfo.department || 'Engineering & Technology',
+            'assignedUniversity.mentorName': facultyInfo.name,
+            'assignedUniversity.assignedAt': new Date(),
+            'assignedUniversity.acceptanceStatus': 'Accepted',
+            'acceptanceStatus': 'Accepted',
+            'milestones.2.status': 'COMPLETED',
+            'milestones.2.completedAt': new Date(),
+            'milestones.2.remarks': `Assigned to Lead Faculty Mentor: ${facultyInfo.name} (${facultyInfo.department || 'Innovation Lab'}) at ${resolvedUniName}`,
+            'milestones.3.status': 'CURRENT',
+            'milestones.3.remarks': `Faculty Mentor ${facultyInfo.name} leading solution execution.`
+          }
+        }
+      );
+
       if (res) return res;
-    } catch (err) {}
+    } catch (err) {
+      console.warn('Error assigning faculty in DB:', err);
+    }
     return { challengeId, assignedFaculty: facultyInfo, status: 'Accepted' };
   }
 

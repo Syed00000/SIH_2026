@@ -31,12 +31,8 @@ export const citizenService = {
   async fetchStats() {
     try {
       const response = await apiClient.get('citizen/stats');
-      return (
-        response.data || {
-          activities: { submitted: 0, underReview: 0, inProgress: 0, resolved: 0, total: 0 },
-          overallImpact: { challengesSubmitted: 0, universitiesEngaged: 0, industryPartners: 0 }
-        }
-      );
+      const data = response.data?.data || response.data || {};
+      return data;
     } catch {
       return {
         activities: { submitted: 0, underReview: 0, inProgress: 0, resolved: 0, total: 0 },
@@ -61,6 +57,11 @@ export const citizenService = {
     } catch {
       return [];
     }
+  },
+
+  async deleteChallenge(challengeId) {
+    const response = await apiClient.delete(`citizen/challenges/${challengeId}`);
+    return response.data || response;
   }
 };
 

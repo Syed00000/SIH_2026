@@ -4,7 +4,6 @@ import config from './shared/config/index.js';
 import logger from './shared/logger/index.js';
 import { connectMongo, closeMongo } from './infrastructure/database/mongo/client.js';
 import { initializeWorkers } from './infrastructure/queue/workers/email.worker.js';
-import { seedGovtAdmin } from './infrastructure/database/mongo/seed.js';
 
 let server;
 
@@ -12,10 +11,9 @@ const start = async () => {
   logger.info(`Starting server in ${config.NODE_ENV} mode...`);
 
   try {
-    // 1. Initialize Database & Admin Auth
+    // 1. Initialize Database
     try {
       await connectMongo();
-      await seedGovtAdmin();
     } catch (dbErr) {
       logger.error('Failed to initialize MongoDB connection:', dbErr);
     }

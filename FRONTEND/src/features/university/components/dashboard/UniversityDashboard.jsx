@@ -55,7 +55,7 @@ export const UniversityDashboard = ({
 
   const liveData = dashboardData || initialData;
   const liveChallenges = liveData?.challenges || [];
-  const liveCount = liveData?.kpis?.assignedChallenges?.total || liveChallenges.length || 8;
+  const liveCount = liveData?.kpis?.assignedChallenges?.total || liveChallenges.length || 0;
 
   return (
     <div className="space-y-4 max-w-7xl mx-auto select-none">

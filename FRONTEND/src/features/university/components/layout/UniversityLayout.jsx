@@ -28,8 +28,8 @@ export const UniversityLayout = ({ user, onLogout }) => {
   const [selectedFacultyForEdit, setSelectedFacultyForEdit] = useState(null);
   const [facultyDetailContext, setFacultyDetailContext] = useState({ projects: [], challenges: [] });
 
-  const rawCode = user?.profile?.aisheCode || user?.email || 'RU001';
-  const universityCode = rawCode.includes('@') ? 'RU001' : rawCode;
+  const rawCode = user?.profile?.aisheCode || user?.profile?.code || user?.code || user?.universityCode || user?.email || 'RU001';
+  const universityCode = rawCode;
   const [dashboardData, setDashboardData] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -66,7 +66,7 @@ export const UniversityLayout = ({ user, onLogout }) => {
   const uniName = dashboardData?.name || dashboardData?.university?.name || 'Ranchi University';
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col h-screen overflow-hidden text-slate-900 font-sans">
+    <div className="min-h-screen bg-[#f8fafc] flex flex-col h-screen overflow-hidden text-slate-900 font-sans select-none">
       <UniversityHeader
         universityName={uniName}
         adminName={adminName}
@@ -91,8 +91,8 @@ export const UniversityLayout = ({ user, onLogout }) => {
           universityName={uniName}
         />
 
-        <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden bg-slate-50">
-          <main className="flex-1 p-3.5 md:p-4.5 overflow-y-auto min-h-0">
+        <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden bg-[#f8fafc]">
+          <main className="flex-1 p-3.5 md:p-5 overflow-y-auto min-h-0">
             {loading ? (
               <div className="flex items-center justify-center h-64 text-xs font-bold text-slate-600">
                 Loading University Innovation Portal...
@@ -107,6 +107,7 @@ export const UniversityLayout = ({ user, onLogout }) => {
             ) : activeTab === 'challenges' ? (
               <AssignedChallengesPanel
                 challenges={dashboardData?.challenges || []}
+                universityCode={universityCode}
                 onUpdateChallengeStatus={handleUpdateChallengeStatus}
                 onAssignFaculty={handleUpdateChallenge}
               />

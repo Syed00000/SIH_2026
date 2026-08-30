@@ -120,6 +120,38 @@ export class CitizenController {
       next(error);
     }
   }
+
+  async triageChallenge(req, res, next) {
+    try {
+      const { id } = req.params;
+      const user = req.user || null;
+      const triageData = req.body;
+
+      logger.info({ msg: 'Nodal Officer triaging citizen challenge', id, triageData });
+      const updated = await citizenService.triageChallenge(id, triageData, user);
+
+      res.status(200).json({
+        success: true,
+        message: 'Challenge triaged and updated successfully',
+        data: updated
+      });
+    } catch (error) {
+      logger.error({ msg: 'Failed to triage citizen challenge', error: error.message });
+      next(error);
+    }
+  }
+
+  async deleteChallenge(req, res, next) {
+    try {
+      const { id } = req.params;
+      logger.info({ msg: 'Nodal Officer deleting/dismissing citizen challenge', id });
+      const result = await citizenService.deleteChallenge(id);
+      res.status(200).json(result);
+    } catch (error) {
+      logger.error({ msg: 'Failed to delete citizen challenge', error: error.message });
+      next(error);
+    }
+  }
 }
 
 export const citizenController = new CitizenController();

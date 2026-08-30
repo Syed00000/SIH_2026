@@ -16,10 +16,12 @@ export const NodalFilterBar = ({
   totalCount
 }) => {
   return (
-    <div className="bg-white border border-slate-200/90 rounded-xl p-3.5 shadow-2xs space-y-3">
+    <div className="bg-white border border-slate-200/90 rounded-2xl p-4 shadow-2xs space-y-3 select-none">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-2.5">
-        <h2 className="font-bold text-slate-900 text-sm">Assigned Societal Challenges Directory</h2>
-        <span className="text-xs font-semibold text-slate-500">{totalCount} challenges found</span>
+        <h2 className="font-extrabold text-slate-900 text-sm tracking-tight">Citizen Ground Submissions Triage Directory</h2>
+        <span className="text-xs font-bold text-[#047857] bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
+          {totalCount} problem statements loaded
+        </span>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-2 text-xs">
@@ -30,25 +32,26 @@ export const NodalFilterBar = ({
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Search title, ID, district..."
-            className="w-full bg-slate-50 border border-slate-200 rounded-lg pl-8 pr-2.5 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-slate-900"
+            className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-8 pr-2.5 py-2 text-xs text-slate-800 focus:outline-none focus:ring-1 focus:ring-[#047857] hover:border-slate-300 shadow-2xs font-medium"
           />
         </div>
 
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
-          className="bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs text-slate-700 focus:outline-none focus:ring-1 focus:ring-slate-900"
+          className="bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-2 text-xs text-slate-700 focus:outline-none focus:ring-1 focus:ring-[#047857] hover:border-slate-300 shadow-2xs font-medium cursor-pointer"
         >
           <option value="All Status">All Status</option>
-          <option value="Pending">Pending</option>
-          <option value="Accepted">Accepted</option>
+          <option value="Under Review">Under Review</option>
           <option value="In Progress">In Progress</option>
+          <option value="Resolved">Resolved</option>
+          <option value="Rejected">Rejected</option>
         </select>
 
         <select
           value={domainFilter}
           onChange={(e) => setDomainFilter(e.target.value)}
-          className="bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs text-slate-700 focus:outline-none focus:ring-1 focus:ring-slate-900"
+          className="bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-2 text-xs text-slate-700 focus:outline-none focus:ring-1 focus:ring-[#047857] hover:border-slate-300 shadow-2xs font-medium cursor-pointer"
         >
           <option value="All Domains">All Domains</option>
           {SECTORS_LIST.map((s) => (
@@ -59,7 +62,7 @@ export const NodalFilterBar = ({
         <select
           value={districtFilter}
           onChange={(e) => setDistrictFilter(e.target.value)}
-          className="bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs text-slate-700 focus:outline-none focus:ring-1 focus:ring-slate-900"
+          className="bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-2 text-xs text-slate-700 focus:outline-none focus:ring-1 focus:ring-[#047857] hover:border-slate-300 shadow-2xs font-medium cursor-pointer"
         >
           <option value="All Districts">All Districts</option>
           {JHARKHAND_DISTRICTS_LIST.map((d) => (
@@ -70,9 +73,10 @@ export const NodalFilterBar = ({
         <select
           value={priorityFilter}
           onChange={(e) => setPriorityFilter(e.target.value)}
-          className="bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs text-slate-700 focus:outline-none focus:ring-1 focus:ring-slate-900"
+          className="bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-2 text-xs text-slate-700 focus:outline-none focus:ring-1 focus:ring-[#047857] hover:border-slate-300 shadow-2xs font-medium cursor-pointer"
         >
           <option value="All Priority">All Priority</option>
+          <option value="Critical">Critical Priority</option>
           <option value="High">High Priority</option>
           <option value="Medium">Medium Priority</option>
           <option value="Low">Low Priority</option>

@@ -1,85 +1,84 @@
 import React from 'react';
 import {
   Layers,
-  Briefcase,
-  GraduationCap,
   CheckCircle2,
-  Handshake
+  Building,
+  Clock,
+  ArrowRight,
+  TrendingUp,
+  ShieldCheck
 } from 'lucide-react';
 
-export const NodalStatCards = () => {
-  const statCards = [
+export const NodalStatCards = ({ stats = {}, onCardClick }) => {
+  const cards = [
+    {
+      id: 'all',
+      title: 'Total Citizen Submissions',
+      value: stats.total || 0,
+      subtext: 'Ground issues across 24 districts',
+      actionText: 'View All Problems',
+      icon: Layers,
+      accentColor: 'text-slate-900',
+      iconColor: 'text-slate-600'
+    },
+    {
+      id: 'review',
+      title: 'Awaiting Nodal Triage',
+      value: stats.underReview || stats.submitted || 0,
+      subtext: 'Pending screening & allocation',
+      actionText: 'Triage Pending',
+      icon: Clock,
+      accentColor: 'text-amber-800',
+      iconColor: 'text-amber-600'
+    },
     {
       id: 'assigned',
-      title: 'Assigned Challenges',
-      value: 12,
-      subTag: '3 Action Needed',
-      subColor: 'text-amber-600 bg-amber-50 border-amber-200',
-      icon: Layers,
-      trend: '+15% vs last month'
+      title: 'Allocated to Universities',
+      value: stats.inProgress || 0,
+      subtext: 'Active HEI research & pilots',
+      actionText: 'Explore Allocations',
+      icon: Building,
+      accentColor: 'text-[#047857]',
+      iconColor: 'text-[#047857]'
     },
     {
-      id: 'projects',
-      title: 'Active Projects',
-      value: 8,
-      subTag: '1 Milestone Delayed',
-      subColor: 'text-red-600 bg-red-50 border-red-200',
-      icon: Briefcase,
-      trend: '+10% vs last month'
-    },
-    {
-      id: 'faculty',
-      title: 'Faculty Mentors',
-      value: 24,
-      subTag: '2 on Sabbatical',
-      subColor: 'text-slate-500 bg-slate-50 border-slate-200',
-      icon: GraduationCap,
-      trend: '6 Departments'
-    },
-    {
-      id: 'approvals',
-      title: 'Pending Approvals',
-      value: 4,
-      subTag: '2 Urgent Action',
-      subColor: 'text-purple-600 bg-purple-50 border-purple-200',
+      id: 'resolved',
+      title: 'Field Verified & Resolved',
+      value: stats.resolved || 0,
+      subtext: 'Completed solutions on ground',
+      actionText: 'View Resolved',
       icon: CheckCircle2,
-      trend: 'Proposals & UCs'
-    },
-    {
-      id: 'partners',
-      title: 'Industry Partners',
-      value: 7,
-      subTag: '2 MoUs in Progress',
-      subColor: 'text-blue-600 bg-blue-50 border-blue-200',
-      icon: Handshake,
-      trend: 'CSR Matched'
+      accentColor: 'text-emerald-800',
+      iconColor: 'text-emerald-600'
     }
   ];
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-      {statCards.map((card) => {
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 select-none text-left">
+      {cards.map((card) => {
         const Icon = card.icon;
         return (
           <div
             key={card.id}
-            className="bg-white border border-slate-200/90 rounded-xl p-3.5 shadow-2xs hover:shadow-xs transition-all flex flex-col justify-between"
+            onClick={() => onCardClick && onCardClick(card.id)}
+            className="group bg-white border border-slate-200/90 hover:border-emerald-400/80 rounded-xl p-4 sm:p-5 shadow-2xs hover:shadow-xs transition-all duration-150 flex flex-col justify-between cursor-pointer"
           >
-            <div className="flex items-center justify-between">
-              <span className="text-[11px] font-semibold text-slate-500 truncate">{card.title}</span>
-              <div className="p-1.5 rounded-lg bg-slate-50 border border-slate-100 text-slate-700">
-                <Icon className="w-4 h-4" />
+            <div>
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-slate-500">{card.title}</span>
+                <Icon className={`w-4 h-4 ${card.iconColor} shrink-0`} />
+              </div>
+              <div className={`text-2xl sm:text-3xl font-black ${card.accentColor} mt-2 tracking-tight`}>
+                {card.value}
               </div>
             </div>
 
-            <div className="mt-2">
-              <div className="text-2xl font-black text-slate-900 leading-none">{card.value}</div>
-              <div className="flex items-center justify-between mt-2 pt-1 border-t border-slate-50">
-                <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded border ${card.subColor}`}>
-                  {card.subTag}
-                </span>
-                <span className="text-[10px] text-slate-400 font-medium">{card.trend}</span>
-              </div>
+            <div className="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-between text-[11px]">
+              <span className="text-slate-500 font-medium truncate">{card.subtext}</span>
+              <span className="font-bold text-[#047857] group-hover:translate-x-0.5 transition-transform flex items-center space-x-0.5 shrink-0 ml-1">
+                <span>{card.actionText}</span>
+                <ArrowRight className="w-3 h-3" />
+              </span>
             </div>
           </div>
         );

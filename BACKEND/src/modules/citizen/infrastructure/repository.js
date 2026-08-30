@@ -110,6 +110,98 @@ export class CitizenRepository {
     return challenge.toObject();
   }
 
+  async triageChallenge(challengeId, triageData, user = null) {
+    const challenge = await CitizenChallenge.findOne({ challengeId });
+    if (!challenge) return null;
+
+    if (triageData.title) challenge.title = triageData.title.trim();
+    if (triageData.description) challenge.description = triageData.description.trim();
+    if (triageData.domain) challenge.domain = triageData.domain;
+    if (triageData.priority) challenge.priority = triageData.priority;
+    if (triageData.district && challenge.location) challenge.location.district = triageData.district;
+
+    const isReassignment =
+      challenge.assignedUniversity?.id &&
+      triageData.assignedUniversity?.id &&
+      challenge.assignedUniversity.id.toUpperCase() !== triageData.assignedUniversity.id.toUpperCase();
+
+    const newStatus = triageData.status || (triageData.assignedUniversity?.id ? 'In Progress' : 'Under Review');
+    challenge.status = newStatus;
+
+    if (triageData.assignedUniversity && triageData.assignedUniversity.id) {
+      challenge.assignedUniversity = {
+        id: triageData.assignedUniversity.id,
+        name: triageData.assignedUniversity.name || 'Assigned University',
+        department: triageData.assignedUniversity.department || 'Innovation Lab',
+        mentorName: triageData.assignedUniversity.mentorName || '',
+        assignedAt: new Date(),
+        acceptanceStatus: triageData.acceptanceStatus || 'Pending Review',
+        declineReason: ''
+      };
+      challenge.acceptanceStatus = triageData.acceptanceStatus || 'Pending Review';
+    }
+
+    // Milestones update
+    if (challenge.milestones && challenge.milestones.length >= 4) {
+      if (newStatus === 'Rejected') {
+        challenge.milestones[1].status = 'REJECTED';
+        challenge.milestones[1].completedAt = new Date();
+        challenge.milestones[1].remarks = triageData.remarks || 'Rejected during State Nodal screening.';
+        challenge.milestones[1].updatedBy = user?.fullName || 'State Nodal Officer';
+      } else {
+        // Step 2: Under Review / Verified
+        challenge.milestones[1].status = 'COMPLETED';
+        challenge.milestones[1].completedAt = new Date();
+        challenge.milestones[1].remarks = triageData.remarks || 'Ground problem verified by State Nodal Cell.';
+        challenge.milestones[1].updatedBy = user?.fullName || 'State Nodal Officer';
+
+        // Step 3: University Assigned
+        if (triageData.assignedUniversity?.id || challenge.assignedUniversity?.id) {
+          const uniName = triageData.assignedUniversity?.name || challenge.assignedUniversity?.name || 'Assigned University';
+          const isExplicitlyAccepted = triageData.acceptanceStatus === 'Accepted';
+
+          if (isExplicitlyAccepted) {
+            challenge.milestones[2].status = 'COMPLETED';
+            challenge.milestones[2].completedAt = new Date();
+            challenge.milestones[2].remarks = isReassignment
+              ? `Reassigned and accepted by ${uniName} for priority R&D and solution prototyping.`
+              : `Accepted by ${uniName} for R&D and solution prototyping.`;
+            challenge.milestones[2].updatedBy = user?.fullName || 'State Nodal Officer';
+
+            // Step 4: Solution in Progress
+            challenge.milestones[3].status = 'CURRENT';
+            challenge.milestones[3].remarks = `University team allocated in ${triageData.assignedUniversity?.department || 'R&D Lab'}. Active solution prototyping underway.`;
+          } else {
+            challenge.milestones[2].status = 'CURRENT';
+            challenge.milestones[2].completedAt = null;
+            challenge.milestones[2].remarks = isReassignment
+              ? `Reallocated to ${uniName}. Waiting for University Department Acceptance & Mentor Onboarding.`
+              : `Allocated to ${uniName}. Waiting for University Department Acceptance & Mentor Onboarding.`;
+            challenge.milestones[2].updatedBy = user?.fullName || 'State Nodal Officer';
+
+            // Step 4: Solution in Progress
+            challenge.milestones[3].status = 'PENDING';
+            challenge.milestones[3].remarks = 'Awaiting HEI department acceptance to commence field R&D.';
+          }
+        }
+      }
+    }
+
+    await challenge.save();
+    return challenge.toObject();
+  }
+
+  async deleteById(challengeId) {
+    const deleted = await CitizenChallenge.findOneAndDelete({ challengeId });
+    try {
+      const { UniversityChallenge } = await import('../../university/infrastructure/model.js');
+      await UniversityChallenge.findOneAndDelete({ challengeId });
+    } catch {
+      // ignore
+    }
+    return deleted;
+  }
+
   async countAll() {
     return await CitizenChallenge.countDocuments();
   }

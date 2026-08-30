@@ -7,6 +7,7 @@ import { universityApiService } from '../../services/universityApiService.js';
 
 export const AssignedChallengesPanel = ({
   challenges: initialChallenges = [],
+  universityCode = 'RU001',
   onUpdateChallengeStatus,
   onAssignFaculty
 }) => {
@@ -24,7 +25,7 @@ export const AssignedChallengesPanel = ({
 
   const fetchChallenges = async () => {
     setLoading(true);
-    const data = await universityApiService.getAssignedChallenges('RU001');
+    const data = await universityApiService.getAssignedChallenges(universityCode);
     const list = data?.challenges || (Array.isArray(data) ? data : []);
     if (list.length > 0) {
       setChallengeList(list);
@@ -78,7 +79,7 @@ export const AssignedChallengesPanel = ({
       if (onAssignFaculty) {
         await onAssignFaculty({ challengeId, facultyName: payload.facultyName, department: payload.department });
       } else {
-        await universityApiService.assignFaculty(challengeId, 'RU001', {
+        await universityApiService.assignFaculty(challengeId, universityCode, {
           name: payload.facultyName,
           department: payload.department
         });
@@ -87,7 +88,7 @@ export const AssignedChallengesPanel = ({
       if (onUpdateChallengeStatus) {
         await onUpdateChallengeStatus(challengeId, newStatus, actionText);
       } else {
-        await universityApiService.updateChallengeStatus(challengeId, 'RU001', newStatus, actionText);
+        await universityApiService.updateChallengeStatus(challengeId, universityCode, newStatus, actionText);
       }
     }
 

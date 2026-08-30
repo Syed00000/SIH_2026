@@ -12,12 +12,23 @@ import {
   Phone,
   Mail,
   AlertTriangle,
-  GraduationCap
+  GraduationCap,
+  Download,
+  CheckCircle,
+  FileCheck
 } from 'lucide-react';
+import { exportChallengeDossierPdf } from '../../../shared/utils/pdfExport.js';
 import defaultRoadImg from '../assets/road_challenge.jpg';
 
 export const CitizenChallengeDetailModal = ({ challenge, isOpen, onClose }) => {
   if (!isOpen || !challenge) return null;
+
+  const chlId = challenge.challengeId || challenge.id || 'CHL-JH-2026-1048';
+  const assignedUni = challenge.assignedUniversity || {};
+  const acceptanceStatus =
+    assignedUni.acceptanceStatus || challenge.acceptanceStatus || (assignedUni.name ? 'Pending Review' : 'Not Assigned');
+  const isAccepted = acceptanceStatus === 'Accepted';
+  const isDeclined = acceptanceStatus === 'Declined';
 
   const milestones = challenge.milestones || [
     {
@@ -42,18 +53,24 @@ export const CitizenChallengeDetailModal = ({ challenge, isOpen, onClose }) => {
       step: 3,
       title: 'University / HEI Assigned',
       description: 'Assigned to relevant university research lab & mentor.',
-      status: ['In Progress', 'Resolved'].includes(challenge.status) ? 'COMPLETED' : 'PENDING',
+      status: isAccepted ? 'COMPLETED' : assignedUni.name ? 'CURRENT' : 'PENDING',
       updatedBy: 'Department of Higher & Technical Education',
-      remarks: '',
+      remarks: assignedUni.name
+        ? isAccepted
+          ? `Accepted by ${assignedUni.name} for R&D prototyping.`
+          : isDeclined
+          ? `Declined by ${assignedUni.name}. State Nodal Officer reviewing for immediate reallocation.`
+          : `Assigned to ${assignedUni.name}. Waiting for University Acceptance.`
+        : 'Awaiting Nodal triage & HEI allocation.',
       completedAt: null
     },
     {
       step: 4,
       title: 'Solution in Progress',
       description: 'Faculty mentor and student innovation team implementing pilot.',
-      status: challenge.status === 'In Progress' ? 'CURRENT' : challenge.status === 'Resolved' ? 'COMPLETED' : 'PENDING',
+      status: isAccepted ? 'CURRENT' : challenge.status === 'Resolved' ? 'COMPLETED' : 'PENDING',
       updatedBy: 'University Faculty Lead',
-      remarks: '',
+      remarks: isAccepted ? 'Active solution prototyping underway.' : 'Awaiting university acceptance.',
       completedAt: null
     },
     {
@@ -75,23 +92,28 @@ export const CitizenChallengeDetailModal = ({ challenge, isOpen, onClose }) => {
       })
     : '29 Aug 2026';
 
-  const locationText = challenge.location?.fullAddress ||
+  const locationText =
+    challenge.location?.fullAddress ||
     `${challenge.location?.landmark ? challenge.location.landmark + ', ' : ''}${
       challenge.location?.block ? challenge.location.block + ', ' : ''
     }${challenge.location?.district || 'Ranchi'}, Jharkhand`;
 
   const statusStr = challenge.status || 'Under Review';
 
+  const handleDownloadDossier = () => {
+    exportChallengeDossierPdf(challenge);
+  };
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-150">
-      <div className="bg-white w-full max-w-lg rounded-lg shadow-2xl border border-slate-200 flex flex-col max-h-[90vh] overflow-hidden text-left">
+      <div className="bg-white w-full max-w-lg rounded-2xl shadow-2xl border border-slate-200 flex flex-col max-h-[90vh] overflow-hidden text-left my-auto">
         {/* Modal Header */}
         <div className="px-5 py-3.5 bg-[#064e3b] text-white flex items-center justify-between flex-shrink-0">
           <div className="flex items-center space-x-2.5">
             <span className="font-mono text-xs font-bold tracking-wider text-emerald-100">
-              {challenge.challengeId || 'CHL-JH-2026-1048'}
+              {chlId}
             </span>
-            <span className="text-xs text-emerald-300">•</span>
+            <span className="text-xs text-emerald-300">&bull;</span>
             <span className="text-xs font-bold text-emerald-100">
               {challenge.domain || 'Energy'}
             </span>
@@ -106,7 +128,7 @@ export const CitizenChallengeDetailModal = ({ challenge, isOpen, onClose }) => {
 
         {/* Content Area */}
         <div className="p-5 overflow-y-auto flex-1 space-y-4">
-          {/* Main Title & Pure Text Status (NO Background Color Box!) */}
+          {/* Main Title & Pure Text Status */}
           <div className="space-y-2">
             <div className="flex items-start justify-between gap-3">
               <h3 className="text-base sm:text-lg font-extrabold text-slate-900 leading-snug">
@@ -129,23 +151,8 @@ export const CitizenChallengeDetailModal = ({ challenge, isOpen, onClose }) => {
             </div>
           </div>
 
-          {/* Photo Preview if any */}
-          {(challenge.mediaUrls?.[0]?.url || challenge.image) && (
-            <div className="rounded-lg overflow-hidden border border-slate-200 max-h-48 bg-slate-100">
-              <img
-                src={challenge.mediaUrls?.[0]?.url || challenge.image || defaultRoadImg}
-                alt="Problem snapshot"
-                className="w-full h-48 object-cover"
-                onError={(e) => {
-                  e.target.onerror = null;
-                  e.target.src = defaultRoadImg;
-                }}
-              />
-            </div>
-          )}
-
           {/* Detailed Problem Statement */}
-          <div className="bg-slate-50 p-4 rounded-lg border border-slate-200/80 space-y-1">
+          <div className="bg-slate-50 p-4 rounded-xl border border-slate-200/80 space-y-1">
             <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">
               Problem Description
             </span>
@@ -154,6 +161,41 @@ export const CitizenChallengeDetailModal = ({ challenge, isOpen, onClose }) => {
             </p>
           </div>
 
+          {/* Assigned University & Acceptance Status Card */}
+          {assignedUni.name && (
+            <div className="p-3.5 bg-emerald-50/70 border border-emerald-200 rounded-xl space-y-2 text-xs">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-1.5 font-bold text-emerald-950">
+                  <Building className="w-4 h-4 text-[#047857]" />
+                  <span>Assigned University (HEI)</span>
+                </div>
+                <span className={`px-2 py-0.5 rounded-full text-[10.5px] font-extrabold border ${
+                  isAccepted
+                    ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
+                    : isDeclined
+                    ? 'bg-rose-100 text-rose-800 border-rose-300'
+                    : 'bg-amber-100 text-amber-800 border-amber-300'
+                }`}>
+                  {isAccepted
+                    ? 'Accepted by University'
+                    : isDeclined
+                    ? 'Declined by University (Reassigning)'
+                    : 'Waiting for University Acceptance'}
+                </span>
+              </div>
+              <div className="grid grid-cols-2 gap-2 pt-1 border-t border-emerald-200/60 text-slate-700">
+                <div>
+                  <span className="text-slate-400 text-[10.5px] block font-medium">Institution</span>
+                  <span className="font-bold text-slate-900">{assignedUni.name}</span>
+                </div>
+                <div>
+                  <span className="text-slate-400 text-[10.5px] block font-medium">Department / Mentor</span>
+                  <span className="font-bold text-slate-900">{assignedUni.department || 'Innovation Lab'}</span>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Milestone Status Tracker */}
           <div className="space-y-2.5">
             <span className="text-xs font-bold text-slate-900 uppercase tracking-wider block flex items-center">
@@ -161,7 +203,7 @@ export const CitizenChallengeDetailModal = ({ challenge, isOpen, onClose }) => {
               Live Milestone & Resolution Progress
             </span>
 
-            <div className="bg-white border border-slate-200/90 rounded-lg p-3.5 space-y-3.5">
+            <div className="bg-white border border-slate-200/90 rounded-xl p-3.5 space-y-3.5">
               {milestones.map((ms, idx) => {
                 const isCompleted = ms.status === 'COMPLETED';
                 const isCurrent = ms.status === 'CURRENT';
@@ -212,7 +254,7 @@ export const CitizenChallengeDetailModal = ({ challenge, isOpen, onClose }) => {
                         )}
                       </div>
                       <p className="text-[11px] text-slate-500 leading-snug mt-0.5">
-                        {ms.description}
+                        {ms.remarks || ms.description}
                       </p>
                       {ms.updatedBy && (
                         <span className="text-[10px] text-slate-400 font-medium block mt-0.5">
@@ -227,11 +269,19 @@ export const CitizenChallengeDetailModal = ({ challenge, isOpen, onClose }) => {
           </div>
         </div>
 
-        {/* Modal Footer */}
-        <div className="p-3.5 bg-slate-50 border-t border-slate-200/90 flex justify-end">
+        {/* Modal Footer with Download Dossier Receipt */}
+        <div className="p-3.5 bg-slate-50 border-t border-slate-200/90 flex items-center justify-between gap-2 text-xs">
+          <button
+            onClick={handleDownloadDossier}
+            className="px-3.5 py-2 border border-slate-200 hover:bg-slate-100 text-slate-800 font-bold rounded-xl transition-colors cursor-pointer flex items-center space-x-1.5 shadow-2xs"
+          >
+            <Download className="w-3.5 h-3.5 text-[#047857]" />
+            <span>Download Receipt</span>
+          </button>
+
           <button
             onClick={onClose}
-            className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold rounded-lg shadow-2xs transition-colors cursor-pointer"
+            className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl shadow-2xs transition-colors cursor-pointer"
           >
             Close
           </button>

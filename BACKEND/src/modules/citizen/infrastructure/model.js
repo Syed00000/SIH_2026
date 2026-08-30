@@ -156,7 +156,19 @@ const citizenChallengeSchema = new mongoose.Schema(
       name: { type: String, default: '' },
       department: { type: String, default: '' },
       mentorName: { type: String, default: '' },
-      assignedAt: { type: Date, default: null }
+      assignedAt: { type: Date, default: null },
+      acceptanceStatus: {
+        type: String,
+        enum: ['Pending Review', 'Accepted', 'Declined', 'Not Assigned'],
+        default: 'Pending Review'
+      },
+      declineReason: { type: String, default: '' }
+    },
+    acceptanceStatus: {
+      type: String,
+      enum: ['Pending Review', 'Accepted', 'Declined', 'Not Assigned'],
+      default: 'Not Assigned',
+      index: true
     },
     impactMetrics: {
       affectedPopulation: { type: String, default: '~ 5,000 People' },

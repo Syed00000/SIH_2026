@@ -11,7 +11,7 @@ const getNormalizedStatus = (status) => {
 
 export const UniversityAssignedChallenges = ({
   challenges = [],
-  totalCount = 8,
+  totalCount = 0,
   onActionClick,
   onViewAll
 }) => {
