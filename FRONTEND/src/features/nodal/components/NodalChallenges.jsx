@@ -281,6 +281,27 @@ export const NodalChallenges = () => {
                     "{item.description || item.problemStatement}"
                   </p>
 
+                  {isDeclined && (
+                    <div className="p-2.5 bg-rose-50 border border-rose-200 rounded-md text-xs text-rose-900 flex flex-wrap items-center justify-between gap-2 shadow-2xs">
+                      <div className="flex items-center space-x-2">
+                        <span className="w-2 h-2 rounded-full bg-rose-500 shrink-0"></span>
+                        <span>
+                          <strong>Declined by {assignedUni}:</strong> {item.assignedUniversity?.declineReason || 'Outside institutional research scope'}
+                        </span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleOpenAssign(item);
+                        }}
+                        className="px-2.5 py-1 bg-rose-600 hover:bg-rose-700 text-white rounded text-xs font-bold transition-all cursor-pointer shadow-2xs shrink-0"
+                      >
+                        Reallocate Problem
+                      </button>
+                    </div>
+                  )}
+
                   <div className="flex flex-wrap items-center gap-4 text-xs text-slate-500 font-medium pt-0.5">
                     <span className="flex items-center space-x-1.5">
                       <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0" />

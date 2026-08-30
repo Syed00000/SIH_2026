@@ -1,14 +1,14 @@
 import React from 'react';
 import { ClipboardList, TrendingUp, Hourglass, CheckCircle2 } from 'lucide-react';
 
-export const ProjectsKpis = ({ total = 28, inProgress = 14, planning = 6, completed = 8, loading = false }) => {
+export const ProjectsKpis = ({ total = 0, inProgress = 0, planning = 0, completed = 0, loading = false }) => {
   if (loading) {
     return (
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         {[1, 2, 3, 4].map((i) => (
-          <div key={i} className="bg-white border border-slate-200 p-3 animate-pulse rounded-none">
-            <div className="h-3 bg-slate-200 w-20 mb-2" />
-            <div className="h-6 bg-slate-200 w-12 mb-1" />
+          <div key={i} className="bg-white border border-slate-200/90 p-3.5 animate-pulse rounded-xl shadow-2xs">
+            <div className="h-3 bg-slate-200 rounded w-20 mb-2" />
+            <div className="h-6 bg-slate-200 rounded w-12 mb-1" />
           </div>
         ))}
       </div>
@@ -17,7 +17,7 @@ export const ProjectsKpis = ({ total = 28, inProgress = 14, planning = 6, comple
 
   return (
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 select-none">
-      <div className="bg-white border border-slate-200 p-3 flex items-center justify-between rounded-none shadow-2xs">
+      <div className="bg-white border border-slate-200/90 p-3.5 flex items-center justify-between rounded-xl shadow-2xs">
         <div>
           <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-500 block">Total Projects</span>
           <div className="text-xl font-black text-slate-900 mt-0.5">{total}</div>

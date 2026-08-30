@@ -5,6 +5,7 @@ import { UniversityRecentActivity } from './UniversityRecentActivity.jsx';
 import { UniversityAssignedChallenges } from './UniversityAssignedChallenges.jsx';
 import { UniversityProjectProgress } from './UniversityProjectProgress.jsx';
 import { UniversityActionModal } from './UniversityActionModal.jsx';
+import { ProblemEvidenceDossierModal } from '../../../nodal/components/ProblemEvidenceDossierModal.jsx';
 import { universityApiService } from '../../services/universityApiService.js';
 
 export const UniversityDashboard = ({
@@ -17,6 +18,7 @@ export const UniversityDashboard = ({
 }) => {
   const [dashboardData, setDashboardData] = useState(initialData);
   const [selectedChallenge, setSelectedChallenge] = useState(null);
+  const [dossierChallenge, setDossierChallenge] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [loading, setLoading] = useState(!initialData);
 
@@ -41,6 +43,18 @@ export const UniversityDashboard = ({
   const handleChallengeAction = (challenge) => {
     setSelectedChallenge(challenge);
     setIsModalOpen(true);
+  };
+
+  const handleAcceptChallenge = async (challenge) => {
+    const cid = challenge.id || challenge.challengeId;
+    await universityApiService.updateChallengeStatus(cid, universityCode, 'Accepted', 'View');
+    await loadLiveDashboard();
+  };
+
+  const handleDeclineChallenge = async (challenge, reason) => {
+    const cid = challenge.id || challenge.challengeId;
+    await universityApiService.updateChallengeStatus(cid, universityCode, 'Declined', 'Declined', { declineReason: reason });
+    await loadLiveDashboard();
   };
 
   const handleAssignFaculty = async (payload) => {
@@ -121,17 +135,34 @@ export const UniversityDashboard = ({
         <div className="lg:col-span-1">
           <UniversityProjectProgress
             projectProgress={liveData?.projectProgress || liveData?.projectProgressBreakdown}
-            topDomains={liveData?.topDomains || []}
+            challenges={liveChallenges}
+            universityCode={universityCode}
           />
         </div>
       </div>
 
+      {/* Action Dialog for Decision and Mentor Allocation */}
       <UniversityActionModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         challenge={selectedChallenge}
+        onAccept={handleAcceptChallenge}
+        onDecline={handleDeclineChallenge}
         onAssignFaculty={handleAssignFaculty}
+        onViewDossier={(c) => {
+          setIsModalOpen(false);
+          setDossierChallenge(c);
+        }}
       />
+
+      {/* Official Problem Evidence Dossier Modal & Vector PDF */}
+      {dossierChallenge && (
+        <ProblemEvidenceDossierModal
+          challenge={dossierChallenge}
+          isOpen={Boolean(dossierChallenge)}
+          onClose={() => setDossierChallenge(null)}
+        />
+      )}
     </div>
   );
 };
