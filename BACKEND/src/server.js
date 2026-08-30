@@ -4,6 +4,7 @@ import config from './shared/config/index.js';
 import logger from './shared/logger/index.js';
 import { connectMongo, closeMongo } from './infrastructure/database/mongo/client.js';
 import { initializeWorkers } from './infrastructure/queue/workers/email.worker.js';
+import { initializeSocketServer } from './infrastructure/socket/socketServer.js';
 
 let server;
 
@@ -18,8 +19,9 @@ const start = async () => {
       logger.error('Failed to initialize MongoDB connection:', dbErr);
     }
 
-    // 2. Start HTTP Server
+    // 2. Start HTTP Server with Socket.IO
     server = http.createServer(app);
+    initializeSocketServer(server);
 
     server.on('error', (err) => {
       if (err.code === 'EADDRINUSE') {

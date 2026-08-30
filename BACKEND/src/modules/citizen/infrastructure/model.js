@@ -69,7 +69,7 @@ const citizenChallengeSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ['Submitted', 'Under Review', 'In Progress', 'Resolved', 'Rejected'],
+      enum: ['Submitted', 'Under Review', 'In Progress', 'Resolved', 'Rejected', 'Clarification Requested', 'Clarified', 'Accepted', 'Declined'],
       default: 'Under Review',
       index: true
     },
@@ -159,16 +159,33 @@ const citizenChallengeSchema = new mongoose.Schema(
       assignedAt: { type: Date, default: null },
       acceptanceStatus: {
         type: String,
-        enum: ['Pending Review', 'Accepted', 'Declined', 'Not Assigned'],
+        enum: ['Pending Review', 'Accepted', 'Declined', 'Not Assigned', 'Clarification Requested', 'Clarified'],
         default: 'Pending Review'
       },
       declineReason: { type: String, default: '' }
     },
+    allocatedBy: {
+      id: { type: String, default: '' },
+      name: { type: String, default: '' },
+      email: { type: String, default: '' },
+      phone: { type: String, default: '' },
+      designation: { type: String, default: '' },
+      department: { type: String, default: '' },
+      allocatedAt: { type: Date, default: null }
+    },
     acceptanceStatus: {
       type: String,
-      enum: ['Pending Review', 'Accepted', 'Declined', 'Not Assigned'],
+      enum: ['Pending Review', 'Accepted', 'Declined', 'Not Assigned', 'Clarification Requested', 'Clarified'],
       default: 'Not Assigned',
       index: true
+    },
+    clarificationQuery: { type: String, default: '' },
+    clarificationResponse: { type: String, default: '' },
+    clarificationDate: { type: Date, default: null },
+    clarificationStatus: {
+      type: String,
+      enum: ['NONE', 'PENDING', 'RESOLVED'],
+      default: 'NONE'
     },
     impactMetrics: {
       affectedPopulation: { type: String, default: '~ 5,000 People' },

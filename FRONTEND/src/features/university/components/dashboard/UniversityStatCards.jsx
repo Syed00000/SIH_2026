@@ -25,35 +25,35 @@ export const UniversityStatCards = ({ kpis, onCardClick, loading = false }) => {
       value: kpis?.assignedChallenges?.total ?? 0,
       subText: `${kpis?.assignedChallenges?.reviewNeeded ?? 0} require review`,
       icon: Folder,
-      accentBg: 'bg-emerald-50 border-emerald-200 text-emerald-800',
-      badgeBg: 'bg-emerald-100/70 text-emerald-900',
-      hoverBorder: 'hover:border-emerald-500/50'
+      accentBg: 'bg-emerald-50 border-emerald-200 text-[#007A61]',
+      badgeBg: 'bg-emerald-100/70 text-[#007A61]',
+      hoverBorder: 'hover:border-[#007A61]/50'
     },
     {
       id: 'projects',
       title: 'Active R&D Projects',
       value: kpis?.activeProjects?.total ?? 0,
-      subText: `${kpis?.activeProjects?.delayed ?? 0} delayed`,
+      subText: `${kpis?.activeProjects?.delayed ?? 0} on track`,
       icon: Rocket,
-      accentBg: 'bg-blue-50 border-blue-200 text-blue-800',
-      badgeBg: 'bg-blue-100/70 text-blue-900',
-      hoverBorder: 'hover:border-blue-500/50'
+      accentBg: 'bg-emerald-50 border-emerald-200 text-[#007A61]',
+      badgeBg: 'bg-emerald-100/70 text-[#007A61]',
+      hoverBorder: 'hover:border-[#007A61]/50'
     },
     {
       id: 'faculty',
       title: 'Faculty Mentors',
       value: kpis?.facultyMentors?.total ?? 0,
-      subText: `${kpis?.facultyMentors?.onLeave ?? 0} on leave`,
+      subText: `${kpis?.facultyMentors?.onLeave ?? 0} active`,
       icon: Users,
-      accentBg: 'bg-indigo-50 border-indigo-200 text-indigo-800',
-      badgeBg: 'bg-indigo-100/70 text-indigo-900',
-      hoverBorder: 'hover:border-indigo-500/50'
+      accentBg: 'bg-slate-50 border-slate-200 text-slate-800',
+      badgeBg: 'bg-slate-100/70 text-slate-900',
+      hoverBorder: 'hover:border-slate-400'
     },
     {
       id: 'approvals',
-      title: 'Pending Approvals',
+      title: 'Pending Action',
       value: kpis?.pendingApprovals?.total ?? 0,
-      subText: kpis?.pendingApprovals?.note || 'Action needed',
+      subText: kpis?.pendingApprovals?.note || 'Action required',
       icon: ClipboardCheck,
       accentBg: 'bg-amber-50 border-amber-200 text-amber-800',
       badgeBg: 'bg-amber-100/70 text-amber-900',
@@ -65,9 +65,9 @@ export const UniversityStatCards = ({ kpis, onCardClick, loading = false }) => {
       value: kpis?.industryPartners?.total ?? 0,
       subText: kpis?.industryPartners?.note || 'Active CSR MoUs',
       icon: Handshake,
-      accentBg: 'bg-teal-50 border-teal-200 text-teal-800',
-      badgeBg: 'bg-teal-100/70 text-teal-900',
-      hoverBorder: 'hover:border-teal-500/50'
+      accentBg: 'bg-emerald-50 border-emerald-200 text-[#007A61]',
+      badgeBg: 'bg-emerald-100/70 text-[#007A61]',
+      hoverBorder: 'hover:border-[#007A61]/50'
     }
   ];
 

@@ -16,17 +16,19 @@ export const ChallengesFilterBar = ({
   setSearchTerm
 }) => {
   return (
-    <div className="bg-white border border-slate-200 rounded-none p-2.5 flex flex-wrap items-center justify-between gap-2">
+    <div className="bg-white border border-slate-200/90 rounded-2xl p-3 flex flex-wrap items-center justify-between gap-2 shadow-2xs">
       <div className="flex flex-wrap items-center gap-2">
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
-          className="px-2 py-1.5 bg-white border border-slate-200 rounded-none text-xs text-slate-800 font-medium cursor-pointer"
+          className="px-3 py-1.5 bg-white border border-slate-200 rounded-xl text-xs text-slate-800 font-semibold cursor-pointer focus:border-[#007A61] focus:outline-none"
         >
           <option value="All Status">All Status</option>
-          <option value="Pending">Pending</option>
+          <option value="Pending">Pending Review</option>
+          <option value="Clarification Requested">Clarification Requested</option>
+          <option value="Clarified">Clarified by Nodal</option>
           <option value="Accepted">Accepted</option>
-          <option value="Rejected">Rejected</option>
+          <option value="Rejected">Declined</option>
         </select>
 
         <select

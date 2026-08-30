@@ -618,7 +618,7 @@ export const EditFacultyPanel = ({ faculty, onBack, onSuccess }) => {
             </p>
             <div className="pt-2 border-t border-slate-100 flex items-center space-x-1.5 text-[10.5px] text-slate-500">
               <Info className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-              <span>Updates sync immediately to live MongoDB Atlas cluster.</span>
+              <span>Updates sync immediately to State Higher Education Records.</span>
             </div>
           </div>
         </div>

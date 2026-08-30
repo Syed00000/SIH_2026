@@ -28,7 +28,11 @@ import {
   Sparkles,
   Layers,
   FileCheck,
-  Navigation
+  Navigation,
+  Check,
+  HelpCircle,
+  UserPlus,
+  MessageSquare
 } from 'lucide-react';
 import { exportChallengeDossierPdf } from '../../../shared/utils/pdfExport.js';
 
@@ -37,7 +41,13 @@ export const ProblemEvidenceDossierModal = ({
   isOpen,
   onClose,
   onOpenTriage,
-  onOpenReassign
+  onOpenReassign,
+  isUniversityView = false,
+  onAccept,
+  onRequestClarification,
+  onDecline,
+  onAssignFaculty,
+  onOpenChat
 }) => {
   const [activeTab, setActiveTab] = useState('dossier'); // 'dossier' | 'media' | 'location'
   const [selectedPhotoPreview, setSelectedPhotoPreview] = useState(null);
@@ -46,13 +56,13 @@ export const ProblemEvidenceDossierModal = ({
 
   const chlId = challenge.challengeId || challenge.id || 'CHL-JH-2026-0001';
   const district = challenge.location?.district || challenge.district || 'Jharkhand';
-  const block = challenge.location?.block || 'Not specified';
-  const panchayat = challenge.location?.panchayatOrWard || 'Not specified';
-  const landmark = challenge.location?.landmark || 'Ground Location';
+  const block = challenge.location?.block && challenge.location.block !== 'Not specified' ? challenge.location.block : (challenge.location?.subDivision || 'Not specified');
+  const panchayat = challenge.location?.panchayatOrWard && challenge.location.panchayatOrWard !== 'Not specified' ? challenge.location.panchayatOrWard : (challenge.location?.gramPanchayat || 'Not specified');
+  const landmark = challenge.location?.landmark && challenge.location.landmark !== 'Ground Location' ? challenge.location.landmark : 'Ground Location';
   const pincode = challenge.location?.pincode || 'N/A';
   const fullAddress =
     challenge.location?.fullAddress ||
-    [landmark, panchayat, block, district, 'Jharkhand'].filter(Boolean).join(', ');
+    [landmark !== 'Ground Location' ? landmark : '', panchayat !== 'Not specified' ? panchayat : '', block !== 'Not specified' ? block : '', district, 'Jharkhand'].filter(Boolean).join(', ') || `${district}, Jharkhand`;
   const coordinates = challenge.location?.coordinates || 'Coordinates not provided';
 
   const formattedDate = challenge.submittedAt
@@ -314,9 +324,19 @@ export const ProblemEvidenceDossierModal = ({
                         ? 'bg-emerald-50 text-[#064e3b] border-emerald-200'
                         : isDeclined
                         ? 'bg-rose-50 text-rose-900 border-rose-200'
+                        : acceptance === 'Clarification Requested' || challenge.status === 'Clarification Requested'
+                        ? 'bg-amber-50 text-amber-900 border-amber-200'
                         : 'bg-amber-50 text-amber-900 border-amber-200'
                     }`}>
-                      {isAccepted ? 'Accepted' : isDeclined ? 'Declined' : 'Pending Review'}
+                      {isAccepted
+                        ? 'Accepted'
+                        : isDeclined
+                        ? 'Declined'
+                        : acceptance === 'Clarification Requested' || challenge.status === 'Clarification Requested'
+                        ? 'Clarification Requested'
+                        : acceptance === 'Clarified' || challenge.status === 'Clarified'
+                        ? 'Clarified'
+                        : 'Pending Review'}
                     </span>
                   </div>
                   <div className="p-3.5 space-y-2 bg-white">
@@ -335,6 +355,41 @@ export const ProblemEvidenceDossierModal = ({
                   </div>
                 </div>
               </div>
+
+              {/* Clarification Tracking Alert Box */}
+              {(challenge.clarificationQuery || challenge.assignedUniversity?.clarificationQuery || acceptance === 'Clarification Requested' || challenge.status === 'Clarification Requested' || challenge.status === 'Clarified' || acceptance === 'Clarified') && (
+                <div className="p-3.5 rounded-2xl border bg-gradient-to-r from-emerald-50 via-white to-slate-50 border-emerald-200/90 shadow-2xs space-y-2">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <div className="flex items-center space-x-2">
+                      {acceptance === 'Clarification Requested' || challenge.status === 'Clarification Requested' ? (
+                        <span className="flex items-center space-x-1.5 bg-rose-600 text-white font-black text-[10px] px-2.5 py-1 rounded-full shadow-xs animate-pulse">
+                          <span className="w-1.5 h-1.5 rounded-full bg-white animate-ping"></span>
+                          <span>🔴 Live Clarification Discussion</span>
+                        </span>
+                      ) : (
+                        <span className="flex items-center space-x-1.5 bg-emerald-100 text-emerald-900 font-extrabold text-[10px] px-2.5 py-1 rounded-full border border-emerald-300">
+                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-700" />
+                          <span>Clarification Resolved</span>
+                        </span>
+                      )}
+                      <span className="font-bold text-xs text-slate-800">
+                        Nodal Desk: {challenge.allocatedBy?.name || 'Dr. Ritu Verma'} ({challenge.allocatedBy?.phone || '+91 9123456789'})
+                      </span>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (onOpenChat) onOpenChat(challenge);
+                      }}
+                      className="px-3.5 py-1.5 bg-[#047857] hover:bg-[#065f46] text-white rounded-xl text-xs font-extrabold shadow-2xs transition-all cursor-pointer flex items-center space-x-1.5"
+                    >
+                      <MessageSquare className="w-3.5 h-3.5" />
+                      <span>💬 Open Live Chat Room</span>
+                    </button>
+                  </div>
+                </div>
+              )}
 
               {/* Multi-Media Evidence Section */}
               <div className="space-y-2.5">
@@ -463,7 +518,7 @@ export const ProblemEvidenceDossierModal = ({
           <div className="flex flex-wrap items-center gap-2">
             <button
               onClick={handleDownloadFormattedReport}
-              className="px-3.5 py-2 rounded-xl border border-slate-200 text-slate-700 hover:bg-slate-100 hover:text-slate-900 font-bold transition-colors cursor-pointer flex items-center space-x-1.5"
+              className="px-3.5 py-2 rounded-xl border border-slate-200 text-slate-700 hover:bg-slate-100 hover:text-slate-900 font-bold transition-colors cursor-pointer flex items-center space-x-1.5 shadow-2xs"
             >
               <Download className="w-3.5 h-3.5 text-[#047857]" />
               <span>Download Dossier</span>
@@ -476,20 +531,98 @@ export const ProblemEvidenceDossierModal = ({
               Close
             </button>
 
-            <button
-              onClick={() => {
-                onClose();
-                if (assignedUni.name && onOpenReassign) {
-                  onOpenReassign(challenge);
-                } else if (onOpenTriage) {
-                  onOpenTriage(challenge);
-                }
-              }}
-              className="px-4 py-2 rounded-xl bg-[#047857] hover:bg-[#064e3b] text-white font-extrabold shadow-2xs transition-all cursor-pointer flex items-center space-x-1.5"
-            >
-              <RotateCcw className="w-3.5 h-3.5" />
-              <span>{assignedUni.name ? 'Reassign / Edit' : 'Triage & Allocate HEI'}</span>
-            </button>
+            {isUniversityView || onAccept || onRequestClarification || onDecline || onAssignFaculty ? (
+              <>
+                {isAccepted ? (
+                  <>
+                    <span className="px-3 py-2 bg-emerald-50 text-emerald-800 border border-emerald-200 rounded-xl text-xs font-bold flex items-center space-x-1">
+                      <Check className="w-3.5 h-3.5" />
+                      <span>Challenge Accepted & In R&D</span>
+                    </span>
+                    {onAssignFaculty && (
+                      <button
+                        onClick={() => {
+                          onClose();
+                          onAssignFaculty(challenge);
+                        }}
+                        className="px-3.5 py-2 rounded-xl bg-[#007A61] hover:bg-[#006650] text-white font-bold shadow-2xs flex items-center space-x-1.5 cursor-pointer transition-all text-xs"
+                      >
+                        <UserPlus className="w-3.5 h-3.5" />
+                        <span>Assign Faculty Mentor</span>
+                      </button>
+                    )}
+                  </>
+                ) : isDeclined ? (
+                  <span className="px-3 py-2 bg-rose-50 text-rose-800 border border-rose-200 rounded-xl text-xs font-bold">
+                    Declined & Returned to Nodal
+                  </span>
+                ) : (
+                  <>
+                    <button
+                      onClick={() => {
+                        onClose();
+                        if (onAccept) onAccept(challenge);
+                      }}
+                      className="px-4 py-2 rounded-xl bg-[#007A61] hover:bg-[#006650] text-white font-extrabold shadow-2xs flex items-center space-x-1.5 cursor-pointer transition-all text-xs"
+                    >
+                      <Check className="w-3.5 h-3.5" />
+                      <span>Accept Challenge</span>
+                    </button>
+                    <button
+                      onClick={() => {
+                        onClose();
+                        if (onOpenChat) {
+                          onOpenChat(challenge);
+                        } else if (onRequestClarification) {
+                          onRequestClarification(challenge);
+                        }
+                      }}
+                      className="px-3.5 py-2 rounded-xl border border-amber-300 bg-white hover:bg-amber-50 text-amber-800 font-bold shadow-2xs flex items-center space-x-1.5 cursor-pointer transition-all text-xs"
+                    >
+                      <MessageSquare className="w-3.5 h-3.5 text-amber-600" />
+                      <span>💬 Real-time Clarification Chat</span>
+                    </button>
+                    <button
+                      onClick={() => {
+                        onClose();
+                        if (onDecline) onDecline(challenge);
+                      }}
+                      className="px-3.5 py-2 rounded-xl border border-rose-300 bg-white hover:bg-rose-50 text-rose-700 font-bold shadow-2xs flex items-center space-x-1.5 cursor-pointer transition-all text-xs"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                      <span>Decline</span>
+                    </button>
+                  </>
+                )}
+              </>
+            ) : (
+              <div className="flex items-center space-x-2">
+                <button
+                  onClick={() => {
+                    onClose();
+                    if (onOpenChat) onOpenChat(challenge);
+                  }}
+                  className="px-3.5 py-2 rounded-xl border border-emerald-300 bg-white hover:bg-emerald-50 text-emerald-800 font-bold shadow-2xs transition-all cursor-pointer flex items-center space-x-1.5 text-xs"
+                >
+                  <MessageSquare className="w-3.5 h-3.5 text-emerald-600" />
+                  <span>💬 Real-time Chat with HEI</span>
+                </button>
+                <button
+                  onClick={() => {
+                    onClose();
+                    if (assignedUni.name && onOpenReassign) {
+                      onOpenReassign(challenge);
+                    } else if (onOpenTriage) {
+                      onOpenTriage(challenge);
+                    }
+                  }}
+                  className="px-4 py-2 rounded-xl bg-[#047857] hover:bg-[#064e3b] text-white font-extrabold shadow-2xs transition-all cursor-pointer flex items-center space-x-1.5 text-xs"
+                >
+                  <RotateCcw className="w-3.5 h-3.5" />
+                  <span>{assignedUni.name ? 'Reassign / Edit' : 'Triage & Allocate HEI'}</span>
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>

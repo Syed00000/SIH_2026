@@ -42,7 +42,7 @@ export const UniversityNotificationsPanel = () => {
         {loading ? (
           <div className="p-8 flex items-center justify-center space-x-2 text-xs font-bold text-slate-600">
             <Loader2 className="w-4 h-4 animate-spin text-slate-900" />
-            <span>Loading Notifications from MongoDB Atlas...</span>
+            <span>Loading Notifications from Institutional Records...</span>
           </div>
         ) : activities.length > 0 ? (
           activities.map((a, i) => (

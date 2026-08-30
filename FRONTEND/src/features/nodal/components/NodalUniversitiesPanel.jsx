@@ -90,7 +90,7 @@ export const NodalUniversitiesPanel = ({ onNavigateChallenges }) => {
     if (updatedData?.deleted) {
       setToastMsg(`Problem statement deleted from database.`);
     } else {
-      setToastMsg(`Problem successfully allocated to ${updatedData.assignedUniversity?.name || selectedUniForAllocation?.name || 'University'} in MongoDB!`);
+      setToastMsg(`Problem successfully allocated to ${updatedData.assignedUniversity?.name || selectedUniForAllocation?.name || 'University'}!`);
     }
     loadData();
     setTimeout(() => setToastMsg(''), 5000);
@@ -113,6 +113,9 @@ export const NodalUniversitiesPanel = ({ onNavigateChallenges }) => {
   const totalUnis = universities.length;
   const assignedUnisCount = universities.filter((u) => getAssignedChallengesForUni(u).length > 0).length;
   const idleUnisCount = totalUnis - assignedUnisCount;
+  const uniqueDistricts = Array.from(
+    new Set(universities.map((u) => u.district).filter(Boolean))
+  ).sort();
 
   // Filtered universities
   const filteredUniversities = universities.filter((u) => {
@@ -165,46 +168,49 @@ export const NodalUniversitiesPanel = ({ onNavigateChallenges }) => {
       </div>
 
       {/* Controls Bar: Search Input & Filter Tabs */}
-      <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
-        {/* Search Bar */}
-        <div className="relative flex-1">
-          <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-          <input
-            type="text"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="Search university name, AISHE code, district..."
-            className="w-full pl-9 pr-8 py-2.5 bg-white border border-slate-200/90 rounded-lg text-xs font-medium text-slate-800 placeholder-slate-400 focus:outline-none focus:border-slate-900 focus:ring-1 focus:ring-slate-900 transition-colors shadow-2xs"
-          />
-          {searchTerm && (
-            <button
-              onClick={() => setSearchTerm('')}
-              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-0.5 rounded cursor-pointer"
-            >
-              <X className="w-3.5 h-3.5" />
-            </button>
-          )}
+      <div className="bg-white border border-slate-200/90 rounded-2xl p-4 shadow-2xs space-y-3">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-2.5">
+          <h3 className="font-extrabold text-slate-900 text-sm tracking-tight">Accredited State Universities Network</h3>
+          <span className="text-xs font-bold text-[#047857] bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
+            {filteredUniversities.length} Institutions
+          </span>
         </div>
 
-        {/* Clean Filter Tabs Bar */}
-        <div className="flex items-center space-x-1 bg-white p-1 border border-slate-200/90 rounded-lg shadow-2xs overflow-x-auto">
-          {ALLOCATION_STATUS_TABS.map((tab) => {
-            const isActive = filterAllocationStatus === tab;
-            const label = tab === 'All' ? `All (${totalUnis})` : tab === 'Assigned' ? `Working (${assignedUnisCount})` : `Not Assigned (${idleUnisCount})`;
-            return (
-              <button
-                key={tab}
-                onClick={() => setFilterAllocationStatus(tab)}
-                className={`text-xs font-bold px-3.5 py-1.5 rounded-md whitespace-nowrap transition-all cursor-pointer ${
-                  isActive
-                    ? 'bg-[#064e3b] text-white shadow-2xs'
-                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
-                }`}
-              >
-                {label}
-              </button>
-            );
-          })}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
+          {/* Search */}
+          <div className="relative">
+            <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Search university name, code, AISHE, district..."
+              className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-8 pr-2.5 py-2 text-xs text-slate-800 focus:outline-none focus:ring-1 focus:ring-[#047857] hover:border-slate-300 shadow-2xs font-medium"
+            />
+          </div>
+
+          {/* Allocation Status Filter Tabs */}
+          <select
+            value={filterAllocationStatus}
+            onChange={(e) => setFilterAllocationStatus(e.target.value)}
+            className="bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-2 text-xs text-slate-700 focus:outline-none focus:ring-1 focus:ring-[#047857] hover:border-slate-300 shadow-2xs font-medium cursor-pointer"
+          >
+            <option value="All">All Allocation Statuses ({totalUnis})</option>
+            <option value="Assigned">Working on Problems ({assignedUnisCount})</option>
+            <option value="Unassigned">Available (No Allocations) ({idleUnisCount})</option>
+          </select>
+
+          {/* District Filter */}
+          <select
+            value={filterDistrict}
+            onChange={(e) => setFilterDistrict(e.target.value)}
+            className="bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-2 text-xs text-slate-700 focus:outline-none focus:ring-1 focus:ring-[#047857] hover:border-slate-300 shadow-2xs font-medium cursor-pointer"
+          >
+            <option value="All">All Districts</option>
+            {uniqueDistricts.map((d) => (
+              <option key={d} value={d}>{d}</option>
+            ))}
+          </select>
         </div>
       </div>
 
@@ -212,7 +218,7 @@ export const NodalUniversitiesPanel = ({ onNavigateChallenges }) => {
       {loading ? (
         <div className="flex flex-col items-center justify-center py-16 text-slate-400 space-y-2.5 bg-white border border-slate-200/90 rounded-lg shadow-2xs">
           <RefreshCw className="w-6 h-6 animate-spin text-emerald-700" />
-          <span className="text-xs font-semibold text-slate-600">Loading state university network from MongoDB...</span>
+          <span className="text-xs font-semibold text-slate-600">Loading state university network from State Innovation Registry...</span>
         </div>
       ) : filteredUniversities.length === 0 ? (
         <div className="bg-white border border-slate-200/90 rounded-lg p-10 text-center space-y-3.5 shadow-2xs">
@@ -231,8 +237,13 @@ export const NodalUniversitiesPanel = ({ onNavigateChallenges }) => {
           {filteredUniversities.map((uni) => {
             const assignedList = getAssignedChallengesForUni(uni);
             const isAssigned = assignedList.length > 0;
-            const acceptedCount = assignedList.filter(
-              (c) => c.assignedUniversity?.acceptanceStatus === 'Accepted' || c.acceptanceStatus === 'Accepted'
+            const acceptedCount = assignedList.filter((c) => (c.assignedUniversity?.acceptanceStatus || c.acceptanceStatus) === 'Accepted').length;
+            const clarCount = assignedList.filter(
+              (c) =>
+                c.status === 'Clarification Requested' ||
+                c.acceptanceStatus === 'Clarification Requested' ||
+                c.assignedUniversity?.acceptanceStatus === 'Clarification Requested' ||
+                Boolean(c.clarificationQuery && c.clarificationStatus !== 'RESOLVED')
             ).length;
 
             return (
@@ -252,8 +263,13 @@ export const NodalUniversitiesPanel = ({ onNavigateChallenges }) => {
                     </span>
                   </div>
 
-                  {/* Pure Status Text - NO Background Color Box! */}
+                  {/* Pure Status Text */}
                   <div className="flex items-center space-x-2">
+                    {clarCount > 0 && (
+                      <span className="text-[10.5px] font-bold text-amber-900 bg-amber-100 px-2 py-0.5 rounded-full border border-amber-300 animate-pulse">
+                        {clarCount} Clarification Pending
+                      </span>
+                    )}
                     <span
                       className={`text-xs font-extrabold flex items-center space-x-1 ${
                         isAssigned ? 'text-emerald-700' : 'text-amber-700'

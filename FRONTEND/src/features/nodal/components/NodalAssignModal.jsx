@@ -64,6 +64,7 @@ export const NodalAssignModal = ({
   const [selectedUniCode, setSelectedUniCode] = useState('');
   const [targetDepartment, setTargetDepartment] = useState('');
   const [nodalRemarks, setNodalRemarks] = useState('');
+  const [clarificationResponse, setClarificationResponse] = useState('');
   const [acceptanceStatus, setAcceptanceStatus] = useState('Pending Review');
   const [errorMsg, setErrorMsg] = useState('');
   const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
@@ -132,6 +133,7 @@ export const NodalAssignModal = ({
         activeChallenge.governmentRemarks ||
         ''
       );
+      setClarificationResponse(activeChallenge.clarificationResponse || '');
       setErrorMsg('');
       setIsConfirmingDelete(false);
     }
@@ -179,14 +181,14 @@ export const NodalAssignModal = ({
         domain: selectedDomain,
         priority: selectedPriority,
         status: verificationStatus === 'Rejected' ? 'Rejected' : 'In Progress',
-        acceptanceStatus,
+        acceptanceStatus: acceptanceStatus === 'Declined' || verificationStatus === 'Rejected' ? 'Declined' : acceptanceStatus,
         assignedUniversity: targetUniObj
           ? {
               id: targetUniObj.code || targetUniObj.aisheCode,
               name: targetUniObj.name || targetUniObj.legalName,
               department: targetDepartment,
               mentorName: activeChallenge.assignedUniversity?.mentorName || activeChallenge.assignedFaculty?.name || '',
-              acceptanceStatus
+              acceptanceStatus: acceptanceStatus === 'Declined' ? 'Declined' : 'Pending Review'
             }
           : null,
         remarks: nodalRemarks
@@ -260,7 +262,7 @@ export const NodalAssignModal = ({
                 ) : null}
               </h2>
               <p className="text-[11.5px] text-slate-500 font-medium">
-                State Nodal Authority &bull; MongoDB Synced Allocation Engine
+                State Nodal Authority &bull; Official Allocation Engine
               </p>
             </div>
           </div>
@@ -310,7 +312,7 @@ export const NodalAssignModal = ({
               {loadingData ? (
                 <div className="p-2 border border-slate-200 rounded-xl bg-slate-50 text-slate-500 flex items-center space-x-2">
                   <RefreshCw className="w-3.5 h-3.5 animate-spin text-[#047857]" />
-                  <span>Loading live citizen problem statements from MongoDB...</span>
+                  <span>Loading live citizen problem statements from State Registry...</span>
                 </div>
               ) : allChallenges.length === 0 ? (
                 <div className="p-3 border border-slate-200 rounded-xl bg-slate-50 text-slate-500">
@@ -453,7 +455,7 @@ export const NodalAssignModal = ({
                 {loadingData ? (
                   <div className="p-2 border border-slate-200 rounded-xl bg-slate-50 text-slate-500 flex items-center space-x-2">
                     <RefreshCw className="w-3.5 h-3.5 animate-spin text-[#047857]" />
-                    <span>Loading live HEI database from MongoDB...</span>
+                    <span>Loading live HEI directory from State Records...</span>
                   </div>
                 ) : (
                   <select
@@ -536,20 +538,20 @@ export const NodalAssignModal = ({
             </div>
           </div>
 
-          {/* 5. Official Nodal Remarks */}
+          {/* 4. State Nodal Directives & Remarks */}
           <div>
             <label className="font-bold text-slate-900 block mb-1">
-              Official Nodal Officer Directives & Remarks <span className="text-rose-600">*</span>
+              {isUniversityTargetMode ? '3. State Nodal Allocation Remarks' : '4. State Nodal Directives & Allocation Remarks'}
             </label>
             <textarea
-              rows={3}
+              rows={2}
               value={nodalRemarks}
               onChange={(e) => setNodalRemarks(e.target.value)}
               placeholder="Enter directives, research instructions, or rationale for university R&D team and citizen update..."
               className="w-full bg-white border border-slate-200 rounded-xl p-3 text-xs text-slate-800 hover:border-slate-300 focus:outline-none focus:ring-1 focus:ring-[#047857] shadow-2xs"
             />
             <span className="text-[10.5px] text-slate-400 block mt-1">
-              These remarks will be saved to MongoDB Atlas and immediately updated on the citizen's live tracking milestone.
+              These remarks will be saved to official records and immediately updated on the citizen's live tracking milestone.
             </span>
           </div>
 
@@ -612,14 +614,14 @@ export const NodalAssignModal = ({
                 <Send className="w-3.5 h-3.5" />
                 <span>
                   {submitting
-                    ? 'Saving to Database...'
+                    ? 'Saving...'
                     : verificationStatus === 'Rejected'
                     ? 'Confirm Rejection & Close'
                     : isUniversityTargetMode
                     ? `Allocate to ${targetUniversity.shortName || targetUniversity.name}`
                     : isReassignment
-                    ? 'Confirm Reassignment in MongoDB'
-                    : 'Save Triage & Allocate in MongoDB'}
+                    ? 'Confirm Problem Reassignment'
+                    : 'Save Triage & Allocate Problem'}
                 </span>
               </button>
             </div>

@@ -421,7 +421,7 @@ export const FacultyDetailPanel = ({
           {/* Info */}
           <div className="p-2.5 bg-slate-50 rounded-lg border border-slate-200/80 flex items-center space-x-2 text-[10.5px] text-slate-500">
             <Info className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-            <span>Faculty profile synced live from MongoDB Atlas database.</span>
+            <span>Faculty profile registered with State Innovation Registry.</span>
           </div>
         </div>
       </div>

@@ -41,8 +41,7 @@ export const UniversityDashboard = ({
   }, [initialData, universityCode]);
 
   const handleChallengeAction = (challenge) => {
-    setSelectedChallenge(challenge);
-    setIsModalOpen(true);
+    setDossierChallenge(challenge);
   };
 
   const handleAcceptChallenge = async (challenge) => {
@@ -155,12 +154,29 @@ export const UniversityDashboard = ({
         }}
       />
 
-      {/* Official Problem Evidence Dossier Modal & Vector PDF */}
+      {/* Official Problem Evidence Dossier Modal & Vector PDF (Exact Admin/Nodal layout) */}
       {dossierChallenge && (
         <ProblemEvidenceDossierModal
           challenge={dossierChallenge}
           isOpen={Boolean(dossierChallenge)}
           onClose={() => setDossierChallenge(null)}
+          isUniversityView={true}
+          onAccept={(c) => {
+            setSelectedChallenge(c);
+            setIsModalOpen(true);
+          }}
+          onRequestClarification={(c) => {
+            setSelectedChallenge(c);
+            setIsModalOpen(true);
+          }}
+          onDecline={(c) => {
+            setSelectedChallenge(c);
+            setIsModalOpen(true);
+          }}
+          onAssignFaculty={(c) => {
+            setSelectedChallenge(c);
+            setIsModalOpen(true);
+          }}
         />
       )}
     </div>

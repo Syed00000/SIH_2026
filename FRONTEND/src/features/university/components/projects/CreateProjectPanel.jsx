@@ -462,7 +462,7 @@ export const CreateProjectPanel = ({ onBack, onSuccess }) => {
 
             <div className="p-2.5 bg-slate-50 rounded-lg border border-slate-200/80 flex items-center space-x-2 text-[10.5px] text-slate-500">
               <Info className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-              <span>Synced live to MongoDB Atlas database.</span>
+              <span>Synced live to Institutional Innovation Records.</span>
             </div>
           </div>
         </div>

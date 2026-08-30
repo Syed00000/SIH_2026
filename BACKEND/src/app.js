@@ -12,6 +12,7 @@ import adminRoutes from './modules/government/admins/presentation/routes.js';
 import overviewRoutes from './modules/government/overview/presentation/routes.js';
 import universityRoutes from './modules/university/presentation/routes.js';
 import citizenRoutes from './modules/citizen/presentation/routes.js';
+import clarificationRoutes from './modules/clarification/presentation/routes.js';
 
 const app = express();
 
@@ -68,6 +69,8 @@ app.use('/api/v1/government/admins', adminRoutes);
 app.use('/api/v1/government/overview', overviewRoutes);
 app.use('/api/v1/university', universityRoutes);
 app.use('/api/v1/citizen', citizenRoutes);
+app.use('/api/v1/clarification-chat', clarificationRoutes);
+app.use('/api/clarification-chat', clarificationRoutes);
 
 app.use((req, res, next) => {
   next(new NotFoundError(`Route ${req.method} ${req.path} not found`));

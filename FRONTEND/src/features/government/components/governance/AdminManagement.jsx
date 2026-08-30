@@ -86,13 +86,13 @@ export const AdminManagement = () => {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pt-1">
         <div>
           <h1 className="text-xl md:text-2xl font-black text-slate-900 tracking-tight">Admin Management</h1>
-          <p className="text-xs md:text-sm text-slate-500 font-medium mt-0.5">Manage system administrators directly from MongoDB database.</p>
+          <p className="text-xs md:text-sm text-slate-500 font-medium mt-0.5">Manage system administrators and administrative credentials.</p>
         </div>
         <div className="flex items-center space-x-2">
           <button
             onClick={fetchAdmins}
             className="p-2 border border-slate-200 rounded-md bg-white hover:bg-slate-50 text-slate-600 transition-colors cursor-pointer shadow-2xs"
-            title="Refresh from Database"
+            title="Refresh Directory"
           >
             <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin text-blue-600' : ''}`} />
           </button>

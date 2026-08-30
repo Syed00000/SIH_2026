@@ -12,7 +12,8 @@ import {
   Settings,
   LogOut,
   X,
-  Menu
+  Menu,
+  MessageSquare
 } from 'lucide-react';
 
 const NAV_ITEMS = [
@@ -93,8 +94,8 @@ export const UniversitySidebar = ({
                   isSidebarExpanded ? 'px-3 py-2.5 text-left' : 'p-2.5 justify-center'
                 } ${
                   isActive
-                    ? 'bg-[#0f172a] text-white shadow-xs'
-                    : 'text-slate-700 hover:bg-slate-100/80 hover:text-slate-900'
+                    ? 'bg-[#007A61] text-white shadow-xs'
+                    : 'text-slate-700 hover:bg-emerald-50/60 hover:text-[#007A61]'
                 }`}
                 title={item.label}
               >
@@ -106,7 +107,7 @@ export const UniversitySidebar = ({
                 {item.badge && isSidebarExpanded && (
                   <span
                     className={`px-2 py-0.5 rounded-full text-[10px] font-black leading-none ${
-                      isActive ? 'bg-white text-slate-900' : 'bg-red-600 text-white'
+                      isActive ? 'bg-white text-[#007A61]' : 'bg-[#007A61] text-white'
                     }`}
                   >
                     {item.badge}

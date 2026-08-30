@@ -42,6 +42,8 @@ export const NodalFilterBar = ({
           className="bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-2 text-xs text-slate-700 focus:outline-none focus:ring-1 focus:ring-[#047857] hover:border-slate-300 shadow-2xs font-medium cursor-pointer"
         >
           <option value="All Status">All Status</option>
+          <option value="Clarification Requested">Clarification Requested</option>
+          <option value="Clarified">Clarified</option>
           <option value="Under Review">Under Review</option>
           <option value="In Progress">In Progress</option>
           <option value="Resolved">Resolved</option>

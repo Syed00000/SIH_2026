@@ -20,30 +20,37 @@ export const NodalPortal = ({ user: propUser, onLogout }) => {
   const institutionName = user?.profile?.institutionName || 'Jharkhand State Innovation Cell';
   const nodalName = user?.fullName || 'State Nodal Officer';
 
+  const [challengeFilter, setChallengeFilter] = useState('All Status');
+
+  const handleNavigateChallenges = (filter = 'All Status') => {
+    setChallengeFilter(filter);
+    setActiveTab('challenges');
+  };
+
   const renderContent = () => {
     switch (activeTab) {
       case 'overview':
       case 'dashboard':
         return (
           <NodalOverview
-            onNavigateChallenges={() => setActiveTab('challenges')}
+            onNavigateChallenges={handleNavigateChallenges}
             onNavigateUniversities={() => setActiveTab('universities')}
           />
         );
       case 'universities':
         return (
           <NodalUniversitiesPanel
-            onNavigateChallenges={() => setActiveTab('challenges')}
+            onNavigateChallenges={handleNavigateChallenges}
           />
         );
       case 'challenges':
       case 'assigned':
       case 'approvals':
-        return <NodalChallenges />;
+        return <NodalChallenges initialStatusFilter={challengeFilter} />;
       default:
         return (
           <NodalOverview
-            onNavigateChallenges={() => setActiveTab('challenges')}
+            onNavigateChallenges={handleNavigateChallenges}
             onNavigateUniversities={() => setActiveTab('universities')}
           />
         );

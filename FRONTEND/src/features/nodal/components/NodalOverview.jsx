@@ -45,17 +45,50 @@ export const NodalOverview = ({ onNavigateChallenges, onNavigateUniversities }) 
 
       // Compute exact live statistics from active database records
       const total = challengesList.length;
-      const underReview = challengesList.filter(
-        (c) => c.status === 'Submitted' || c.status === 'Under Review' || !c.assignedUniversity?.id
-      ).length;
-      const inProgress = challengesList.filter(
-        (c) => c.status === 'In Progress' || Boolean(c.assignedUniversity?.id)
-      ).length;
+      const clarificationRequested = challengesList.filter((c) => {
+        const acc = c.assignedUniversity?.acceptanceStatus || c.acceptanceStatus;
+        return (
+          c.status === 'Clarification Requested' ||
+          acc === 'Clarification Requested' ||
+          Boolean(c.clarificationQuery && c.clarificationStatus !== 'RESOLVED')
+        );
+      }).length;
+
+      const underReview = challengesList.filter((c) => {
+        const acc = c.assignedUniversity?.acceptanceStatus || c.acceptanceStatus;
+        const isClar =
+          c.status === 'Clarification Requested' ||
+          acc === 'Clarification Requested' ||
+          Boolean(c.clarificationQuery && c.clarificationStatus !== 'RESOLVED');
+        if (isClar) return false;
+        return (
+          c.status === 'Submitted' ||
+          c.status === 'Under Review' ||
+          !c.assignedUniversity?.id ||
+          acc === 'Pending Review' ||
+          acc === 'Not Assigned'
+        );
+      }).length;
+
+      const inProgress = challengesList.filter((c) => {
+        const acc = c.assignedUniversity?.acceptanceStatus || c.acceptanceStatus;
+        const isClar =
+          c.status === 'Clarification Requested' ||
+          acc === 'Clarification Requested' ||
+          Boolean(c.clarificationQuery && c.clarificationStatus !== 'RESOLVED');
+        if (isClar) return false;
+        return (
+          acc === 'Accepted' ||
+          (c.status === 'In Progress' && acc !== 'Declined' && acc !== 'Pending Review')
+        );
+      }).length;
+
       const resolved = challengesList.filter((c) => c.status === 'Resolved').length;
 
       setStats({
         total: total || statsRes?.activities?.total || 0,
         underReview: underReview || statsRes?.activities?.underReview || statsRes?.activities?.submitted || 0,
+        clarificationRequested: clarificationRequested || statsRes?.activities?.clarificationRequested || 0,
         inProgress: inProgress || statsRes?.activities?.inProgress || 0,
         resolved: resolved || statsRes?.activities?.resolved || 0
       });
@@ -109,7 +142,7 @@ export const NodalOverview = ({ onNavigateChallenges, onNavigateUniversities }) 
           </button>
 
           <button
-            onClick={onNavigateChallenges}
+            onClick={() => onNavigateChallenges && onNavigateChallenges('All Status')}
             className="px-3.5 py-1.5 bg-[#047857] hover:bg-[#064e3b] text-white text-xs font-bold rounded-lg shadow-2xs transition-all cursor-pointer flex items-center space-x-1.5 active:scale-95"
           >
             <span>Triage Challenges</span>
@@ -124,8 +157,14 @@ export const NodalOverview = ({ onNavigateChallenges, onNavigateUniversities }) 
         onCardClick={(tab) => {
           if (tab === 'assigned') {
             if (onNavigateUniversities) onNavigateUniversities();
+          } else if (tab === 'clarifications') {
+            if (onNavigateChallenges) onNavigateChallenges('Clarification Requested');
+          } else if (tab === 'review') {
+            if (onNavigateChallenges) onNavigateChallenges('Under Review');
+          } else if (tab === 'resolved') {
+            if (onNavigateChallenges) onNavigateChallenges('Resolved');
           } else if (onNavigateChallenges) {
-            onNavigateChallenges();
+            onNavigateChallenges('All Status');
           }
         }}
       />

@@ -32,7 +32,7 @@ export const UniversityProjectProgress = ({
   const delayedPercent = total > 0 ? Math.round((delayedCount / total) * 100) : 0;
 
   const breakdown = [
-    { status: 'Completed', count: completedCount, percentage: completedPercent, color: '#10b981' },
+    { status: 'Completed', count: completedCount, percentage: completedPercent, color: '#007A61' },
     { status: 'In Progress', count: inProgressCount, percentage: inProgressPercent, color: '#0f172a' },
     { status: 'Planning', count: planningCount, percentage: planningPercent, color: '#64748b' },
     { status: 'Delayed', count: delayedCount, percentage: delayedPercent, color: '#e11d48' }
@@ -59,17 +59,17 @@ export const UniversityProjectProgress = ({
   let cumulativePercent = 0;
 
   return (
-    <div className="bg-white border border-slate-200/90 rounded-xl p-4 space-y-4 select-none shadow-2xs">
-      <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
+    <div className="bg-white border border-slate-200/90 rounded-2xl p-5 space-y-4 select-none shadow-xs">
+      <div className="flex items-center justify-between border-b border-slate-100 pb-3">
         <div>
-          <h2 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
+          <h2 className="text-xs font-extrabold text-slate-900 uppercase tracking-wider">
             R&D Project Progress
           </h2>
           <span className="text-[11px] text-slate-500 font-medium">
             Live database pipeline
           </span>
         </div>
-        <span className="text-[10.5px] font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-300">
+        <span className="text-[10.5px] font-extrabold text-[#007A61] bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-300 shadow-2xs">
           {completedCount} Completed ({completedPercent}%)
         </span>
       </div>
@@ -102,61 +102,60 @@ export const UniversityProjectProgress = ({
                   strokeWidth={strokeWidth}
                   strokeDasharray={strokeDasharray}
                   strokeDashoffset={strokeDashoffset}
+                  className="transition-all duration-500 ease-out"
                 />
               );
             })}
           </svg>
           <div className="absolute flex flex-col items-center justify-center text-center">
-            <span className="text-lg font-black text-slate-900 leading-none font-mono">{total}</span>
-            <span className="text-[8.5px] text-slate-400 font-extrabold mt-0.5 tracking-wider">PROJECTS</span>
+            <span className="text-lg font-mono font-black text-slate-900 leading-none">
+              {total}
+            </span>
+            <span className="text-[9px] font-extrabold text-slate-400 uppercase tracking-tighter mt-0.5">
+              Projects
+            </span>
           </div>
         </div>
 
-        <div className="flex-1 space-y-1.5 text-xs">
+        <div className="space-y-1.5 flex-1 min-w-0">
           {breakdown.map((item, idx) => (
-            <div key={idx} className="flex items-center justify-between text-slate-700">
-              <div className="flex items-center space-x-1.5">
-                <span className="w-2 h-2 rounded-full" style={{ backgroundColor: item.color }} />
-                <span className="font-bold text-slate-800 text-[11px]">{item.status}</span>
+            <div key={idx} className="flex items-center justify-between text-xs">
+              <div className="flex items-center space-x-2 truncate">
+                <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: item.color }} />
+                <span className="text-slate-600 truncate font-semibold text-[11px]">{item.status}</span>
               </div>
-              <span className="font-mono text-slate-900 text-[11px] font-bold">
-                {item.count} <span className="text-slate-400 font-normal">({item.percentage}%)</span>
-              </span>
+              <div className="flex items-center space-x-1.5 font-mono text-[11px] shrink-0">
+                <span className="font-extrabold text-slate-800">{item.count}</span>
+                <span className="text-slate-400 font-medium">({item.percentage}%)</span>
+              </div>
             </div>
           ))}
         </div>
       </div>
 
-      <div className="pt-3 border-t border-slate-100 space-y-2">
-        <div className="flex items-center justify-between">
-          <h3 className="text-[11px] font-bold text-slate-900 uppercase tracking-wider">
-            Allocated Problem Domains
-          </h3>
-          <span className="text-[10px] text-slate-400 font-mono">
-            {challenges.length} Problem{challenges.length !== 1 ? 's' : ''}
-          </span>
-        </div>
-
+      {/* Progress by Domain list */}
+      <div className="pt-2 border-t border-slate-100 space-y-2">
+        <span className="text-[10.5px] font-extrabold text-slate-400 uppercase tracking-wider block">
+          Allocated Problem Domains
+        </span>
         {topDomains.length === 0 ? (
-          <div className="py-3 text-center text-slate-400 text-xs font-medium bg-slate-50 rounded-lg">
-            No challenges assigned yet in database
+          <div className="py-2.5 text-center text-slate-400 text-xs font-semibold bg-slate-50 rounded-xl">
+            No challenges assigned yet
           </div>
         ) : (
-          <div className="space-y-1.5">
-            {topDomains.map((dom, idx) => (
-              <div key={idx} className="flex items-center justify-between gap-2 text-xs">
-                <span className="w-28 font-semibold text-slate-800 truncate text-[11px]" title={dom.name}>
-                  {dom.name}
-                </span>
-                <div className="flex-1 bg-slate-100 rounded-full h-1.5 overflow-hidden">
+          <div className="space-y-2">
+            {topDomains.slice(0, 3).map((dom, idx) => (
+              <div key={idx} className="space-y-1">
+                <div className="flex items-center justify-between text-[11px]">
+                  <span className="font-bold text-slate-700 truncate">{dom.name}</span>
+                  <span className="font-mono text-slate-500 font-bold">{dom.count} ({dom.percent}%)</span>
+                </div>
+                <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
                   <div
-                    className="h-full bg-emerald-600 transition-all duration-300 rounded-full"
-                    style={{ width: `${Math.max(5, dom.percent)}%` }}
+                    className="h-full bg-[#007A61] rounded-full transition-all duration-300"
+                    style={{ width: `${Math.min(dom.percent, 100)}%` }}
                   />
                 </div>
-                <span className="font-mono font-bold text-slate-900 text-[11px] w-6 text-right">
-                  {dom.count}
-                </span>
               </div>
             ))}
           </div>

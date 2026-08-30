@@ -18,33 +18,33 @@ export const FacultyTable = ({
   const paginatedItems = facultyList.slice(startIndex, startIndex + itemsPerPage);
 
   return (
-    <div className="border border-slate-200/90 rounded-lg overflow-hidden flex flex-col w-full shadow-2xs select-none bg-white">
+    <div className="border border-slate-200/90 rounded-2xl overflow-hidden flex flex-col w-full shadow-xs select-none bg-white">
       <div className="overflow-x-auto w-full">
         <table className="w-full text-left border-collapse min-w-[850px]">
           <thead>
-            <tr className="border-b border-slate-100 bg-slate-50/60 text-[10.5px] font-bold text-slate-400 uppercase tracking-wider select-none">
-              <th className="py-2.5 px-2.5 w-[45px] text-center">#</th>
-              <th className="py-2.5 px-3 min-w-[210px]">Faculty Mentor</th>
-              <th className="py-2.5 px-2.5 w-[150px]">Department</th>
-              <th className="py-2.5 px-2.5 w-[160px]">Contact Info</th>
-              <th className="py-2.5 px-2.5 w-[150px]">Specialization</th>
-              <th className="py-2.5 px-2.5 w-[105px]">Availability</th>
-              <th className="py-2.5 px-2.5 w-[90px]">Status</th>
-              <th className="py-2.5 px-3 w-[70px] text-right">Actions</th>
+            <tr className="border-b border-slate-100 bg-slate-50/60 text-[10.5px] font-extrabold text-slate-400 uppercase tracking-wider select-none">
+              <th className="py-3 px-3 w-[45px] text-center">#</th>
+              <th className="py-3 px-3 min-w-[210px]">Faculty Mentor</th>
+              <th className="py-3 px-3 w-[150px]">Department</th>
+              <th className="py-3 px-3 w-[160px]">Contact Info</th>
+              <th className="py-3 px-3 w-[150px]">Specialization</th>
+              <th className="py-3 px-3 w-[105px]">Availability</th>
+              <th className="py-3 px-3 w-[90px]">Status</th>
+              <th className="py-3 px-3 w-[80px] text-right">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100 text-xs">
             {loading ? (
               <tr>
                 <td colSpan="8" className="py-12 text-center text-slate-400">
-                  <div className="font-semibold text-slate-600">Loading faculty mentors from database...</div>
+                  <div className="font-bold text-slate-600">Loading faculty mentors from database...</div>
                 </td>
               </tr>
             ) : paginatedItems.length === 0 ? (
               <tr>
                 <td colSpan="8" className="py-12 text-center text-slate-400">
-                  <UserCheck className="w-7 h-7 text-slate-300 mx-auto mb-2" />
-                  <div className="font-semibold text-slate-600">No faculty members found</div>
+                  <UserCheck className="w-8 h-8 text-slate-300 mx-auto mb-2" />
+                  <div className="font-bold text-slate-600">No faculty members found</div>
                 </td>
               </tr>
             ) : (
@@ -66,24 +66,24 @@ export const FacultyTable = ({
                   <tr
                     key={f._id || f.id || index}
                     onClick={() => onSelectFaculty(f)}
-                    className={`hover:bg-slate-50/70 transition-colors group select-none cursor-pointer ${
-                      isSelected ? 'bg-slate-100/60 border-l-4 border-l-slate-900' : ''
+                    className={`hover:bg-emerald-50/30 transition-colors group select-none cursor-pointer ${
+                      isSelected ? 'bg-emerald-50/60 border-l-4 border-l-[#007A61]' : ''
                     }`}
                   >
                     {/* Index */}
-                    <td className="py-2.5 px-2.5 text-center font-mono text-[11px] font-semibold text-slate-400">
+                    <td className="py-3 px-3 text-center font-mono text-[11px] font-bold text-slate-400">
                       {globalIndex}
                     </td>
 
                     {/* Main Entity Tile */}
-                    <td className="py-2.5 px-3">
+                    <td className="py-3 px-3">
                       <div className="flex items-center space-x-2.5">
-                        <div className="w-7 h-7 rounded-md bg-slate-100 text-slate-700 font-bold text-[11px] flex items-center justify-center shrink-0 border border-slate-200/60">
+                        <div className="w-8 h-8 rounded-xl bg-emerald-50 text-[#007A61] font-black text-xs flex items-center justify-center shrink-0 border border-emerald-200 shadow-2xs">
                           {firstLetter}
                         </div>
                         <div className="min-w-0 max-w-[210px]">
                           <div
-                            className="font-bold text-slate-900 hover:text-slate-600 text-xs truncate leading-tight"
+                            className="font-extrabold text-slate-900 group-hover:text-[#007A61] text-xs truncate leading-tight transition-colors"
                             title={name}
                           >
                             {name}
@@ -96,15 +96,15 @@ export const FacultyTable = ({
                     </td>
 
                     {/* Department */}
-                    <td className="py-2.5 px-2.5">
-                      <div className="font-semibold text-slate-800 text-xs truncate max-w-[140px]" title={f.department}>
+                    <td className="py-3 px-3">
+                      <div className="font-bold text-slate-800 text-xs truncate max-w-[140px]" title={f.department}>
                         {f.department}
                       </div>
                       <div className="text-[10px] text-slate-400 mt-0.5">{f.experience || '10 Years'} Exp</div>
                     </td>
 
                     {/* Contact Info */}
-                    <td className="py-2.5 px-2.5">
+                    <td className="py-3 px-3">
                       <div className="font-bold text-slate-900 text-xs leading-tight truncate max-w-[150px]">
                         {f.email}
                       </div>
@@ -114,18 +114,18 @@ export const FacultyTable = ({
                     </td>
 
                     {/* Specialization */}
-                    <td className="py-2.5 px-2.5">
+                    <td className="py-3 px-3">
                       <div className="flex flex-wrap gap-1 max-w-[150px]">
                         {specs.slice(0, 2).map((spec, sIdx) => (
                           <span
                             key={sIdx}
-                            className="px-1.5 py-0.5 bg-slate-50 border border-slate-200 text-slate-600 rounded text-[10px] font-medium"
+                            className="px-2 py-0.5 bg-slate-50 border border-slate-200 text-slate-700 rounded-md text-[10px] font-semibold"
                           >
                             {spec}
                           </span>
                         ))}
                         {specs.length > 2 && (
-                          <span className="text-[10px] font-medium text-slate-400 self-center">
+                          <span className="text-[10px] font-bold text-[#007A61] self-center">
                             +{specs.length - 2}
                           </span>
                         )}
@@ -133,22 +133,22 @@ export const FacultyTable = ({
                     </td>
 
                     {/* Availability */}
-                    <td className="py-2.5 px-2.5 whitespace-nowrap">
+                    <td className="py-3 px-3 whitespace-nowrap">
                       <span
-                        className={`inline-flex items-center space-x-1.5 text-[11px] font-semibold ${
+                        className={`inline-flex items-center space-x-1.5 text-[11px] font-bold ${
                           avail === 'Available'
-                            ? 'text-emerald-600'
+                            ? 'text-[#007A61]'
                             : avail === 'In Project'
                             ? 'text-amber-600'
-                            : 'text-slate-500'
+                            : 'text-slate-600'
                         }`}
                       >
                         <span
                           className={`w-1.5 h-1.5 rounded-full ${
                             avail === 'Available'
-                              ? 'bg-emerald-500'
+                              ? 'bg-[#007A61]'
                               : avail === 'In Project'
-                              ? 'bg-amber-500 animate-pulse'
+                              ? 'bg-amber-500'
                               : 'bg-slate-400'
                           }`}
                         />
@@ -157,35 +157,35 @@ export const FacultyTable = ({
                     </td>
 
                     {/* Status */}
-                    <td className="py-2.5 px-2.5 whitespace-nowrap">
+                    <td className="py-3 px-3 whitespace-nowrap">
                       <span
-                        className={`inline-flex items-center space-x-1.5 text-[11px] font-semibold ${
-                          isActive ? 'text-emerald-600' : 'text-red-600'
+                        className={`inline-flex items-center space-x-1 text-[11px] font-bold ${
+                          isActive ? 'text-[#007A61]' : 'text-slate-400'
                         }`}
                       >
-                        <span className={`w-1.5 h-1.5 rounded-full ${isActive ? 'bg-emerald-500' : 'bg-red-500'}`} />
+                        <span className={`w-1.5 h-1.5 rounded-full ${isActive ? 'bg-[#007A61]' : 'bg-slate-300'}`} />
                         <span>{isActive ? 'Active' : 'Inactive'}</span>
                       </span>
                     </td>
 
                     {/* Actions */}
-                    <td className="py-2.5 px-3 text-right whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
+                    <td className="py-3 px-3 text-right whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
                       <div className="flex items-center justify-end space-x-1">
                         <button
                           type="button"
                           onClick={() => onSelectFaculty(f)}
-                          className="p-1.5 text-slate-400 hover:text-slate-900 hover:bg-slate-100 rounded-md transition-colors cursor-pointer"
+                          className="p-1.5 text-[#007A61] hover:text-emerald-900 bg-emerald-50 hover:bg-emerald-100 rounded-lg transition-colors cursor-pointer border border-emerald-200 shadow-2xs"
                           title="View Profile"
                         >
-                          <Eye className="w-4 h-4" />
+                          <Eye className="w-3.5 h-3.5" />
                         </button>
                         <button
                           type="button"
                           onClick={() => onEditFaculty && onEditFaculty(f)}
-                          className="p-1.5 text-slate-400 hover:text-slate-900 hover:bg-slate-100 rounded-md transition-colors cursor-pointer"
+                          className="p-1.5 text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer border border-slate-200/80 shadow-2xs"
                           title="Edit Faculty"
                         >
-                          <Edit3 className="w-4 h-4" />
+                          <Edit3 className="w-3.5 h-3.5" />
                         </button>
                       </div>
                     </td>

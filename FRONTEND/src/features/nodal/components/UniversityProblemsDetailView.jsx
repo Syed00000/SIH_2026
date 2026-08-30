@@ -26,11 +26,13 @@ import {
   Award,
   ChevronRight,
   FileText,
-  X
+  X,
+  MessageSquare
 } from 'lucide-react';
 import { citizenService } from '../../citizen/services/citizenService.js';
 import { NodalAssignModal } from './NodalAssignModal.jsx';
 import { ProblemEvidenceDossierModal } from './ProblemEvidenceDossierModal.jsx';
+import { ClarificationChatModal } from '../../clarification/components/ClarificationChatModal.jsx';
 
 const STATUS_FILTERS = ['All', 'In Progress', 'Under Review', 'Resolved', 'Rejected'];
 
@@ -51,6 +53,7 @@ export const UniversityProblemsDetailView = ({
   const [targetUniForAllocation, setTargetUniForAllocation] = useState(null);
   const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
   const [selectedDossierChallenge, setSelectedDossierChallenge] = useState(null);
+  const [chatChallenge, setChatChallenge] = useState(null);
   const [toastMsg, setToastMsg] = useState('');
   const [deletingId, setDeletingId] = useState(null);
 
@@ -113,7 +116,7 @@ export const UniversityProblemsDetailView = ({
     if (updatedData?.deleted) {
       setToastMsg(`Problem ${updatedData.challengeId} deleted from database.`);
     } else {
-      setToastMsg(`Problem successfully updated & synchronized in MongoDB!`);
+      setToastMsg(`Problem statement successfully updated & synchronized!`);
     }
     if (onReload) onReload();
     setTimeout(() => setToastMsg(''), 5000);
@@ -386,20 +389,32 @@ export const UniversityProblemsDetailView = ({
               : '29 Aug 2026';
 
             const statusStr = ch.status || 'In Progress';
-            const isResolved = statusStr === 'Resolved';
-            const isRejected = statusStr === 'Rejected';
-            const isInProgress = statusStr === 'In Progress' || statusStr === 'Accepted';
             const priorityStr = ch.priority || 'Medium';
 
             const acceptance = ch.assignedUniversity?.acceptanceStatus || ch.acceptanceStatus || 'Pending Review';
             const isAccepted = acceptance === 'Accepted';
             const isDeclined = acceptance === 'Declined';
+            const isClarificationRequested =
+              acceptance === 'Clarification Requested' ||
+              statusStr === 'Clarification Requested' ||
+              Boolean(ch.clarificationQuery && ch.clarificationStatus !== 'RESOLVED');
+            const isClarified =
+              acceptance === 'Clarified' ||
+              statusStr === 'Clarified' ||
+              ch.clarificationStatus === 'RESOLVED';
+            const isResolved = statusStr === 'Resolved';
+            const isRejected = statusStr === 'Rejected';
+            const isInProgress = statusStr === 'In Progress' || statusStr === 'Accepted';
 
             return (
               <div
                 key={ch.challengeId || ch._id}
                 onClick={() => handleOpenEditOrReassign(ch)}
-                className="group bg-white border border-slate-200/90 hover:border-emerald-400 rounded-lg p-4.5 shadow-2xs hover:shadow-xs transition-all duration-200 cursor-pointer space-y-3 text-left"
+                className={`group bg-white border ${
+                  isClarificationRequested
+                    ? 'border-amber-400 bg-amber-50/15 ring-1 ring-amber-300'
+                    : 'border-slate-200/90 hover:border-emerald-400'
+                } rounded-lg p-4.5 shadow-2xs hover:shadow-xs transition-all duration-200 cursor-pointer space-y-3 text-left`}
               >
                 {/* Header Row: Pure text ID & Priority on Left, HEI Acceptance & Status on Right */}
                 <div className="flex flex-wrap items-center justify-between gap-2">
@@ -426,6 +441,10 @@ export const UniversityProblemsDetailView = ({
                           ? 'text-emerald-700'
                           : isDeclined
                           ? 'text-rose-700'
+                          : isClarificationRequested
+                          ? 'text-amber-800'
+                          : isClarified
+                          ? 'text-emerald-700'
                           : 'text-amber-700'
                       }`}
                     >
@@ -434,6 +453,10 @@ export const UniversityProblemsDetailView = ({
                           ? 'Accepted by HEI'
                           : isDeclined
                           ? 'Declined by HEI (Reassign Required)'
+                          : isClarificationRequested
+                          ? 'Clarification Requested by HEI'
+                          : isClarified
+                          ? 'Clarification Resolved'
                           : 'Pending HEI Acceptance'}
                       </span>
                     </span>
@@ -447,12 +470,20 @@ export const UniversityProblemsDetailView = ({
                           ? 'text-emerald-700'
                           : isRejected
                           ? 'text-rose-700'
+                          : isClarificationRequested
+                          ? 'text-amber-800 font-mono font-bold'
+                          : isClarified
+                          ? 'text-emerald-800 font-bold'
                           : isInProgress
                           ? 'text-blue-700'
                           : 'text-amber-700'
                       }`}
                     >
-                      {statusStr}
+                      {isClarificationRequested
+                        ? 'Clarification Requested'
+                        : isClarified
+                        ? 'Clarified'
+                        : statusStr}
                     </span>
                   </div>
                 </div>
@@ -466,6 +497,40 @@ export const UniversityProblemsDetailView = ({
                   <p className="text-xs text-slate-600 italic line-clamp-2">
                     "{ch.description || ch.problemStatement}"
                   </p>
+
+                  {/* Real-time Live Chat Ribbon with Red Unread Badge */}
+                  {(isClarificationRequested || isClarified) && (
+                    <div className="p-3 bg-gradient-to-r from-emerald-50 via-white to-slate-50 border border-emerald-200/90 rounded-xl text-xs flex flex-wrap items-center justify-between gap-2 shadow-2xs">
+                      <div className="flex items-center space-x-2">
+                        {isClarificationRequested ? (
+                          <span className="flex items-center space-x-1.5 bg-rose-600 text-white font-black text-[10px] px-2.5 py-1 rounded-full shadow-xs animate-pulse">
+                            <span className="w-1.5 h-1.5 rounded-full bg-white animate-ping"></span>
+                            <span>🔴 Unread Discussion with {university.name}</span>
+                          </span>
+                        ) : (
+                          <span className="flex items-center space-x-1.5 bg-emerald-100 text-emerald-900 font-extrabold text-[10px] px-2.5 py-1 rounded-full border border-emerald-300">
+                            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-700" />
+                            <span>Live Room Active</span>
+                          </span>
+                        )}
+                        <span className="text-slate-600 font-medium hidden sm:inline">
+                          Direct 2-way real-time communication channel
+                        </span>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setChatChallenge(ch);
+                        }}
+                        className="px-3.5 py-1.5 bg-[#007A61] hover:bg-[#006650] text-white rounded-xl text-xs font-extrabold transition-all cursor-pointer shadow-2xs flex items-center space-x-1.5"
+                      >
+                        <MessageSquare className="w-3.5 h-3.5" />
+                        <span>💬 Open Live Chat</span>
+                      </button>
+                    </div>
+                  )}
 
                   <div className="flex flex-wrap items-center gap-4 text-xs text-slate-500 font-medium pt-0.5">
                     <span className="flex items-center space-x-1.5">
@@ -499,6 +564,21 @@ export const UniversityProblemsDetailView = ({
                   </div>
 
                   <div className="flex items-center space-x-2">
+                    {/* Live Clarification Chat with HEI */}
+                    <button
+                      type="button"
+                      onClick={() => setChatChallenge(ch)}
+                      className={`text-xs font-bold px-2.5 py-1 rounded-md transition-all cursor-pointer flex items-center space-x-1 shadow-2xs border ${
+                        isClarificationRequested
+                          ? 'bg-amber-600 hover:bg-amber-700 text-white border-amber-700 animate-pulse'
+                          : 'bg-emerald-50 hover:bg-emerald-700 hover:text-white text-emerald-800 border-emerald-300'
+                      }`}
+                      title={`Open Real-time Clarification Room with ${university.name}`}
+                    >
+                      <MessageSquare className="w-3.5 h-3.5" />
+                      <span>Chat</span>
+                    </button>
+
                     {/* Inspect Evidence & GIS Dossier */}
                     <button
                       onClick={() => setSelectedDossierChallenge(ch)}
@@ -536,7 +616,7 @@ export const UniversityProblemsDetailView = ({
                       onClick={(e) => handleQuickDelete(e, ch)}
                       disabled={deletingId === (ch.challengeId || ch.id)}
                       className="text-xs font-bold text-rose-600 hover:text-white px-2.5 py-1 rounded-md border border-rose-200 hover:border-rose-600 hover:bg-rose-600 transition-all cursor-pointer flex items-center space-x-1"
-                      title="Delete / Dismiss Problem from MongoDB"
+                      title="Delete / Dismiss Problem from State Registry"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                       <span>{deletingId === (ch.challengeId || ch.id) ? 'Deleting...' : 'Delete'}</span>
@@ -562,6 +642,7 @@ export const UniversityProblemsDetailView = ({
         challenge={selectedDossierChallenge}
         isOpen={Boolean(selectedDossierChallenge)}
         onClose={() => setSelectedDossierChallenge(null)}
+        onOpenChat={(c) => setChatChallenge(c)}
         onOpenTriage={(c) => {
           setSelectedChallenge(c);
           setIsAssignModalOpen(true);
@@ -571,6 +652,16 @@ export const UniversityProblemsDetailView = ({
           setIsAssignModalOpen(true);
         }}
       />
+
+      {/* Real-time Socket.IO Clarification Chat Dialog */}
+      {chatChallenge && (
+        <ClarificationChatModal
+          isOpen={Boolean(chatChallenge)}
+          onClose={() => setChatChallenge(null)}
+          challenge={chatChallenge}
+          isUniversityView={false}
+        />
+      )}
 
       {/* Allocation / Triage Modal */}
       <NodalAssignModal

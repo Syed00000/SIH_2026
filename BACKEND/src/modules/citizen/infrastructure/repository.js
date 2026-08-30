@@ -33,32 +33,50 @@ export class CitizenRepository {
   }
 
   async getActivitiesStats(filter = {}) {
-    const stats = await CitizenChallenge.aggregate([
-      { $match: filter },
-      {
-        $group: {
-          _id: '$status',
-          count: { $sum: 1 }
-        }
-      }
-    ]);
-
+    const challenges = (await CitizenChallenge.find(filter).lean()) || [];
     const statMap = {
       submitted: 0,
       underReview: 0,
       inProgress: 0,
       resolved: 0,
       rejected: 0,
-      total: 0
+      clarificationRequested: 0,
+      clarified: 0,
+      total: challenges.length
     };
 
-    stats.forEach(item => {
-      statMap.total += item.count;
-      if (item._id === 'Submitted') statMap.submitted += item.count;
-      else if (item._id === 'Under Review') statMap.underReview += item.count;
-      else if (item._id === 'In Progress') statMap.inProgress += item.count;
-      else if (item._id === 'Resolved') statMap.resolved += item.count;
-      else if (item._id === 'Rejected') statMap.rejected += item.count;
+    challenges.forEach((c) => {
+      const isClarification =
+        c.status === 'Clarification Requested' ||
+        c.acceptanceStatus === 'Clarification Requested' ||
+        c.assignedUniversity?.acceptanceStatus === 'Clarification Requested' ||
+        Boolean(c.clarificationQuery && c.clarificationStatus === 'PENDING');
+      const isClarified =
+        c.status === 'Clarified' ||
+        c.acceptanceStatus === 'Clarified' ||
+        c.assignedUniversity?.acceptanceStatus === 'Clarified' ||
+        c.clarificationStatus === 'RESOLVED';
+      const isAccepted =
+        c.status === 'Accepted' ||
+        c.acceptanceStatus === 'Accepted' ||
+        c.assignedUniversity?.acceptanceStatus === 'Accepted' ||
+        (c.status === 'In Progress' && !isClarification);
+
+      if (isClarification) {
+        statMap.clarificationRequested += 1;
+      } else if (c.status === 'Resolved') {
+        statMap.resolved += 1;
+      } else if (c.status === 'Rejected' || c.status === 'Declined' || c.acceptanceStatus === 'Declined') {
+        statMap.rejected += 1;
+      } else if (isAccepted) {
+        statMap.inProgress += 1;
+      } else {
+        statMap.underReview += 1;
+      }
+
+      if (isClarified) {
+        statMap.clarified += 1;
+      }
     });
 
     return statMap;
@@ -125,8 +143,18 @@ export class CitizenRepository {
       triageData.assignedUniversity?.id &&
       challenge.assignedUniversity.id.toUpperCase() !== triageData.assignedUniversity.id.toUpperCase();
 
-    const newStatus = triageData.status || (triageData.assignedUniversity?.id ? 'In Progress' : 'Under Review');
+    const newStatus = triageData.status || (triageData.clarificationResponse ? 'Clarified' : triageData.assignedUniversity?.id ? 'In Progress' : 'Under Review');
     challenge.status = newStatus;
+
+    if (triageData.clarificationResponse) {
+      challenge.clarificationResponse = triageData.clarificationResponse.trim();
+      challenge.clarificationStatus = 'RESOLVED';
+      challenge.status = 'Clarified';
+      challenge.acceptanceStatus = 'Clarified';
+      if (challenge.assignedUniversity) {
+        challenge.assignedUniversity.acceptanceStatus = 'Clarified';
+      }
+    }
 
     if (triageData.assignedUniversity && triageData.assignedUniversity.id) {
       challenge.assignedUniversity = {
@@ -134,11 +162,24 @@ export class CitizenRepository {
         name: triageData.assignedUniversity.name || 'Assigned University',
         department: triageData.assignedUniversity.department || 'Innovation Lab',
         mentorName: triageData.assignedUniversity.mentorName || '',
-        assignedAt: new Date(),
-        acceptanceStatus: triageData.acceptanceStatus || 'Pending Review',
+        assignedAt: challenge.assignedUniversity?.assignedAt || new Date(),
+        acceptanceStatus: triageData.acceptanceStatus || (triageData.clarificationResponse ? 'Clarified' : 'Pending Review'),
+        clarificationQuery: challenge.assignedUniversity?.clarificationQuery || challenge.clarificationQuery || '',
         declineReason: ''
       };
-      challenge.acceptanceStatus = triageData.acceptanceStatus || 'Pending Review';
+      challenge.acceptanceStatus = triageData.acceptanceStatus || (triageData.clarificationResponse ? 'Clarified' : 'Pending Review');
+
+      if (user) {
+        challenge.allocatedBy = {
+          id: user.id || user._id ? String(user.id || user._id) : '',
+          name: user.fullName || user.name || 'State Nodal Officer',
+          email: user.email || 'nodal@joharsetu.gov.in',
+          phone: user.mobileNumber || user.phone || '9123456789',
+          designation: user.designation || (user.role === 'NODAL' ? 'State Nodal Officer' : 'Higher Education Director'),
+          department: user.department || 'Dept. of Higher & Technical Education, GoJ',
+          allocatedAt: new Date()
+        };
+      }
     }
 
     // Milestones update

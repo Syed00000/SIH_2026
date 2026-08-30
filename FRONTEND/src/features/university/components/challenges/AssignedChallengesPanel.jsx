@@ -4,6 +4,7 @@ import { ChallengesTable } from './ChallengesTable.jsx';
 import { ChallengeInspector } from './ChallengeInspector.jsx';
 import { ChallengeActionModal } from './ChallengeActionModal.jsx';
 import { ProblemEvidenceDossierModal } from '../../../nodal/components/ProblemEvidenceDossierModal.jsx';
+import { ClarificationChatModal } from '../../../clarification/components/ClarificationChatModal.jsx';
 import { universityApiService } from '../../services/universityApiService.js';
 
 export const AssignedChallengesPanel = ({
@@ -22,6 +23,7 @@ export const AssignedChallengesPanel = ({
   const [challengeList, setChallengeList] = useState(initialChallenges);
   const [selectedChallenge, setSelectedChallenge] = useState(null);
   const [dossierChallenge, setDossierChallenge] = useState(null);
+  const [chatChallenge, setChatChallenge] = useState(null);
   const [loading, setLoading] = useState(false);
   const [modalConfig, setModalConfig] = useState({ isOpen: false, type: 'accept', challenge: null });
 
@@ -49,16 +51,21 @@ export const AssignedChallengesPanel = ({
     }
   }, [initialChallenges]);
 
-  const getNormalizedStatus = (status) => {
-    if (!status) return 'Pending';
-    const s = String(status).toLowerCase();
-    if (s.includes('accept') || s === 'completed') return 'Accepted';
-    if (s.includes('reject') || s.includes('decline')) return 'Rejected';
+  const getNormalizedStatus = (challenge) => {
+    if (!challenge) return 'Pending';
+    const status = challenge.status;
+    const acceptance = challenge.acceptanceStatus || challenge.assignedUniversity?.acceptanceStatus;
+    const s = String(status || '').toLowerCase();
+    const acc = String(acceptance || '').toLowerCase();
+    if (s.includes('accept') || acc === 'accepted' || s === 'completed') return 'Accepted';
+    if (s.includes('reject') || s.includes('decline') || acc === 'declined') return 'Rejected';
+    if (s === 'clarified' || acc === 'clarified' || Boolean(challenge.clarificationResponse)) return 'Clarified';
+    if (s.includes('clarif') || acc.includes('clarif') || Boolean(challenge.clarificationQuery)) return 'Clarification Requested';
     return 'Pending';
   };
 
   const filtered = challengeList.filter((c) => {
-    if (statusFilter !== 'All Status' && getNormalizedStatus(c.status) !== statusFilter) return false;
+    if (statusFilter !== 'All Status' && getNormalizedStatus(c) !== statusFilter) return false;
     if (domainFilter !== 'All Domains' && c.domain !== domainFilter) return false;
     if (districtFilter !== 'All Districts' && c.district !== districtFilter) return false;
     if (priorityFilter !== 'All Priority' && c.priority !== priorityFilter) return false;
@@ -84,8 +91,17 @@ export const AssignedChallengesPanel = ({
 
   const handleModalSubmit = async (payload) => {
     const { type, challengeId, reason, remarks, query } = payload;
-    let newStatus = type === 'decline' || type === 'reject' ? 'Rejected' : 'Accepted';
-    let actionText = 'View';
+    let newStatus = type === 'decline' || type === 'reject'
+      ? 'Rejected'
+      : type === 'clarify'
+      ? 'Clarification Requested'
+      : 'Accepted';
+    let accStatus = type === 'decline' || type === 'reject'
+      ? 'Declined'
+      : type === 'clarify'
+      ? 'Clarification Requested'
+      : 'Accepted';
+    let actionText = type === 'clarify' ? 'Clarification Active' : 'View';
 
     if (type === 'assign') {
       if (onAssignFaculty) {
@@ -97,7 +113,7 @@ export const AssignedChallengesPanel = ({
         });
       }
     } else {
-      const metadata = { declineReason: reason, remarks, query };
+      const metadata = { declineReason: reason, remarks, query: query || remarks };
       if (onUpdateChallengeStatus) {
         await onUpdateChallengeStatus(challengeId, newStatus, actionText, metadata);
       } else {
@@ -105,8 +121,24 @@ export const AssignedChallengesPanel = ({
       }
     }
 
-    setSelectedChallenge((prev) => (prev && (prev.id === challengeId || prev.challengeId === challengeId) ? { ...prev, status: newStatus, acceptanceStatus: newStatus === 'Rejected' ? 'Declined' : 'Accepted', declineReason: reason, actionText, actionLabel: actionText } : prev));
-    setChallengeList((prev) => prev.map((c) => (c.id === challengeId || c.challengeId === challengeId ? { ...c, status: newStatus, acceptanceStatus: newStatus === 'Rejected' ? 'Declined' : 'Accepted', declineReason: reason, actionText, actionLabel: actionText } : c)));
+    setSelectedChallenge((prev) => (prev && (prev.id === challengeId || prev.challengeId === challengeId) ? {
+      ...prev,
+      status: newStatus,
+      acceptanceStatus: accStatus,
+      declineReason: reason,
+      clarificationQuery: query || remarks,
+      actionText,
+      actionLabel: actionText
+    } : prev));
+    setChallengeList((prev) => prev.map((c) => (c.id === challengeId || c.challengeId === challengeId ? {
+      ...c,
+      status: newStatus,
+      acceptanceStatus: accStatus,
+      declineReason: reason,
+      clarificationQuery: query || remarks,
+      actionText,
+      actionLabel: actionText
+    } : c)));
     await fetchChallenges();
   };
 
@@ -151,44 +183,51 @@ export const AssignedChallengesPanel = ({
       <div className="w-full">
         <ChallengesTable
           challenges={filtered}
-          selectedChallengeId={selectedChallenge?.id || selectedChallenge?.challengeId}
-          onSelectChallenge={(c) => setSelectedChallenge(c)}
-          onActionClick={(c) => setSelectedChallenge(c)}
+          selectedChallengeId={selectedChallenge?.id || selectedChallenge?.challengeId || dossierChallenge?.id || dossierChallenge?.challengeId}
+          onSelectChallenge={(c) => setDossierChallenge(c)}
+          onActionClick={(c) => setDossierChallenge(c)}
           onAcceptChallenge={handleDirectAccept}
           onDeclineChallenge={handleDirectDecline}
           onViewDossier={(c) => setDossierChallenge(c)}
+          onOpenChat={(c) => setChatChallenge(c)}
           totalCount={challengeList.length}
           loading={loading}
         />
       </div>
 
-      {/* Challenge Inspector Drawer / Modal */}
-      {selectedChallenge && (
-        <div
-          className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-5 animate-in fade-in duration-150"
-          onClick={() => setSelectedChallenge(null)}
-        >
-          <div
-            className="bg-white border border-slate-200/90 rounded-xl shadow-2xl max-w-2xl w-full max-h-[88vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-150"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <ChallengeInspector
-              challenge={selectedChallenge}
-              onClose={() => setSelectedChallenge(null)}
-              onAccept={(c) => handleOpenModal('accept', c)}
-              onRequestClarification={(c) => handleOpenModal('clarify', c)}
-              onDecline={(c) => handleOpenModal('decline', c)}
-            />
-          </div>
-        </div>
-      )}
-
-      {/* Official Evidence & Dossier Modal with PDF Export */}
+      {/* Official Evidence & Dossier Modal (Exact Admin/Nodal layout) with University Actions */}
       {dossierChallenge && (
         <ProblemEvidenceDossierModal
           challenge={dossierChallenge}
           isOpen={Boolean(dossierChallenge)}
           onClose={() => setDossierChallenge(null)}
+          isUniversityView={true}
+          onAccept={(c) => handleOpenModal('accept', c)}
+          onRequestClarification={(c) => setChatChallenge(c)}
+          onOpenChat={(c) => setChatChallenge(c)}
+          onDecline={(c) => handleOpenModal('decline', c)}
+          onAssignFaculty={(c) => handleOpenModal('assign', c)}
+        />
+      )}
+
+      {/* Real-time Socket.IO Clarification Chat Dialog */}
+      {chatChallenge && (
+        <ClarificationChatModal
+          isOpen={Boolean(chatChallenge)}
+          onClose={() => {
+            setChatChallenge(null);
+            fetchChallenges();
+          }}
+          challenge={chatChallenge}
+          isUniversityView={true}
+          onAcceptChallenge={(c) => {
+            setChatChallenge(null);
+            handleDirectAccept(c);
+          }}
+          onDeclineChallenge={(c) => {
+            setChatChallenge(null);
+            handleDirectDecline(c);
+          }}
         />
       )}
 

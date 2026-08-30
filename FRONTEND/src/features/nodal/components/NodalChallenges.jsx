@@ -15,19 +15,29 @@ import {
   RotateCcw,
   Calendar,
   FileText,
-  X
+  X,
+  HelpCircle,
+  MessageSquare
 } from 'lucide-react';
 import { NodalFilterBar } from './NodalFilterBar.jsx';
 import { NodalAssignModal } from './NodalAssignModal.jsx';
 import { ProblemEvidenceDossierModal } from './ProblemEvidenceDossierModal.jsx';
+import { ClarificationChatModal } from '../../clarification/components/ClarificationChatModal.jsx';
 import { citizenService } from '../../citizen/services/citizenService.js';
 
-export const NodalChallenges = () => {
+export const NodalChallenges = ({ initialStatusFilter = 'All Status' }) => {
   const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('All Status');
+  const [statusFilter, setStatusFilter] = useState(initialStatusFilter);
   const [domainFilter, setDomainFilter] = useState('All Domains');
   const [districtFilter, setDistrictFilter] = useState('All Districts');
   const [priorityFilter, setPriorityFilter] = useState('All Priority');
+  const [chatChallenge, setChatChallenge] = useState(null);
+
+  useEffect(() => {
+    if (initialStatusFilter) {
+      setStatusFilter(initialStatusFilter);
+    }
+  }, [initialStatusFilter]);
 
   const [challenges, setChallenges] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -83,41 +93,58 @@ export const NodalChallenges = () => {
   const handleQuickDelete = async (e, chl) => {
     e.stopPropagation();
     const chlId = chl.challengeId || chl.id;
-    if (!window.confirm(`Are you sure you want to permanently delete / dismiss ${chlId} from MongoDB?`)) {
+    if (!window.confirm(`Are you sure you want to permanently delete / dismiss ${chlId} from the State Innovation Registry?`)) {
       return;
     }
 
     try {
       setDeletingId(chlId);
       await citizenService.deleteChallenge(chlId);
-      setToastMsg(`Problem statement ${chlId} deleted successfully from MongoDB.`);
+      setToastMsg(`Problem statement ${chlId} deleted successfully.`);
       loadChallenges();
       setTimeout(() => setToastMsg(''), 4000);
     } catch (err) {
-      alert('Failed to delete problem: ' + err.message);
+      alert('Failed to delete challenge: ' + err.message);
     } finally {
       setDeletingId(null);
     }
   };
 
   const handleTriageSuccess = (updatedData) => {
-    const targetId = selectedChallenge?.challengeId || selectedChallenge?.id;
     if (updatedData?.deleted) {
-      setToastMsg(`Problem ${targetId} permanently deleted.`);
-    } else {
-      setToastMsg(`Challenge ${targetId} successfully updated & synchronized in MongoDB!`);
+      loadChallenges();
+      return;
     }
+    const targetId = updatedData.challengeId || updatedData.id;
+    setToastMsg(`Problem statement ${targetId} successfully triaged and allocated!`);
     loadChallenges();
     setTimeout(() => setToastMsg(''), 5000);
   };
 
   const filtered = challenges.filter((c) => {
     const status = c.status || 'Under Review';
+    const acceptance = c.assignedUniversity?.acceptanceStatus || c.acceptanceStatus || '';
     const domain = c.domain || '';
     const district = c.location?.district || c.district || '';
     const priority = c.priority || 'Medium';
 
-    if (statusFilter !== 'All Status' && status !== statusFilter) return false;
+    if (statusFilter !== 'All Status') {
+      if (statusFilter === 'Clarification Requested') {
+        if (
+          status !== 'Clarification Requested' &&
+          acceptance !== 'Clarification Requested' &&
+          !(c.clarificationQuery && c.clarificationStatus === 'PENDING')
+        ) {
+          return false;
+        }
+      } else if (statusFilter === 'Clarified') {
+        if (status !== 'Clarified' && acceptance !== 'Clarified' && c.clarificationStatus !== 'RESOLVED') {
+          return false;
+        }
+      } else if (status !== statusFilter) {
+        return false;
+      }
+    }
     if (domainFilter !== 'All Domains' && !domain.includes(domainFilter)) return false;
     if (districtFilter !== 'All Districts' && district !== districtFilter) return false;
     if (priorityFilter !== 'All Priority' && priority !== priorityFilter) return false;
@@ -181,7 +208,7 @@ export const NodalChallenges = () => {
       {loading ? (
         <div className="flex flex-col items-center justify-center py-16 text-slate-400 space-y-2.5 bg-white border border-slate-200/90 rounded-lg shadow-2xs">
           <RefreshCw className="w-6 h-6 animate-spin text-emerald-700" />
-          <span className="text-xs font-semibold text-slate-600">Fetching live citizen submissions from MongoDB...</span>
+          <span className="text-xs font-semibold text-slate-600">Fetching live citizen submissions from State Innovation Registry...</span>
         </div>
       ) : filtered.length === 0 ? (
         <div className="bg-white border border-slate-200/90 rounded-lg p-10 text-center space-y-3.5 shadow-2xs">
@@ -208,19 +235,30 @@ export const NodalChallenges = () => {
               : '29 Aug 2026';
 
             const statusStr = item.status || 'Under Review';
-            const isResolved = statusStr === 'Resolved';
-            const isRejected = statusStr === 'Rejected';
-            const isInProgress = statusStr === 'In Progress' || statusStr === 'Accepted';
-
             const acceptance = item.assignedUniversity?.acceptanceStatus || item.acceptanceStatus || (assignedUni ? 'Pending Review' : 'Not Assigned');
             const isAccepted = acceptance === 'Accepted';
             const isDeclined = acceptance === 'Declined';
+            const isClarificationRequested =
+              acceptance === 'Clarification Requested' ||
+              statusStr === 'Clarification Requested' ||
+              (item.clarificationQuery && item.clarificationStatus === 'PENDING');
+            const isClarified =
+              acceptance === 'Clarified' ||
+              statusStr === 'Clarified' ||
+              item.clarificationStatus === 'RESOLVED';
+            const isResolved = statusStr === 'Resolved';
+            const isRejected = statusStr === 'Rejected';
+            const isInProgress = statusStr === 'In Progress' || statusStr === 'Accepted';
 
             return (
               <div
                 key={id}
                 onClick={() => handleOpenTriage(item)}
-                className="group bg-white border border-slate-200/90 hover:border-emerald-400 rounded-lg p-4.5 shadow-2xs hover:shadow-xs transition-all duration-200 cursor-pointer space-y-3 text-left"
+                className={`group bg-white border ${
+                  isClarificationRequested
+                    ? 'border-amber-400 bg-amber-50/15 ring-1 ring-amber-300'
+                    : 'border-slate-200/90 hover:border-emerald-400'
+                } rounded-lg p-4.5 shadow-2xs hover:shadow-xs transition-all duration-200 cursor-pointer space-y-3 text-left`}
               >
                 {/* Header Row: ID + Priority on Left, HEI Acceptance & Status on Right */}
                 <div className="flex flex-wrap items-center justify-between gap-2">
@@ -243,11 +281,27 @@ export const NodalChallenges = () => {
                       <>
                         <span
                           className={`flex items-center space-x-1 ${
-                            isAccepted ? 'text-emerald-700' : isDeclined ? 'text-rose-700' : 'text-amber-700'
+                            isAccepted
+                              ? 'text-emerald-700'
+                              : isDeclined
+                              ? 'text-rose-700'
+                              : isClarificationRequested
+                              ? 'text-amber-800'
+                              : isClarified
+                              ? 'text-emerald-700'
+                              : 'text-amber-700'
                           }`}
                         >
                           <span>
-                            {isAccepted ? 'Accepted by HEI' : isDeclined ? 'Declined by HEI' : 'Pending HEI Review'}
+                            {isAccepted
+                              ? 'Accepted by HEI'
+                              : isDeclined
+                              ? 'Declined by HEI'
+                              : isClarificationRequested
+                              ? 'Clarification Requested by HEI'
+                              : isClarified
+                              ? 'Clarification Resolved'
+                              : 'Pending HEI Review'}
                           </span>
                         </span>
                         <span className="text-slate-300">|</span>
@@ -261,12 +315,20 @@ export const NodalChallenges = () => {
                           ? 'text-emerald-700'
                           : isRejected
                           ? 'text-rose-700'
+                          : isClarificationRequested
+                          ? 'text-amber-800 font-mono font-bold'
+                          : isClarified
+                          ? 'text-emerald-800 font-bold'
                           : isInProgress
                           ? 'text-blue-700'
                           : 'text-amber-700'
                       }`}
                     >
-                      {statusStr}
+                      {isClarificationRequested
+                        ? 'Clarification Requested'
+                        : isClarified
+                        ? 'Clarified'
+                        : statusStr}
                     </span>
                   </div>
                 </div>
@@ -281,6 +343,40 @@ export const NodalChallenges = () => {
                     "{item.description || item.problemStatement}"
                   </p>
 
+                  {/* Real-time Live Chat Ribbon with Red Unread Badge */}
+                  {(isClarificationRequested || isClarified) && (
+                    <div className="p-3 bg-gradient-to-r from-emerald-50 via-white to-slate-50 border border-emerald-200/90 rounded-xl text-xs flex flex-wrap items-center justify-between gap-2 shadow-2xs">
+                      <div className="flex items-center space-x-2">
+                        {isClarificationRequested ? (
+                          <span className="flex items-center space-x-1.5 bg-rose-600 text-white font-black text-[10px] px-2.5 py-1 rounded-full shadow-xs animate-pulse">
+                            <span className="w-1.5 h-1.5 rounded-full bg-white animate-ping"></span>
+                            <span>🔴 Unread Message from {assignedUni || 'HEI'}</span>
+                          </span>
+                        ) : (
+                          <span className="flex items-center space-x-1.5 bg-emerald-100 text-emerald-900 font-extrabold text-[10px] px-2.5 py-1 rounded-full border border-emerald-300">
+                            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-700" />
+                            <span>Live Room Active</span>
+                          </span>
+                        )}
+                        <span className="text-slate-600 font-medium hidden sm:inline">
+                          Direct 2-way communication channel with {assignedUni || 'University R&D Desk'}
+                        </span>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setChatChallenge(item);
+                        }}
+                        className="px-3.5 py-1.5 bg-[#007A61] hover:bg-[#006650] text-white rounded-xl text-xs font-extrabold transition-all cursor-pointer shadow-2xs flex items-center space-x-1.5"
+                      >
+                        <MessageSquare className="w-3.5 h-3.5" />
+                        <span>💬 Open Live Chat</span>
+                      </button>
+                    </div>
+                  )}
+
                   {isDeclined && (
                     <div className="p-2.5 bg-rose-50 border border-rose-200 rounded-md text-xs text-rose-900 flex flex-wrap items-center justify-between gap-2 shadow-2xs">
                       <div className="flex items-center space-x-2">
@@ -293,7 +389,7 @@ export const NodalChallenges = () => {
                         type="button"
                         onClick={(e) => {
                           e.stopPropagation();
-                          handleOpenAssign(item);
+                          handleOpenTriage(item);
                         }}
                         className="px-2.5 py-1 bg-rose-600 hover:bg-rose-700 text-white rounded text-xs font-bold transition-all cursor-pointer shadow-2xs shrink-0"
                       >
@@ -336,6 +432,23 @@ export const NodalChallenges = () => {
                   </div>
 
                   <div className="flex items-center space-x-2">
+                    {/* Live Chat with HEI Button */}
+                    {assignedUni && (
+                      <button
+                        type="button"
+                        onClick={() => setChatChallenge(item)}
+                        className={`text-xs font-bold px-2.5 py-1 rounded-md transition-all cursor-pointer flex items-center space-x-1 shadow-2xs border ${
+                          isClarificationRequested
+                            ? 'bg-amber-600 hover:bg-amber-700 text-white border-amber-700 animate-pulse'
+                            : 'bg-emerald-50 hover:bg-emerald-700 hover:text-white text-emerald-800 border-emerald-300'
+                        }`}
+                        title={`Open Real-time Clarification Room with ${assignedUni}`}
+                      >
+                        <MessageSquare className="w-3.5 h-3.5" />
+                        <span>Chat</span>
+                      </button>
+                    )}
+
                     {/* Inspect Evidence & GIS Dossier */}
                     <button
                       onClick={() => setSelectedDossierChallenge(item)}
@@ -402,6 +515,7 @@ export const NodalChallenges = () => {
         challenge={selectedDossierChallenge}
         isOpen={Boolean(selectedDossierChallenge)}
         onClose={() => setSelectedDossierChallenge(null)}
+        onOpenChat={(c) => setChatChallenge(c)}
         onOpenTriage={(c) => {
           setSelectedChallenge(c);
           setIsAssignModalOpen(true);
@@ -411,6 +525,19 @@ export const NodalChallenges = () => {
           setIsAssignModalOpen(true);
         }}
       />
+
+      {/* Real-time Socket.IO Clarification Chat Dialog */}
+      {chatChallenge && (
+        <ClarificationChatModal
+          isOpen={Boolean(chatChallenge)}
+          onClose={() => {
+            setChatChallenge(null);
+            loadChallenges();
+          }}
+          challenge={chatChallenge}
+          isUniversityView={false}
+        />
+      )}
 
       {/* Triage & Allocation Modal */}
       <NodalAssignModal

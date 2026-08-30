@@ -21,9 +21,13 @@ export class UniversityController {
     try {
       const { id } = req.params;
       const code = req.query.universityCode || req.user?.profile?.aisheCode || 'RUNI-JH';
-      const { status, actionLabel, remarks, query, declineReason } = req.body;
+      const { status, actionLabel, remarks, query, declineReason, clarificationQuery } = req.body;
       const updated = await universityService.updateChallengeStatus(id, code, status, actionLabel, {
-        clarificationQuery: query || '', declineReason: declineReason || '', declineRemarks: remarks || ''
+        clarificationQuery: clarificationQuery || query || remarks || '',
+        query: query || clarificationQuery || remarks || '',
+        declineReason: declineReason || '',
+        declineRemarks: remarks || '',
+        remarks: remarks || query || clarificationQuery || ''
       });
       res.status(200).json({ status: 'SUCCESS', message: 'Challenge status updated', data: updated });
     } catch (error) { next(error); }

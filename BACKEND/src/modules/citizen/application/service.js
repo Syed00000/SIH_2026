@@ -142,6 +142,8 @@ export class CitizenService {
       activities: {
         submitted: activityStats.submitted || 0,
         underReview: activityStats.underReview || 0,
+        clarificationRequested: activityStats.clarificationRequested || 0,
+        clarified: activityStats.clarified || 0,
         inProgress: activityStats.inProgress || 0,
         resolved: activityStats.resolved || 0,
         total: activityStats.total || 0
