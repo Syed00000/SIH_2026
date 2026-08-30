@@ -37,12 +37,12 @@ const testAPI = async () => {
     const projectsData = await projectsRes.json();
     if (projectsRes.ok && Array.isArray(projectsData.data || projectsData)) {
       const list = projectsData.data || projectsData;
-      console.log(`✅ Ranchi University Projects retrieved successfully! Found ${list.length} projects.`);
+      console.log(` Ranchi University Projects retrieved successfully! Found ${list.length} projects.`);
       list.forEach((p) => {
         console.log(`   - [${p.projectId}] ${p.title} (${p.domain}) - Status: ${p.status}`);
       });
     } else {
-      console.error('❌ Ranchi University Projects API failed:', projectsData);
+      console.error(' Ranchi University Projects API failed:', projectsData);
     }
 
     // 4. Test Government Overview Stats API

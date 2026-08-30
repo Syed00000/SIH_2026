@@ -225,23 +225,59 @@ export const ProjectDrawerTabs = ({ project, activeTab, onEdit, onAssignMentor, 
   }
 
   if (activeTab === 'team') {
+    const hasStudentTeam = Array.isArray(project.teamMembers) && project.teamMembers.length > 0;
+
     return (
-      <div className="space-y-2">
-        {(project.teamMembers?.length ? project.teamMembers : [
-          { name: 'Ali Khan', role: 'Team Lead', department: 'Computer Science' },
-          { name: 'Neha Verma', role: 'IoT Hardware', department: 'Electronics' },
-          { name: 'Rahul Kumar', role: 'Data Analytics', department: 'Information Technology' }
-        ]).map((tm, idx) => (
-          <div key={idx} className="p-2 bg-slate-50 border border-slate-200 flex items-center justify-between">
-            <div>
-              <div className="font-bold text-slate-900 text-xs">{tm.name}</div>
-              <div className="text-[10.5px] text-slate-500">{tm.department}</div>
+      <div className="space-y-3">
+        {/* Principal Investigator / Lead Mentor */}
+        <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-1.5">
+          <span className="text-[10px] text-slate-500 font-bold uppercase block">Principal Investigator / Lead Mentor</span>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-2.5">
+              <div className="w-8 h-8 rounded-lg bg-[#007A61] text-white flex items-center justify-center text-xs font-bold shrink-0">
+                {initials}
+              </div>
+              <div>
+                <div className="font-extrabold text-slate-900 text-xs">{facultyName}</div>
+                <div className="text-[10.5px] text-slate-500">{facultyDept}</div>
+              </div>
             </div>
-            <span className="text-[10px] font-bold text-slate-700 bg-white border border-slate-200 px-1.5 py-0.5">
-              {tm.role}
+            <span className="text-[10px] font-bold text-emerald-800 bg-emerald-100 border border-emerald-300 px-2 py-0.5 rounded">
+              Lead Mentor
             </span>
           </div>
-        ))}
+        </div>
+
+        {/* Student Team Section */}
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <span className="text-[10.5px] font-bold text-slate-900 uppercase">Student Research Team</span>
+            <span className="text-[10px] font-mono text-slate-500">
+              {hasStudentTeam ? `${project.teamMembers.length} Members Assigned` : 'Formation Pending'}
+            </span>
+          </div>
+
+          {hasStudentTeam ? (
+            project.teamMembers.map((tm, idx) => (
+              <div key={idx} className="p-2.5 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between">
+                <div>
+                  <div className="font-bold text-slate-900 text-xs">{tm.name}</div>
+                  <div className="text-[10.5px] text-slate-500">{tm.department}</div>
+                </div>
+                <span className="text-[10px] font-bold text-slate-700 bg-white border border-slate-200 px-2 py-0.5 rounded">
+                  {tm.role}
+                </span>
+              </div>
+            ))
+          ) : (
+            <div className="p-4 bg-slate-50 border border-dashed border-slate-300 rounded-xl text-center space-y-1.5">
+              <div className="text-xs font-bold text-slate-700">Student Team Not Assigned Yet</div>
+              <p className="text-[11px] text-slate-500 max-w-sm mx-auto">
+                Student innovators will be shortlisted and onboarded by <strong>{facultyName}</strong> during Milestone 3 (Team Formation & Scoping).
+              </p>
+            </div>
+          )}
+        </div>
       </div>
     );
   }

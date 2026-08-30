@@ -37,7 +37,7 @@ export class UniversityDashboardRepository {
       try {
         const uni = await MongooseUniversity.findOne(query).lean();
         if (uni) return uni;
-      } catch (err) {}
+      } catch (err) { }
     }
     return null;
   }
@@ -76,7 +76,7 @@ export class UniversityDashboardRepository {
 
       const formatChallenge = (c) => {
         const loc = c.location || c.locationDetails || {};
-        const district = loc.district || c.district || 'Ranchi';
+        const district = loc.district || c.district || 'NA';
         const block = loc.block && loc.block !== 'Not specified' ? loc.block : (loc.subDivision || 'Not specified');
         const subDivision = loc.subDivision && loc.subDivision !== 'Not specified' ? loc.subDivision : (loc.block || 'Not specified');
         const panchayatOrWard = loc.panchayatOrWard && loc.panchayatOrWard !== 'Not specified' ? loc.panchayatOrWard : (loc.gramPanchayat || loc.ward || 'Not specified');
@@ -137,12 +137,12 @@ export class UniversityDashboardRepository {
           status: accStatus === 'Accepted'
             ? 'Accepted'
             : accStatus === 'Declined'
-            ? 'Declined'
-            : accStatus === 'Clarified' || c.status === 'Clarified'
-            ? 'Clarified'
-            : accStatus === 'Clarification Requested' || c.status === 'Clarification Requested'
-            ? 'Clarification Requested'
-            : 'Pending',
+              ? 'Declined'
+              : accStatus === 'Clarified' || c.status === 'Clarified'
+                ? 'Clarified'
+                : accStatus === 'Clarification Requested' || c.status === 'Clarification Requested'
+                  ? 'Clarification Requested'
+                  : 'Pending',
           acceptanceStatus: accStatus,
           declineReason: assignedUni.declineReason,
           clarificationQuery: c.clarificationQuery || c.assignedUniversity?.clarificationQuery || '',
@@ -222,7 +222,73 @@ export class UniversityDashboardRepository {
     const query = { universityCode: code };
     if (!includeDeleted) query.isDeleted = { $ne: true };
     try {
-      return (await UniversityProject.find(query).sort({ updatedAt: -1 }).lean()) || [];
+      let projects = (await UniversityProject.find(query).sort({ updatedAt: -1 }).lean()) || [];
+
+      // Also find any accepted or assigned challenges for this university
+      const acceptedChallenges = await CitizenChallenge.find({
+        $or: [
+          { 'assignedUniversity.id': { $in: [code, 'RU001', 'RUNI-JH'] } },
+          { 'assignedUniversity.name': new RegExp('Ranchi', 'i') },
+          { status: { $in: ['In Progress', 'Accepted', 'Clarified', 'Under Review'] }, 'assignedUniversity.acceptanceStatus': 'Accepted' }
+        ]
+      }).lean();
+
+      const existingChallengeIds = new Set(projects.map((p) => p.challengeId).filter(Boolean));
+
+      for (const chl of acceptedChallenges) {
+        if (!existingChallengeIds.has(chl.challengeId)) {
+          const mentor = chl.assignedUniversity?.mentorName || chl.assignedFaculty?.name || null;
+          const dept = chl.assignedUniversity?.department || chl.assignedFaculty?.department || 'Engineering & Technology';
+
+          const projDoc = {
+            projectId: `PRJ-${chl.challengeId?.replace(/[^0-9]/g, '') || Math.floor(1000 + Math.random() * 9000)}`,
+            challengeId: chl.challengeId,
+            universityCode: code,
+            title: chl.title,
+            problemStatement: chl.description || chl.problemStatement || chl.title,
+            domain: chl.domain || chl.category || 'General',
+            budget: chl.estimatedCost ? `₹ ${Number(chl.estimatedCost).toLocaleString('en-IN')}` : '₹ 75,000',
+            leadMentor: mentor || 'Unassigned',
+            facultyMentor: mentor ? { name: mentor, department: dept, designation: 'Lead Faculty Mentor' } : null,
+            status: chl.status === 'Resolved' ? 'Completed' : 'In Progress',
+            progressPercentage: mentor ? 35 : 15,
+            milestonesCompleted: mentor ? 2 : 1,
+            milestonesTotal: 7,
+            deadline: '30 Nov 2026',
+            timeline: '6 Months (Target: Nov 2026)',
+            daysLeft: 'Active Phase',
+            teamMembers: [],
+            isDeleted: false,
+            milestones: [
+              { id: 1, title: 'Project & Challenge Allocation', status: 'Completed', dueDate: '15 May 2026', completedAt: chl.createdAt || new Date() },
+              { id: 2, title: mentor ? `Lead Mentor Onboarded (${mentor})` : 'Faculty Mentor Assignment', status: mentor ? 'Completed' : 'In Progress', dueDate: '25 May 2026', completedAt: mentor ? new Date() : null },
+              { id: 3, title: 'Student Team Formation & Scoping', status: mentor ? 'In Progress' : 'Pending', dueDate: '15 Jun 2026' },
+              { id: 4, title: 'Sensor Rig Prototyping (TRL-4)', status: 'Pending', dueDate: '20 Jul 2026' },
+              { id: 5, title: 'Pilot Testing & Field Calibration', status: 'Pending', dueDate: '15 Aug 2026' },
+              { id: 6, title: 'Solution Validation & District Trials', status: 'Pending', dueDate: '10 Oct 2026' },
+              { id: 7, title: 'Government Handover & Impact Review', status: 'Pending', dueDate: '30 Nov 2026' }
+            ],
+            recentActivity: [
+              { text: "Problem Statement allocated by State Nodal Officer", user: 'State Nodal Officer', time: 'Initial Allocation', type: 'milestone' },
+              ...(mentor ? [{ text: `Lead Faculty Mentor assigned (${mentor})`, user: 'University Admin', time: 'Active Lead', type: 'team' }] : []),
+              { text: "R&D Project Workspace initialized in Portfolio", user: 'System', time: 'Automated Setup', type: 'milestone' }
+            ]
+          };
+
+          try {
+            await UniversityProject.findOneAndUpdate(
+              { challengeId: chl.challengeId },
+              { $setOnInsert: projDoc },
+              { upsert: true, new: true }
+            );
+          } catch (e) {}
+
+          projects.push(projDoc);
+          existingChallengeIds.add(chl.challengeId);
+        }
+      }
+
+      return projects;
     } catch (err) {
       return [];
     }
@@ -253,7 +319,7 @@ export class UniversityDashboardRepository {
     try {
       const res = await UniversityProject.findOneAndUpdate(query, { $set: updateData }, { new: true });
       if (res) return res;
-    } catch (err) {}
+    } catch (err) { }
     return { projectId, ...updateData };
   }
 
@@ -269,20 +335,20 @@ export class UniversityDashboardRepository {
 
       const milestones = existingProj?.milestones?.length
         ? existingProj.milestones.map((m, idx) => {
-            if (idx === 0) return { ...m, status: 'Completed', completedAt: m.completedAt || new Date() };
-            if (idx === 1) return { ...m, status: 'Completed', title: `Lead Mentor Onboarded (${facultyInfo.name})`, completedAt: new Date() };
-            if (idx === 2 && m.status !== 'Completed') return { ...m, status: 'In Progress' };
-            return m;
-          })
+          if (idx === 0) return { ...m, status: 'Completed', completedAt: m.completedAt || new Date() };
+          if (idx === 1) return { ...m, status: 'Completed', title: `Lead Mentor Onboarded (${facultyInfo.name})`, completedAt: new Date() };
+          if (idx === 2 && m.status !== 'Completed') return { ...m, status: 'In Progress' };
+          return m;
+        })
         : [
-            { id: 1, title: 'Project & Challenge Allocation', status: 'Completed', dueDate: '15 May 2026', completedAt: new Date() },
-            { id: 2, title: `Lead Mentor Onboarded (${facultyInfo.name})`, status: 'Completed', dueDate: '25 May 2026', completedAt: new Date() },
-            { id: 3, title: 'Student Team Formation & Scoping', status: 'In Progress', dueDate: '15 Jun 2026' },
-            { id: 4, title: 'Sensor Rig Prototyping (TRL-4)', status: 'Pending', dueDate: '20 Jul 2026' },
-            { id: 5, title: 'Pilot Testing & Calibration', status: 'Pending', dueDate: '15 Aug 2026' },
-            { id: 6, title: 'Validation & Field Trials', status: 'Pending', dueDate: '10 Oct 2026' },
-            { id: 7, title: 'Government Handover & Report', status: 'Pending', dueDate: '30 Nov 2026' }
-          ];
+          { id: 1, title: 'Project & Challenge Allocation', status: 'Completed', dueDate: '15 May 2026', completedAt: new Date() },
+          { id: 2, title: `Lead Mentor Onboarded (${facultyInfo.name})`, status: 'Completed', dueDate: '25 May 2026', completedAt: new Date() },
+          { id: 3, title: 'Student Team Formation & Scoping', status: 'In Progress', dueDate: '15 Jun 2026' },
+          { id: 4, title: 'Sensor Rig Prototyping (TRL-4)', status: 'Pending', dueDate: '20 Jul 2026' },
+          { id: 5, title: 'Pilot Testing & Calibration', status: 'Pending', dueDate: '15 Aug 2026' },
+          { id: 6, title: 'Validation & Field Trials', status: 'Pending', dueDate: '10 Oct 2026' },
+          { id: 7, title: 'Government Handover & Report', status: 'Pending', dueDate: '30 Nov 2026' }
+        ];
 
       const res = await UniversityProject.findOneAndUpdate(
         query,
@@ -382,7 +448,7 @@ export class UniversityDashboardRepository {
         { new: true }
       );
       if (res) return res;
-    } catch (err) {}
+    } catch (err) { }
     return { success: true, projectId };
   }
 
@@ -467,7 +533,7 @@ export class UniversityDashboardRepository {
           ? { _id: facultyId }
           : { $or: [{ name: facultyId }, { email: facultyId }] };
       await UniversityFaculty.findOneAndDelete(query);
-    } catch (err) {}
+    } catch (err) { }
     return { success: true, facultyId };
   }
 
@@ -532,7 +598,7 @@ export class UniversityDashboardRepository {
     try {
       const res = await UniversityApproval.findOneAndUpdate({ approvalId }, { $set: { status } }, { new: true });
       if (res) return res;
-    } catch (err) {}
+    } catch (err) { }
     return { approvalId, status };
   }
 
@@ -565,25 +631,25 @@ export class UniversityDashboardRepository {
       const citizenStatus = isAccepted
         ? 'In Progress'
         : isDeclined
-        ? 'Declined'
-        : isClarification
-        ? 'Clarification Requested'
-        : isClarified
-        ? 'Clarified'
-        : status === 'Resolved'
-        ? 'Resolved'
-        : 'Under Review';
+          ? 'Declined'
+          : isClarification
+            ? 'Clarification Requested'
+            : isClarified
+              ? 'Clarified'
+              : status === 'Resolved'
+                ? 'Resolved'
+                : 'Under Review';
       const clarQuery = metadata.clarificationQuery || metadata.query || metadata.remarks || metadata.clarification || 'Technical ground parameters / lab reports needed.';
       const reason = metadata.declineReason || metadata.remarks || metadata.query || 'Outside departmental research scope';
       const accStatus = isAccepted
         ? 'Accepted'
         : isDeclined
-        ? 'Declined'
-        : isClarification
-        ? 'Clarification Requested'
-        : isClarified
-        ? 'Clarified'
-        : 'Pending Review';
+          ? 'Declined'
+          : isClarification
+            ? 'Clarification Requested'
+            : isClarified
+              ? 'Clarified'
+              : 'Pending Review';
 
       const updatePayload = {
         status: citizenStatus,
@@ -719,7 +785,7 @@ export class UniversityDashboardRepository {
     if (this.isDbReady()) {
       try {
         await MongooseUniversity.findOneAndUpdate({ code }, { $set: updateData }, { new: true });
-      } catch (err) {}
+      } catch (err) { }
     }
     return await this.getUniversityProfile(code);
   }

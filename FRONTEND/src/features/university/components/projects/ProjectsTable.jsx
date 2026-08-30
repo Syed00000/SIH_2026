@@ -68,8 +68,10 @@ export const ProjectsTable = ({
                 const title = p.title || 'Project';
                 const firstLetter = title.charAt(0).toUpperCase();
                 const globalIndex = startIndex + index + 1;
-                const facultyName = p.facultyMentor?.name || p.leadMentor || 'Dr. Priya Sharma';
-                const facultyDept = p.facultyMentor?.department || 'Department of Engineering';
+                const hasMentor = Boolean(p.facultyMentor?.name || (p.leadMentor && p.leadMentor !== 'Unassigned'));
+                const facultyName = p.facultyMentor?.name || p.leadMentor;
+                const facultyDept = p.facultyMentor?.department || (p.facultyMentor?.name ? 'Department of Engineering' : '');
+                const hasStudentTeam = Array.isArray(p.teamMembers) && p.teamMembers.length > 0;
                 const statusStyle = getStatusColor(p.status || 'In Progress');
 
                 return (
@@ -115,28 +117,48 @@ export const ProjectsTable = ({
 
                     {/* Lead Mentor */}
                     <td className="py-2.5 px-2.5">
-                      <div className="font-bold text-slate-900 text-xs leading-tight truncate max-w-[150px]">
-                        {facultyName}
-                      </div>
-                      <div className="text-[10px] text-slate-400 mt-0.5 truncate max-w-[150px]">
-                        {facultyDept}
-                      </div>
+                      {hasMentor ? (
+                        <>
+                          <div className="font-bold text-slate-900 text-xs leading-tight truncate max-w-[150px]">
+                            {facultyName}
+                          </div>
+                          <div className="text-[10px] text-slate-400 mt-0.5 truncate max-w-[150px]">
+                            {facultyDept || 'Engineering Mentor'}
+                          </div>
+                        </>
+                      ) : (
+                        <>
+                          <span className="text-amber-800 font-bold text-[10.5px] bg-amber-50 px-2 py-0.5 rounded border border-amber-200 inline-block">
+                            Unassigned
+                          </span>
+                          <div className="text-[9.5px] text-slate-400 mt-0.5 font-mono">Needs Lead Mentor</div>
+                        </>
+                      )}
                     </td>
 
                     {/* Student Team */}
                     <td className="py-2.5 px-2.5">
-                      <div className="font-semibold text-slate-800 text-xs truncate max-w-[130px]" title={p.studentTeam}>
-                        {p.studentTeam || 'Innovation Team'}
-                      </div>
-                      <div className="text-[10px] text-slate-400 mt-0.5">
-                        {p.teamMembersCount || 5} Members
-                      </div>
+                      {hasStudentTeam ? (
+                        <>
+                          <div className="font-semibold text-slate-800 text-xs truncate max-w-[130px]" title={p.studentTeam}>
+                            {p.studentTeam || 'Innovation Team'}
+                          </div>
+                          <div className="text-[10px] text-slate-400 mt-0.5">
+                            {p.teamMembers.length} Members
+                          </div>
+                        </>
+                      ) : (
+                        <>
+                          <div className="text-[11px] text-slate-400 italic font-medium">Not Assigned</div>
+                          <div className="text-[9.5px] text-slate-400 font-mono mt-0.5">Team pending</div>
+                        </>
+                      )}
                     </td>
 
                     {/* Timeline / Deadline */}
                     <td className="py-2.5 px-2.5 whitespace-nowrap">
-                      <div className="font-semibold text-slate-800 text-xs">{p.deadline || '30 Nov 2026'}</div>
-                      <div className="text-[10px] text-slate-400 font-mono mt-0.5">{p.daysLeft || 'Active'}</div>
+                      <div className="font-semibold text-slate-800 text-xs">{p.timeline || p.deadline || '6 Months (Target: Nov 2026)'}</div>
+                      <div className="text-[10px] text-slate-400 font-mono mt-0.5">{p.daysLeft || 'Govt Schedule'}</div>
                     </td>
 
                     {/* Status */}
