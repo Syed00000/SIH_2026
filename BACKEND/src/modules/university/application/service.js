@@ -15,6 +15,7 @@ export class UniversityService {
     ]);
 
     const allChallenges = (challengesRes.challenges || []).map((c) => ({
+      ...c,
       id: c.challengeId,
       challengeId: c.challengeId,
       title: c.title,
@@ -22,11 +23,14 @@ export class UniversityService {
       district: c.district,
       priority: c.priority,
       status: c.status,
-      actionLabel: 'View',
-      actionText: 'View',
+      acceptanceStatus: c.acceptanceStatus || (c.status === 'Accepted' ? 'Accepted' : c.status === 'Declined' ? 'Declined' : 'Pending Review'),
+      declineReason: c.declineReason || '',
+      actionLabel: c.actionLabel || (c.status === 'Accepted' ? 'View' : 'Review'),
+      actionText: c.actionLabel || (c.status === 'Accepted' ? 'View' : 'Review'),
       assignedOn: c.assignedOn,
       deadline: c.deadline,
-      problemStatement: c.problemStatement,
+      problemStatement: c.problemStatement || c.description,
+      description: c.description || c.problemStatement,
       affectedPopulation: c.affectedPopulation,
       suggestedFaculty: c.suggestedFaculty,
       assignedFaculty: c.assignedFaculty,

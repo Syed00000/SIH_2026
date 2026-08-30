@@ -14,6 +14,9 @@ export const ChallengesTable = ({
   selectedChallengeId,
   onSelectChallenge,
   onActionClick,
+  onAcceptChallenge,
+  onDeclineChallenge,
+  onViewDossier,
   loading = false
 }) => {
   const [currentPage, setCurrentPage] = useState(1);
@@ -163,40 +166,59 @@ export const ChallengesTable = ({
                       </span>
                     </td>
 
-                    {/* Status */}
+                    {/* Status Badge */}
                     <td className="py-2.5 px-2.5 whitespace-nowrap">
-                      <span
-                        className={`inline-flex items-center space-x-1.5 text-[11px] font-semibold ${
-                          normStatus === 'Accepted'
-                            ? 'text-emerald-600'
-                            : normStatus === 'Pending'
-                            ? 'text-amber-600'
-                            : 'text-red-600'
-                        }`}
-                      >
-                        <span
-                          className={`w-1.5 h-1.5 rounded-full ${
-                            normStatus === 'Accepted'
-                              ? 'bg-emerald-500'
-                              : normStatus === 'Pending'
-                              ? 'bg-amber-500 animate-pulse'
-                              : 'bg-red-500'
-                          }`}
-                        />
-                        <span>{normStatus}</span>
-                      </span>
+                      {normStatus === 'Accepted' ? (
+                        <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[10.5px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200 shadow-2xs">
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-1.5"></span>
+                          Accepted (Active R&D)
+                        </span>
+                      ) : normStatus === 'Rejected' ? (
+                        <span 
+                          className="inline-flex items-center px-2 py-0.5 rounded-md text-[10.5px] font-bold bg-rose-50 text-rose-800 border border-rose-200 shadow-2xs"
+                          title={c.declineReason || 'Declined by University'}
+                        >
+                          <span className="w-1.5 h-1.5 rounded-full bg-rose-500 mr-1.5"></span>
+                          Declined
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[10.5px] font-bold bg-amber-50 text-amber-800 border border-amber-200 shadow-2xs">
+                          <span className="w-1.5 h-1.5 rounded-full bg-amber-500 mr-1.5 animate-pulse"></span>
+                          Pending Acceptance
+                        </span>
+                      )}
                     </td>
 
                     {/* Actions */}
                     <td className="py-2.5 px-3 text-right whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
-                      <div className="flex items-center justify-end space-x-1">
+                      <div className="flex items-center justify-end space-x-1.5">
+                        {normStatus === 'Pending' && (
+                          <>
+                            <button
+                              type="button"
+                              onClick={() => onAcceptChallenge && onAcceptChallenge(c)}
+                              className="px-2 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-md text-[11px] font-bold transition-colors cursor-pointer flex items-center space-x-1 shadow-2xs"
+                              title="Accept Challenge for Institutional R&D"
+                            >
+                              <span>Accept</span>
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => onDeclineChallenge && onDeclineChallenge(c)}
+                              className="px-2 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-md text-[11px] font-bold transition-colors cursor-pointer flex items-center space-x-1 shadow-2xs"
+                              title="Decline / Return Challenge"
+                            >
+                              <span>Decline</span>
+                            </button>
+                          </>
+                        )}
                         <button
                           type="button"
-                          onClick={() => onActionClick(c)}
-                          className="p-1.5 text-slate-400 hover:text-slate-900 hover:bg-slate-100 rounded-md transition-colors cursor-pointer"
-                          title="View Details"
+                          onClick={() => onViewDossier ? onViewDossier(c) : onActionClick(c)}
+                          className="p-1.5 text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-md transition-colors cursor-pointer border border-slate-200/80 shadow-2xs"
+                          title="View Official Ground Investigation Dossier & PDF"
                         >
-                          <Eye className="w-4 h-4" />
+                          <Eye className="w-3.5 h-3.5" />
                         </button>
                       </div>
                     </td>
