@@ -247,31 +247,28 @@ export class UniversityDashboardRepository {
             title: chl.title,
             problemStatement: chl.description || chl.problemStatement || chl.title,
             domain: chl.domain || chl.category || 'General',
-            budget: chl.estimatedCost ? `₹ ${Number(chl.estimatedCost).toLocaleString('en-IN')}` : '₹ 75,000',
+            budget: chl.budget || (chl.estimatedCost ? `₹ ${Number(chl.estimatedCost).toLocaleString('en-IN')}` : 'N/A'),
             leadMentor: mentor || 'Unassigned',
             facultyMentor: mentor ? { name: mentor, department: dept, designation: 'Lead Faculty Mentor' } : null,
             status: chl.status === 'Resolved' ? 'Completed' : 'In Progress',
-            progressPercentage: mentor ? 35 : 15,
+            progressPercentage: mentor ? 25 : 10,
             milestonesCompleted: mentor ? 2 : 1,
             milestonesTotal: 7,
-            deadline: '30 Nov 2026',
-            timeline: '6 Months (Target: Nov 2026)',
-            daysLeft: 'Active Phase',
+            deadline: 'N/A',
+            timeline: 'N/A',
+            daysLeft: 'N/A',
             teamMembers: [],
+            documents: [],
+            recentActivity: [],
             isDeleted: false,
             milestones: [
-              { id: 1, title: 'Project & Challenge Allocation', status: 'Completed', dueDate: '15 May 2026', completedAt: chl.createdAt || new Date() },
-              { id: 2, title: mentor ? `Lead Mentor Onboarded (${mentor})` : 'Faculty Mentor Assignment', status: mentor ? 'Completed' : 'In Progress', dueDate: '25 May 2026', completedAt: mentor ? new Date() : null },
-              { id: 3, title: 'Student Team Formation & Scoping', status: mentor ? 'In Progress' : 'Pending', dueDate: '15 Jun 2026' },
-              { id: 4, title: 'Sensor Rig Prototyping (TRL-4)', status: 'Pending', dueDate: '20 Jul 2026' },
-              { id: 5, title: 'Pilot Testing & Field Calibration', status: 'Pending', dueDate: '15 Aug 2026' },
-              { id: 6, title: 'Solution Validation & District Trials', status: 'Pending', dueDate: '10 Oct 2026' },
-              { id: 7, title: 'Government Handover & Impact Review', status: 'Pending', dueDate: '30 Nov 2026' }
-            ],
-            recentActivity: [
-              { text: "Problem Statement allocated by State Nodal Officer", user: 'State Nodal Officer', time: 'Initial Allocation', type: 'milestone' },
-              ...(mentor ? [{ text: `Lead Faculty Mentor assigned (${mentor})`, user: 'University Admin', time: 'Active Lead', type: 'team' }] : []),
-              { text: "R&D Project Workspace initialized in Portfolio", user: 'System', time: 'Automated Setup', type: 'milestone' }
+              { id: 1, title: 'Project & Challenge Allocation', status: 'Completed', dueDate: 'N/A', completedAt: chl.createdAt || new Date() },
+              { id: 2, title: mentor ? `Lead Mentor Onboarded (${mentor})` : 'Faculty Mentor Assignment', status: mentor ? 'Completed' : 'In Progress', dueDate: 'N/A', completedAt: mentor ? new Date() : null },
+              { id: 3, title: 'Student Team Formation & Scoping', status: mentor ? 'In Progress' : 'Pending', dueDate: 'N/A' },
+              { id: 4, title: 'Sensor Rig Prototyping (TRL-4)', status: 'Pending', dueDate: 'N/A' },
+              { id: 5, title: 'Pilot Testing & Field Calibration', status: 'Pending', dueDate: 'N/A' },
+              { id: 6, title: 'Solution Validation & District Trials', status: 'Pending', dueDate: 'N/A' },
+              { id: 7, title: 'Government Handover & Impact Review', status: 'Pending', dueDate: 'N/A' }
             ]
           };
 
@@ -341,13 +338,13 @@ export class UniversityDashboardRepository {
           return m;
         })
         : [
-          { id: 1, title: 'Project & Challenge Allocation', status: 'Completed', dueDate: '15 May 2026', completedAt: new Date() },
-          { id: 2, title: `Lead Mentor Onboarded (${facultyInfo.name})`, status: 'Completed', dueDate: '25 May 2026', completedAt: new Date() },
-          { id: 3, title: 'Student Team Formation & Scoping', status: 'In Progress', dueDate: '15 Jun 2026' },
-          { id: 4, title: 'Sensor Rig Prototyping (TRL-4)', status: 'Pending', dueDate: '20 Jul 2026' },
-          { id: 5, title: 'Pilot Testing & Calibration', status: 'Pending', dueDate: '15 Aug 2026' },
-          { id: 6, title: 'Validation & Field Trials', status: 'Pending', dueDate: '10 Oct 2026' },
-          { id: 7, title: 'Government Handover & Report', status: 'Pending', dueDate: '30 Nov 2026' }
+          { id: 1, title: 'Project & Challenge Allocation', status: 'Completed', dueDate: 'N/A', completedAt: new Date() },
+          { id: 2, title: `Lead Mentor Onboarded (${facultyInfo.name})`, status: 'Completed', dueDate: 'N/A', completedAt: new Date() },
+          { id: 3, title: 'Student Team Formation & Scoping', status: 'In Progress', dueDate: 'N/A' },
+          { id: 4, title: 'Sensor Rig Prototyping (TRL-4)', status: 'Pending', dueDate: 'N/A' },
+          { id: 5, title: 'Pilot Testing & Calibration', status: 'Pending', dueDate: 'N/A' },
+          { id: 6, title: 'Validation & Field Trials', status: 'Pending', dueDate: 'N/A' },
+          { id: 7, title: 'Government Handover & Report', status: 'Pending', dueDate: 'N/A' }
         ];
 
       const res = await UniversityProject.findOneAndUpdate(

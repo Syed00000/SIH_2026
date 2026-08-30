@@ -78,8 +78,8 @@ export const ProjectsTable = ({
                   <tr
                     key={p.projectId || p._id || index}
                     onClick={() => onSelectProject(p)}
-                    className={`hover:bg-slate-50/70 transition-colors group select-none cursor-pointer ${
-                      isSelected ? 'bg-slate-100/60 border-l-4 border-l-slate-900' : ''
+                    className={`hover:bg-slate-50/80 transition-colors group select-none cursor-pointer ${
+                      isSelected ? 'bg-emerald-50/60 border-l-4 border-l-[#007A61]' : ''
                     }`}
                   >
                     {/* Index */}
@@ -90,18 +90,18 @@ export const ProjectsTable = ({
                     {/* Main Entity Tile */}
                     <td className="py-2.5 px-3">
                       <div className="flex items-center space-x-2.5">
-                        <div className="w-7 h-7 rounded-md bg-slate-100 text-slate-700 font-bold text-[11px] flex items-center justify-center shrink-0 border border-slate-200/60">
+                        <div className="w-7 h-7 rounded-md bg-emerald-50 text-[#007A61] font-bold text-[11px] flex items-center justify-center shrink-0 border border-emerald-200">
                           {firstLetter}
                         </div>
                         <div className="min-w-0 max-w-[210px]">
                           <div
-                            className="font-bold text-slate-900 hover:text-slate-600 text-xs truncate leading-tight"
+                            className="font-bold text-slate-900 hover:text-[#007A61] text-xs truncate leading-tight"
                             title={title}
                           >
                             {title}
                           </div>
                           <div className="text-[10px] text-slate-400 font-mono mt-0.5 truncate">
-                            ID: {p.projectId} &bull; Ref: {p.challengeId || 'CHL-1024'}
+                            ID: {p.projectId} {p.challengeId ? `• Ref: ${p.challengeId}` : ''}
                           </div>
                         </div>
                       </div>
@@ -112,7 +112,7 @@ export const ProjectsTable = ({
                       <div className="font-semibold text-slate-800 text-xs truncate max-w-[130px]" title={p.domain}>
                         {p.domain}
                       </div>
-                      <div className="text-[10px] text-slate-400 font-mono mt-0.5">{p.budget || '₹ 75,000'}</div>
+                      <div className="text-[10px] text-slate-400 font-mono mt-0.5">{p.budget || 'N/A'}</div>
                     </td>
 
                     {/* Lead Mentor */}

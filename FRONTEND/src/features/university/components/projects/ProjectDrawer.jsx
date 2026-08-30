@@ -34,12 +34,12 @@ export const ProjectDrawer = ({ project, onClose, onEdit, onAssignMentor, onEndP
         </div>
 
         <div className="flex border-b border-slate-200 text-xs">
-          {['overview', 'milestones', 'team', 'documents', 'activity'].map((t) => (
+          {['overview', 'milestones', 'team', 'documents'].map((t) => (
             <button
               key={t}
               onClick={() => setActiveTab(t)}
-              className={`pb-1 px-2.5 font-bold capitalize transition-colors cursor-pointer border-b-2 ${
-                activeTab === t ? 'border-b-slate-900 text-slate-900' : 'border-b-transparent text-slate-500 hover:text-slate-900'
+              className={`pb-2 px-3 font-bold capitalize transition-colors cursor-pointer border-b-2 ${
+                activeTab === t ? 'border-b-[#007A61] text-[#007A61]' : 'border-b-transparent text-slate-500 hover:text-slate-900'
               }`}
             >
               {t}
