@@ -98,7 +98,11 @@ export const PopularChallengeAreas = ({ onSelectArea, selectedArea }) => {
           Popular Challenge Areas
         </h3>
         <button
-          onClick={() => setShowAll(!showAll)}
+          type="button"
+          onClick={() => {
+            setShowAll(!showAll);
+            if (onSelectArea) onSelectArea(null);
+          }}
           className="flex items-center text-xs font-bold text-emerald-700 hover:text-emerald-800 transition-colors cursor-pointer"
         >
           <span>{showAll ? 'Show Less' : 'View All'}</span>
@@ -106,7 +110,7 @@ export const PopularChallengeAreas = ({ onSelectArea, selectedArea }) => {
         </button>
       </div>
 
-      {/* Grid of 5 columns */}
+      {/* Clean 5-column grid without outer box */}
       <div className="grid grid-cols-5 gap-2 sm:gap-3">
         {displayedAreas.map((area) => {
           const isSelected = selectedArea === area.id;
@@ -119,7 +123,7 @@ export const PopularChallengeAreas = ({ onSelectArea, selectedArea }) => {
               onClick={() => onSelectArea && onSelectArea(area.id)}
               className="group flex flex-col items-center justify-start p-1 cursor-pointer transition-transform duration-150 hover:-translate-y-0.5"
             >
-              {/* Image Container */}
+              {/* Image Container Tile */}
               <div
                 className={`w-13 h-13 sm:w-14 sm:h-14 rounded-2xl overflow-hidden shadow-xs relative flex items-center justify-center transition-all duration-200 ${
                   isSelected

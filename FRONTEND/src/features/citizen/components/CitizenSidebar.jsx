@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import {
   LayoutDashboard,
   FileText,
@@ -8,11 +8,7 @@ import {
   HelpCircle,
   LogOut,
   X,
-  Menu,
-  ChevronDown,
-  Layers,
-  FileCheck,
-  CheckCircle2
+  Menu
 } from 'lucide-react';
 
 export const CitizenSidebar = ({
@@ -23,33 +19,13 @@ export const CitizenSidebar = ({
   setIsSidebarExpanded,
   isMobileMenuOpen = false,
   setIsMobileMenuOpen,
-  onLogout
+  onLogout,
+  isSubmitOpen = false
 }) => {
-  const [openDropdowns, setOpenDropdowns] = useState({
-    challenges: true
-  });
-
-  const toggleDropdown = (id) => {
-    setOpenDropdowns((prev) => ({
-      ...prev,
-      [id]: !prev[id]
-    }));
-  };
-
   const navItems = [
     { id: 'home', label: 'Overview / Home', icon: LayoutDashboard },
-    {
-      id: 'challenges',
-      label: 'My Challenges',
-      icon: FileText,
-      subItems: [
-        { id: 'challenges_all', label: 'All Submissions', icon: Layers },
-        { id: 'challenges_review', label: 'Under Review', icon: FileCheck },
-        { id: 'challenges_progress', label: 'In Progress', icon: CheckCircle2 }
-      ]
-    },
-    { id: 'submit', label: 'Submit Challenge', icon: PlusCircle, isAction: true },
-    { id: 'updates', label: 'Portal Updates', icon: Bell },
+    { id: 'challenges', label: 'My Challenges', icon: FileText },
+    { id: 'submit', label: 'Submit Challenge', icon: PlusCircle },
     { id: 'profile', label: 'My Profile', icon: User },
     { id: 'guidelines', label: 'Help & Guidelines', icon: HelpCircle }
   ];
@@ -62,7 +38,8 @@ export const CitizenSidebar = ({
           : 'hidden md:flex'
       } ${isSidebarExpanded ? 'w-60' : 'w-16'}`}
     >
-      <div className="space-y-3 overflow-y-auto pr-0.5">
+      {/* Top Navigation Area */}
+      <div className="flex-1 space-y-3 overflow-y-auto pr-0.5 custom-scrollbar">
         {/* Collapse Toggle Bar */}
         <div className={`flex items-center ${isSidebarExpanded ? 'justify-end' : 'justify-center'} pb-1 px-1`}>
           <button
@@ -84,109 +61,46 @@ export const CitizenSidebar = ({
         <nav className="space-y-1">
           {navItems.map((item) => {
             const IconComponent = item.icon;
-            const hasSubItems = item.subItems && item.subItems.length > 0;
-            const isParentActive = activeTab === item.id || item.subItems?.some((s) => s.id === activeTab);
-            const isOpen = openDropdowns[item.id];
+            const isActive = activeTab === item.id;
 
             return (
-              <div key={item.id} className="space-y-0.5">
-                <button
-                  onClick={() => {
-                    if (item.isAction) {
-                      onSubmitClick && onSubmitClick();
-                      return;
-                    }
-                    if (hasSubItems) {
-                      if (!isSidebarExpanded && setIsSidebarExpanded) {
-                        setIsSidebarExpanded(true);
-                      }
-                      toggleDropdown(item.id);
-                      setActiveTab && setActiveTab(item.id);
-                    } else {
-                      setActiveTab && setActiveTab(item.id);
-                      if (setIsMobileMenuOpen) setIsMobileMenuOpen(false);
-                    }
-                  }}
-                  className={`w-full flex items-center justify-between rounded-lg text-xs font-semibold transition-all relative cursor-pointer ${
-                    isSidebarExpanded ? 'px-3 py-2 text-left' : 'p-2 justify-center'
-                  } ${
-                    item.isAction
-                      ? 'bg-[#047857] hover:bg-[#064e3b] text-white font-bold shadow-2xs my-1.5'
-                      : isParentActive && !hasSubItems
-                      ? 'bg-[#064e3b] text-white font-bold shadow-2xs'
-                      : isParentActive && hasSubItems
-                      ? 'bg-emerald-50 text-emerald-950 font-bold border border-emerald-200/80'
-                      : 'text-slate-600 hover:bg-emerald-50/60 hover:text-emerald-900'
-                  }`}
-                  title={item.label}
-                >
-                  <div className="flex items-center space-x-2.5 min-w-0">
-                    <IconComponent
-                      className={`w-4 h-4 shrink-0 ${
-                        item.isAction
-                          ? 'text-white'
-                          : isParentActive && !hasSubItems
-                          ? 'text-white'
-                          : isParentActive
-                          ? 'text-emerald-800'
-                          : 'text-slate-500'
-                      }`}
-                    />
-                    {isSidebarExpanded && (
-                      <span className="truncate tracking-tight">{item.label}</span>
-                    )}
-                  </div>
-
-                  {/* Dropdown Chevron */}
-                  {hasSubItems && isSidebarExpanded && (
-                    <div className="shrink-0 text-slate-400">
-                      <ChevronDown
-                        className={`w-3.5 h-3.5 transition-transform duration-200 ${
-                          isOpen ? 'rotate-180 text-emerald-700' : ''
-                        }`}
-                      />
-                    </div>
+              <button
+                key={item.id}
+                onClick={() => {
+                  if (setActiveTab) setActiveTab(item.id);
+                  if (setIsMobileMenuOpen) setIsMobileMenuOpen(false);
+                }}
+                className={`w-full flex items-center rounded-lg text-xs font-semibold transition-all relative cursor-pointer ${
+                  isSidebarExpanded ? 'px-3 py-2 text-left' : 'p-2 justify-center'
+                } ${
+                  isActive
+                    ? 'bg-[#064e3b] text-white font-bold shadow-2xs'
+                    : 'text-slate-600 hover:bg-emerald-50/60 hover:text-emerald-900'
+                }`}
+                title={item.label}
+              >
+                <div className="flex items-center space-x-2.5 min-w-0">
+                  <IconComponent
+                    className={`w-4 h-4 shrink-0 ${
+                      isActive ? 'text-white' : 'text-slate-500'
+                    }`}
+                  />
+                  {isSidebarExpanded && (
+                    <span className="truncate tracking-tight">{item.label}</span>
                   )}
-                </button>
-
-                {/* Sub-items Render */}
-                {hasSubItems && isOpen && isSidebarExpanded && (
-                  <div className="pl-3.5 pr-1 py-1 space-y-0.5 border-l-2 border-emerald-200 ml-3.5 my-1">
-                    {item.subItems.map((sub) => {
-                      const SubIcon = sub.icon;
-                      const isSubActive = activeTab === sub.id || (sub.id === 'challenges_all' && activeTab === 'challenges');
-                      return (
-                        <button
-                          key={sub.id}
-                          onClick={() => {
-                            setActiveTab && setActiveTab('challenges');
-                            if (setIsMobileMenuOpen) setIsMobileMenuOpen(false);
-                          }}
-                          className={`w-full flex items-center space-x-2 px-2.5 py-1.5 rounded-md text-[11px] font-semibold transition-colors cursor-pointer ${
-                            isSubActive
-                              ? 'bg-[#064e3b] text-white font-bold shadow-2xs'
-                              : 'text-slate-600 hover:bg-emerald-50 hover:text-emerald-900'
-                          }`}
-                        >
-                          <SubIcon className={`w-3.5 h-3.5 ${isSubActive ? 'text-white' : 'text-emerald-700/70'}`} />
-                          <span className="truncate">{sub.label}</span>
-                        </button>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
+                </div>
+              </button>
             );
           })}
         </nav>
       </div>
 
-      {/* Bottom Logout Area */}
-      <div className="pt-2 border-t border-slate-100 space-y-1">
+      {/* Bottom Pinned Logout Area */}
+      <div className="mt-auto pt-3 border-t border-slate-100">
         <button
           onClick={onLogout}
           className={`w-full flex items-center rounded-lg text-xs font-semibold text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer ${
-            isSidebarExpanded ? 'px-3 py-2 space-x-2.5' : 'p-2 justify-center'
+            isSidebarExpanded ? 'px-3 py-2 space-x-2.5 text-left' : 'p-2 justify-center'
           }`}
           title="Logout"
         >

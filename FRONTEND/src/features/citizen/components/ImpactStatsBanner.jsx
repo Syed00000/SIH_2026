@@ -6,7 +6,7 @@ export const ImpactStatsBanner = ({ stats = {} }) => {
   const industryCount = stats.industryPartners !== undefined ? stats.industryPartners : 124;
 
   return (
-    <div className="bg-white border border-slate-200/90 rounded-lg p-3.5 sm:p-4 shadow-2xs">
+    <div className="bg-gradient-to-r from-emerald-50/60 via-white to-emerald-50/30 border border-emerald-200/80 rounded-xl p-3.5 sm:p-4 shadow-2xs">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
         {/* Left Intro */}
         <div className="text-left space-y-0.5">

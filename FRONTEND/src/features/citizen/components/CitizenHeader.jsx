@@ -8,7 +8,7 @@ export const CitizenHeader = ({
   onLogout
 }) => {
   return (
-    <header className="sticky top-0 z-30 w-full bg-white border-b border-slate-200/90 px-4 md:px-6 py-2 flex items-center justify-between flex-shrink-0 shadow-2xs">
+    <header className="sticky top-0 z-30 w-full bg-white border-b border-slate-200/90 border-t-2 border-t-emerald-600 px-4 md:px-6 py-2 flex items-center justify-between flex-shrink-0 shadow-2xs">
       {/* Left: Official Emblem & Department Typography */}
       <div className="flex items-center space-x-3">
         <img
@@ -71,16 +71,6 @@ export const CitizenHeader = ({
               Citizen
             </span>
           </div>
-
-          {onLogout && (
-            <button
-              onClick={onLogout}
-              title="Logout"
-              className="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg hover:bg-rose-50 transition-colors cursor-pointer"
-            >
-              <LogOut className="w-4 h-4" />
-            </button>
-          )}
         </div>
       </div>
     </header>
