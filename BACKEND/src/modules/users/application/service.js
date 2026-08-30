@@ -18,6 +18,13 @@ export class UserService {
     return this.userRepository.findByEmail(email);
   }
 
+  async getUserByIdentifier(identifier) {
+    if (this.userRepository.findByIdentifier) {
+      return this.userRepository.findByIdentifier(identifier);
+    }
+    return this.userRepository.findByEmail(identifier);
+  }
+
   async getUserByMobile(mobileNumber) {
     return this.userRepository.findByMobile(mobileNumber);
   }

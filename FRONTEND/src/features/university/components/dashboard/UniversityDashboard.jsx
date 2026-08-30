@@ -5,22 +5,26 @@ import { UniversityRecentActivity } from './UniversityRecentActivity.jsx';
 import { UniversityAssignedChallenges } from './UniversityAssignedChallenges.jsx';
 import { UniversityProjectProgress } from './UniversityProjectProgress.jsx';
 import { UniversityActionModal } from './UniversityActionModal.jsx';
+import { ProblemEvidenceDossierModal } from '../../../nodal/components/ProblemEvidenceDossierModal.jsx';
 import { universityApiService } from '../../services/universityApiService.js';
 
 export const UniversityDashboard = ({
   data: initialData,
   adminName = 'Dr. Ankit Verma',
+  universityName = 'University Innovation Portal',
+  universityCode = 'RU001',
   onNavigateTab,
   onUpdateChallenge
 }) => {
   const [dashboardData, setDashboardData] = useState(initialData);
   const [selectedChallenge, setSelectedChallenge] = useState(null);
+  const [dossierChallenge, setDossierChallenge] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [loading, setLoading] = useState(!initialData);
 
   const loadLiveDashboard = async () => {
     setLoading(true);
-    const summary = await universityApiService.getDashboardSummary('RU001');
+    const summary = await universityApiService.getDashboardSummary(universityCode);
     if (summary) {
       setDashboardData(summary);
     }
@@ -34,18 +38,30 @@ export const UniversityDashboard = ({
     } else {
       loadLiveDashboard();
     }
-  }, [initialData]);
+  }, [initialData, universityCode]);
 
   const handleChallengeAction = (challenge) => {
     setSelectedChallenge(challenge);
     setIsModalOpen(true);
   };
 
+  const handleAcceptChallenge = async (challenge) => {
+    const cid = challenge.id || challenge.challengeId;
+    await universityApiService.updateChallengeStatus(cid, universityCode, 'Accepted', 'View');
+    await loadLiveDashboard();
+  };
+
+  const handleDeclineChallenge = async (challenge, reason) => {
+    const cid = challenge.id || challenge.challengeId;
+    await universityApiService.updateChallengeStatus(cid, universityCode, 'Declined', 'Declined', { declineReason: reason });
+    await loadLiveDashboard();
+  };
+
   const handleAssignFaculty = async (payload) => {
     if (onUpdateChallenge) {
       await onUpdateChallenge(payload);
     } else {
-      await universityApiService.assignFaculty(payload.challengeId, 'RU001', {
+      await universityApiService.assignFaculty(payload.challengeId, universityCode, {
         name: payload.facultyName,
         department: payload.department
       });
@@ -56,17 +72,23 @@ export const UniversityDashboard = ({
   const liveData = dashboardData || initialData;
   const liveChallenges = liveData?.challenges || [];
   const liveCount = liveData?.kpis?.assignedChallenges?.total || liveChallenges.length || 0;
+  const resolvedUniName = liveData?.name || liveData?.university?.name || universityName;
 
   return (
     <div className="space-y-4 max-w-7xl mx-auto select-none">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 bg-white p-4 rounded-xl border border-slate-200/90 shadow-2xs">
         <div>
-          <h1 className="text-xl font-bold text-slate-900 tracking-tight">University Dashboard</h1>
-          <p className="text-xs text-slate-600 mt-0.5">
-            Welcome back, <span className="font-bold text-slate-900">{adminName} 👋</span>
-          </p>
-          <p className="text-[11px] text-slate-500">
-            Real-time innovation telemetry & district challenge dashboard for Ranchi University.
+          <div className="flex items-center space-x-2">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-800 font-mono">
+              Higher Education R&D Hub &bull; {resolvedUniName}
+            </span>
+          </div>
+          <h1 className="text-base sm:text-lg font-extrabold text-slate-900 tracking-tight mt-0.5">
+            Institutional Challenge & Innovation Dashboard
+          </h1>
+          <p className="text-xs text-slate-500">
+            Authorized Nodal Officer: <strong className="text-slate-800">{adminName}</strong> &bull; Live synchronized with Jharkhand State Higher Education Cell
           </p>
         </div>
       </div>
@@ -113,17 +135,34 @@ export const UniversityDashboard = ({
         <div className="lg:col-span-1">
           <UniversityProjectProgress
             projectProgress={liveData?.projectProgress || liveData?.projectProgressBreakdown}
-            topDomains={liveData?.topDomains || []}
+            challenges={liveChallenges}
+            universityCode={universityCode}
           />
         </div>
       </div>
 
+      {/* Action Dialog for Decision and Mentor Allocation */}
       <UniversityActionModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         challenge={selectedChallenge}
+        onAccept={handleAcceptChallenge}
+        onDecline={handleDeclineChallenge}
         onAssignFaculty={handleAssignFaculty}
+        onViewDossier={(c) => {
+          setIsModalOpen(false);
+          setDossierChallenge(c);
+        }}
       />
+
+      {/* Official Problem Evidence Dossier Modal & Vector PDF */}
+      {dossierChallenge && (
+        <ProblemEvidenceDossierModal
+          challenge={dossierChallenge}
+          isOpen={Boolean(dossierChallenge)}
+          onClose={() => setDossierChallenge(null)}
+        />
+      )}
     </div>
   );
 };

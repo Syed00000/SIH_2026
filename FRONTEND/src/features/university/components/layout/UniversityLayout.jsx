@@ -101,6 +101,8 @@ export const UniversityLayout = ({ user, onLogout }) => {
               <UniversityDashboard
                 data={dashboardData}
                 adminName={adminName}
+                universityName={uniName}
+                universityCode={universityCode}
                 onNavigateTab={(tab) => setActiveTab(tab)}
                 onUpdateChallenge={handleUpdateChallenge}
               />

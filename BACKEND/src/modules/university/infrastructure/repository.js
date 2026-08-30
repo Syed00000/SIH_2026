@@ -19,20 +19,18 @@ export class UniversityDashboardRepository {
 
   async findUniversityByCodeOrId(identifier) {
     if (!identifier) return null;
-    let query = { code: identifier.toUpperCase() };
-    if (!identifier.match(/^[A-Z0-9_-]+$/i) || identifier.includes('@')) {
-      const regex = new RegExp(identifier.trim(), 'i');
-      query = {
-        $or: [
-          { code: regex },
-          { shortName: regex },
-          { name: regex },
-          { universityEmail: regex },
-          { 'credentials.loginEmail': regex },
-          { 'nodalOfficer.email': regex }
-        ]
-      };
-    }
+    const clean = identifier.trim();
+    const query = {
+      $or: [
+        { code: { $regex: new RegExp(`^${clean}$`, 'i') } },
+        { aisheCode: { $regex: new RegExp(`^${clean}$`, 'i') } },
+        { shortName: { $regex: new RegExp(`^${clean}$`, 'i') } },
+        { name: { $regex: new RegExp(clean, 'i') } },
+        { universityEmail: clean.toLowerCase() },
+        { 'credentials.loginEmail': clean.toLowerCase() },
+        { 'nodalOfficer.email': clean.toLowerCase() }
+      ]
+    };
     if (this.isDbReady()) {
       try {
         const uni = await MongooseUniversity.findOne(query).lean();
@@ -43,8 +41,21 @@ export class UniversityDashboardRepository {
   }
 
   async getChallengesByUniversity(universityCode, { status, domain, district, search, page = 1, limit = 100 } = {}) {
-    const code = (universityCode || '').toUpperCase();
-    const query = { universityCode: code, isDeleted: { $ne: true } };
+    const rawCode = (universityCode || '').trim();
+    const uniDoc = await this.findUniversityByCodeOrId(rawCode);
+    const code = (uniDoc?.code || rawCode).toUpperCase();
+    const aishe = (uniDoc?.aisheCode || '').toUpperCase();
+    const uniName = uniDoc?.name || uniDoc?.legalName || '';
+
+    const validUniIdentifiers = Array.from(new Set([code, rawCode.toUpperCase(), aishe, uniDoc?.shortName].filter(Boolean)));
+    const citizenOrConditions = [
+      { 'assignedUniversity.id': { $in: validUniIdentifiers } }
+    ];
+    if (uniName) {
+      citizenOrConditions.push({ 'assignedUniversity.name': { $regex: new RegExp(uniName, 'i') } });
+    }
+
+    const query = { universityCode: { $in: validUniIdentifiers }, isDeleted: { $ne: true } };
     if (status && status !== 'All Status' && status !== 'All') query.status = status;
     if (domain && domain !== 'All Domains' && domain !== 'All') query.domain = domain;
     if (district && district !== 'All Districts' && district !== 'All') query.district = district;
@@ -57,47 +68,50 @@ export class UniversityDashboardRepository {
       const [uniChallenges, total, citizenChallenges] = await Promise.all([
         UniversityChallenge.find(query).sort({ assignedOn: -1 }).skip(skip).limit(Number(limit)).lean(),
         UniversityChallenge.countDocuments(query),
-        CitizenChallenge.find({
-          'assignedUniversity.id': code
-        }).sort({ submittedAt: -1 }).limit(Number(limit)).lean()
+        CitizenChallenge.find({ $or: citizenOrConditions }).sort({ submittedAt: -1 }).limit(Number(limit)).lean()
       ]);
 
       const seenIds = new Set((uniChallenges || []).map((c) => c.challengeId));
       const mappedCitizen = (citizenChallenges || [])
         .filter((cit) => !seenIds.has(cit.challengeId))
-        .map((cit) => ({
-          challengeId: cit.challengeId,
-          id: cit.challengeId,
-          universityCode: code,
-          title: cit.title,
-          domain: cit.domain,
-          district: cit.location?.district || 'Ranchi',
-          priority: cit.priority || 'Medium',
-          status: cit.status === 'In Progress' ? 'Accepted' : cit.status === 'Submitted' || cit.status === 'Under Review' ? 'Review' : cit.status,
-          assignedOn: cit.submittedAt || cit.createdAt || new Date(),
-          deadline: 'Active Review',
-          problemStatement: cit.description,
-          description: cit.description,
-          affectedPopulation: cit.impactMetrics?.affectedPopulation || '~ 5,000 Citizens',
-          aiCategory: cit.domain,
-          requiredSkills: ['Ground Engineering', 'Data Analytics', 'Field Telemetry'],
-          submitter: cit.submitter,
-          location: cit.location,
-          milestones: cit.milestones,
-          mediaUrls: cit.mediaUrls,
-          locationDetails: {
-            block: cit.location?.block || 'Sadar Block',
-            panchayatOrWard: cit.location?.panchayatOrWard || '',
-            landmark: cit.location?.landmark || '',
-            fullAddress: cit.location?.fullAddress || '',
-            coordinates: cit.location?.coordinates || ''
-          },
-          assignedFaculty: cit.assignedUniversity?.mentorName ? {
-            name: cit.assignedUniversity.mentorName,
-            department: cit.assignedUniversity.department
-          } : null,
-          actionLabel: 'View'
-        }));
+        .map((cit) => {
+          const accStatus = cit.assignedUniversity?.acceptanceStatus || cit.acceptanceStatus || 'Pending Review';
+          return {
+            challengeId: cit.challengeId,
+            id: cit.challengeId,
+            universityCode: code,
+            title: cit.title,
+            domain: cit.domain,
+            district: cit.location?.district || 'Ranchi',
+            priority: cit.priority || 'Medium',
+            status: accStatus === 'Accepted' ? 'Accepted' : accStatus === 'Declined' ? 'Declined' : 'Pending',
+            acceptanceStatus: accStatus,
+            declineReason: cit.assignedUniversity?.declineReason || '',
+            assignedOn: cit.assignedUniversity?.assignedAt || cit.submittedAt || cit.createdAt || new Date(),
+            deadline: 'Active Review',
+            problemStatement: cit.description,
+            description: cit.description,
+            affectedPopulation: cit.impactMetrics?.affectedPopulation || '~ 5,000 Citizens',
+            aiCategory: cit.domain,
+            requiredSkills: ['Ground Engineering', 'Data Analytics', 'Field Telemetry'],
+            submitter: cit.submitter,
+            location: cit.location,
+            milestones: cit.milestones,
+            mediaUrls: cit.mediaUrls,
+            locationDetails: {
+              block: cit.location?.block || 'Sadar Block',
+              panchayatOrWard: cit.location?.panchayatOrWard || '',
+              landmark: cit.location?.landmark || '',
+              fullAddress: cit.location?.fullAddress || '',
+              coordinates: cit.location?.coordinates || ''
+            },
+            assignedFaculty: cit.assignedUniversity?.mentorName ? {
+              name: cit.assignedUniversity.mentorName,
+              department: cit.assignedUniversity.department || 'R&D Cell'
+            } : null,
+            actionLabel: accStatus === 'Accepted' ? 'View' : accStatus === 'Declined' ? 'Declined' : 'Review'
+          };
+        });
 
       const combined = [...(uniChallenges || []), ...mappedCitizen];
 
@@ -295,23 +309,26 @@ export class UniversityDashboardRepository {
 
   async updateChallengeStatus(challengeId, universityCode, status, actionLabel, metadata = {}) {
     try {
+      const rawCode = (universityCode || '').trim();
+      const uniDoc = await this.findUniversityByCodeOrId(rawCode);
+      const resolvedUniName = uniDoc?.name || uniDoc?.legalName || rawCode || 'Assigned University';
+      const code = (uniDoc?.code || rawCode).toUpperCase();
+
       const res = await UniversityChallenge.findOneAndUpdate(
         { challengeId },
         { $set: { status, actionLabel: actionLabel || status, ...metadata } },
         { new: true }
       );
 
-      const uniDoc = await MongooseUniversity.findOne({ code: (universityCode || '').toUpperCase() }).lean();
-      const resolvedUniName = uniDoc?.name || uniDoc?.legalName || universityCode || 'Assigned University';
-
-      const isAccepted = status === 'Accepted';
+      const isAccepted = status === 'Accepted' || status === 'In Progress';
       const isDeclined = status === 'Rejected' || status === 'Declined';
       const citizenStatus = isAccepted ? 'In Progress' : isDeclined ? 'Under Review' : status === 'Resolved' ? 'Resolved' : 'Under Review';
+      const reason = metadata.declineReason || metadata.remarks || metadata.query || 'Outside departmental research scope';
 
       const updatePayload = {
         status: citizenStatus,
         'assignedUniversity.acceptanceStatus': isAccepted ? 'Accepted' : isDeclined ? 'Declined' : 'Pending Review',
-        'assignedUniversity.declineReason': isDeclined ? (metadata.declineReason || 'Declined by University - Awaiting State Nodal Reallocation') : '',
+        'assignedUniversity.declineReason': isDeclined ? reason : '',
         'acceptanceStatus': isAccepted ? 'Accepted' : isDeclined ? 'Declined' : 'Pending Review'
       };
 
@@ -322,12 +339,13 @@ export class UniversityDashboardRepository {
         updatePayload['milestones.2.completedAt'] = new Date();
         updatePayload['milestones.2.remarks'] = `Accepted by ${resolvedUniName}. Problem allocation finalized for research and prototyping.`;
         updatePayload['milestones.3.status'] = 'CURRENT';
-        updatePayload['milestones.3.remarks'] = `Active solution development in progress at ${resolvedUniName}.`;
+        updatePayload['milestones.3.remarks'] = `Active solution development and prototyping in progress at ${resolvedUniName}.`;
       } else if (isDeclined) {
         updatePayload['milestones.2.status'] = 'PENDING';
         updatePayload['milestones.2.completedAt'] = null;
-        updatePayload['milestones.2.remarks'] = `Declined by ${resolvedUniName}. State Nodal Officer reviewing for immediate reassignment.`;
+        updatePayload['milestones.2.remarks'] = `Declined by ${resolvedUniName}: ${reason}. State Nodal Officer reviewing for immediate reassignment.`;
         updatePayload['milestones.3.status'] = 'PENDING';
+        updatePayload['milestones.3.remarks'] = `Awaiting State Nodal reallocation.`;
       }
 
       await CitizenChallenge.findOneAndUpdate(
