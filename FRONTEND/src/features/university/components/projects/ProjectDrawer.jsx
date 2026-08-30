@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { X } from 'lucide-react';
 import { ProjectDrawerTabs } from './ProjectDrawerTabs.jsx';
 
-export const ProjectDrawer = ({ project, onClose, onEdit, onEndProject, onMarkCompleted }) => {
+export const ProjectDrawer = ({ project, onClose, onEdit, onAssignMentor, onEndProject, onMarkCompleted }) => {
   const [activeTab, setActiveTab] = useState('overview');
 
   if (!project) return null;
@@ -53,6 +53,7 @@ export const ProjectDrawer = ({ project, onClose, onEdit, onEndProject, onMarkCo
           project={project}
           activeTab={activeTab}
           onEdit={onEdit}
+          onAssignMentor={onAssignMentor}
           onEndProject={onEndProject}
           onMarkCompleted={onMarkCompleted}
         />

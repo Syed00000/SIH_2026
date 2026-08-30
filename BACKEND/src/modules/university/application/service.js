@@ -139,6 +139,7 @@ export class UniversityService {
   async createProject(universityCode, data) { return await universityDashboardRepository.createProject(universityCode, data); }
   async updateProject(universityCode, id, data) { return await universityDashboardRepository.updateProject(universityCode, id, data); }
   async deleteProject(universityCode, id) { return await universityDashboardRepository.deleteProject(universityCode, id); }
+  async assignFacultyToProject(universityCode, id, facultyInfo) { return await universityDashboardRepository.assignFacultyToProject(universityCode, id, facultyInfo); }
 
   async getTeams(universityCode) { return await universityDashboardRepository.getTeamsByUniversity(universityCode); }
   async getPartners(universityCode) { return await universityDashboardRepository.getPartnersByUniversity(universityCode); }

@@ -257,6 +257,119 @@ export class UniversityDashboardRepository {
     return { projectId, ...updateData };
   }
 
+  async assignFacultyToProject(universityCode, projectId, facultyInfo) {
+    const query =
+      typeof projectId === 'string' && projectId.match(/^[0-9a-fA-F]{24}$/)
+        ? { _id: projectId }
+        : { projectId };
+
+    try {
+      const existingProj = await UniversityProject.findOne(query).lean();
+      const chlId = existingProj?.challengeId;
+
+      const milestones = existingProj?.milestones?.length
+        ? existingProj.milestones.map((m, idx) => {
+            if (idx === 0) return { ...m, status: 'Completed', completedAt: m.completedAt || new Date() };
+            if (idx === 1) return { ...m, status: 'Completed', title: `Lead Mentor Onboarded (${facultyInfo.name})`, completedAt: new Date() };
+            if (idx === 2 && m.status !== 'Completed') return { ...m, status: 'In Progress' };
+            return m;
+          })
+        : [
+            { id: 1, title: 'Project & Challenge Allocation', status: 'Completed', dueDate: '15 May 2026', completedAt: new Date() },
+            { id: 2, title: `Lead Mentor Onboarded (${facultyInfo.name})`, status: 'Completed', dueDate: '25 May 2026', completedAt: new Date() },
+            { id: 3, title: 'Student Team Formation & Scoping', status: 'In Progress', dueDate: '15 Jun 2026' },
+            { id: 4, title: 'Sensor Rig Prototyping (TRL-4)', status: 'Pending', dueDate: '20 Jul 2026' },
+            { id: 5, title: 'Pilot Testing & Calibration', status: 'Pending', dueDate: '15 Aug 2026' },
+            { id: 6, title: 'Validation & Field Trials', status: 'Pending', dueDate: '10 Oct 2026' },
+            { id: 7, title: 'Government Handover & Report', status: 'Pending', dueDate: '30 Nov 2026' }
+          ];
+
+      const res = await UniversityProject.findOneAndUpdate(
+        query,
+        {
+          $set: {
+            leadMentor: facultyInfo.name,
+            facultyMentor: {
+              name: facultyInfo.name,
+              department: facultyInfo.department || 'Engineering',
+              email: facultyInfo.email || '',
+              designation: facultyInfo.designation || 'Lead Faculty Mentor'
+            },
+            status: 'In Progress',
+            progressPercentage: Math.max(existingProj?.progressPercentage || 0, 25),
+            milestonesCompleted: Math.max(existingProj?.milestonesCompleted || 0, 2),
+            milestones,
+            updatedAt: new Date()
+          }
+        },
+        { new: true }
+      );
+
+      // 1. Update Faculty in database
+      if (facultyInfo?.email || facultyInfo?.name) {
+        await UniversityFaculty.findOneAndUpdate(
+          { $or: [{ email: facultyInfo.email }, { name: facultyInfo.name }] },
+          {
+            $set: { availabilityStatus: 'In Project' },
+            $inc: { activeProjects: 1 },
+            $addToSet: {
+              assignedChallenges: {
+                challengeId: chlId || existingProj?.projectId || projectId,
+                title: existingProj?.title || 'R&D Innovation Project',
+                role: 'Lead Project Mentor'
+              }
+            }
+          }
+        );
+      }
+
+      // 2. Cross-sync to UniversityChallenge if exists
+      if (chlId) {
+        await UniversityChallenge.findOneAndUpdate(
+          { challengeId: chlId },
+          {
+            $set: {
+              assignedFaculty: {
+                name: facultyInfo.name,
+                department: facultyInfo.department || 'Engineering',
+                email: facultyInfo.email || ''
+              },
+              status: 'Accepted'
+            }
+          }
+        );
+
+        // 3. Cross-sync to CitizenChallenge in database
+        const uniDoc = await MongooseUniversity.findOne({ code: (universityCode || '').toUpperCase() }).lean();
+        const resolvedUniName = uniDoc?.name || uniDoc?.legalName || universityCode || 'Assigned University';
+
+        await CitizenChallenge.findOneAndUpdate(
+          { challengeId: chlId },
+          {
+            $set: {
+              status: 'In Progress',
+              'assignedUniversity.id': universityCode,
+              'assignedUniversity.name': resolvedUniName,
+              'assignedUniversity.mentorName': facultyInfo.name,
+              'assignedUniversity.department': facultyInfo.department || 'Engineering',
+              'assignedUniversity.acceptanceStatus': 'Accepted',
+              'milestones.2.status': 'COMPLETED',
+              'milestones.2.completedAt': new Date(),
+              'milestones.2.remarks': `Assigned to Lead Faculty Mentor: ${facultyInfo.name} (${facultyInfo.department || 'R&D Lab'}) at ${resolvedUniName}`,
+              'milestones.3.status': 'CURRENT',
+              'milestones.3.remarks': `Faculty Mentor ${facultyInfo.name} leading solution execution and prototyping.`
+            }
+          }
+        );
+      }
+
+      return res || existingProj;
+    } catch (err) {
+      console.error('Error assigning faculty to project:', err);
+      return { projectId, ...facultyInfo };
+    }
+  }
+
   async deleteProject(universityCode, projectId, deletedBy = 'University Admin') {
     const query =
       typeof projectId === 'string' && projectId.match(/^[0-9a-fA-F]{24}$/)

@@ -19,6 +19,8 @@ router.get('/projects', (req, res, next) => universityController.getProjects(req
 router.post('/projects', (req, res, next) => universityController.createProject(req, res, next));
 router.patch('/projects/:id', (req, res, next) => universityController.updateProject(req, res, next));
 router.delete('/projects/:id', (req, res, next) => universityController.deleteProject(req, res, next));
+router.post('/projects/:id/assign-faculty', (req, res, next) => universityController.assignFacultyToProject(req, res, next));
+router.patch('/projects/:id/assign-faculty', (req, res, next) => universityController.assignFacultyToProject(req, res, next));
 
 router.get('/partners', (req, res, next) => universityController.getPartners(req, res, next));
 router.get('/approvals', (req, res, next) => universityController.getApprovals(req, res, next));

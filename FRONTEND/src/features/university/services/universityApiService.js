@@ -124,6 +124,16 @@ export const universityApiService = {
     return { success: true, projectId };
   },
 
+  async assignFacultyToProject(projectId, facultyInfo, universityCode = DEFAULT_UNIVERSITY_CODE) {
+    try {
+      const res = await apiClient.post(`university/projects/${encodeURIComponent(projectId)}/assign-faculty?universityCode=${encodeURIComponent(universityCode)}`, {
+        facultyInfo
+      });
+      if (res?.data) return res.data;
+    } catch (err) { console.error('API assignFacultyToProject error:', err.message); }
+    return { projectId, facultyInfo, status: 'In Progress' };
+  },
+
   async getPartners(universityCode = DEFAULT_UNIVERSITY_CODE) {
     try {
       const res = await apiClient.get(`university/partners?universityCode=${encodeURIComponent(universityCode)}`);

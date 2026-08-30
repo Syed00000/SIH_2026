@@ -5,12 +5,14 @@ import { ProjectsTable } from './ProjectsTable.jsx';
 import { ProjectDrawer } from './ProjectDrawer.jsx';
 import { ProjectCreateModal } from './ProjectCreateModal.jsx';
 import { ProjectEditModal } from './ProjectEditModal.jsx';
+import { AssignFacultyMentorModal } from './AssignFacultyMentorModal.jsx';
 import { universityApiService } from '../../services/universityApiService.js';
 
 export const ProjectsPanel = ({ onNavigateTab }) => {
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedProject, setSelectedProject] = useState(null);
+  const [assignModalProject, setAssignModalProject] = useState(null);
   const [search, setSearch] = useState('');
   const [domainFilter, setDomainFilter] = useState('All');
   const [statusFilter, setStatusFilter] = useState('All');
@@ -139,6 +141,7 @@ export const ProjectsPanel = ({ onNavigateTab }) => {
           projects={filtered}
           selectedProjectId={selectedProject?.projectId}
           onSelectProject={(p) => setSelectedProject(p)}
+          onAssignMentor={(p) => setAssignModalProject(p)}
           onSoftDeleteProject={handleSoftDeleteProject}
           loading={loading}
         />
@@ -160,11 +163,37 @@ export const ProjectsPanel = ({ onNavigateTab }) => {
                 setEditingProject(p);
                 setIsEditModalOpen(true);
               }}
+              onAssignMentor={(p) => setAssignModalProject(p)}
               onEndProject={handleSoftDeleteProject}
               onMarkCompleted={handleMarkAsCompleted}
             />
           </div>
         </div>
+      )}
+
+      {/* Assign Lead Faculty Mentor Modal */}
+      {assignModalProject && (
+        <AssignFacultyMentorModal
+          isOpen={Boolean(assignModalProject)}
+          project={assignModalProject}
+          onClose={() => setAssignModalProject(null)}
+          onSuccess={async (updated) => {
+            setProjects((prev) =>
+              prev.map((p) =>
+                p.projectId === updated.projectId || p._id === updated._id
+                  ? { ...p, ...updated }
+                  : p
+              )
+            );
+            if (
+              selectedProject?.projectId === updated.projectId ||
+              selectedProject?._id === updated._id
+            ) {
+              setSelectedProject((prev) => ({ ...prev, ...updated }));
+            }
+            await fetchProjects();
+          }}
+        />
       )}
 
       <ProjectCreateModal

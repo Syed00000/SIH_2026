@@ -119,6 +119,16 @@ export class UniversityController {
     } catch (error) { next(error); }
   }
 
+  async assignFacultyToProject(req, res, next) {
+    try {
+      const { id } = req.params;
+      const code = req.query.universityCode || req.user?.profile?.aisheCode || req.user?.profile?.code || 'RU001';
+      const facultyInfo = req.body.facultyInfo || req.body;
+      const data = await universityService.assignFacultyToProject(code, id, facultyInfo);
+      res.status(200).json({ status: 'SUCCESS', message: 'Faculty mentor assigned to project successfully', data });
+    } catch (error) { next(error); }
+  }
+
   async getPartners(req, res, next) {
     try {
       const code = req.query.universityCode || req.user?.profile?.aisheCode || 'RUNI-JH';
