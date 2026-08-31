@@ -1,168 +1,60 @@
 import { industryService } from '../application/service.js';
+import { createCrudHandler } from './handlers/crud.handler.js';
+import { createApplicationHandler } from './handlers/application.handler.js';
+import { createActionsHandler } from './handlers/actions.handler.js';
 
 export class IndustryController {
-  async getIndustries(req, res, next) {
-    try {
-      const { search, category, thematicDomain, status, accessStatus, verificationStatus, district, page, limit } = req.query;
-      const data = await industryService.getIndustries({
-        search,
-        category,
-        thematicDomain,
-        status,
-        accessStatus,
-        verificationStatus,
-        district,
-        page: page || 1,
-        limit: limit || 10
-      });
-
-      res.status(200).json({
-        status: 'SUCCESS',
-        data
-      });
-    } catch (error) {
-      next(error);
-    }
+  constructor(service = industryService) {
+    this.service = service;
+    this.crudHandler = createCrudHandler(service);
+    this.applicationHandler = createApplicationHandler(service);
+    this.actionsHandler = createActionsHandler(service);
   }
 
-  async getIndustryById(req, res, next) {
-    try {
-      const { id } = req.params;
-      const industry = await industryService.getIndustryById(id);
-
-      res.status(200).json({
-        status: 'SUCCESS',
-        data: { industry }
-      });
-    } catch (error) {
-      next(error);
-    }
+  getIndustries(req, res, next) {
+    return this.crudHandler.getIndustries(req, res, next);
   }
 
-  async createIndustry(req, res, next) {
-    try {
-      const result = await industryService.createIndustry(req.body);
-
-      res.status(201).json({
-        status: 'SUCCESS',
-        message: 'Industry organization created and login credentials generated successfully',
-        data: result
-      });
-    } catch (error) {
-      next(error);
-    }
+  getIndustryById(req, res, next) {
+    return this.crudHandler.getIndustryById(req, res, next);
   }
 
-  async updateIndustry(req, res, next) {
-    try {
-      const { id } = req.params;
-      const updated = await industryService.updateIndustry(id, req.body);
-
-      res.status(200).json({
-        status: 'SUCCESS',
-        message: 'Industry organization updated successfully',
-        data: { industry: updated }
-      });
-    } catch (error) {
-      next(error);
-    }
+  createIndustry(req, res, next) {
+    return this.crudHandler.createIndustry(req, res, next);
   }
 
-  async toggleStatus(req, res, next) {
-    try {
-      const { id } = req.params;
-      const updated = await industryService.toggleStatus(id);
-
-      res.status(200).json({
-        status: 'SUCCESS',
-        message: `Industry status changed to ${updated.status}`,
-        data: { industry: updated }
-      });
-    } catch (error) {
-      next(error);
-    }
+  updateIndustry(req, res, next) {
+    return this.crudHandler.updateIndustry(req, res, next);
   }
 
-  async resetPassword(req, res, next) {
-    try {
-      const { id } = req.params;
-      const result = await industryService.resetPassword(id);
-
-      res.status(200).json({
-        status: 'SUCCESS',
-        message: 'New credentials generated successfully',
-        data: result
-      });
-    } catch (error) {
-      next(error);
-    }
+  toggleStatus(req, res, next) {
+    return this.actionsHandler.toggleStatus(req, res, next);
   }
 
-  async deleteIndustry(req, res, next) {
-    try {
-      const { id } = req.params;
-      const result = await industryService.deleteIndustry(id);
-
-      res.status(200).json({
-        status: 'SUCCESS',
-        message: result.message
-      });
-    } catch (error) {
-      next(error);
-    }
+  resetPassword(req, res, next) {
+    return this.actionsHandler.resetPassword(req, res, next);
   }
 
-  async applyIndustry(req, res, next) {
-    try {
-      const result = await industryService.applyIndustry(req.body);
-      res.status(201).json({
-        status: 'SUCCESS',
-        message: result.message,
-        data: result
-      });
-    } catch (error) {
-      next(error);
-    }
+  deleteIndustry(req, res, next) {
+    return this.crudHandler.deleteIndustry(req, res, next);
   }
 
-  async approveApplication(req, res, next) {
-    try {
-      const { id } = req.params;
-      const result = await industryService.approveApplication(id, req.body);
-      res.status(200).json({
-        status: 'SUCCESS',
-        message: result.message,
-        data: result
-      });
-    } catch (error) {
-      next(error);
-    }
+  applyIndustry(req, res, next) {
+    return this.applicationHandler.applyIndustry(req, res, next);
   }
 
-  async rejectApplication(req, res, next) {
-    try {
-      const { id } = req.params;
-      const result = await industryService.rejectApplication(id, req.body);
-      res.status(200).json({
-        status: 'SUCCESS',
-        message: result.message,
-        data: result
-      });
-    } catch (error) {
-      next(error);
-    }
+  approveApplication(req, res, next) {
+    return this.applicationHandler.approveApplication(req, res, next);
   }
 
-  async seedAuthentic(req, res, next) {
-    try {
-      const result = await industryService.seedAuthenticIndustries();
-      res.status(200).json({ status: 'SUCCESS', message: 'Authentic Jharkhand industries seeded successfully', data: result });
-    } catch (err) {
-      next(err);
-    }
+  rejectApplication(req, res, next) {
+    return this.applicationHandler.rejectApplication(req, res, next);
+  }
+
+  seedAuthentic(req, res, next) {
+    return this.actionsHandler.seedAuthentic(req, res, next);
   }
 }
 
 export const industryController = new IndustryController();
 export default industryController;
-
