@@ -1,52 +1,17 @@
 import ClarificationMessage from './model.js';
-import { CitizenChallenge } from '../../citizen/infrastructure/model.js';
+import { purgeOldSeenMessages, buildMessageRoomQuery } from './helpers/query-builder.helper.js';
+import { computeUnreadCount, computeChallengeStats } from './helpers/message-stats.helper.js';
 
 export class ClarificationRepository {
-  /**
-   * Get all messages for a specific challenge room
-   * Auto-excludes messages older than 12 hours after being seen by both parties, or deleted by this role
-   */
   async getMessagesByChallenge(challengeId, role = null) {
     if (!challengeId) return [];
 
-    const twelveHoursAgo = new Date(Date.now() - 12 * 60 * 60 * 1000);
+    await purgeOldSeenMessages(ClarificationMessage, challengeId);
+    const query = buildMessageRoomQuery(challengeId, role);
 
-    // Background purge: Delete any message seen by both parties that is older than 12 hours
-    try {
-      await ClarificationMessage.deleteMany({
-        challengeId,
-        isReadByNodal: true,
-        isReadByUniversity: true,
-        seenAt: { $ne: null, $lt: twelveHoursAgo }
-      });
-    } catch (e) {
-      // background cleanup ignore
-    }
-
-    const query = {
-      challengeId,
-      $or: [
-        { seenAt: null },
-        { seenAt: { $gte: twelveHoursAgo } },
-        { isReadByNodal: false },
-        { isReadByUniversity: false }
-      ]
-    };
-
-    if (role) {
-      query.deletedByRoles = { $ne: role };
-    }
-
-    let messages = await ClarificationMessage.find(query)
-      .sort({ createdAt: 1 })
-      .lean();
-
-    return messages;
+    return await ClarificationMessage.find(query).sort({ createdAt: 1 }).lean();
   }
 
-  /**
-   * Create and store a new message
-   */
   async createMessage(data) {
     const {
       challengeId,
@@ -88,9 +53,6 @@ export class ClarificationRepository {
     return newMsg.toObject();
   }
 
-  /**
-   * Delete a single message (Delete for me vs Delete for everyone)
-   */
   async deleteMessage(messageId, role, mode = 'FOR_ME') {
     if (!messageId) return { success: false };
 
@@ -107,68 +69,41 @@ export class ClarificationRepository {
         { new: true }
       );
       return { success: true, mode: 'EVERYONE', message: updated };
-    } else {
-      // Delete for Me
-      const updated = await ClarificationMessage.findByIdAndUpdate(
-        messageId,
-        {
-          $addToSet: { deletedByRoles: role }
-        },
-        { new: true }
-      );
-
-      // If deleted by all parties, clean up completely
-      if (updated && updated.deletedByRoles?.includes('UNIVERSITY') && updated.deletedByRoles?.includes('NODAL')) {
-        await ClarificationMessage.findByIdAndDelete(messageId);
-      }
-
-      return { success: true, mode: 'FOR_ME', messageId };
     }
+
+    // Delete for Me
+    const updated = await ClarificationMessage.findByIdAndUpdate(
+      messageId,
+      { $addToSet: { deletedByRoles: role } },
+      { new: true }
+    );
+
+    if (updated?.deletedByRoles?.includes('UNIVERSITY') && updated?.deletedByRoles?.includes('NODAL')) {
+      await ClarificationMessage.findByIdAndDelete(messageId);
+    }
+
+    return { success: true, mode: 'FOR_ME', messageId };
   }
 
-  /**
-   * Mark messages as read and stamp seenAt
-   */
   async markRead(challengeId, readerRole) {
     const now = new Date();
-    if (readerRole === 'NODAL' || readerRole === 'ADMIN') {
-      await ClarificationMessage.updateMany(
-        { challengeId, isReadByNodal: false },
-        { 
-          $set: { 
-            isReadByNodal: true,
-            seenAt: now
-          } 
-        }
-      );
-    } else {
-      await ClarificationMessage.updateMany(
-        { challengeId, isReadByUniversity: false },
-        { 
-          $set: { 
-            isReadByUniversity: true,
-            seenAt: now
-          } 
-        }
-      );
-    }
+    const isNodal = readerRole === 'NODAL' || readerRole === 'ADMIN';
+    const fieldToUpdate = isNodal
+      ? { isReadByNodal: true, seenAt: now }
+      : { isReadByUniversity: true, seenAt: now };
+    const query = isNodal ? { challengeId, isReadByNodal: false } : { challengeId, isReadByUniversity: false };
+
+    await ClarificationMessage.updateMany(query, { $set: fieldToUpdate });
     return { success: true };
   }
 
-  /**
-   * Clear Chat History for a Challenge
-   */
   async clearChat(challengeId, role = null) {
     if (!challengeId) return { success: false };
 
     if (!role) {
       await ClarificationMessage.deleteMany({ challengeId });
     } else {
-      // Mark as deleted for this role, and if deleted by both roles, completely remove
-      await ClarificationMessage.updateMany(
-        { challengeId },
-        { $addToSet: { deletedByRoles: role } }
-      );
+      await ClarificationMessage.updateMany({ challengeId }, { $addToSet: { deletedByRoles: role } });
       await ClarificationMessage.deleteMany({
         challengeId,
         deletedByRoles: { $all: ['UNIVERSITY', 'NODAL'] }
@@ -178,50 +113,12 @@ export class ClarificationRepository {
     return { success: true };
   }
 
-  /**
-   * Get unread stats for badges
-   */
   async getUnreadCount(universityCode = null, isNodal = false) {
-    if (isNodal) {
-      const count = await ClarificationMessage.countDocuments({
-        senderRole: 'UNIVERSITY',
-        isReadByNodal: false
-      });
-      return { unreadTotal: count };
-    } else if (universityCode) {
-      const count = await ClarificationMessage.countDocuments({
-        universityCode: universityCode.toUpperCase(),
-        senderRole: { $in: ['NODAL', 'ADMIN'] },
-        isReadByUniversity: false
-      });
-      return { unreadTotal: count };
-    }
-    return { unreadTotal: 0 };
+    return computeUnreadCount(ClarificationMessage, universityCode, isNodal);
   }
 
-  /**
-   * Get per-challenge unread stats
-   */
   async getChallengeStats() {
-    const unreadNodal = await ClarificationMessage.aggregate([
-      { $match: { senderRole: 'UNIVERSITY', isReadByNodal: false } },
-      { $group: { _id: '$challengeId', unreadCount: { $sum: 1 } } }
-    ]);
-
-    const unreadUniversity = await ClarificationMessage.aggregate([
-      { $match: { senderRole: { $in: ['NODAL', 'ADMIN'] }, isReadByUniversity: false } },
-      { $group: { _id: '$challengeId', unreadCount: { $sum: 1 } } }
-    ]);
-
-    const statsMap = {};
-    unreadNodal.forEach((item) => {
-      statsMap[item._id] = { ...(statsMap[item._id] || {}), unreadForNodal: item.unreadCount };
-    });
-    unreadUniversity.forEach((item) => {
-      statsMap[item._id] = { ...(statsMap[item._id] || {}), unreadForUniversity: item.unreadCount };
-    });
-
-    return statsMap;
+    return computeChallengeStats(ClarificationMessage);
   }
 }
 
