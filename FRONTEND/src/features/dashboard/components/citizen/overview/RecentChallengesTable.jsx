@@ -1,59 +1,9 @@
 import React from 'react';
-import { MapPin, Droplet, Wrench, BookOpen, Trash2 } from 'lucide-react';
-
-const defaultRecentChallenges = [
-  {
-    id: 'JH-2026-00124',
-    title: 'Drinking Water Shortage in Rural Area',
-    location: 'Ratu, Ranchi',
-    category: 'Water',
-    icon: Droplet,
-    iconColor: 'text-blue-700',
-    iconBg: 'bg-blue-50',
-    status: 'Under Review',
-    statusBg: 'bg-amber-50 text-amber-800',
-    updated: '2 days ago'
-  },
-  {
-    id: 'JH-2026-00120',
-    title: 'Broken Road Causing Travel Issues',
-    location: 'Ratu, Ranchi',
-    category: 'Infrastructure',
-    icon: Wrench,
-    iconColor: 'text-slate-700',
-    iconBg: 'bg-slate-100',
-    status: 'Submitted',
-    statusBg: 'bg-blue-50 text-blue-700',
-    updated: '4 days ago'
-  },
-  {
-    id: 'JH-2026-00115',
-    title: 'School Toilet Facility Issue',
-    location: 'Ratu, Ranchi',
-    category: 'Education',
-    icon: BookOpen,
-    iconColor: 'text-purple-700',
-    iconBg: 'bg-purple-50',
-    status: 'In Evaluation',
-    statusBg: 'bg-purple-50 text-purple-700',
-    updated: '1 week ago'
-  },
-  {
-    id: 'JH-2026-00110',
-    title: 'Garbage Disposal Problem',
-    location: 'Ratu, Ranchi',
-    category: 'Sanitation',
-    icon: Trash2,
-    iconColor: 'text-teal-700',
-    iconBg: 'bg-teal-50',
-    status: 'Under Review',
-    statusBg: 'bg-amber-50 text-amber-800',
-    updated: '1 week ago'
-  }
-];
+import { MapPin, Loader2 } from 'lucide-react';
 
 export const RecentChallengesTable = ({
-  challenges = defaultRecentChallenges,
+  loading = false,
+  challenges = [],
   onViewAll
 }) => {
   return (
@@ -82,35 +32,52 @@ export const RecentChallengesTable = ({
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 text-slate-700">
-              {challenges.map((ch) => {
-                const IconComponent = ch.icon;
-                return (
-                  <tr key={ch.id} className="hover:bg-slate-50/50 transition-colors">
-                    <td className="py-2.5 px-2.5 font-semibold text-slate-900">{ch.id}</td>
-                    <td className="py-2.5 px-2.5 max-w-[180px] truncate font-medium text-slate-800">
-                      {ch.title}
-                    </td>
-                    <td className="py-2.5 px-2.5 text-slate-500 whitespace-nowrap">
-                      <span className="flex items-center">
-                        <MapPin className="w-3 h-3 text-slate-400 mr-1 flex-shrink-0" />
-                        {ch.location}
-                      </span>
-                    </td>
-                    <td className="py-2.5 px-2.5 whitespace-nowrap">
-                      <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold ${ch.iconBg} ${ch.iconColor}`}>
-                        <IconComponent className="w-3 h-3 mr-1" />
-                        {ch.category}
-                      </span>
-                    </td>
-                    <td className="py-2.5 px-2.5 whitespace-nowrap">
-                      <span className={`inline-flex px-1.5 py-0.5 rounded text-[10px] font-bold ${ch.statusBg}`}>
-                        {ch.status}
-                      </span>
-                    </td>
-                    <td className="py-2.5 px-2.5 text-slate-400 whitespace-nowrap">{ch.updated}</td>
-                  </tr>
-                );
-              })}
+              {loading ? (
+                <tr>
+                  <td colSpan="6" className="py-6 text-center text-slate-400 font-medium">
+                    <div className="flex items-center justify-center space-x-2">
+                      <Loader2 className="w-3.5 h-3.5 animate-spin text-slate-600" />
+                      <span>Loading recent challenges...</span>
+                    </div>
+                  </td>
+                </tr>
+              ) : challenges.length > 0 ? (
+                challenges.map((ch) => {
+                  const IconComponent = ch.icon;
+                  return (
+                    <tr key={ch.id} className="hover:bg-slate-50/50 transition-colors">
+                      <td className="py-2.5 px-2.5 font-semibold text-slate-900">{ch.id}</td>
+                      <td className="py-2.5 px-2.5 max-w-[180px] truncate font-medium text-slate-800">
+                        {ch.title}
+                      </td>
+                      <td className="py-2.5 px-2.5 text-slate-500 whitespace-nowrap">
+                        <span className="flex items-center">
+                          <MapPin className="w-3 h-3 text-slate-400 mr-1 flex-shrink-0" />
+                          {ch.location}
+                        </span>
+                      </td>
+                      <td className="py-2.5 px-2.5 whitespace-nowrap">
+                        <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold ${ch.iconBg} ${ch.iconColor}`}>
+                          <IconComponent className="w-3 h-3 mr-1" />
+                          {ch.category}
+                        </span>
+                      </td>
+                      <td className="py-2.5 px-2.5 whitespace-nowrap">
+                        <span className={`inline-flex px-1.5 py-0.5 rounded text-[10px] font-bold ${ch.statusBg}`}>
+                          {ch.status}
+                        </span>
+                      </td>
+                      <td className="py-2.5 px-2.5 text-slate-400 whitespace-nowrap">{ch.submittedOn || ch.updated}</td>
+                    </tr>
+                  );
+                })
+              ) : (
+                <tr>
+                  <td colSpan="6" className="py-6 text-center text-slate-400 font-medium">
+                    No submitted challenges found. Click "Submit a Challenge" to start.
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>

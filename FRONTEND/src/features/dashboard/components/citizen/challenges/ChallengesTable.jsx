@@ -1,9 +1,10 @@
 import React from 'react';
-import { MapPin, Eye, MoreVertical } from 'lucide-react';
+import { MapPin, Eye, MoreVertical, Loader2 } from 'lucide-react';
 import { ChallengesPagination } from './ChallengesPagination.jsx';
 
 export const ChallengesTable = ({
-  filteredChallenges,
+  loading = false,
+  filteredChallenges = [],
   onViewDetails
 }) => {
   return (
@@ -26,7 +27,16 @@ export const ChallengesTable = ({
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100 text-slate-700">
-            {filteredChallenges.length > 0 ? (
+            {loading ? (
+              <tr>
+                <td colSpan="7" className="py-8 text-center text-slate-400 font-medium">
+                  <div className="flex items-center justify-center space-x-2">
+                    <Loader2 className="w-4 h-4 animate-spin text-slate-600" />
+                    <span>Loading your submitted challenges...</span>
+                  </div>
+                </td>
+              </tr>
+            ) : filteredChallenges.length > 0 ? (
               filteredChallenges.map((ch) => {
                 const IconComponent = ch.icon;
                 return (
@@ -79,8 +89,8 @@ export const ChallengesTable = ({
               })
             ) : (
               <tr>
-                <td colSpan="7" className="py-6 text-center text-slate-400 font-medium">
-                  No challenges found matching the filters.
+                <td colSpan="7" className="py-8 text-center text-slate-400 font-medium">
+                  No challenges found. Click "Submit New Challenge" to report a community problem.
                 </td>
               </tr>
             )}
