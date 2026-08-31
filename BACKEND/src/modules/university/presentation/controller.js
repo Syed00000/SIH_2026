@@ -1,261 +1,51 @@
 import { universityService } from '../application/service.js';
+import { createChallengeProjectHandler } from './handlers/challenge-project.handler.js';
+import { createFacultyTeamHandler } from './handlers/faculty-team.handler.js';
+import { createPartnerApprovalHandler } from './handlers/partner-approval.handler.js';
+import { createDashboardProfileHandler } from './handlers/dashboard-profile.handler.js';
 
 export class UniversityController {
-  async getDashboard(req, res, next) {
-    try {
-      const code = req.query.universityCode || req.user?.profile?.aisheCode || 'RUNI-JH';
-      const data = await universityService.getDashboard(code);
-      res.status(200).json({ status: 'SUCCESS', data });
-    } catch (error) { next(error); }
+  constructor(service = universityService) {
+    this.service = service;
+    this.challengeProjectHandler = createChallengeProjectHandler(service);
+    this.facultyTeamHandler = createFacultyTeamHandler(service);
+    this.partnerApprovalHandler = createPartnerApprovalHandler(service);
+    this.dashboardProfileHandler = createDashboardProfileHandler(service);
   }
 
-  async getChallenges(req, res, next) {
-    try {
-      const code = req.query.universityCode || req.user?.profile?.aisheCode || 'RUNI-JH';
-      const data = await universityService.getChallenges(code, req.query);
-      res.status(200).json({ status: 'SUCCESS', data });
-    } catch (error) { next(error); }
-  }
+  getDashboard(req, res, next) { return this.dashboardProfileHandler.getDashboard(req, res, next); }
+  getChallenges(req, res, next) { return this.challengeProjectHandler.getChallenges(req, res, next); }
+  updateChallengeStatus(req, res, next) { return this.challengeProjectHandler.updateChallengeStatus(req, res, next); }
+  assignFaculty(req, res, next) { return this.challengeProjectHandler.assignFaculty(req, res, next); }
 
-  async updateChallengeStatus(req, res, next) {
-    try {
-      const { id } = req.params;
-      const code = req.query.universityCode || req.user?.profile?.aisheCode || 'RUNI-JH';
-      const { status, actionLabel, remarks, query, declineReason, clarificationQuery } = req.body;
-      const updated = await universityService.updateChallengeStatus(id, code, status, actionLabel, {
-        clarificationQuery: clarificationQuery || query || remarks || '',
-        query: query || clarificationQuery || remarks || '',
-        declineReason: declineReason || '',
-        declineRemarks: remarks || '',
-        remarks: remarks || query || clarificationQuery || ''
-      });
-      res.status(200).json({ status: 'SUCCESS', message: 'Challenge status updated', data: updated });
-    } catch (error) { next(error); }
-  }
+  getFaculty(req, res, next) { return this.facultyTeamHandler.getFaculty(req, res, next); }
+  createFaculty(req, res, next) { return this.facultyTeamHandler.createFaculty(req, res, next); }
+  updateFaculty(req, res, next) { return this.facultyTeamHandler.updateFaculty(req, res, next); }
+  deleteFaculty(req, res, next) { return this.facultyTeamHandler.deleteFaculty(req, res, next); }
+  getTeams(req, res, next) { return this.facultyTeamHandler.getTeams(req, res, next); }
 
-  async assignFaculty(req, res, next) {
-    try {
-      const { id } = req.params;
-      const code = req.query.universityCode || req.user?.profile?.aisheCode || 'RUNI-JH';
-      const { facultyInfo } = req.body;
-      const updated = await universityService.assignFaculty(id, code, facultyInfo);
-      res.status(200).json({ status: 'SUCCESS', message: 'Faculty assigned successfully', data: updated });
-    } catch (error) { next(error); }
-  }
+  getProjects(req, res, next) { return this.challengeProjectHandler.getProjects(req, res, next); }
+  createProject(req, res, next) { return this.challengeProjectHandler.createProject(req, res, next); }
+  updateProject(req, res, next) { return this.challengeProjectHandler.updateProject(req, res, next); }
+  deleteProject(req, res, next) { return this.challengeProjectHandler.deleteProject(req, res, next); }
+  assignFacultyToProject(req, res, next) { return this.challengeProjectHandler.assignFacultyToProject(req, res, next); }
+  submitPrototype(req, res, next) { return this.challengeProjectHandler.submitPrototype(req, res, next); }
+  forwardPrototypeToGovernment(req, res, next) { return this.challengeProjectHandler.forwardPrototypeToGovernment(req, res, next); }
+  updateGovernmentPrototypeStatus(req, res, next) { return this.challengeProjectHandler.updateGovernmentPrototypeStatus(req, res, next); }
 
-  async getFaculty(req, res, next) {
-    try {
-      const code = req.query.universityCode || req.user?.profile?.aisheCode || 'RUNI-JH';
-      const data = await universityService.getFaculty(code);
-      res.status(200).json({ status: 'SUCCESS', data });
-    } catch (error) { next(error); }
-  }
+  getPartners(req, res, next) { return this.partnerApprovalHandler.getPartners(req, res, next); }
+  getActivities(req, res, next) { return this.dashboardProfileHandler.getActivities(req, res, next); }
+  clearActivities(req, res, next) { return this.dashboardProfileHandler.clearActivities(req, res, next); }
+  getApprovals(req, res, next) { return this.partnerApprovalHandler.getApprovals(req, res, next); }
+  updateApproval(req, res, next) { return this.partnerApprovalHandler.updateApproval(req, res, next); }
+  deleteApproval(req, res, next) { return this.partnerApprovalHandler.deleteApproval(req, res, next); }
+  createIndustryRequest(req, res, next) { return this.partnerApprovalHandler.createIndustryRequest(req, res, next); }
+  getIndustryRequests(req, res, next) { return this.partnerApprovalHandler.getIndustryRequests(req, res, next); }
+  deleteIndustryRequest(req, res, next) { return this.partnerApprovalHandler.deleteIndustryRequest(req, res, next); }
 
-  async createFaculty(req, res, next) {
-    try {
-      const code = req.query.universityCode || req.user?.profile?.aisheCode || 'RUNI-JH';
-      const data = await universityService.createFaculty(code, req.body);
-      res.status(201).json({ status: 'SUCCESS', message: 'Faculty registered successfully', data });
-    } catch (error) { next(error); }
-  }
-
-  async updateFaculty(req, res, next) {
-    try {
-      const { id } = req.params;
-      const code = req.query.universityCode || req.user?.profile?.aisheCode || 'RUNI-JH';
-      const data = await universityService.updateFaculty(code, id, req.body);
-      res.status(200).json({ status: 'SUCCESS', message: 'Faculty updated successfully', data });
-    } catch (error) { next(error); }
-  }
-
-  async deleteFaculty(req, res, next) {
-    try {
-      const { id } = req.params;
-      const code = req.query.universityCode || req.user?.profile?.aisheCode || 'RUNI-JH';
-      const data = await universityService.deleteFaculty(code, id);
-      res.status(200).json({ status: 'SUCCESS', message: 'Faculty removed successfully', data });
-    } catch (error) { next(error); }
-  }
-
-  async getTeams(req, res, next) {
-    try {
-      const code = req.query.universityCode || req.user?.profile?.aisheCode || 'RUNI-JH';
-      const data = await universityService.getTeams(code);
-      res.status(200).json({ status: 'SUCCESS', data });
-    } catch (error) { next(error); }
-  }
-
-  async getProjects(req, res, next) {
-    try {
-      const code = req.query.universityCode || req.user?.profile?.aisheCode || 'RUNI-JH';
-      const data = await universityService.getProjects(code);
-      res.status(200).json({ status: 'SUCCESS', data });
-    } catch (error) { next(error); }
-  }
-
-  async createProject(req, res, next) {
-    try {
-      const code = req.query.universityCode || req.user?.profile?.aisheCode || 'RUNI-JH';
-      const data = await universityService.createProject(code, req.body);
-      res.status(201).json({ status: 'SUCCESS', message: 'Project registered successfully', data });
-    } catch (error) { next(error); }
-  }
-
-  async updateProject(req, res, next) {
-    try {
-      const { id } = req.params;
-      const code = req.query.universityCode || req.user?.profile?.aisheCode || 'RUNI-JH';
-      const data = await universityService.updateProject(code, id, req.body);
-      res.status(200).json({ status: 'SUCCESS', message: 'Project updated successfully', data });
-    } catch (error) { next(error); }
-  }
-
-  async deleteProject(req, res, next) {
-    try {
-      const { id } = req.params;
-      const code = req.query.universityCode || req.user?.profile?.aisheCode || 'RUNI-JH';
-      const data = await universityService.deleteProject(code, id);
-      res.status(200).json({ status: 'SUCCESS', message: 'Project removed successfully', data });
-    } catch (error) { next(error); }
-  }
-
-  async assignFacultyToProject(req, res, next) {
-    try {
-      const { id } = req.params;
-      const code = req.query.universityCode || req.user?.profile?.aisheCode || req.user?.profile?.code || 'RU001';
-      const facultyInfo = req.body.facultyInfo || req.body;
-      const data = await universityService.assignFacultyToProject(code, id, facultyInfo);
-      res.status(200).json({ status: 'SUCCESS', message: 'Faculty mentor assigned to project successfully', data });
-    } catch (error) { next(error); }
-  }
-
-  async getPartners(req, res, next) {
-    try {
-      const code = req.query.universityCode || req.user?.profile?.aisheCode || 'RUNI-JH';
-      const data = await universityService.getPartners(code);
-      res.status(200).json({ status: 'SUCCESS', data });
-    } catch (error) { next(error); }
-  }
-
-  async getActivities(req, res, next) {
-    try {
-      const code = req.query.universityCode || req.user?.profile?.aisheCode || 'RU001';
-      const data = await universityService.getActivities(code);
-      res.status(200).json({ status: 'SUCCESS', data });
-    } catch (error) { next(error); }
-  }
-
-  async clearActivities(req, res, next) {
-    try {
-      const code = req.query.universityCode || req.body.universityCode || req.user?.profile?.aisheCode || 'RU001';
-      const data = await universityService.clearActivities(code);
-      res.status(200).json({ status: 'SUCCESS', message: 'All activities cleared successfully', data });
-    } catch (error) { next(error); }
-  }
-
-  async getApprovals(req, res, next) {
-    try {
-      const code = req.query.universityCode || req.user?.profile?.aisheCode || 'RUNI-JH';
-      const data = await universityService.getApprovals(code);
-      res.status(200).json({ status: 'SUCCESS', data });
-    } catch (error) { next(error); }
-  }
-
-  async submitPrototype(req, res, next) {
-    try {
-      const { id } = req.params;
-      const code = req.query.universityCode || req.user?.profile?.aisheCode || 'RUNI-JH';
-      const data = await universityService.submitPrototype(id, code, req.body);
-      res.status(200).json({ status: 'SUCCESS', message: 'Prototype submitted successfully', data });
-    } catch (error) { next(error); }
-  }
-
-  async updateApproval(req, res, next) {
-    try {
-      const { id } = req.params;
-      const code = req.query.universityCode || req.user?.profile?.aisheCode || 'RUNI-JH';
-      const { status } = req.body;
-      const data = await universityService.updateApproval(id, code, status);
-      res.status(200).json({ status: 'SUCCESS', message: 'Approval status updated', data });
-    } catch (error) { next(error); }
-  }
-
-  async deleteApproval(req, res, next) {
-    try {
-      const { id } = req.params;
-      const code = req.query.universityCode || req.user?.profile?.aisheCode || 'RUNI-JH';
-      const data = await universityService.deleteApproval(id, code);
-      res.status(200).json({ status: 'SUCCESS', message: 'Approval deleted', data });
-    } catch (error) { next(error); }
-  }
-
-  async createIndustryRequest(req, res, next) {
-    try {
-      const code = req.query.universityCode || req.user?.profile?.aisheCode || 'RU001';
-      const data = await universityService.createIndustryRequest(code, req.body);
-      res.status(201).json({ status: 'SUCCESS', message: 'Industry collaboration request dispatched', data });
-    } catch (error) { next(error); }
-  }
-
-  async getIndustryRequests(req, res, next) {
-    try {
-      const code = req.query.universityCode || req.user?.profile?.aisheCode || 'RU001';
-      const data = await universityService.getIndustryRequests(code);
-      res.status(200).json({ status: 'SUCCESS', data });
-    } catch (error) { next(error); }
-  }
-
-  async deleteIndustryRequest(req, res, next) {
-    try {
-      const { id } = req.params;
-      const code = req.query.universityCode || req.user?.profile?.aisheCode || 'RU001';
-      const data = await universityService.deleteIndustryRequest(id, code);
-      res.status(200).json({ status: 'SUCCESS', message: 'Industry request deleted', data });
-    } catch (error) { next(error); }
-  }
-
-  async forwardPrototypeToGovernment(req, res, next) {
-    try {
-      const { id } = req.params;
-      const code = req.query.universityCode || req.user?.profile?.aisheCode || 'RU001';
-      const { remarks } = req.body;
-      const data = await universityService.forwardPrototypeToGovernment(id, code, remarks);
-      res.status(200).json({ status: 'SUCCESS', message: 'Prototype forwarded to Government successfully', data });
-    } catch (error) { next(error); }
-  }
-
-  async updateGovernmentPrototypeStatus(req, res, next) {
-    try {
-      const { id } = req.params;
-      const { status, trlLevel, remarks } = req.body;
-      const data = await universityService.updateGovernmentPrototypeStatus(id, status, trlLevel, remarks);
-      res.status(200).json({ status: 'SUCCESS', message: 'Government prototype evaluation updated', data });
-    } catch (error) { next(error); }
-  }
-
-  async getReports(req, res, next) {
-    try {
-      const code = req.query.universityCode || req.user?.profile?.aisheCode || 'RUNI-JH';
-      const data = await universityService.getReports(code);
-      res.status(200).json({ status: 'SUCCESS', data });
-    } catch (error) { next(error); }
-  }
-
-  async getProfile(req, res, next) {
-    try {
-      const code = req.query.universityCode || req.user?.profile?.aisheCode || 'RU001';
-      const data = await universityService.getProfile(code);
-      res.status(200).json({ status: 'SUCCESS', data });
-    } catch (error) { next(error); }
-  }
-
-  async updateProfile(req, res, next) {
-    try {
-      const code = req.query.universityCode || req.user?.profile?.aisheCode || 'RU001';
-      const data = await universityService.updateProfile(code, req.body, req.user);
-      res.status(200).json({ status: 'SUCCESS', message: 'University profile updated successfully', data });
-    } catch (error) { next(error); }
-  }
+  getReports(req, res, next) { return this.dashboardProfileHandler.getReports(req, res, next); }
+  getProfile(req, res, next) { return this.dashboardProfileHandler.getProfile(req, res, next); }
+  updateProfile(req, res, next) { return this.dashboardProfileHandler.updateProfile(req, res, next); }
 }
 
 export const universityController = new UniversityController();

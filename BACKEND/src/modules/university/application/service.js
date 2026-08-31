@@ -1,177 +1,82 @@
 import { universityDashboardRepository } from '../infrastructure/repository.js';
-import { NotFoundError } from '../../../shared/errors/AppError.js';
+import { calculateDashboardMetrics } from './helpers/dashboard-metrics.helper.js';
+import { UniversityChallengeService } from './services/challenge.service.js';
+import { UniversityProjectService } from './services/project.service.js';
+import { UniversityFacultyService } from './services/faculty.service.js';
+import { UniversityPartnerApprovalService } from './services/partner-approval.service.js';
 
 export class UniversityService {
+  constructor(repository = universityDashboardRepository) {
+    this.repository = repository;
+    this.challengeService = new UniversityChallengeService(repository);
+    this.projectService = new UniversityProjectService(repository);
+    this.facultyService = new UniversityFacultyService(repository);
+    this.partnerApprovalService = new UniversityPartnerApprovalService(repository);
+  }
+
   async getDashboard(universityCode = 'RUNI-JH') {
     const code = (universityCode || 'RU001').toUpperCase();
-    const university = await universityDashboardRepository.findUniversityByCodeOrId(code);
+    const university = await this.repository.findUniversityByCodeOrId(code);
     const [challengesRes, projects, faculty, activities, approvals, partners] = await Promise.all([
-      universityDashboardRepository.getChallengesByUniversity(code, { page: 1, limit: 100 }),
-      universityDashboardRepository.getProjectsByUniversity(code),
-      universityDashboardRepository.getFacultyByUniversity(code),
-      universityDashboardRepository.getActivitiesByUniversity(code, 10),
-      universityDashboardRepository.getApprovalsByUniversity(code),
-      universityDashboardRepository.getPartnersByUniversity(code)
+      this.repository.getChallengesByUniversity(code, { page: 1, limit: 100 }),
+      this.repository.getProjectsByUniversity(code),
+      this.repository.getFacultyByUniversity(code),
+      this.repository.getActivitiesByUniversity(code, 10),
+      this.repository.getApprovalsByUniversity(code),
+      this.repository.getPartnersByUniversity(code)
     ]);
 
-    const allChallenges = (challengesRes.challenges || []).map((c) => ({
-      ...c,
-      id: c.challengeId,
-      challengeId: c.challengeId,
-      title: c.title,
-      domain: c.domain,
-      district: c.district,
-      priority: c.priority,
-      status: c.status,
-      acceptanceStatus: c.acceptanceStatus || (c.status === 'Accepted' ? 'Accepted' : c.status === 'Declined' ? 'Declined' : 'Pending Review'),
-      declineReason: c.declineReason || '',
-      actionLabel: c.actionLabel || (c.status === 'Accepted' ? 'View' : 'Review'),
-      actionText: c.actionLabel || (c.status === 'Accepted' ? 'View' : 'Review'),
-      assignedOn: c.assignedOn,
-      deadline: c.deadline,
-      problemStatement: c.problemStatement || c.description,
-      description: c.description || c.problemStatement,
-      affectedPopulation: c.affectedPopulation,
-      suggestedFaculty: c.suggestedFaculty,
-      assignedFaculty: c.assignedFaculty,
-      locationDetails: c.locationDetails
-    }));
-
-    const reviewNeededCount = allChallenges.filter((c) => c.status === 'Review' || c.status === 'Pending').length;
-    const pendingApprovalsCount = approvals.filter((a) => a.status === 'Pending').length;
-    const activeProjectsCount = projects.filter((p) => p.status !== 'Completed' && p.status !== 'Archived').length;
-    const delayedProjectsCount = projects.filter((p) => p.status === 'Delayed').length;
-    const onTrackCount = projects.filter((p) => p.status === 'On Track' || p.status === 'In Progress').length;
-    const atRiskCount = projects.filter((p) => p.status === 'At Risk' || p.status === 'Planning').length;
-    const completedCount = projects.filter((p) => p.status === 'Completed').length;
-    const facultyCount = faculty.length;
-    const onLeaveCount = faculty.filter((f) => f.availabilityStatus === 'On Leave').length;
-
-    const totalProj = projects.length;
-    const liveActivities = activities || [];
-
-    // Group domains directly from real challenges
-    const domainMap = {};
-    allChallenges.forEach((c) => {
-      if (c.domain) {
-        domainMap[c.domain] = (domainMap[c.domain] || 0) + 1;
-      }
+    return calculateDashboardMetrics({
+      code,
+      university,
+      challengesRes,
+      projects,
+      faculty,
+      activities,
+      approvals,
+      partners
     });
-
-    const topDomains = Object.keys(domainMap).map((dom) => ({
-      name: dom,
-      count: domainMap[dom],
-      percent: allChallenges.length > 0 ? Math.round((domainMap[dom] / allChallenges.length) * 100) : 0
-    }));
-
-    let totalGrantsAmount = 0;
-    projects.forEach((p) => {
-      let amt = p.disbursedAmount || p.sanctionedBudget || p.budget || 0;
-      if (typeof amt === 'string') {
-        amt = parseFloat(amt.replace(/[^0-9.]/g, '')) || 0;
-      }
-      totalGrantsAmount += amt;
-    });
-    const formattedGrants = totalGrantsAmount > 0 ? `₹ ${totalGrantsAmount.toLocaleString('en-IN')}` : '₹ 0';
-
-    return {
-      name: university?.name || 'University Innovation Portal',
-      shortName: university?.shortName || code,
-      district: university?.district || '',
-      university: {
-        code,
-        name: university?.name || 'University Innovation Portal',
-        shortName: university?.shortName || code,
-        district: university?.district || '',
-        nodalOfficer: university?.nodalOfficer || null
-      },
-      challenges: allChallenges,
-      kpis: {
-        assignedChallenges: { total: challengesRes.total || allChallenges.length, reviewNeeded: reviewNeededCount },
-        activeProjects: { total: activeProjectsCount, delayed: delayedProjectsCount, onTrack: onTrackCount },
-        facultyMentors: { total: facultyCount, active: facultyCount - onLeaveCount, onLeave: onLeaveCount },
-        totalGrants: { value: formattedGrants, note: 'Total Disbursed Grants' },
-        pendingApprovals: { total: pendingApprovalsCount, note: 'Requires action' },
-        industryPartners: { total: partners.length, note: 'Active collaborations' }
-      },
-      pendingActions: [
-        ...(reviewNeededCount > 0
-          ? [{ id: 'pa-1', title: 'Challenges need review', count: reviewNeededCount, actionText: 'Review Now', actionType: 'review_challenges', variant: 'blue' }]
-          : []),
-        ...(pendingApprovalsCount > 0
-          ? [{ id: 'pa-2', title: 'Approvals pending action', count: pendingApprovalsCount, actionText: 'Review Approvals', actionType: 'pending_approvals', variant: 'amber' }]
-          : [])
-      ],
-      projectProgressBreakdown: { onTrack: onTrackCount, atRisk: atRiskCount, delayed: delayedProjectsCount, completed: completedCount, total: totalProj },
-      projectProgress: {
-        totalProjects: totalProj,
-        total: totalProj,
-        breakdown: [
-          { status: 'On Track', count: onTrackCount, percentage: totalProj > 0 ? Math.round((onTrackCount / totalProj) * 100) : 0, color: '#0f172a' },
-          { status: 'At Risk', count: atRiskCount, percentage: totalProj > 0 ? Math.round((atRiskCount / totalProj) * 100) : 0, color: '#64748b' },
-          { status: 'Delayed', count: delayedProjectsCount, percentage: totalProj > 0 ? Math.round((delayedProjectsCount / totalProj) * 100) : 0, color: '#e11d48' },
-          { status: 'Completed', count: completedCount, percentage: totalProj > 0 ? Math.round((completedCount / totalProj) * 100) : 0, color: '#10b981' }
-        ]
-      },
-      topDomains,
-      recentActivity: liveActivities,
-      recentActivities: liveActivities
-    };
   }
 
-  async getChallenges(universityCode, query) {
-    const res = await universityDashboardRepository.getChallengesByUniversity(universityCode, query);
-    const mapped = (res.challenges || []).map((c) => ({
-      ...c,
-      id: c.challengeId,
-      actionText: 'View'
-    }));
-    return { ...res, challenges: mapped };
+  getChallenges(universityCode, query) { return this.challengeService.getChallenges(universityCode, query); }
+  updateChallengeStatus(challengeId, universityCode, status, actionLabel, metadata) {
+    return this.challengeService.updateChallengeStatus(challengeId, universityCode, status, actionLabel, metadata);
+  }
+  assignFaculty(challengeId, universityCode, facultyInfo) {
+    return this.challengeService.assignFaculty(challengeId, universityCode, facultyInfo);
   }
 
-  async updateChallengeStatus(challengeId, universityCode, status, actionLabel, metadata) {
-    const updated = await universityDashboardRepository.updateChallengeStatus(challengeId, universityCode, status, actionLabel, metadata);
-    if (!updated) throw new NotFoundError('Challenge not found');
-    return updated;
-  }
+  getProjects(universityCode) { return this.projectService.getProjects(universityCode); }
+  createProject(universityCode, data) { return this.projectService.createProject(universityCode, data); }
+  updateProject(universityCode, id, data) { return this.projectService.updateProject(universityCode, id, data); }
+  deleteProject(universityCode, id) { return this.projectService.deleteProject(universityCode, id); }
+  assignFacultyToProject(universityCode, id, facultyInfo) { return this.projectService.assignFacultyToProject(universityCode, id, facultyInfo); }
+  submitPrototype(projectId, universityCode, prototypeData) { return this.projectService.submitPrototype(projectId, universityCode, prototypeData); }
+  forwardPrototypeToGovernment(projectId, universityCode, remarks) { return this.projectService.forwardPrototypeToGovernment(projectId, universityCode, remarks); }
+  updateGovernmentPrototypeStatus(projectId, status, trlLevel, remarks) { return this.projectService.updateGovernmentPrototypeStatus(projectId, status, trlLevel, remarks); }
 
-  async assignFaculty(challengeId, universityCode, facultyInfo) {
-    const updated = await universityDashboardRepository.assignFaculty(challengeId, universityCode, facultyInfo);
-    if (!updated) throw new NotFoundError('Challenge not found');
-    return updated;
-  }
+  getFaculty(universityCode) { return this.facultyService.getFaculty(universityCode); }
+  createFaculty(universityCode, data) { return this.facultyService.createFaculty(universityCode, data); }
+  updateFaculty(universityCode, id, data) { return this.facultyService.updateFaculty(universityCode, id, data); }
+  deleteFaculty(universityCode, id) { return this.facultyService.deleteFaculty(universityCode, id); }
+  getTeams(universityCode) { return this.facultyService.getTeams(universityCode); }
 
-  async getFaculty(universityCode) { return await universityDashboardRepository.getFacultyByUniversity(universityCode); }
-  async createFaculty(universityCode, data) { return await universityDashboardRepository.createFaculty(universityCode, data); }
-  async updateFaculty(universityCode, id, data) { return await universityDashboardRepository.updateFaculty(universityCode, id, data); }
-  async deleteFaculty(universityCode, id) { return await universityDashboardRepository.deleteFaculty(universityCode, id); }
-
-  async getProjects(universityCode) { return await universityDashboardRepository.getProjectsByUniversity(universityCode); }
-  async createProject(universityCode, data) { return await universityDashboardRepository.createProject(universityCode, data); }
-  async updateProject(universityCode, id, data) { return await universityDashboardRepository.updateProject(universityCode, id, data); }
-  async deleteProject(universityCode, id) { return await universityDashboardRepository.deleteProject(universityCode, id); }
-  async assignFacultyToProject(universityCode, id, facultyInfo) { return await universityDashboardRepository.assignFacultyToProject(universityCode, id, facultyInfo); }
-
-  async getTeams(universityCode) { return await universityDashboardRepository.getTeamsByUniversity(universityCode); }
-  async getActivities(universityCode) { return await universityDashboardRepository.getActivitiesByUniversity(universityCode); }
-  async clearActivities(universityCode) { return await universityDashboardRepository.clearActivities(universityCode); }
-  async getPartners(universityCode) { return await universityDashboardRepository.getPartnersByUniversity(universityCode); }
-  async getApprovals(universityCode) { return await universityDashboardRepository.getApprovalsByUniversity(universityCode); }
-  async updateApproval(approvalId, universityCode, status) { return await universityDashboardRepository.updateApprovalStatus(approvalId, universityCode, status); }
-  async deleteApproval(approvalId, universityCode) { return await universityDashboardRepository.deleteApproval(approvalId, universityCode); }
-  async createIndustryRequest(universityCode, payload) { return await universityDashboardRepository.createIndustryRequest(universityCode, payload); }
-  async getIndustryRequests(universityCode) { return await universityDashboardRepository.getIndustryRequests(universityCode); }
-  async deleteIndustryRequest(requestId, universityCode) { return await universityDashboardRepository.deleteIndustryRequest(requestId, universityCode); }
-  async submitPrototype(projectId, universityCode, prototypeData) { return await universityDashboardRepository.submitPrototype(projectId, universityCode, prototypeData); }
-  async forwardPrototypeToGovernment(projectId, universityCode, remarks) { return await universityDashboardRepository.forwardPrototypeToGovernment(projectId, universityCode, remarks); }
-  async updateGovernmentPrototypeStatus(projectId, status, trlLevel, remarks) { return await universityDashboardRepository.updateGovernmentPrototypeStatus(projectId, status, trlLevel, remarks); }
+  getActivities(universityCode) { return this.partnerApprovalService.getActivities(universityCode); }
+  clearActivities(universityCode) { return this.partnerApprovalService.clearActivities(universityCode); }
+  getPartners(universityCode) { return this.partnerApprovalService.getPartners(universityCode); }
+  getApprovals(universityCode) { return this.partnerApprovalService.getApprovals(universityCode); }
+  updateApproval(approvalId, universityCode, status) { return this.partnerApprovalService.updateApproval(approvalId, universityCode, status); }
+  deleteApproval(approvalId, universityCode) { return this.partnerApprovalService.deleteApproval(approvalId, universityCode); }
+  createIndustryRequest(universityCode, payload) { return this.partnerApprovalService.createIndustryRequest(universityCode, payload); }
+  getIndustryRequests(universityCode) { return this.partnerApprovalService.getIndustryRequests(universityCode); }
+  deleteIndustryRequest(requestId, universityCode) { return this.partnerApprovalService.deleteIndustryRequest(requestId, universityCode); }
 
   async getProfile(universityCode) {
-    return await universityDashboardRepository.getUniversityProfile(universityCode);
+    return await this.repository.getUniversityProfile(universityCode);
   }
 
   async updateProfile(universityCode, data, user) {
-    return await universityDashboardRepository.updateUniversityProfile(universityCode, data, user);
+    return await this.repository.updateUniversityProfile(universityCode, data, user);
   }
 }
 

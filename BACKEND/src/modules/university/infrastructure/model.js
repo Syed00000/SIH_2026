@@ -1,202 +1,13 @@
 import mongoose from 'mongoose';
+import { universityChallengeSchema, universityProjectSchema } from './schemas/challenge-project.schemas.js';
+import { universityFacultySchema, universityTeamSchema } from './schemas/faculty-team.schemas.js';
+import { universityPartnerSchema, universityApprovalSchema } from './schemas/partner-approval.schemas.js';
+import { universityActivitySchema, universityIndustryRequestSchema } from './schemas/activity-request.schemas.js';
 
-const universityChallengeSchema = new mongoose.Schema(
-  {
-    challengeId: { type: String, required: true, index: true },
-    universityCode: { type: String, required: true, index: true },
-    title: { type: String, required: true, trim: true },
-    domain: { type: String, required: true, index: true },
-    district: { type: String, required: true, index: true },
-    priority: { type: String, enum: ['High', 'Medium', 'Low'], default: 'Medium' },
-    status: { type: String, default: 'Review', index: true },
-    assignedOn: { type: Date, default: Date.now },
-    deadline: { type: String, default: '27 May 2026 (7 days left)' },
-    problemStatement: { type: String, default: '' },
-    affectedPopulation: { type: String, default: '~ 12,500 People' },
-    aiCategory: { type: String, default: 'Water Quality & Monitoring' },
-    requiredSkills: [{ type: String }],
-    governmentRemarks: { type: String, default: '' },
-    suggestedFaculty: { name: String, department: String, matchScore: String },
-    locationDetails: { block: String, villages: [String], coordinates: String },
-    assignedFaculty: { id: String, name: String, department: String, email: String },
-    actionLabel: { type: String, default: 'Review' },
-    isDeleted: { type: Boolean, default: false, index: true },
-    deletedBy: { type: String, default: null },
-    deletedAt: { type: Date, default: null }
-  },
-  { timestamps: true, collection: 'university_challenges' }
-);
-
-const universityProjectSchema = new mongoose.Schema(
-  {
-    projectId: { type: String, required: true, index: true },
-    challengeId: { type: String, default: 'CHL-1024', index: true },
-    universityCode: { type: String, required: true, index: true },
-    title: { type: String, required: true },
-    domain: { type: String, required: true, index: true },
-    status: { type: String, default: 'Proposal Stage', index: true },
-    progressPercentage: { type: Number, default: 14 },
-    leadMentor: { type: String, required: true },
-    facultyMentor: {
-      name: { type: String, default: 'Lead Faculty Mentor' },
-      department: { type: String, default: 'Engineering' },
-      email: { type: String, default: '' }
-    },
-    studentTeam: { type: String, default: 'Student Research Team' },
-    studentLead: { type: String, default: '' },
-    teamMembersCount: { type: Number, default: 0 },
-    teamMembers: { type: Array, default: [] },
-    problemStatement: { type: String, default: '' },
-    methodology: { type: String, default: '' },
-    budget: { type: String, default: 'N/A' },
-    proposedBudget: { type: String, default: '' },
-    budgetBreakdown: { type: Array, default: [] },
-    budgetStatus: { type: String, default: 'Proposal Stage' },
-    sanctionedBudget: { type: String, default: '' },
-    startDate: { type: String, default: '20 May 2026' },
-    deadline: { type: String, default: '30 Nov 2026' },
-    daysLeft: { type: String, default: '192 days left' },
-    milestonesTotal: { type: Number, default: 7 },
-    milestonesCompleted: { type: Number, default: 1 },
-    milestones: { type: Array, default: [] },
-    documents: { type: Array, default: [] },
-    recentActivity: { type: Array, default: [] },
-    isDeleted: { type: Boolean, default: false, index: true },
-    deletedBy: { type: String, default: null },
-    deletedAt: { type: Date, default: null }
-  },
-  { timestamps: true, collection: 'university_projects', strict: false }
-);
-
-const universityFacultySchema = new mongoose.Schema(
-  {
-    universityCode: { type: String, required: true, index: true },
-    name: { type: String, required: true },
-    designation: { type: String, default: 'Professor' },
-    department: { type: String, required: true },
-    email: { type: String, required: true },
-    phone: { type: String, default: '+91 98765 43210' },
-    specialization: [String],
-    experience: { type: String, default: '10 Years' },
-    qualification: { type: String, default: 'Ph.D. in Engineering' },
-    researchAreas: [String],
-    activeProjects: { type: Number, default: 1 },
-    completedProjects: { type: Number, default: 3 },
-    totalProjects: { active: { type: Number, default: 1 }, completed: { type: Number, default: 3 } },
-    currentLoad: { type: Number, default: 1 },
-    availabilityStatus: { type: String, enum: ['Available', 'In Project', 'On Leave'], default: 'Available' },
-    bio: { type: String, default: '' },
-    passwordHash: { type: String, default: null },
-    userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
-    assignedChallenges: [{ challengeId: String, title: String, role: { type: String, default: 'Primary Mentor' } }],
-    status: { type: String, enum: ['Active', 'Inactive'], default: 'Active' }
-  },
-  { timestamps: true, collection: 'university_faculty' }
-);
-
-universityFacultySchema.index({ universityCode: 1, email: 1 }, { unique: true });
-universityFacultySchema.index({ universityCode: 1, name: 1 }, { unique: true });
-
-const universityTeamSchema = new mongoose.Schema(
-  {
-    teamCode: { type: String, required: true, index: true },
-    universityCode: { type: String, required: true, index: true },
-    name: { type: String, required: true },
-    leader: { type: String, required: true },
-    membersCount: { type: Number, default: 4 },
-    members: { type: Array, default: [] },
-    project: { type: String, default: 'Unassigned' },
-    mentor: { type: String, default: 'Unassigned' },
-    nepCredits: { type: String, default: '4 Credits' },
-    status: { type: String, enum: ['Active', 'Forming', 'Completed'], default: 'Active' }
-  },
-  { timestamps: true, collection: 'university_teams' }
-);
-
-const universityPartnerSchema = new mongoose.Schema(
-  {
-    partnerId: { type: String, required: true, index: true },
-    universityCode: { type: String, required: true, index: true },
-    name: { type: String, required: true },
-    type: { type: String, default: 'CSR Partner' },
-    grantAmount: { type: String, default: '₹25.0 Lakhs' },
-    committedGrant: { type: String, default: '₹25.0 Lakhs' },
-    focusArea: { type: String, default: 'Water Management' },
-    mouStatus: { type: String, default: 'Active' },
-    activePilots: { type: Number, default: 1 }
-  },
-  { timestamps: true, collection: 'university_partners' }
-);
-
-const universityApprovalSchema = new mongoose.Schema(
-  {
-    approvalId: { type: String, required: true, index: true },
-    universityCode: { type: String, required: true, index: true },
-    title: { type: String, required: true },
-    type: { type: String, default: 'R&D Grant Proposal' },
-    project: { type: String, required: true },
-    projectId: { type: String, default: '' },
-    challengeId: { type: String, default: '' },
-    requestedBy: { type: String, required: true },
-    requestedByDept: { type: String, default: 'Engineering' },
-    requestedByAvatar: { type: String, default: '' },
-    date: { type: String, default: '20 May 2026' },
-    dateTime: { type: String, default: '10:30 AM' },
-    status: { type: String, enum: ['Pending', 'Approved', 'Rejected', 'Changes Required'], default: 'Pending' },
-    faculty: { name: String, department: String },
-    team: { name: String, membersCount: { type: Number, default: 4 } },
-    startDate: { type: String, default: '20 May 2026' },
-    estimatedBudget: { type: String, default: 'N/A' },
-    proposedBudget: { type: String, default: '' },
-    methodology: { type: String, default: '' },
-    budgetBreakdown: { type: Array, default: [] },
-    supportTypes: [{ type: String }],
-    documentsCount: { type: Number, default: 2 },
-    adminRemarks: { type: String, default: '' },
-    history: [
-      {
-        action: String,
-        performedBy: String,
-        timestamp: String,
-        note: String
-      }
-    ]
-  },
-  { timestamps: true, collection: 'university_approvals', strict: false }
-);
-
-const universityActivitySchema = new mongoose.Schema(
-  {
-    universityCode: { type: String, required: true, index: true },
-    text: { type: String, required: true },
-    type: { type: String, default: 'info' },
-    timestamp: { type: Date, default: Date.now }
-  },
-  { timestamps: true, collection: 'university_activities' }
-);
-
-const universityIndustryRequestSchema = new mongoose.Schema(
-  {
-    requestId: { type: String, required: true, index: true },
-    universityCode: { type: String, required: true, index: true },
-    projectTitle: { type: String, required: true },
-    projectId: { type: String, default: '' },
-    partnerId: { type: String, default: '' },
-    partnerName: { type: String, required: true },
-    partnerEmail: { type: String, default: '' },
-    fundingRequested: { type: Boolean, default: true },
-    labAccessRequested: { type: Boolean, default: false },
-    mentorshipRequested: { type: Boolean, default: true },
-    estimatedBudget: { type: String, default: '' },
-    duration: { type: String, default: '3 Months' },
-    executionOutcome: { type: String, default: '' },
-    facultyName: { type: String, default: '' },
-    studentTeam: { type: String, default: '' },
-    status: { type: String, enum: ['Pending', 'Accepted', 'Declined', 'Under Evaluation'], default: 'Pending' },
-    submittedAt: { type: Date, default: Date.now }
-  },
-  { timestamps: true, collection: 'university_industry_requests', strict: false }
-);
+export { universityChallengeSchema, universityProjectSchema } from './schemas/challenge-project.schemas.js';
+export { universityFacultySchema, universityTeamSchema } from './schemas/faculty-team.schemas.js';
+export { universityPartnerSchema, universityApprovalSchema } from './schemas/partner-approval.schemas.js';
+export { universityActivitySchema, universityIndustryRequestSchema } from './schemas/activity-request.schemas.js';
 
 export const UniversityChallenge = mongoose.models.UniversityChallenge || mongoose.model('UniversityChallenge', universityChallengeSchema);
 export const UniversityProject = mongoose.models.UniversityProject || mongoose.model('UniversityProject', universityProjectSchema);
@@ -208,5 +19,12 @@ export const UniversityActivity = mongoose.models.UniversityActivity || mongoose
 export const UniversityIndustryRequest = mongoose.models.UniversityIndustryRequest || mongoose.model('UniversityIndustryRequest', universityIndustryRequestSchema);
 
 export default {
-  UniversityChallenge, UniversityProject, UniversityFaculty, UniversityTeam, UniversityPartner, UniversityApproval, UniversityActivity, UniversityIndustryRequest
+  UniversityChallenge,
+  UniversityProject,
+  UniversityFaculty,
+  UniversityTeam,
+  UniversityPartner,
+  UniversityApproval,
+  UniversityActivity,
+  UniversityIndustryRequest
 };
