@@ -184,18 +184,33 @@ export const FacultyPrototypePanel = ({
         </div>
       )}
 
-      {/* Approved Alert */}
-      {currentStatus === 'Approved' && (
+      {/* State Certified / Approved Alert */}
+      {(project.governmentStatus === 'Approved' || project.status === 'Completed') ? (
+        <div className="flex items-center space-x-3 p-4 bg-emerald-50 border border-emerald-300 text-emerald-900 rounded-2xl shadow-2xs">
+          <CheckCircle2 className="w-6 h-6 text-[#007A61] shrink-0" />
+          <div className="flex-1">
+            <h3 className="text-xs font-black uppercase tracking-wider text-[#007A61]">
+              ✓ Official State Certified (TRL-9) & Publicly Deployed
+            </h3>
+            <p className="text-[11px] font-medium text-emerald-900">
+              Department of Higher & Technical Education (DHTE) has validated all 4 stages. Originating citizen problem statement is now marked as <strong>RESOLVED</strong>.
+            </p>
+          </div>
+          <span className="px-3 py-1 bg-emerald-600 text-white rounded-xl text-xs font-black">
+            TRL-9 Certified
+          </span>
+        </div>
+      ) : currentStatus === 'Approved' ? (
         <div className="flex items-center space-x-3 p-4 bg-emerald-50 border border-emerald-300 text-emerald-900 rounded-2xl shadow-2xs">
           <CheckCircle2 className="w-6 h-6 text-[#007A61] shrink-0" />
           <div>
-            <h3 className="text-xs font-bold uppercase tracking-wider">Prototype Blueprint Approved & Verified</h3>
+            <h3 className="text-xs font-bold uppercase tracking-wider">Prototype Blueprint Approved by University</h3>
             <p className="text-[11px] font-medium opacity-90">
-              Your prototype has been successfully approved by the University and Government authority. It is now open for Industry CSR matching.
+              Your prototype has been successfully approved by the University Authority and forwarded to Government for State TRL-9 certification.
             </p>
           </div>
         </div>
-      )}
+      ) : null}
 
       {/* Header */}
       <div className="flex items-center justify-between bg-white border border-slate-200/90 p-4 rounded-2xl shadow-2xs">

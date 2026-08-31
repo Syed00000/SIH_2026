@@ -493,7 +493,7 @@ export const ApprovalDetailModal = ({
             </div>
           ) : (
             <div className="flex items-center space-x-2 w-full sm:w-auto justify-end">
-              {(approval.status === 'Rejected' || approval.status === 'Changes Required' || approval.project?.toLowerCase().includes('test')) && (
+              {approval.status !== 'Pending' && (
                 <button
                   type="button"
                   onClick={() => onDelete(approval)}

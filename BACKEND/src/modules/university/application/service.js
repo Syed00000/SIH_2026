@@ -161,6 +161,7 @@ export class UniversityService {
   async deleteApproval(approvalId, universityCode) { return await universityDashboardRepository.deleteApproval(approvalId, universityCode); }
   async createIndustryRequest(universityCode, payload) { return await universityDashboardRepository.createIndustryRequest(universityCode, payload); }
   async getIndustryRequests(universityCode) { return await universityDashboardRepository.getIndustryRequests(universityCode); }
+  async deleteIndustryRequest(requestId, universityCode) { return await universityDashboardRepository.deleteIndustryRequest(requestId, universityCode); }
   async submitPrototype(projectId, universityCode, prototypeData) { return await universityDashboardRepository.submitPrototype(projectId, universityCode, prototypeData); }
   async forwardPrototypeToGovernment(projectId, universityCode, remarks) { return await universityDashboardRepository.forwardPrototypeToGovernment(projectId, universityCode, remarks); }
   async updateGovernmentPrototypeStatus(projectId, status, trlLevel, remarks) { return await universityDashboardRepository.updateGovernmentPrototypeStatus(projectId, status, trlLevel, remarks); }

@@ -205,6 +205,15 @@ export class UniversityController {
     } catch (error) { next(error); }
   }
 
+  async deleteIndustryRequest(req, res, next) {
+    try {
+      const { id } = req.params;
+      const code = req.query.universityCode || req.user?.profile?.aisheCode || 'RU001';
+      const data = await universityService.deleteIndustryRequest(id, code);
+      res.status(200).json({ status: 'SUCCESS', message: 'Industry request deleted', data });
+    } catch (error) { next(error); }
+  }
+
   async forwardPrototypeToGovernment(req, res, next) {
     try {
       const { id } = req.params;

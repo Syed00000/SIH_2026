@@ -196,9 +196,9 @@ export const FacultyProjectsPanel = ({
                   </div>
 
                   <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl col-span-2 sm:col-span-1">
-                    <span className="text-[10px] text-slate-400 font-bold uppercase block">Progress Seekbar</span>
+                    <span className="text-[10px] text-slate-400 font-bold uppercase block tracking-wider">Project Progress</span>
                     <span className="font-extrabold text-[#007A61] text-xs mt-0.5 block">
-                      {selectedProject.progressPercentage || 14}% ({selectedProject.milestonesCompleted || 1}/7 Steps)
+                      {selectedProject.governmentStatus === 'Approved' || selectedProject.status === 'Completed' ? 100 : (selectedProject.progressPercentage || 14)}% ({selectedProject.governmentStatus === 'Approved' || selectedProject.status === 'Completed' ? 7 : (selectedProject.milestonesCompleted || 1)}/7 Steps)
                     </span>
                   </div>
                 </div>
@@ -259,9 +259,9 @@ export const FacultyProjectsPanel = ({
                           ))}
 
                           {pendingVal > 0 && (
-                            <div className="flex items-center justify-between text-[10.5px] text-amber-800 font-medium bg-amber-50/80 p-2 rounded-lg border border-amber-200/60 shadow-2xs">
+                            <div className="flex items-center justify-between text-[10.5px] text-amber-900 font-medium bg-amber-50 p-2 rounded-lg border border-amber-200 shadow-2xs">
                               <div className="flex items-center space-x-1.5">
-                                <Clock className="w-3.5 h-3.5 text-amber-600" />
+                                <Clock className="w-3.5 h-3.5 text-amber-700" />
                                 <span>Pending Balance</span>
                               </div>
                               <span className="font-bold">₹ {pendingVal.toLocaleString('en-IN')}</span>
@@ -280,8 +280,9 @@ export const FacultyProjectsPanel = ({
                   </h3>
 
                   {(selectedProject.milestones || []).map((m, idx) => {
-                    const isDone = m.status === 'Completed';
-                    const isCurrent = m.status === 'In Progress';
+                    const isAllDone = selectedProject.governmentStatus === 'Approved' || selectedProject.status === 'Completed';
+                    const isDone = isAllDone || m.status === 'Completed';
+                    const isCurrent = !isAllDone && m.status === 'In Progress';
 
                     return (
                       <div
@@ -308,7 +309,7 @@ export const FacultyProjectsPanel = ({
                           </div>
                           <div>
                             <span className="font-extrabold text-xs block leading-tight">{m.title}</span>
-                            <span className="text-[10px] text-slate-500">Status: {m.status}</span>
+                            <span className="text-[10px] text-slate-500">Status: {isDone ? 'Completed' : m.status}</span>
                           </div>
                         </div>
 

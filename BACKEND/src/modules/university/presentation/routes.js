@@ -36,6 +36,7 @@ router.patch('/approvals/:id', (req, res, next) => universityController.updateAp
 router.delete('/approvals/:id', (req, res, next) => universityController.deleteApproval(req, res, next));
 router.post('/industry-request', (req, res, next) => universityController.createIndustryRequest(req, res, next));
 router.get('/industry-requests', (req, res, next) => universityController.getIndustryRequests(req, res, next));
+router.delete('/industry-requests/:id', (req, res, next) => universityController.deleteIndustryRequest(req, res, next));
 router.get('/reports', (req, res, next) => universityController.getReports(req, res, next));
 router.get('/profile', (req, res, next) => universityController.getProfile(req, res, next));
 router.put('/profile', (req, res, next) => universityController.updateProfile(req, res, next));

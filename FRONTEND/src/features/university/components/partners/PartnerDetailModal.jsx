@@ -210,9 +210,22 @@ export const PartnerDetailModal = ({
                         {req.status || 'Pending'}
                       </span>
                     </div>
-                    <div className="flex items-center justify-between text-[11px] text-slate-500 font-medium">
+                    <div className="flex items-center justify-between text-[11px] text-slate-500 font-medium pt-1 border-t border-slate-100">
                       <span>Budget: <strong className="text-slate-800">{req.estimatedBudget || 'CSR Grant'}</strong> ({req.duration})</span>
-                      <span>{req.submittedAt ? new Date(req.submittedAt).toLocaleDateString('en-GB') : 'Recently'}</span>
+                      <div className="flex items-center space-x-2">
+                        <span>{req.submittedAt ? new Date(req.submittedAt).toLocaleDateString('en-GB') : 'Recently'}</span>
+                        <button
+                          type="button"
+                          onClick={async () => {
+                            await universityApiService.deleteIndustryRequest(req.requestId);
+                            setPartnerRequests(prev => prev.filter(r => r.requestId !== req.requestId));
+                          }}
+                          className="text-rose-500 hover:text-rose-700 text-[10.5px] font-bold hover:underline cursor-pointer"
+                          title="Delete dispatched proposal record"
+                        >
+                          Delete
+                        </button>
+                      </div>
                     </div>
                   </div>
                 ))}

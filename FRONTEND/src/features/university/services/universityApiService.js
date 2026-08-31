@@ -218,6 +218,14 @@ export const universityApiService = {
     return [];
   },
 
+  async deleteIndustryRequest(requestId, universityCode = DEFAULT_UNIVERSITY_CODE) {
+    try {
+      const res = await apiClient.delete(`university/industry-requests/${encodeURIComponent(requestId)}?universityCode=${encodeURIComponent(universityCode)}`);
+      if (res?.data) return res.data;
+    } catch (err) { console.error('API deleteIndustryRequest error:', err.message); }
+    return { success: false };
+  },
+
   async forwardPrototypeToGovernment(projectId, universityCode = DEFAULT_UNIVERSITY_CODE, remarks = '') {
     try {
       const res = await apiClient.post(

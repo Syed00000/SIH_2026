@@ -925,22 +925,64 @@ export class UniversityDashboardRepository {
 
   async updateGovernmentPrototypeStatus(projectId, status, trlLevel, remarks = '') {
     try {
-      const nextTrl = trlLevel || (status === 'Approved' ? 'TRL-6' : 'TRL-4');
+      const isApproved = status === 'Approved';
+      const nextTrl = trlLevel || (isApproved ? 'TRL-9' : 'TRL-4');
+
+      const updateFields = {
+        governmentStatus: status,
+        governmentRemarks: remarks,
+        trlLevel: nextTrl,
+        stateCertifiedAt: isApproved ? new Date() : null,
+        progressPercentage: isApproved ? 100 : 75,
+        milestonesCompleted: isApproved ? 7 : 6
+      };
+
+      if (isApproved) {
+        updateFields.status = 'Completed';
+        updateFields.prototypeStatus = 'Approved';
+        updateFields.budgetStatus = 'Prototype Certified & Deployed by State Government';
+      } else if (status === 'Changes Required') {
+        updateFields.prototypeStatus = 'Changes Required';
+        updateFields.budgetStatus = 'Prototype Revisions Directed by Government';
+      } else if (status === 'Rejected') {
+        updateFields.prototypeStatus = 'Rejected';
+        updateFields.budgetStatus = 'Prototype Rejected by Government';
+      }
+
       const proj = await UniversityProject.findOneAndUpdate(
         { $or: [{ projectId }, { challengeId: projectId }] },
-        {
-          $set: {
-            governmentStatus: status,
-            governmentRemarks: remarks,
-            trlLevel: nextTrl,
-            stateCertifiedAt: status === 'Approved' ? new Date() : null,
-            progressPercentage: status === 'Approved' ? 95 : 75
-          }
-        },
+        { $set: updateFields },
         { new: true }
       );
+
+      if (proj) {
+        // If approved by Government, also mark the linked citizen problem statement as RESOLVED
+        if (isApproved) {
+          await UniversityChallenge.updateMany(
+            { $or: [{ challengeId: proj.challengeId }, { title: proj.title }] },
+            {
+              $set: {
+                status: 'Resolved',
+                actionLabel: 'Resolved & Deployed',
+                governmentRemarks: 'State Certified (TRL-9) & Publicly Deployed. Citizen problem resolved.'
+              }
+            }
+          );
+        }
+
+        await UniversityActivity.create({
+          universityCode: proj.universityCode || 'RU001',
+          text: isApproved
+            ? `State Government (DHTE) officially APPROVED & STATE CERTIFIED (${nextTrl}) prototype for "${proj.title}". Problem statement marked as RESOLVED and deployed for citizen benefit.`
+            : `State Government evaluation update for "${proj.title}": ${status.toUpperCase()}.${remarks ? ` Directives: "${remarks}"` : ''}`,
+          type: isApproved ? 'PROTOTYPE_CERTIFIED_GOV' : 'PROTOTYPE_REVIEW_GOV',
+          timestamp: new Date()
+        });
+      }
+
       return { success: true, project: proj };
     } catch (err) {
+      console.error('updateGovernmentPrototypeStatus error:', err);
       return { success: false, error: err.message };
     }
   }
@@ -1265,6 +1307,17 @@ export class UniversityDashboardRepository {
     } catch (err) {
       console.warn('Error fetching industry requests in DB:', err);
       return [];
+    }
+  }
+
+  async deleteIndustryRequest(requestId, universityCode) {
+    try {
+      const code = (universityCode || 'RU001').toUpperCase();
+      await UniversityIndustryRequest.deleteOne({ requestId, universityCode: code });
+      return { success: true, requestId };
+    } catch (err) {
+      console.warn('Error deleting industry request in DB:', err);
+      return { success: false, error: err.message };
     }
   }
 }

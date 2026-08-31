@@ -44,7 +44,8 @@ export const ProjectDrawerTabs = ({
   const hasStudentTeam = Array.isArray(project.teamMembers) && project.teamMembers.length > 0;
 
   const isFunded = Boolean(project.disbursedAmount && project.disbursedAmount !== '0' && project.disbursedAmount !== '₹ 0');
-  const isProtoApproved = project.prototypeStatus === 'Approved';
+  const isGovApproved = project.governmentStatus === 'Approved' || project.status === 'Completed';
+  const isProtoApproved = project.prototypeStatus === 'Approved' || isGovApproved;
   const isProtoInReview = project.prototypeStatus === 'In Review';
   const isProtoStarted = Boolean(project.prototypeData);
 
@@ -65,40 +66,48 @@ export const ProjectDrawerTabs = ({
     { 
       id: 4, 
       title: 'University Review & Submission to Government', 
-      status: isFunded ? 'Completed' : 'In Progress', 
+      status: isFunded || isGovApproved ? 'Completed' : 'In Progress', 
       dueDate: 'N/A' 
     },
     { 
       id: 5, 
       title: 'Government Budget Sanction & Grant Disbursal', 
-      status: isFunded ? 'Completed' : 'Pending', 
+      status: isFunded || isGovApproved ? 'Completed' : 'Pending', 
       dueDate: 'N/A' 
     },
     { 
       id: 6, 
-      title: isProtoApproved 
+      title: isGovApproved
+        ? 'Prototype Validated & State Certified (TRL-9)'
+        : isProtoApproved 
         ? 'Prototype Blueprint Verified & Approved' 
         : isProtoInReview 
         ? 'Prototype Blueprint Submitted for Review' 
         : 'Prototype Development & Field Testing', 
-      status: isProtoApproved ? 'Completed' : (isProtoInReview || isProtoStarted ? 'In Progress' : 'Pending'), 
+      status: isProtoApproved || isGovApproved ? 'Completed' : (isProtoInReview || isProtoStarted ? 'In Progress' : 'Pending'), 
       dueDate: project.prototypeData?.timeline || 'N/A' 
     },
     { 
       id: 7, 
-      title: isProtoApproved ? 'Ready for Industry CSR Matching & Handover' : 'Government Handover & Final Audit', 
-      status: project.status === 'Completed' ? 'Completed' : (isProtoApproved ? 'In Progress' : 'Pending'), 
+      title: isGovApproved 
+        ? 'State Deployment & Citizen Problem Resolved' 
+        : isProtoApproved 
+        ? 'Ready for Industry CSR Matching & Handover' 
+        : 'Government Handover & Final Audit', 
+      status: isGovApproved || project.status === 'Completed' ? 'Completed' : (isProtoApproved ? 'In Progress' : 'Pending'), 
       dueDate: 'N/A' 
     }
   ];
 
-  const milestonesList = project.milestones?.length ? project.milestones : defaultMilestones;
+  const milestonesList = isGovApproved 
+    ? defaultMilestones.map(m => ({ ...m, status: 'Completed' }))
+    : (project.milestones?.length ? project.milestones : defaultMilestones);
   const totalMilestones = milestonesList.length || 7;
-  const completedMilestones = milestonesList.filter(
+  const completedMilestones = isGovApproved ? 7 : milestonesList.filter(
     (m) => m.status === 'Completed' || m.status === 'COMPLETED'
   ).length;
   const calculatedPercentage =
-    project.status === 'Completed'
+    isGovApproved || project.status === 'Completed'
       ? 100
       : Math.round((completedMilestones / totalMilestones) * 100);
 

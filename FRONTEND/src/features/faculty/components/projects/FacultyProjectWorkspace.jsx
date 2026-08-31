@@ -39,9 +39,18 @@ export const FacultyProjectWorkspace = ({
             <span className="text-[10.5px] font-bold text-slate-800 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">
               {project.status || 'Proposal Stage'}
             </span>
-            {project.prototypeStatus === 'Approved' ? (
+            {project.governmentStatus === 'Approved' || project.status === 'Completed' ? (
+              <span className="text-[10.5px] font-extrabold text-emerald-800 bg-emerald-100/70 px-2.5 py-0.5 rounded-full border border-emerald-400 flex items-center space-x-1 shadow-2xs">
+                <CheckCircle2 className="w-3.5 h-3.5 text-[#007A61]" />
+                <span>✓ State Certified & Deployed (TRL-9)</span>
+              </span>
+            ) : project.governmentStatus === 'Changes Required' ? (
+              <span className="text-[10.5px] font-extrabold text-amber-900 bg-amber-100 px-2.5 py-0.5 rounded-full border border-amber-300 flex items-center space-x-1 shadow-2xs">
+                <span>⚠️ Government Directives (Revisions Required)</span>
+              </span>
+            ) : project.prototypeStatus === 'Approved' ? (
               <span className="text-[10.5px] font-extrabold text-emerald-800 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-300 flex items-center space-x-1 shadow-2xs">
-                <span>✓ Prototype Done (Approved)</span>
+                <span>✓ University Approved (In State Review)</span>
               </span>
             ) : project.prototypeStatus === 'In Review' ? (
               <span className="text-[10.5px] font-extrabold text-blue-800 bg-blue-50 px-2.5 py-0.5 rounded-full border border-blue-200 flex items-center space-x-1 shadow-2xs">
