@@ -34,24 +34,30 @@ const universityProjectSchema = new mongoose.Schema(
     universityCode: { type: String, required: true, index: true },
     title: { type: String, required: true },
     domain: { type: String, required: true, index: true },
-    status: { type: String, default: 'In Progress', index: true },
-    progressPercentage: { type: Number, default: 0 },
+    status: { type: String, default: 'Proposal Stage', index: true },
+    progressPercentage: { type: Number, default: 14 },
     leadMentor: { type: String, required: true },
     facultyMentor: {
-      name: { type: String, default: 'Dr. Priya Sharma' },
-      department: { type: String, default: 'Water Resources Engineering' },
-      email: { type: String, default: 'priya.sharma@ru.ac.in' }
+      name: { type: String, default: 'Lead Faculty Mentor' },
+      department: { type: String, default: 'Engineering' },
+      email: { type: String, default: '' }
     },
-    studentTeam: { type: String, default: 'Smart Aqua Innovators' },
-    teamMembersCount: { type: Number, default: 5 },
+    studentTeam: { type: String, default: 'Student Research Team' },
+    studentLead: { type: String, default: '' },
+    teamMembersCount: { type: Number, default: 0 },
     teamMembers: { type: Array, default: [] },
     problemStatement: { type: String, default: '' },
-    budget: { type: String, default: '₹ 75,000' },
+    methodology: { type: String, default: '' },
+    budget: { type: String, default: 'N/A' },
+    proposedBudget: { type: String, default: '' },
+    budgetBreakdown: { type: Array, default: [] },
+    budgetStatus: { type: String, default: 'Proposal Stage' },
+    sanctionedBudget: { type: String, default: '' },
     startDate: { type: String, default: '20 May 2026' },
     deadline: { type: String, default: '30 Nov 2026' },
     daysLeft: { type: String, default: '192 days left' },
     milestonesTotal: { type: Number, default: 7 },
-    milestonesCompleted: { type: Number, default: 3 },
+    milestonesCompleted: { type: Number, default: 1 },
     milestones: { type: Array, default: [] },
     documents: { type: Array, default: [] },
     recentActivity: { type: Array, default: [] },
@@ -59,7 +65,7 @@ const universityProjectSchema = new mongoose.Schema(
     deletedBy: { type: String, default: null },
     deletedAt: { type: Date, default: null }
   },
-  { timestamps: true, collection: 'university_projects' }
+  { timestamps: true, collection: 'university_projects', strict: false }
 );
 
 const universityFacultySchema = new mongoose.Schema(
@@ -80,6 +86,8 @@ const universityFacultySchema = new mongoose.Schema(
     currentLoad: { type: Number, default: 1 },
     availabilityStatus: { type: String, enum: ['Available', 'In Project', 'On Leave'], default: 'Available' },
     bio: { type: String, default: '' },
+    passwordHash: { type: String, default: null },
+    userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
     assignedChallenges: [{ challengeId: String, title: String, role: { type: String, default: 'Primary Mentor' } }],
     status: { type: String, enum: ['Active', 'Inactive'], default: 'Active' }
   },
@@ -125,21 +133,25 @@ const universityApprovalSchema = new mongoose.Schema(
     approvalId: { type: String, required: true, index: true },
     universityCode: { type: String, required: true, index: true },
     title: { type: String, required: true },
-    type: { type: String, default: 'Project Approval' },
+    type: { type: String, default: 'R&D Grant Proposal' },
     project: { type: String, required: true },
+    projectId: { type: String, default: '' },
     challengeId: { type: String, default: '' },
     requestedBy: { type: String, required: true },
-    requestedByDept: { type: String, default: 'Water Resources Engineering' },
+    requestedByDept: { type: String, default: 'Engineering' },
     requestedByAvatar: { type: String, default: '' },
     date: { type: String, default: '20 May 2026' },
     dateTime: { type: String, default: '10:30 AM' },
     status: { type: String, enum: ['Pending', 'Approved', 'Rejected', 'Changes Required'], default: 'Pending' },
     faculty: { name: String, department: String },
-    team: { name: String, membersCount: { type: Number, default: 5 } },
+    team: { name: String, membersCount: { type: Number, default: 4 } },
     startDate: { type: String, default: '20 May 2026' },
-    estimatedBudget: { type: String, default: '₹ 75,000' },
+    estimatedBudget: { type: String, default: 'N/A' },
+    proposedBudget: { type: String, default: '' },
+    methodology: { type: String, default: '' },
+    budgetBreakdown: { type: Array, default: [] },
     supportTypes: [{ type: String }],
-    documentsCount: { type: Number, default: 4 },
+    documentsCount: { type: Number, default: 2 },
     adminRemarks: { type: String, default: '' },
     history: [
       {
@@ -150,7 +162,7 @@ const universityApprovalSchema = new mongoose.Schema(
       }
     ]
   },
-  { timestamps: true, collection: 'university_approvals' }
+  { timestamps: true, collection: 'university_approvals', strict: false }
 );
 
 const universityActivitySchema = new mongoose.Schema(

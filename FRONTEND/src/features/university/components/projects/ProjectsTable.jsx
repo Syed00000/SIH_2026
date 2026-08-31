@@ -112,7 +112,11 @@ export const ProjectsTable = ({
                       <div className="font-semibold text-slate-800 text-xs truncate max-w-[130px]" title={p.domain}>
                         {p.domain}
                       </div>
-                      <div className="text-[10px] text-slate-400 font-mono mt-0.5">{p.budget || 'N/A'}</div>
+                      <div className="text-[10px] text-slate-400 font-mono mt-0.5">
+                        {p.disbursedAmount && p.disbursedAmount !== '₹ 0' && p.disbursedAmount !== '0'
+                          ? <span className="text-emerald-600 font-bold">{p.disbursedAmount} (Disbursed)</span>
+                          : p.budget || 'N/A'}
+                      </div>
                     </td>
 
                     {/* Lead Mentor */}

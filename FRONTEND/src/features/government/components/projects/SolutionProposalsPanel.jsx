@@ -1,40 +1,40 @@
 import React, { useState, useMemo } from 'react';
 import {
-  FileCheck,
+  FileText,
   Search,
-  RotateCcw,
-  Plus,
+  Filter,
+  CheckCircle2,
+  AlertCircle,
+  Clock,
   Building2,
   MapPin,
   Calendar,
-  CheckCircle2,
-  Clock,
-  AlertCircle,
-  Eye,
-  Check,
+  IndianRupee,
+  Layers,
   ChevronRight,
-  Sparkles,
+  Eye,
+  SlidersHorizontal,
   Table,
   Grid,
-  IndianRupee,
-  FileText,
-  Layers,
-  Award,
-  Trash2
+  Check,
+  X,
+  Trash2,
+  RotateCcw,
+  Sparkles,
+  PlayCircle
 } from 'lucide-react';
-
 import { ProposalDetailView } from './ProposalDetailView.jsx';
 import { SECTOR_OPTIONS, DISTRICT_OPTIONS } from '../../data/projectConstants.js';
 import { projectCsrSyncService } from '../../services/projectCsrSyncService.js';
+import { parseGrantRupees, formatRupeesINR } from './GrantPaymentModal.jsx';
 
 export const SolutionProposalsPanel = () => {
   const [proposals, setProposals] = useState(() => projectCsrSyncService.getSolutionProposals());
 
-  // Listen to live CSR & project sync events
   React.useEffect(() => {
     const unsubscribe = projectCsrSyncService.subscribe((eventType, data) => {
-      if (data?.updatedSolProposals) {
-        setProposals(data.updatedSolProposals);
+      if (data?.updatedSolProposals || data?.updatedProposals) {
+        setProposals(data.updatedSolProposals || data.updatedProposals);
       }
     });
     return unsubscribe;
@@ -43,10 +43,10 @@ export const SolutionProposalsPanel = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedSector, setSelectedSector] = useState('All Sectors');
   const [selectedDistrict, setSelectedDistrict] = useState('All Districts');
-  const [selectedStatus, setSelectedStatus] = useState('All Status');
+  const [selectedStatus, setSelectedStatus] = useState('All');
   const [viewMode, setViewMode] = useState('cards'); // 'cards' | 'table'
 
-  // Full Page Proposal Detail State
+  // Full page view
   const [viewingProposal, setViewingProposal] = useState(null);
   const [notification, setNotification] = useState(null);
 
@@ -62,14 +62,14 @@ export const SolutionProposalsPanel = () => {
     } catch {}
   };
 
+  // Filtered proposals list
   const filteredProposals = useMemo(() => {
     return proposals.filter((item) => {
       const matchesSearch =
         searchQuery.trim() === '' ||
         item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         item.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        item.hei.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        item.teamLead.toLowerCase().includes(searchQuery.toLowerCase());
+        item.hei.toLowerCase().includes(searchQuery.toLowerCase());
 
       const matchesSector =
         selectedSector === 'All Sectors' || item.sector === selectedSector;
@@ -78,7 +78,10 @@ export const SolutionProposalsPanel = () => {
         selectedDistrict === 'All Districts' || item.district === selectedDistrict;
 
       const matchesStatus =
-        selectedStatus === 'All Status' || item.status === selectedStatus;
+        selectedStatus === 'All' ||
+        (selectedStatus === 'Pending' && item.status !== 'Approved' && item.status !== 'Rejected') ||
+        (selectedStatus === 'Approved' && (item.status === 'Approved' || item.budgetStatus === 'Grant Sanctioned by Government')) ||
+        (selectedStatus === 'Rejected' && item.status === 'Rejected');
 
       return matchesSearch && matchesSector && matchesDistrict && matchesStatus;
     });
@@ -88,33 +91,34 @@ export const SolutionProposalsPanel = () => {
     setSearchQuery('');
     setSelectedSector('All Sectors');
     setSelectedDistrict('All Districts');
-    setSelectedStatus('All Status');
+    setSelectedStatus('All');
   };
 
-  // Action: Approve Grant
+  // Action: Approve Grant & forward to CSR
   const handleApproveGrant = (proposal, remarks = '') => {
     const updated = proposals.map((p) =>
       p.id === proposal.id
-        ? { ...p, status: 'Approved', reviewerNotes: remarks || 'Grant approved by administration.' }
+        ? {
+            ...p,
+            status: 'Approved',
+            budgetStatus: 'Forwarded to CSR Grants Pipeline',
+            reviewedAt: new Date().toISOString(),
+            reviewerNotes: remarks || 'Proposal approved by Government Review Board and forwarded to CSR Grants.'
+          }
         : p
     );
     saveProposals(updated);
 
-    // Sync into CSR Grants Comprehensive Proposal Pipeline
     try {
-      projectCsrSyncService.approveProposalFromProjects({
-        ...proposal,
-        status: 'Approved',
-        reviewerNotes: remarks
-      });
+      projectCsrSyncService.approveProposalFromProjects(proposal, remarks);
     } catch (err) {
-      console.error('Failed to sync approved proposal to CSR:', err);
+      console.error('Failed to sync proposal to CSR:', err);
     }
 
     if (viewingProposal && viewingProposal.id === proposal.id) {
       setViewingProposal(updated.find((p) => p.id === proposal.id));
     }
-    showToast(`Grant sanctioned for "${proposal.title}" (${proposal.id}) & synced to CSR Grants pipeline.`);
+    showToast(`Proposal "${proposal.id}" approved and forwarded to CSR Grants Pipeline!`);
   };
 
   // Action: Reject Proposal
@@ -126,7 +130,6 @@ export const SolutionProposalsPanel = () => {
     );
     saveProposals(updated);
 
-    // Synchronize rejection across CSR Grants & purge from Active Projects
     try {
       projectCsrSyncService.rejectProposalFromProjects(proposal, remarks);
     } catch (err) {
@@ -136,7 +139,7 @@ export const SolutionProposalsPanel = () => {
     if (viewingProposal && viewingProposal.id === proposal.id) {
       setViewingProposal(updated.find((p) => p.id === proposal.id));
     }
-    showToast(`Proposal "${proposal.id}" marked as REJECTED & synced to CSR Grants pipeline.`, 'info');
+    showToast(`Proposal "${proposal.id}" marked as REJECTED.`, 'info');
   };
 
   // Action: Delete Proposal
@@ -154,28 +157,7 @@ export const SolutionProposalsPanel = () => {
       if (viewingProposal && viewingProposal.id === proposalId) {
         setViewingProposal(null);
       }
-      showToast(`Proposal "${proposalId}" deleted across all modules.`);
-    }
-  };
-
-  const getStatusBadge = (status) => {
-    switch (status) {
-      case 'New Submission':
-        return 'bg-blue-50 text-blue-700 border-blue-200';
-      case 'Pending Review':
-        return 'bg-amber-50 text-amber-700 border-amber-200';
-      case 'High Priority':
-        return 'bg-red-50 text-red-700 border-red-200';
-      case 'Under Evaluation':
-        return 'bg-purple-50 text-purple-700 border-purple-200';
-      case 'Verified':
-        return 'bg-emerald-50 text-emerald-700 border-emerald-200';
-      case 'Approved':
-        return 'bg-slate-900 text-white border-slate-900';
-      case 'Rejected':
-        return 'bg-rose-50 text-rose-700 border-rose-200';
-      default:
-        return 'bg-slate-100 text-slate-700 border-slate-200';
+      showToast(`Proposal "${proposalId}" deleted.`);
     }
   };
 
@@ -203,294 +185,109 @@ export const SolutionProposalsPanel = () => {
       )}
 
       {/* Header Banner */}
-      <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="bg-white border border-slate-200/90 rounded-2xl p-5 shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <div className="flex items-center space-x-2 text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">
             <span className="flex items-center space-x-1">
-              <FileCheck className="w-3.5 h-3.5 text-slate-400" />
+              <FileText className="w-3.5 h-3.5 text-slate-400" />
               <span>Projects & Solutions</span>
             </span>
             <span>•</span>
-            <span className="text-slate-700">Proposal Queue & Evaluation</span>
+            <span className="text-slate-700">Stage 1: Solution Proposals</span>
           </div>
-          <h1 className="text-lg font-bold text-slate-900 tracking-tight">
-            SOLUTION PROPOSALS & GRANT APPLICATIONS
+          <h1 className="text-xl md:text-2xl font-black text-slate-900 tracking-tight">
+            SOLUTION PROPOSALS QUEUE
           </h1>
-          <p className="text-xs text-slate-500 font-medium">
-            Academic & innovator proposals submitted for Jharkhand state challenges
+          <p className="text-xs md:text-sm text-slate-500 font-medium mt-0.5">
+            Evaluate research DPRs, approve line-item budgets, and forward to CSR grant pipeline
           </p>
         </div>
 
-        <span className="text-xs font-bold px-3 py-1.5 rounded-lg bg-slate-100 text-slate-700 border border-slate-200">
-          {proposals.length} Total Applications in Queue
-        </span>
-      </div>
-
-      {/* Top Metric Summary Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-5 gap-3">
-        {/* Card 1: Total Submissions */}
-        <div className="bg-white border border-slate-200/90 rounded-2xl p-4 shadow-2xs hover:shadow-xs transition-shadow flex flex-col justify-between h-[125px]">
-          <div>
-            <div className="flex items-center justify-between">
-              <span className="text-[10px] font-extrabold text-slate-500 uppercase tracking-wider">
-                Total Submissions
-              </span>
-              <FileText className="w-4 h-4 text-slate-400" />
-            </div>
-            <div className="mt-2 flex items-baseline justify-between">
-              <span className="text-2xl font-black text-slate-900 tracking-tight font-sans">
-                {proposals.length}
-              </span>
-              <span className="text-[10px] text-slate-600 font-bold flex items-center">
-                <span className="w-1.5 h-1.5 rounded-full bg-slate-400 mr-1.5"></span>
-                +8 this month
-              </span>
-            </div>
-          </div>
-          <div className="pt-1.5 border-t border-slate-100 text-[10px] text-slate-400 font-medium">
-            Academic & innovator pipeline
-          </div>
-        </div>
-
-        {/* Card 2: Pending Review */}
-        <div className="bg-white border border-slate-200/90 rounded-2xl p-4 shadow-2xs hover:shadow-xs transition-shadow flex flex-col justify-between h-[125px]">
-          <div>
-            <div className="flex items-center justify-between">
-              <span className="text-[10px] font-extrabold text-slate-500 uppercase tracking-wider">
-                Pending Review
-              </span>
-              <Clock className="w-4 h-4 text-slate-400" />
-            </div>
-            <div className="mt-2 flex items-baseline justify-between">
-              <span className="text-2xl font-black text-slate-900 tracking-tight font-sans">
-                {proposals.filter((p) => p.status === 'Pending Review' || p.status === 'New Submission').length}
-              </span>
-              <span className="text-[10px] text-slate-600 font-bold flex items-center">
-                <span className="w-1.5 h-1.5 rounded-full bg-amber-500 mr-1.5 animate-pulse"></span>
-                Awaiting
-              </span>
-            </div>
-          </div>
-          <div className="pt-1.5 border-t border-slate-100 text-[10px] text-slate-400 font-medium">
-            Awaiting selection committee
-          </div>
-        </div>
-
-        {/* Card 3: High Priority */}
-        <div className="bg-white border border-slate-200/90 rounded-2xl p-4 shadow-2xs hover:shadow-xs transition-shadow flex flex-col justify-between h-[125px]">
-          <div>
-            <div className="flex items-center justify-between">
-              <span className="text-[10px] font-extrabold text-slate-500 uppercase tracking-wider">
-                High Priority
-              </span>
-              <AlertCircle className="w-4 h-4 text-slate-400" />
-            </div>
-            <div className="mt-2 flex items-baseline justify-between">
-              <span className="text-2xl font-black text-slate-900 tracking-tight font-sans">
-                {proposals.filter((p) => p.status === 'High Priority').length}
-              </span>
-              <span className="text-[10px] text-slate-600 font-bold flex items-center">
-                <span className="w-1.5 h-1.5 rounded-full bg-red-500 mr-1.5"></span>
-                Critical
-              </span>
-            </div>
-          </div>
-          <div className="pt-1.5 border-t border-slate-100 text-[10px] text-slate-400 font-medium">
-            Requires immediate triage
-          </div>
-        </div>
-
-        {/* Card 4: Approved Grants */}
-        <div className="bg-white border border-slate-200/90 rounded-2xl p-4 shadow-2xs hover:shadow-xs transition-shadow flex flex-col justify-between h-[125px]">
-          <div>
-            <div className="flex items-center justify-between">
-              <span className="text-[10px] font-extrabold text-slate-500 uppercase tracking-wider">
-                Approved Grants
-              </span>
-              <CheckCircle2 className="w-4 h-4 text-slate-400" />
-            </div>
-            <div className="mt-2 flex items-baseline justify-between">
-              <span className="text-2xl font-black text-slate-900 tracking-tight font-sans">
-                {proposals.filter((p) => p.status === 'Approved' || p.status === 'Verified').length}
-              </span>
-              <span className="text-[10px] text-slate-600 font-bold flex items-center">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-1.5"></span>
-                Sanctioned
-              </span>
-            </div>
-          </div>
-          <div className="pt-1.5 border-t border-slate-100 text-[10px] text-slate-400 font-medium">
-            Grant accounts active
-          </div>
-        </div>
-
-        {/* Card 5: Avg Score */}
-        <div className="bg-white border border-slate-200/90 rounded-2xl p-4 shadow-2xs hover:shadow-xs transition-shadow flex flex-col justify-between h-[125px]">
-          <div>
-            <div className="flex items-center justify-between">
-              <span className="text-[10px] font-extrabold text-slate-500 uppercase tracking-wider">
-                Avg Score
-              </span>
-              <Award className="w-4 h-4 text-slate-400" />
-            </div>
-            <div className="mt-2 flex items-baseline justify-between">
-              <span className="text-2xl font-black text-slate-900 tracking-tight font-sans">
-                91.4
-              </span>
-              <span className="text-[10px] text-slate-600 font-bold flex items-center">
-                <span className="w-1.5 h-1.5 rounded-full bg-blue-500 mr-1.5"></span>
-                Evaluated
-              </span>
-            </div>
-          </div>
-          <div className="pt-1.5 border-t border-slate-100 text-[10px] text-slate-400 font-medium">
-            Top-tier feasibility index
-          </div>
+        <div className="flex items-center space-x-2.5">
+          <a
+            href="?tab=projects_active"
+            className="px-4 py-2 text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors cursor-pointer flex items-center space-x-1.5"
+          >
+            <PlayCircle className="w-4 h-4 text-slate-500" />
+            <span>Go to Active Projects</span>
+          </a>
         </div>
       </div>
 
-      {/* Filter Toolbar & Status Filter Tabs */}
+      {/* Filter Toolbar */}
       <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-2xs space-y-4">
-        {/* Row 1: Status Tabs and View switcher */}
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-3">
           <div className="flex items-center space-x-2 overflow-x-auto">
-            <button
-              type="button"
-              onClick={() => setSelectedStatus('All Status')}
-              className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
-                selectedStatus === 'All Status'
-                  ? 'bg-[#0f172a] text-white shadow-2xs'
-                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-              }`}
-            >
-              All Proposals ({proposals.length})
-            </button>
-            <button
-              type="button"
-              onClick={() => setSelectedStatus('New Submission')}
-              className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
-                selectedStatus === 'New Submission'
-                  ? 'bg-[#0f172a] text-white shadow-2xs'
-                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-              }`}
-            >
-              New Submission ({proposals.filter((p) => p.status === 'New Submission').length})
-            </button>
-            <button
-              type="button"
-              onClick={() => setSelectedStatus('Pending Review')}
-              className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
-                selectedStatus === 'Pending Review'
-                  ? 'bg-[#0f172a] text-white shadow-2xs'
-                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-              }`}
-            >
-              Pending Review ({proposals.filter((p) => p.status === 'Pending Review').length})
-            </button>
-            <button
-              type="button"
-              onClick={() => setSelectedStatus('High Priority')}
-              className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
-                selectedStatus === 'High Priority'
-                  ? 'bg-[#0f172a] text-white shadow-2xs'
-                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-              }`}
-            >
-              High Priority ({proposals.filter((p) => p.status === 'High Priority').length})
-            </button>
-            <button
-              type="button"
-              onClick={() => setSelectedStatus('Under Evaluation')}
-              className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
-                selectedStatus === 'Under Evaluation'
-                  ? 'bg-[#0f172a] text-white shadow-2xs'
-                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-              }`}
-            >
-              Under Evaluation ({proposals.filter((p) => p.status === 'Under Evaluation').length})
-            </button>
-            <button
-              type="button"
-              onClick={() => setSelectedStatus('Approved')}
-              className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
-                selectedStatus === 'Approved'
-                  ? 'bg-[#0f172a] text-white shadow-2xs'
-                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-              }`}
-            >
-              Approved ({proposals.filter((p) => p.status === 'Approved' || p.status === 'Verified').length})
-            </button>
+            {['All', 'Pending', 'Approved', 'Rejected'].map((status) => (
+              <button
+                key={status}
+                type="button"
+                onClick={() => setSelectedStatus(status)}
+                className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
+                  selectedStatus === status
+                    ? 'bg-slate-900 text-white shadow-2xs'
+                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                }`}
+              >
+                {status}
+              </button>
+            ))}
           </div>
 
           <div className="border border-slate-200 rounded-xl p-0.5 bg-slate-50 flex items-center shadow-2xs">
             <button
               type="button"
               onClick={() => setViewMode('cards')}
-              className={`p-2 rounded-lg transition-all cursor-pointer ${
+              className={`p-1.5 rounded-lg transition-all cursor-pointer ${
                 viewMode === 'cards' ? 'bg-white shadow-xs text-slate-900 font-bold' : 'text-slate-400 hover:text-slate-700'
               }`}
-              title="Cards Queue View"
             >
               <Grid className="w-4 h-4" />
             </button>
             <button
               type="button"
               onClick={() => setViewMode('table')}
-              className={`p-2 rounded-lg transition-all cursor-pointer ${
+              className={`p-1.5 rounded-lg transition-all cursor-pointer ${
                 viewMode === 'table' ? 'bg-white shadow-xs text-slate-900 font-bold' : 'text-slate-400 hover:text-slate-700'
               }`}
-              title="Table View"
             >
               <Table className="w-4 h-4" />
             </button>
           </div>
         </div>
 
-        {/* Row 2: Search Box and Select Filter inputs */}
-        <div className="flex flex-col md:flex-row items-center gap-3">
-          <div className="relative flex-1 w-full">
-            <Search className="w-4 h-4 absolute left-3.5 top-1/2 transform -translate-y-1/2 text-slate-400" />
+        {/* Search Box and Select Filter inputs */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div className="relative">
+            <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search proposal title, ID, team lead, or university..."
-              className="w-full pl-9 pr-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-800 focus:bg-white focus:border-slate-400 focus:outline-hidden shadow-2xs transition-all"
+              placeholder="Search proposal title, HEI, ID..."
+              className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:bg-white focus:outline-hidden"
             />
           </div>
 
-          <div className="w-full md:w-56">
-            <select
-              value={selectedSector}
-              onChange={(e) => setSelectedSector(e.target.value)}
-              className="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 focus:bg-white focus:border-slate-400 focus:outline-hidden cursor-pointer shadow-2xs"
-            >
-              {SECTOR_OPTIONS.map((sec) => (
-                <option key={sec} value={sec}>{sec}</option>
-              ))}
-            </select>
-          </div>
-
-          <div className="w-full md:w-52">
-            <select
-              value={selectedDistrict}
-              onChange={(e) => setSelectedDistrict(e.target.value)}
-              className="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 focus:bg-white focus:border-slate-400 focus:outline-hidden cursor-pointer shadow-2xs"
-            >
-              {DISTRICT_OPTIONS.map((dist) => (
-                <option key={dist} value={dist}>{dist}</option>
-              ))}
-            </select>
-          </div>
-
-          <button
-            type="button"
-            onClick={handleResetFilters}
-            className="p-2 text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-all cursor-pointer border border-slate-200 shadow-2xs shrink-0"
-            title="Reset Filters"
+          <select
+            value={selectedSector}
+            onChange={(e) => setSelectedSector(e.target.value)}
+            className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 font-bold focus:bg-white focus:outline-hidden cursor-pointer"
           >
-            <RotateCcw className="w-4 h-4" />
-          </button>
+            {SECTOR_OPTIONS.map((sec) => (
+              <option key={sec} value={sec}>{sec}</option>
+            ))}
+          </select>
+
+          <select
+            value={selectedDistrict}
+            onChange={(e) => setSelectedDistrict(e.target.value)}
+            className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 font-bold focus:bg-white focus:outline-hidden cursor-pointer"
+          >
+            {DISTRICT_OPTIONS.map((dist) => (
+              <option key={dist} value={dist}>{dist}</option>
+            ))}
+          </select>
         </div>
       </div>
 
@@ -498,94 +295,84 @@ export const SolutionProposalsPanel = () => {
       {viewMode === 'cards' ? (
         <div className="space-y-3">
           {filteredProposals.map((proposal) => {
-            const isApproved = proposal.status === 'Approved';
+            const disbNum = parseGrantRupees(proposal.disbursedAmount) || 0;
+            const isFunded = disbNum > 0 || proposal.budgetStatus === 'Grant Sanctioned by Government' || proposal.budgetStatus === 'Grant Disbursed';
+            const isApproved = isFunded || proposal.status === 'Approved' || proposal.budgetStatus === 'Forwarded to CSR Grants Pipeline';
 
             return (
               <div
                 key={proposal.id}
-                className="bg-white border border-slate-200 rounded-xl p-5 shadow-2xs hover:shadow-xs transition-all flex flex-col md:flex-row md:items-center justify-between gap-4"
+                className="bg-white border border-slate-200/90 rounded-2xl p-5 shadow-2xs hover:shadow-xs transition-all flex flex-col md:flex-row md:items-center justify-between gap-4"
               >
-                <div className="flex items-start space-x-3.5 min-w-0">
-                  <div className="w-10 h-10 rounded-lg bg-slate-50 border border-slate-200 flex items-center justify-center font-bold text-slate-700 shrink-0">
-                    <FileText className="w-5 h-5 text-slate-600" />
+                <div className="space-y-2 max-w-3xl">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="font-mono text-[10px] font-bold text-slate-600 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">
+                      {proposal.id}
+                    </span>
+                    <span className="text-xs font-bold text-slate-700">{proposal.sector}</span>
+                    <span>•</span>
+                    <span className="text-xs text-slate-500 font-medium">{proposal.district || 'Ranchi'} District</span>
+                    <span>•</span>
+                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
+                      isFunded
+                        ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
+                        : isApproved
+                        ? 'bg-blue-50 text-blue-800 border-blue-200'
+                        : 'bg-amber-50 text-amber-800 border-amber-200'
+                    }`}>
+                      {isFunded ? 'Grant Disbursed (In Active Execution) ✓' : isApproved ? 'Forwarded to CSR Pipeline ✓' : 'Pending Evaluation'}
+                    </span>
                   </div>
 
-                  <div className="min-w-0">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <h3 className="text-sm font-bold text-slate-900">{proposal.title}</h3>
-                      <span className="font-mono text-[11px] font-bold text-slate-500">
-                        ({proposal.id})
-                      </span>
-                      <div className="flex items-center space-x-1.5 text-[11px] font-bold text-slate-900 ml-1">
-                        <span className={`w-1.5 h-1.5 rounded-full ${
-                          proposal.status === 'Approved' || proposal.status === 'Verified'
-                            ? 'bg-emerald-500'
-                            : proposal.status === 'High Priority'
-                            ? 'bg-red-500'
-                            : proposal.status === 'Pending Review'
-                            ? 'bg-amber-500'
-                            : 'bg-blue-500'
-                        } shrink-0`}></span>
-                        <span>{proposal.status}</span>
-                      </div>
-                    </div>
+                  <h3 className="text-base font-black text-slate-900 tracking-tight">
+                    {proposal.title}
+                  </h3>
 
-                    <p className="text-xs text-slate-600 mt-1.5 line-clamp-2">
-                      {proposal.abstract}
-                    </p>
-
-                    <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-slate-500 mt-2">
-                      <span className="font-semibold text-slate-800 flex items-center space-x-1">
-                        <Building2 className="w-3.5 h-3.5 text-slate-400" />
-                        <span>{proposal.hei}</span>
-                      </span>
-                      <span>•</span>
-                      <span>Team Lead: <strong className="text-slate-700">{proposal.teamLead}</strong></span>
-                      <span>•</span>
-                      <span>{proposal.sector}</span>
-                      <span>•</span>
-                      <span>{proposal.district}</span>
-                      <span>•</span>
-                      <span className="font-mono font-bold text-slate-900">
-                        {proposal.requestedGrant}
-                      </span>
-                    </div>
+                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-500 font-medium">
+                    <span className="font-bold text-slate-900 flex items-center space-x-1">
+                      <Building2 className="w-3.5 h-3.5 text-slate-400" />
+                      <span>{proposal.hei || 'Ranchi University (RU001)'}</span>
+                    </span>
+                    <span>•</span>
+                    <span>DPR Allocation: <strong className="font-mono text-slate-900 font-bold">{proposal.requestedGrant || '₹ 73,000'}</strong></span>
                   </div>
                 </div>
 
                 <div className="flex items-center space-x-2 shrink-0 self-end md:self-center">
-                  {!isApproved ? (
+                  {isFunded ? (
+                    <a
+                      href="?tab=projects_active"
+                      className="px-3.5 py-1.5 text-xs font-bold text-white bg-slate-900 hover:bg-slate-800 rounded-xl transition-colors cursor-pointer flex items-center space-x-1.5 shadow-2xs"
+                    >
+                      <PlayCircle className="w-3.5 h-3.5 text-emerald-400" />
+                      <span>View Active Project</span>
+                    </a>
+                  ) : isApproved ? (
+                    <a
+                      href="?tab=csr"
+                      className="px-3.5 py-1.5 text-xs font-bold text-white bg-slate-900 hover:bg-slate-800 rounded-xl transition-colors cursor-pointer flex items-center space-x-1.5 shadow-2xs"
+                    >
+                      <span>Open CSR Disbursal</span>
+                      <ChevronRight className="w-3.5 h-3.5 text-slate-300" />
+                    </a>
+                  ) : (
                     <button
                       type="button"
                       onClick={() => handleApproveGrant(proposal)}
                       className="px-3.5 py-1.5 text-xs font-bold text-white bg-slate-900 hover:bg-slate-800 rounded-xl transition-colors cursor-pointer flex items-center space-x-1.5 shadow-2xs"
                     >
                       <Check className="w-3.5 h-3.5 text-emerald-400" />
-                      <span>Approve Grant</span>
+                      <span>Approve & Forward</span>
                     </button>
-                  ) : (
-                    <div className="flex items-center space-x-1.5 text-xs font-bold text-emerald-700 px-1 py-0.5">
-                      <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                      <span>Sanctioned</span>
-                    </div>
                   )}
 
                   <button
                     type="button"
                     onClick={() => setViewingProposal(proposal)}
-                    className="px-3.5 py-1.5 text-xs font-bold text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 rounded-xl transition-colors cursor-pointer flex items-center space-x-1.5"
+                    className="px-3.5 py-1.5 text-xs font-bold text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 rounded-xl transition-colors cursor-pointer flex items-center space-x-1.5 shadow-2xs"
                   >
                     <Eye className="w-3.5 h-3.5 text-slate-500" />
                     <span>Review DPR</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => handleDeleteProposal(proposal.id)}
-                    className="p-1.5 text-rose-600 hover:text-rose-800 hover:bg-rose-50 rounded-xl border border-rose-200 transition-colors cursor-pointer"
-                    title="Delete Proposal"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
                   </button>
                 </div>
               </div>
@@ -595,70 +382,87 @@ export const SolutionProposalsPanel = () => {
       ) : (
         <div className="bg-white border border-slate-200 rounded-xl shadow-2xs overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
+            <table className="w-full text-left border-collapse text-xs">
               <thead>
-                <tr className="border-b border-slate-200 bg-slate-50 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
-                  <th className="py-3 px-4">Proposal & ID</th>
-                  <th className="py-3 px-4">Submitting Institution</th>
-                  <th className="py-3 px-4">Sector / District</th>
-                  <th className="py-3 px-4">Requested Grant</th>
-                  <th className="py-3 px-4">Status</th>
-                  <th className="py-3 px-4 text-center">Actions</th>
+                <tr className="border-b border-slate-200 bg-slate-50 text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+                  <th className="py-3.5 px-4">Proposal & ID</th>
+                  <th className="py-3.5 px-4">Submitting HEI</th>
+                  <th className="py-3.5 px-4">Sector / District</th>
+                  <th className="py-3.5 px-4">DPR Budget</th>
+                  <th className="py-3.5 px-4">Pipeline Status</th>
+                  <th className="py-3.5 px-4 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 text-xs">
-                {filteredProposals.map((prop) => (
-                  <tr key={prop.id} className="hover:bg-slate-50/60 transition-colors group cursor-default">
-                    <td className="py-3.5 px-4 font-bold text-slate-900">
-                      <div>{prop.title}</div>
-                      <div className="font-mono text-[11px] text-slate-500 font-semibold">{prop.id}</div>
-                    </td>
-                    <td className="py-3.5 px-4">
-                      <div className="font-semibold text-slate-800">{prop.hei}</div>
-                      <div className="text-[11px] text-slate-500">{prop.teamLead}</div>
-                    </td>
-                    <td className="py-3.5 px-4">
-                      <div>{prop.sector}</div>
-                      <div className="text-[11px] text-slate-500">{prop.district}</div>
-                    </td>
-                    <td className="py-3.5 px-4 font-mono font-bold text-slate-900">
-                      {prop.requestedGrant}
-                    </td>
-                    <td className="py-3.5 px-4">
-                      <div className="flex items-center space-x-1.5 text-xs font-bold text-slate-900">
-                        <span className={`w-1.5 h-1.5 rounded-full ${
-                          prop.status === 'Approved' || prop.status === 'Verified'
-                            ? 'bg-emerald-500'
-                            : prop.status === 'High Priority'
-                            ? 'bg-red-500'
-                            : prop.status === 'Pending Review'
-                            ? 'bg-amber-500'
-                            : 'bg-blue-500'
-                        } shrink-0`}></span>
-                        <span>{prop.status}</span>
-                      </div>
-                    </td>
-                    <td className="py-3.5 px-4 text-center">
-                      <div className="flex items-center justify-center space-x-1.5">
-                        <button
-                          type="button"
-                          onClick={() => setViewingProposal(prop)}
-                          className="px-3 py-1.5 text-xs font-bold text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 rounded-xl transition-colors cursor-pointer"
-                        >
-                          Review DPR
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => handleDeleteProposal(prop.id)}
-                          className="p-1.5 text-rose-600 hover:text-rose-800 hover:bg-rose-50 rounded-xl border border-rose-200 transition-colors cursor-pointer"
-                          title="Delete Proposal"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
+              <tbody className="divide-y divide-slate-100">
+                {filteredProposals.map((prop) => {
+                  const disbNum = parseGrantRupees(prop.disbursedAmount) || 0;
+                  const isFunded = disbNum > 0 || prop.budgetStatus === 'Grant Sanctioned by Government';
+                  const isApproved = isFunded || prop.status === 'Approved' || prop.budgetStatus === 'Forwarded to CSR Grants Pipeline';
+
+                  return (
+                    <tr key={prop.id} className="hover:bg-slate-50/60 transition-colors">
+                      <td className="py-3.5 px-4 font-bold text-slate-900">
+                        <div>{prop.title}</div>
+                        <div className="font-mono text-[10px] text-slate-500">{prop.id}</div>
+                      </td>
+                      <td className="py-3.5 px-4 font-semibold text-slate-800">
+                        {prop.hei || 'Ranchi University (RU001)'}
+                      </td>
+                      <td className="py-3.5 px-4 text-slate-600">
+                        {prop.sector} • {prop.district || 'Ranchi'}
+                      </td>
+                      <td className="py-3.5 px-4 font-mono font-bold text-slate-900">
+                        {prop.requestedGrant || '₹ 73,000'}
+                      </td>
+                      <td className="py-3.5 px-4">
+                        <span className={`px-2 py-0.5 rounded text-[10px] font-bold border ${
+                          isFunded
+                            ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
+                            : isApproved
+                            ? 'bg-blue-50 text-blue-800 border-blue-200'
+                            : 'bg-amber-50 text-amber-800 border-amber-200'
+                        }`}>
+                          {isFunded ? 'Disbursed ✓' : isApproved ? 'In CSR Queue ✓' : 'Pending'}
+                        </span>
+                      </td>
+                      <td className="py-3.5 px-4 text-right whitespace-nowrap">
+                        <div className="flex items-center justify-end space-x-1.5">
+                          {isFunded ? (
+                            <a
+                              href="?tab=projects_active"
+                              className="px-2.5 py-1 text-xs font-bold text-white bg-slate-900 hover:bg-slate-800 rounded-lg"
+                            >
+                              Active Project
+                            </a>
+                          ) : isApproved ? (
+                            <a
+                              href="?tab=csr"
+                              className="px-2.5 py-1 text-xs font-bold text-white bg-slate-900 hover:bg-slate-800 rounded-lg"
+                            >
+                              CSR Disbursal
+                            </a>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={() => handleApproveGrant(prop)}
+                              className="px-2.5 py-1 text-xs font-bold text-white bg-slate-900 hover:bg-slate-800 rounded-lg"
+                            >
+                              Approve
+                            </button>
+                          )}
+
+                          <button
+                            type="button"
+                            onClick={() => setViewingProposal(prop)}
+                            className="px-2.5 py-1 text-xs font-bold text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 rounded-lg"
+                          >
+                            DPR
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>

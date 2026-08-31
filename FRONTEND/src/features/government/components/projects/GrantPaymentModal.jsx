@@ -8,11 +8,14 @@ import {
   FileCheck,
   Send,
   AlertCircle,
-  Clock
+  Clock,
+  Landmark,
+  ShieldCheck,
+  Zap
 } from 'lucide-react';
 import { projectCsrSyncService } from '../../services/projectCsrSyncService.js';
 
-export const parseGrantLakhs = (grantStr) => {
+export const parseGrantRupees = (grantStr) => {
   if (typeof grantStr === 'number') return grantStr;
   if (!grantStr) return 0;
   const cleanStr = String(grantStr).replace(/,/g, '');
@@ -20,58 +23,63 @@ export const parseGrantLakhs = (grantStr) => {
   if (!match) return 0;
   const val = parseFloat(match[0]);
   const lowerStr = cleanStr.toLowerCase();
-  
-  // If it mentions Lakhs/L, treat as Lakhs
-  if (lowerStr.includes('lakh') || lowerStr.includes(' l') || lowerStr.endsWith('l')) {
-    return val;
-  }
-  
-  // If it mentions Cr/Crore, convert Cr to Lakhs (1 Cr = 100 Lakhs)
+
+  // If it mentions Cr/Crore
   if (lowerStr.includes('cr') || lowerStr.includes('crore')) {
-    return val * 100;
+    return val * 10000000;
   }
-  
-  // Otherwise, if it's a raw number >= 1000, assume it's raw Rupees and divide by 100,000 to get Lakhs
-  if (val >= 1000) {
-    return val / 100000;
+  // If it mentions Lakh/L
+  if (lowerStr.includes('lakh') || lowerStr.includes(' l') || lowerStr.endsWith('l')) {
+    return val * 100000;
   }
-  
   return val;
 };
 
-
-export const formatGrantLakhs = (num) => {
-  const n = parseFloat(num);
-  if (isNaN(n)) return '₹ 0.00 Lakhs';
-  return `₹ ${n.toFixed(2)} Lakhs`;
+export const formatRupeesINR = (num) => {
+  const n = parseFloat(num) || 0;
+  return `₹ ${n.toLocaleString('en-IN')}`;
 };
 
+export const formatLakhsCr = (num) => {
+  const n = parseFloat(num) || 0;
+  if (n >= 10000000) return `₹ ${(n / 10000000).toFixed(2)} Cr`;
+  if (n >= 100000) return `₹ ${(n / 100000).toFixed(2)} Lakhs`;
+  if (n > 0) return `₹ ${(n / 1000).toFixed(1)} K`;
+  return '₹ 0';
+};
+
+export const formatGrantLakhs = formatLakhsCr;
+export const parseGrantLakhs = parseGrantRupees;
+
 export const getGrantFinancials = (sanctioned, disbursed) => {
-  const sNum = parseGrantLakhs(sanctioned);
-  const dNum = parseGrantLakhs(disbursed);
+  const sNum = parseGrantRupees(sanctioned);
+  const dNum = parseGrantRupees(disbursed);
   const pNum = Math.max(0, sNum - dNum);
   const percentage = sNum > 0 ? Math.min(100, Math.round((dNum / sNum) * 100)) : 0;
   const isFullyPaid = sNum > 0 && dNum >= sNum;
 
-  const sCr = (sNum / 100).toFixed(3).replace(/\.?0+$/, '');
-  const dCr = (dNum / 100).toFixed(3).replace(/\.?0+$/, '');
-  const pCr = (pNum / 100).toFixed(3).replace(/\.?0+$/, '');
+  const sLakhs = sNum / 100000;
+  const dLakhs = dNum / 100000;
+  const pLakhs = pNum / 100000;
 
   return {
-    sanctionedLakhs: sNum,
-    disbursedLakhs: dNum,
-    pendingLakhs: pNum,
-    sanctionedCr: sNum / 100,
-    disbursedCr: dNum / 100,
-    pendingCr: pNum / 100,
-    sanctionedCrStr: `₹ ${sCr} Cr`,
-    disbursedCrStr: `₹ ${dCr} Cr`,
-    pendingCrStr: `₹ ${pCr} Cr`,
+    sanctionedRupees: sNum,
+    disbursedRupees: dNum,
+    pendingRupees: pNum,
+    sanctionedLakhs: sLakhs,
+    disbursedLakhs: dLakhs,
+    pendingLakhs: pLakhs,
+    sanctionedCr: sNum / 10000000,
+    disbursedCr: dNum / 10000000,
+    pendingCr: pNum / 10000000,
     percentage,
     isFullyPaid,
-    sanctionedStr: formatGrantLakhs(sNum),
-    disbursedStr: formatGrantLakhs(dNum),
-    pendingStr: formatGrantLakhs(pNum),
+    sanctionedStr: formatRupeesINR(sNum),
+    disbursedStr: formatRupeesINR(dNum),
+    pendingStr: formatRupeesINR(pNum),
+    sanctionedSub: formatLakhsCr(sNum),
+    disbursedSub: formatLakhsCr(dNum),
+    pendingSub: formatLakhsCr(pNum),
     statusText: isFullyPaid
       ? 'Fully Paid ✓'
       : dNum > 0
@@ -83,61 +91,72 @@ export const getGrantFinancials = (sanctioned, disbursed) => {
 export const GrantPaymentModal = ({ project, isOpen, onClose, onConfirmPayment }) => {
   if (!isOpen || !project) return null;
 
-  const currentFinancials = getGrantFinancials(project.sanctionedGrant, project.disbursedAmount);
-  const defaultPayAmount = currentFinancials.pendingLakhs > 0
-    ? (currentFinancials.pendingLakhs >= 5 ? '5.00' : currentFinancials.pendingLakhs.toFixed(2))
-    : '0.00';
+  const currentFinancials = getGrantFinancials(project.sanctionedGrant || project.budget, project.disbursedAmount);
+
+  // Default tranche amount is 50% of pending or full if smaller
+  const defaultPayAmount = currentFinancials.pendingRupees > 0
+    ? (currentFinancials.disbursedRupees === 0
+        ? Math.round(currentFinancials.pendingRupees * 0.5)
+        : currentFinancials.pendingRupees)
+    : 0;
 
   const [paymentAmount, setPaymentAmount] = useState(defaultPayAmount);
   const [trancheName, setTrancheName] = useState(
-    currentFinancials.disbursedLakhs === 0
-      ? 'Tranche 1: Equipment & Prototype Start'
-      : 'Tranche 2: Field Trial & Equipment'
+    currentFinancials.disbursedRupees === 0
+      ? 'Tranche 1: Lab Fabrication & Telemetry Setup'
+      : 'Tranche 2: Field Deployment & Calibration'
   );
   const [paymentMode, setPaymentMode] = useState('PFMS Direct Treasury Transfer');
-  const [voucherRef, setVoucherRef] = useState(`JH-TR-${Math.floor(1000 + Math.random() * 9000)}`);
-  const [remarks, setRemarks] = useState('Milestone deliverables verified. Releasing grant payment from State Innovation Fund.');
+  const [sourceBank, setSourceBank] = useState('State Innovation Treasury Escrow - SBI Main Branch');
+  const [destAccount, setDestAccount] = useState('Ranchi University R&D Account #9182374912, IFSC: SBIN0001234');
+  const [voucherRef, setVoucherRef] = useState(`JH-TR-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`);
+  const [utrNumber, setUtrNumber] = useState(`SBIN${Date.now().toString().slice(-9)}`);
+  const [remarks, setRemarks] = useState('Milestone deliverables verified. Releasing approved grant from State Innovation Fund.');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Live calculation of preview after this payment
   const payingNum = parseFloat(paymentAmount) || 0;
-  const projectedDisbursed = currentFinancials.disbursedLakhs + payingNum;
-  const projectedPending = Math.max(0, currentFinancials.sanctionedLakhs - projectedDisbursed);
-  const projectedPercentage = currentFinancials.sanctionedLakhs > 0
-    ? Math.min(100, Math.round((projectedDisbursed / currentFinancials.sanctionedLakhs) * 100))
+  const projectedDisbursed = currentFinancials.disbursedRupees + payingNum;
+  const projectedPending = Math.max(0, currentFinancials.sanctionedRupees - projectedDisbursed);
+  const projectedPercentage = currentFinancials.sanctionedRupees > 0
+    ? Math.min(100, Math.round((projectedDisbursed / currentFinancials.sanctionedRupees) * 100))
     : 0;
-  const isProjectedFullyPaid = currentFinancials.sanctionedLakhs > 0 && projectedDisbursed >= currentFinancials.sanctionedLakhs;
 
   const handleSubmit = (e) => {
     e.preventDefault();
     if (payingNum <= 0) {
-      alert('Please enter a valid payment amount greater than 0.');
+      alert('Please enter a valid payment amount greater than ₹0.');
       return;
     }
 
     setIsSubmitting(true);
 
-    const newDisbursedStr = formatGrantLakhs(projectedDisbursed);
+    const newDisbursedStr = formatRupeesINR(projectedDisbursed);
 
     const paymentRecord = {
       id: voucherRef,
       trancheName,
-      amount: formatGrantLakhs(payingNum),
+      amount: formatRupeesINR(payingNum),
+      amountRaw: payingNum,
       date: new Date().toISOString().split('T')[0],
       paymentMode,
+      sourceBank,
+      destAccount,
+      utrNumber,
       remarks,
       status: 'Paid'
     };
 
     setTimeout(() => {
-      // Sync into projectCsrSyncService for real-time reflection in CSR Grants
       try {
         projectCsrSyncService.disburseGrantPayment({
           projectId: project.id,
-          amountLakhs: payingNum,
+          amountRupees: payingNum,
           trancheName,
           paymentMode,
+          sourceBank,
+          destAccount,
           voucherRef,
+          utrNumber,
           remarks
         });
       } catch (err) {
@@ -155,167 +174,254 @@ export const GrantPaymentModal = ({ project, isOpen, onClose, onConfirmPayment }
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-fadeIn select-none">
-      <div className="bg-white rounded-xl border border-slate-200 shadow-2xl w-full max-w-xl flex flex-col overflow-hidden animate-scaleUp">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs select-none animate-in fade-in duration-200">
+      <div className="bg-white rounded-2xl border border-slate-200 shadow-2xl w-full max-w-xl flex flex-col overflow-hidden">
         {/* Header */}
-        <div className="p-4 border-b border-slate-200 flex items-center justify-between bg-slate-50">
-          <div className="flex items-center space-x-2">
-            <div className="w-8 h-8 rounded-lg bg-emerald-600 text-white flex items-center justify-center font-bold">
-              <IndianRupee className="w-4 h-4" />
+        <div className="px-6 py-4 bg-gradient-to-r from-emerald-900 via-emerald-800 to-slate-900 text-white flex items-center justify-between">
+          <div className="flex items-center space-x-3">
+            <div className="w-10 h-10 rounded-xl bg-emerald-500/20 border border-emerald-400/30 flex items-center justify-center text-emerald-300">
+              <IndianRupee className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-sm font-bold text-slate-900">
-                Release Grant Payment
+              <div className="flex items-center space-x-2">
+                <span className="text-[10px] font-extrabold uppercase tracking-wider text-emerald-300">
+                  Government Grant Disbursal
+                </span>
+              </div>
+              <h2 className="text-sm font-extrabold text-white">
+                Release Grant Tranche to {project.hei || 'University'}
               </h2>
-              <p className="text-[11px] text-slate-500 font-medium">
-                Disburse approved funding for {project.id} ({project.hei})
-              </p>
             </div>
           </div>
 
           <button
             type="button"
             onClick={onClose}
-            className="p-1 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-200/60 transition-colors cursor-pointer"
+            className="p-1.5 rounded-xl text-emerald-200/70 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
           >
-            <X className="w-4 h-4" />
+            <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Form Body */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-4 text-xs">
+        <form onSubmit={handleSubmit} className="p-6 space-y-4 text-xs overflow-y-auto max-h-[75vh]">
           {/* Current Financial Status Breakdown */}
-          <div className="grid grid-cols-3 gap-2 p-3 bg-slate-50 rounded-xl border border-slate-200 text-center">
+          <div className="grid grid-cols-3 gap-2.5 p-3.5 bg-slate-50 rounded-xl border border-slate-200 text-center">
             <div>
-              <span className="text-[10px] font-bold text-slate-400 uppercase block">1. Sanctioned Total</span>
-              <span className="text-sm font-black text-slate-900 block mt-0.5">{currentFinancials.sanctionedStr}</span>
-              <span className="text-[10px] text-slate-500">Approved Grant</span>
+              <span className="text-[10px] font-extrabold text-slate-400 uppercase block tracking-wider">
+                1. Sanctioned Total
+              </span>
+              <span className="text-sm font-black font-mono text-slate-900 block mt-0.5">
+                {currentFinancials.sanctionedStr}
+              </span>
+              <span className="text-[10px] font-bold text-slate-500">{currentFinancials.sanctionedSub}</span>
             </div>
             <div>
-              <span className="text-[10px] font-bold text-slate-400 uppercase block">2. Already Paid</span>
-              <span className="text-sm font-black text-emerald-700 block mt-0.5">{currentFinancials.disbursedStr}</span>
-              <span className="text-[10px] text-slate-500">Paid ({currentFinancials.percentage}%)</span>
+              <span className="text-[10px] font-extrabold text-slate-400 uppercase block tracking-wider">
+                2. Already Disbursed
+              </span>
+              <span className="text-sm font-black font-mono text-[#007A61] block mt-0.5">
+                {currentFinancials.disbursedStr}
+              </span>
+              <span className="text-[10px] font-bold text-[#007A61]">({currentFinancials.percentage}%)</span>
             </div>
             <div>
-              <span className="text-[10px] font-bold text-slate-400 uppercase block">3. Currently Pending</span>
-              <span className="text-sm font-black text-amber-700 block mt-0.5">{currentFinancials.pendingStr}</span>
-              <span className="text-[10px] text-amber-800 font-semibold">To be Disbursed</span>
+              <span className="text-[10px] font-extrabold text-slate-400 uppercase block tracking-wider">
+                3. Remaining Pending
+              </span>
+              <span className="text-sm font-black font-mono text-amber-700 block mt-0.5">
+                {currentFinancials.pendingStr}
+              </span>
+              <span className="text-[10px] font-bold text-amber-600">{currentFinancials.pendingSub}</span>
             </div>
           </div>
 
-          {/* Tranche / Milestone Selection */}
-          <div>
-            <label className="text-[11px] font-bold text-slate-700 block mb-1">
-              Select Payment Tranche / Purpose *
-            </label>
-            <select
-              value={trancheName}
-              onChange={(e) => setTrancheName(e.target.value)}
-              className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-bold text-slate-800 focus:bg-white focus:border-slate-800 focus:outline-hidden cursor-pointer"
-            >
-              <option value="Tranche 1: Equipment & Prototype Start">Tranche 1: Equipment & Prototype Start</option>
-              <option value="Tranche 2: Field Trial & Equipment">Tranche 2: Field Trial & Testing</option>
-              <option value="Tranche 3: Final District Handover & Scaling">Tranche 3: Final District Handover & Scaling</option>
-              <option value="Custom Disbursal Release">Custom Disbursal Release</option>
-            </select>
-          </div>
-
-          {/* Amount to Release & Voucher Ref */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <div className="flex items-center justify-between mb-1">
-                <label className="text-[11px] font-bold text-slate-700">
-                  Amount to Release (in Lakhs ₹) *
-                </label>
-                {currentFinancials.pendingLakhs > 0 && (
-                  <button
-                    type="button"
-                    onClick={() => setPaymentAmount(currentFinancials.pendingLakhs.toFixed(2))}
-                    className="text-[10px] font-bold text-emerald-700 hover:underline cursor-pointer"
-                  >
-                    Pay Full Pending
-                  </button>
-                )}
-              </div>
-              <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 font-bold text-slate-400">₹</span>
-                <input
-                  type="number"
-                  step="0.01"
-                  min="0.01"
-                  max={currentFinancials.pendingLakhs > 0 ? currentFinancials.pendingLakhs : 100}
-                  required
-                  value={paymentAmount}
-                  onChange={(e) => setPaymentAmount(e.target.value)}
-                  className="w-full pl-7 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-bold text-slate-900 focus:bg-white focus:border-slate-800 focus:outline-hidden"
-                />
-              </div>
+          {/* Amount to Release */}
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between">
+              <label className="block text-xs font-extrabold uppercase tracking-wider text-slate-700">
+                Grant Tranche Amount to Release (in ₹ INR) *
+              </label>
+              {payingNum > 0 && (
+                <span className="text-xs font-bold text-[#007A61]">
+                  {formatLakhsCr(payingNum)}
+                </span>
+              )}
+            </div>
+            <div className="relative">
+              <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm font-bold text-slate-400">
+                ₹
+              </span>
+              <input
+                type="number"
+                required
+                min={1}
+                max={currentFinancials.pendingRupees || 100000000}
+                value={paymentAmount}
+                onChange={(e) => setPaymentAmount(e.target.value)}
+                className="w-full pl-8 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-base font-black font-mono text-slate-900 focus:outline-none focus:ring-1 focus:ring-[#007A61] focus:bg-white"
+              />
             </div>
 
+            {/* Quick Percentage Presets */}
+            {currentFinancials.pendingRupees > 0 && (
+              <div className="flex flex-wrap gap-1.5 pt-1">
+                <button
+                  type="button"
+                  onClick={() => setPaymentAmount(Math.round(currentFinancials.pendingRupees * 0.25))}
+                  className="px-2.5 py-1 bg-slate-50 hover:bg-emerald-50 text-slate-700 hover:text-[#007A61] border border-slate-200 hover:border-emerald-200 rounded-lg text-[10.5px] font-bold transition-all shadow-2xs cursor-pointer"
+                >
+                  25% (₹ {Math.round(currentFinancials.pendingRupees * 0.25).toLocaleString('en-IN')})
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPaymentAmount(Math.round(currentFinancials.pendingRupees * 0.5))}
+                  className="px-2.5 py-1 bg-slate-50 hover:bg-emerald-50 text-slate-700 hover:text-[#007A61] border border-slate-200 hover:border-emerald-200 rounded-lg text-[10.5px] font-bold transition-all shadow-2xs cursor-pointer"
+                >
+                  50% (₹ {Math.round(currentFinancials.pendingRupees * 0.5).toLocaleString('en-IN')})
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPaymentAmount(currentFinancials.pendingRupees)}
+                  className="px-2.5 py-1 bg-slate-50 hover:bg-emerald-50 text-slate-700 hover:text-[#007A61] border border-slate-200 hover:border-emerald-200 rounded-lg text-[10.5px] font-bold transition-all shadow-2xs cursor-pointer"
+                >
+                  100% Full (₹ {currentFinancials.pendingRupees.toLocaleString('en-IN')})
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* Tranche Name & Mode */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
             <div>
-              <label className="text-[11px] font-bold text-slate-700 block mb-1">
-                Treasury Voucher Ref # *
+              <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+                Tranche Milestone Purpose *
               </label>
               <input
                 type="text"
                 required
-                value={voucherRef}
-                onChange={(e) => setVoucherRef(e.target.value)}
-                className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-mono font-bold text-slate-900 focus:bg-white focus:border-slate-800 focus:outline-hidden"
+                value={trancheName}
+                onChange={(e) => setTrancheName(e.target.value)}
+                className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:ring-1 focus:ring-[#007A61] focus:bg-white"
+              />
+            </div>
+
+            <div>
+              <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+                Disbursal Channel / Mode *
+              </label>
+              <select
+                value={paymentMode}
+                onChange={(e) => setPaymentMode(e.target.value)}
+                className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:outline-none focus:ring-1 focus:ring-[#007A61] focus:bg-white"
+              >
+                <option value="PFMS Direct Treasury Transfer">PFMS Direct Treasury Transfer</option>
+                <option value="RTGS Real-Time Settlement">RTGS Real-Time Settlement</option>
+                <option value="Direct State Innovation Escrow">Direct State Innovation Escrow</option>
+                <option value="NEFT Treasury Batch">NEFT Treasury Batch</option>
+              </select>
+            </div>
+          </div>
+
+          {/* Bank Accounts */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+            <div>
+              <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+                Source Treasury Bank
+              </label>
+              <input
+                type="text"
+                value={sourceBank}
+                onChange={(e) => setSourceBank(e.target.value)}
+                className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:ring-1 focus:ring-[#007A61] focus:bg-white"
+              />
+            </div>
+
+            <div>
+              <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+                Destination University Account & IFSC
+              </label>
+              <input
+                type="text"
+                value={destAccount}
+                onChange={(e) => setDestAccount(e.target.value)}
+                className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:ring-1 focus:ring-[#007A61] focus:bg-white"
               />
             </div>
           </div>
 
-          {/* Live Dynamic Calculation Box */}
-          <div className="p-3 bg-blue-50/70 border border-blue-200 rounded-xl space-y-1.5 text-xs text-blue-950">
+          {/* UTR & Sanction Ref */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+            <div>
+              <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+                UTR / Transaction Reference No.
+              </label>
+              <input
+                type="text"
+                value={utrNumber}
+                onChange={(e) => setUtrNumber(e.target.value)}
+                className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono font-bold text-slate-900 focus:outline-none focus:ring-1 focus:ring-[#007A61] focus:bg-white"
+              />
+            </div>
+
+            <div>
+              <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+                Sanction Order / G.O. Voucher
+              </label>
+              <input
+                type="text"
+                value={voucherRef}
+                onChange={(e) => setVoucherRef(e.target.value)}
+                className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono font-bold text-slate-900 focus:outline-none focus:ring-1 focus:ring-[#007A61] focus:bg-white"
+              />
+            </div>
+          </div>
+
+          {/* Audit Remarks */}
+          <div className="text-xs">
+            <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+              Official Disbursal Remarks & Scope
+            </label>
+            <input
+              type="text"
+              value={remarks}
+              onChange={(e) => setRemarks(e.target.value)}
+              className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:ring-1 focus:ring-[#007A61] focus:bg-white"
+            />
+          </div>
+
+          {/* Projected Post-Payment Status Preview */}
+          <div className="p-3 bg-emerald-50/70 border border-emerald-200 rounded-xl space-y-1 text-xs text-emerald-950">
             <div className="flex items-center justify-between font-bold">
-              <span>After Releasing ₹ {payingNum.toFixed(2)} Lakhs:</span>
-              <span className={`px-2 py-0.5 rounded text-[10px] font-black ${
-                isProjectedFullyPaid ? 'bg-emerald-600 text-white' : 'bg-amber-100 text-amber-900'
-              }`}>
-                {isProjectedFullyPaid ? 'Will be Fully Paid (100%) ✓' : `Will be Partially Paid (${projectedPercentage}%)`}
+              <span>Post-Disbursal Coverage:</span>
+              <span className="font-mono text-sm text-[#007A61]">
+                {formatRupeesINR(projectedDisbursed)} / {currentFinancials.sanctionedStr} ({projectedPercentage}%)
               </span>
             </div>
-            <div className="flex items-center justify-between text-[11px] pt-1 border-t border-blue-200/60">
-              <span>New Total Disbursed: <strong>₹ {projectedDisbursed.toFixed(2)} Lakhs</strong></span>
-              <span>Remaining Pending: <strong className={projectedPending > 0 ? 'text-amber-800' : 'text-emerald-700'}>
-                ₹ {projectedPending.toFixed(2)} Lakhs
-              </strong></span>
-            </div>
+            <p className="text-[11px] text-slate-600">
+              {projectedPending > 0
+                ? `Remaining ₹ ${projectedPending.toLocaleString('en-IN')} will be held in State Escrow for field deployment.`
+                : '✓ Full 100% grant allocation will be disbursed.'}
+            </p>
           </div>
 
-          {/* Payment Method */}
-          <div>
-            <label className="text-[11px] font-bold text-slate-700 block mb-1">
-              Disbursal Method *
-            </label>
-            <select
-              value={paymentMode}
-              onChange={(e) => setPaymentMode(e.target.value)}
-              className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-bold text-slate-800 focus:bg-white focus:border-slate-800 focus:outline-hidden cursor-pointer"
-            >
-              <option value="PFMS Direct Treasury Transfer">PFMS Direct Treasury Transfer (State Bank of India)</option>
-              <option value="State Innovation Fund DBT">State Innovation Fund DBT</option>
-              <option value="Higher Education Grant Account">Higher Education Grant Account Transfer</option>
-            </select>
-          </div>
-
-          {/* Modal Actions */}
-          <div className="pt-3 border-t border-slate-200 flex items-center justify-end space-x-2">
+          {/* Footer Actions */}
+          <div className="pt-3 border-t border-slate-100 flex items-center justify-end space-x-2">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-xs font-bold text-slate-700 bg-white border border-slate-300 hover:bg-slate-50 rounded-lg transition-colors cursor-pointer"
+              className="px-4 py-2 bg-white hover:bg-slate-100 border border-slate-200 text-slate-700 text-xs font-bold rounded-xl transition-all shadow-2xs cursor-pointer"
             >
               Cancel
             </button>
+
             <button
               type="submit"
-              disabled={isSubmitting || payingNum <= 0}
-              className="px-4 py-2 text-xs font-bold text-white bg-slate-900 hover:bg-slate-800 rounded-lg transition-colors cursor-pointer flex items-center space-x-1.5 shadow-2xs disabled:opacity-50"
+              disabled={isSubmitting}
+              className="px-5 py-2.5 bg-[#007A61] hover:bg-[#006650] text-white text-xs font-bold rounded-xl flex items-center space-x-1.5 transition-all shadow-2xs cursor-pointer"
             >
-              <IndianRupee className="w-3.5 h-3.5 text-emerald-400" />
-              <span>Confirm & Release ₹ {payingNum.toFixed(2)} Lakhs</span>
+              <Send className="w-3.5 h-3.5" />
+              <span>{isSubmitting ? 'Authorizing...' : 'Authorize & Disburse Grant'}</span>
             </button>
           </div>
         </form>

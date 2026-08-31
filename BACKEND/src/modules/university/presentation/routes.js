@@ -18,9 +18,14 @@ router.get('/teams', (req, res, next) => universityController.getTeams(req, res,
 router.get('/projects', (req, res, next) => universityController.getProjects(req, res, next));
 router.post('/projects', (req, res, next) => universityController.createProject(req, res, next));
 router.patch('/projects/:id', (req, res, next) => universityController.updateProject(req, res, next));
+router.put('/projects/:id', (req, res, next) => universityController.updateProject(req, res, next));
 router.delete('/projects/:id', (req, res, next) => universityController.deleteProject(req, res, next));
 router.post('/projects/:id/assign-faculty', (req, res, next) => universityController.assignFacultyToProject(req, res, next));
 router.patch('/projects/:id/assign-faculty', (req, res, next) => universityController.assignFacultyToProject(req, res, next));
+
+router.get('/activities', (req, res, next) => universityController.getActivities(req, res, next));
+router.delete('/activities', (req, res, next) => universityController.clearActivities(req, res, next));
+router.post('/activities/clear', (req, res, next) => universityController.clearActivities(req, res, next));
 
 router.get('/partners', (req, res, next) => universityController.getPartners(req, res, next));
 router.get('/approvals', (req, res, next) => universityController.getApprovals(req, res, next));

@@ -41,6 +41,36 @@ export const ProjectDrawerTabs = ({
   const documents = Array.isArray(project.documents) ? project.documents : [];
   const hasStudentTeam = Array.isArray(project.teamMembers) && project.teamMembers.length > 0;
 
+  const defaultMilestones = [
+    { id: 1, title: 'Problem Statement Allocated & Scoped', status: 'Completed', dueDate: 'N/A' },
+    {
+      id: 2,
+      title: hasMentor ? `Lead Faculty Mentor Assigned (${facultyName})` : 'Lead Faculty Mentor Assignment',
+      status: hasMentor ? 'Completed' : 'In Progress',
+      dueDate: 'N/A'
+    },
+    {
+      id: 3,
+      title: 'Faculty Solution Analysis & Budget Proposal',
+      status: hasMentor ? 'In Progress' : 'Pending',
+      dueDate: 'N/A'
+    },
+    { id: 4, title: 'University Review & Submission to Government', status: 'Pending', dueDate: 'N/A' },
+    { id: 5, title: 'Government Budget Sanction & Grant Disbursal', status: 'Pending', dueDate: 'N/A' },
+    { id: 6, title: 'Prototype Development & Field Testing', status: 'Pending', dueDate: 'N/A' },
+    { id: 7, title: 'Government Handover & Final Audit', status: 'Pending', dueDate: 'N/A' }
+  ];
+
+  const milestonesList = project.milestones?.length ? project.milestones : defaultMilestones;
+  const totalMilestones = milestonesList.length || 7;
+  const completedMilestones = milestonesList.filter(
+    (m) => m.status === 'Completed' || m.status === 'COMPLETED'
+  ).length;
+  const calculatedPercentage =
+    project.status === 'Completed'
+      ? 100
+      : Math.round((completedMilestones / totalMilestones) * 100);
+
   const displayBudget = project.budget
     ? typeof project.budget === 'object'
       ? project.budget.total
@@ -84,26 +114,60 @@ export const ProjectDrawerTabs = ({
         </div>
 
         {/* Project Key Metrics */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs">
-          <div className="p-2.5 bg-white border border-slate-200 rounded-xl shadow-2xs">
-            <span className="text-[10px] text-slate-400 font-bold uppercase block">Domain Sector</span>
-            <span className="font-extrabold text-slate-900 text-xs mt-0.5 block truncate">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 text-xs">
+          <div className="p-3 bg-white border border-slate-200/90 rounded-xl shadow-2xs">
+            <span className="text-[10px] text-slate-400 font-bold uppercase block tracking-wider">Domain Sector</span>
+            <span className="font-extrabold text-slate-900 text-xs mt-1 block truncate">
               {project.domain || 'General'}
             </span>
           </div>
-          <div className="p-2.5 bg-white border border-slate-200 rounded-xl shadow-2xs">
-            <span className="text-[10px] text-slate-400 font-bold uppercase block">Budget (Sanctioned)</span>
-            <span className="font-extrabold text-slate-900 text-xs mt-0.5 block truncate">
-              {displayBudget}
+
+          <div className="p-3 bg-white border border-slate-200/90 rounded-xl shadow-2xs">
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Allocated Budget</span>
+              {project.disbursedAmount && project.disbursedAmount !== '₹ 0' && project.disbursedAmount !== '0' ? (
+                <span className="text-[9px] font-bold text-emerald-800 bg-emerald-50 px-1.5 py-0.2 rounded border border-emerald-200">Disbursed</span>
+              ) : (
+                <span className="text-[9px] font-bold text-amber-800 bg-amber-50 px-1.5 py-0.2 rounded border border-amber-200">Pending</span>
+              )}
+            </div>
+            <span className="font-extrabold text-slate-900 text-xs mt-1 block truncate">
+              {project.disbursedAmount && project.disbursedAmount !== '₹ 0' && project.disbursedAmount !== '0'
+                ? `${project.disbursedAmount} (Received)`
+                : project.sanctionedBudget || (project.budget && project.budget !== 'N/A' ? project.budget : 'N/A')}
             </span>
           </div>
-          <div className="p-2.5 bg-white border border-slate-200 rounded-xl shadow-2xs col-span-2 sm:col-span-1">
-            <span className="text-[10px] text-slate-400 font-bold uppercase block">Timeline / Target</span>
-            <span className="font-extrabold text-slate-900 text-xs mt-0.5 block truncate">
-              {displayTimeline}
+
+          <div className="p-3 bg-white border border-slate-200/90 rounded-xl shadow-2xs col-span-2 sm:col-span-1">
+            <span className="text-[10px] text-slate-400 font-bold uppercase block tracking-wider">Lifecycle Target</span>
+            <span className="font-extrabold text-slate-700 text-xs mt-1 block truncate">
+              {displayTimeline !== 'N/A' ? displayTimeline : 'Proposal & Scoping'}
             </span>
           </div>
         </div>
+
+        {/* Grant Status Notice */}
+        {project.disbursedAmount && project.disbursedAmount !== '₹ 0' && project.disbursedAmount !== '0' ? (
+          <div className="p-3 bg-emerald-50/70 border border-emerald-200/80 rounded-xl text-xs space-y-1">
+            <div className="flex items-center space-x-1.5 font-bold text-emerald-950">
+              <span className="w-2 h-2 rounded-full bg-emerald-500" />
+              <span>Funding Status: Grant Disbursed & Received</span>
+            </div>
+            <p className="text-[11px] text-emerald-900 leading-relaxed pl-3.5">
+              Government has successfully disbursed {project.disbursedAmount} for this project. Execution and milestones can now proceed.
+            </p>
+          </div>
+        ) : (
+          <div className="p-3 bg-amber-50/70 border border-amber-200/80 rounded-xl text-xs space-y-1">
+            <div className="flex items-center space-x-1.5 font-bold text-amber-950">
+              <span className="w-2 h-2 rounded-full bg-amber-500" />
+              <span>Funding Status: Budget Not Sanctioned (Proposal Pending)</span>
+            </div>
+            <p className="text-[11px] text-amber-900 leading-relaxed pl-3.5">
+              Budget will be formulated by the designated Faculty Mentor ({facultyName}) and team, approved by the University, and submitted to the Government for grant sanction.
+            </p>
+          </div>
+        )}
 
         {/* Lead Faculty Mentor Card */}
         <div className="p-3.5 bg-white border border-emerald-200/80 rounded-xl space-y-2 shadow-2xs">
@@ -148,19 +212,19 @@ export const ProjectDrawerTabs = ({
           <div className="flex justify-between items-center text-[11px]">
             <span className="font-bold text-slate-700">R&D Lifecycle Progress</span>
             <span className="font-extrabold font-mono text-[#007A61]">
-              {project.progressPercentage || (hasMentor ? 25 : 10)}%
+              {calculatedPercentage}%
             </span>
           </div>
           <div className="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
             <div
-              className="bg-[#007A61] h-2 rounded-full transition-all duration-300"
-              style={{ width: `${project.progressPercentage || (hasMentor ? 25 : 10)}%` }}
+              className="bg-[#007A61] h-2 rounded-full transition-all duration-500 ease-out"
+              style={{ width: `${calculatedPercentage}%` }}
             />
           </div>
           <div className="flex justify-between items-center text-[10.5px] text-slate-500 pt-0.5">
-            <span>Status: <strong className="text-slate-800">{project.status || 'In Progress'}</strong></span>
+            <span>Status: <strong className="text-slate-800">{project.status || (calculatedPercentage === 100 ? 'Completed' : 'In Progress')}</strong></span>
             <span>
-              Milestones: {project.milestonesCompleted || (hasMentor ? 2 : 1)} / {project.milestonesTotal || 7}
+              Milestones: <strong className="text-[#007A61] font-bold">{completedMilestones}</strong> / {totalMilestones} Completed
             </span>
           </div>
         </div>
@@ -259,34 +323,12 @@ export const ProjectDrawerTabs = ({
   }
 
   if (activeTab === 'milestones') {
-    const defaultMilestones = [
-      { id: 1, title: 'Project & Challenge Allocation', status: 'Completed', dueDate: 'N/A' },
-      {
-        id: 2,
-        title: hasMentor ? `Lead Mentor Onboarded (${facultyName})` : 'Faculty Mentor Assignment',
-        status: hasMentor ? 'Completed' : 'In Progress',
-        dueDate: 'N/A'
-      },
-      {
-        id: 3,
-        title: 'Student Team Formation & Scoping',
-        status: hasMentor ? 'In Progress' : 'Pending',
-        dueDate: 'N/A'
-      },
-      { id: 4, title: 'Sensor Rig / Solution Prototyping (TRL-4)', status: 'Pending', dueDate: 'N/A' },
-      { id: 5, title: 'Pilot Testing & Field Calibration', status: 'Pending', dueDate: 'N/A' },
-      { id: 6, title: 'Solution Validation & District Trials', status: 'Pending', dueDate: 'N/A' },
-      { id: 7, title: 'Government Handover & Impact Review', status: 'Pending', dueDate: 'N/A' }
-    ];
-
-    const milestonesList = project.milestones?.length ? project.milestones : defaultMilestones;
-
     return (
       <div className="space-y-2.5">
         <div className="flex items-center justify-between text-xs pb-1 border-b border-slate-100">
           <span className="font-bold text-slate-700">R&D Lifecycle Milestones</span>
           <span className="text-[11px] font-mono text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200 font-bold">
-            {milestonesList.filter((m) => m.status === 'Completed').length} of {milestonesList.length} Steps Completed
+            {completedMilestones} of {totalMilestones} Steps Completed ({calculatedPercentage}%)
           </span>
         </div>
 

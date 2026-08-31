@@ -118,6 +118,10 @@ export const UniversityDashboard = ({
         <UniversityRecentActivity
           activities={liveData?.recentActivity || liveData?.recentActivities || []}
           onViewAll={() => onNavigateTab && onNavigateTab('projects')}
+          onClear={async () => {
+            await universityApiService.clearActivities(universityCode);
+            setLiveData((prev) => ({ ...prev, recentActivity: [], recentActivities: [] }));
+          }}
         />
       </div>
 

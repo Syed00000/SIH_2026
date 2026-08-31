@@ -52,23 +52,23 @@ export const CSRGrantsLifecycleDashboard = () => {
 
   const handleUpdateProposal = (updatedProposal) => {
     const res = projectCsrSyncService.addOrUpdateCsrProposal(updatedProposal);
-    setProposals(res.updatedCsrProposals);
+    setProposals(res?.updatedCsrProposals || projectCsrSyncService.getCsrProposals() || []);
   };
 
   const handleDeleteProposal = (proposalId) => {
     const res = projectCsrSyncService.deleteCsrProposal(proposalId);
-    setProposals(res.updatedCsrProposals);
+    setProposals(res?.updatedCsrProposals || projectCsrSyncService.getCsrProposals() || []);
   };
 
   const handleAddNewDisbursal = (newEntry) => {
     const res = projectCsrSyncService.addCsrPayment(newEntry);
-    setLedger(res.updatedLedger);
+    setLedger(res?.updatedLedger || res?.updatedCsrLedger || projectCsrSyncService.getCsrLedger() || []);
   };
 
   const handleAuthorizePayment = (ledgerId) => {
     try {
       const updated = projectCsrSyncService.authorizePayment(ledgerId);
-      setLedger(updated);
+      setLedger(Array.isArray(updated) ? updated : projectCsrSyncService.getCsrLedger() || []);
       localStorage.setItem('joharsetu_csr_ledger', JSON.stringify(updated));
     } catch {}
   };
@@ -82,14 +82,14 @@ export const CSRGrantsLifecycleDashboard = () => {
   // Export Audit Report PDF
   const handleExportAudit = () => {
     exportCsrLifecycleReportPdf({
-      proposals,
-      ledger,
+      proposals: proposals || [],
+      ledger: ledger || [],
       filterSource: sourceFilter
     });
   };
 
   // Filter proposals by top-level source filter
-  const filteredProposals = proposals.filter((p) => {
+  const filteredProposals = (proposals || []).filter((p) => {
     if (sourceFilter === 'All Sources') return true;
     if (sourceFilter === 'Corporate CSR' && p.sourceScheme?.includes('Corporate')) return true;
     if (sourceFilter === 'Govt Grants' && p.sourceScheme?.includes('Govt')) return true;

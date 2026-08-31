@@ -7,81 +7,80 @@ import {
   CheckCircle2,
   Clock,
   AlertCircle,
-  Cpu,
-  MapPin,
   ShieldCheck,
-  Activity,
   Award,
-  FileText,
-  Printer,
-  Mail,
+  Layers,
+  MapPin,
   Send,
-  UserCheck,
-  Edit,
-  Trash2,
-  CreditCard
+  CreditCard,
+  ChevronRight,
+  ExternalLink
 } from 'lucide-react';
-import ProjectSpecificLocationMap from './ProjectSpecificLocationMap.jsx';
-import ProjectLeafletMap from './ProjectLeafletMap.jsx';
-import AreaProblemProfile from './AreaProblemProfile.jsx';
-import ProjectCertificateModal from './ProjectCertificateModal.jsx';
-import ValidationEmailModal from './ValidationEmailModal.jsx';
-import FinalProjectCompletionModal from './FinalProjectCompletionModal.jsx';
-import { GrantPaymentModal, getGrantFinancials, formatGrantLakhs } from './GrantPaymentModal.jsx';
-import EditProjectModal from './EditProjectModal.jsx';
+import { GrantPaymentModal, parseGrantRupees, formatRupeesINR } from './GrantPaymentModal.jsx';
+import { projectCsrSyncService } from '../../services/projectCsrSyncService.js';
 
 export const ActiveProjectDetailView = ({
   project,
   onBack,
-  onUpdateMilestoneStatus,
-  onValidateDeployment,
-  onApproveCompletion,
-  onSaveProject,
-  onDeleteProject,
-  onConfirmPayment
+  onInitiateNextTranche
 }) => {
-  const [activeSubTab, setActiveSubTab] = useState('overview'); // 'overview' | 'milestones' | 'telemetry' | 'finances'
-  const [isCertificateOpen, setIsCertificateOpen] = useState(false);
-  const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
-  const [isCompletionModalOpen, setIsCompletionModalOpen] = useState(false);
+  const [activeSubTab, setActiveSubTab] = useState('milestones'); // 'milestones' | 'finances'
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [notification, setNotification] = useState(null);
 
   if (!project) return null;
 
-  const milestonesList = project.milestones || [];
-  const completedMilestones = milestonesList.filter((m) => m.status === 'Completed').length;
-  const isCompleted = project.isCompleted || (milestonesList.length > 0 && completedMilestones === milestonesList.length);
+  const totalSanctionedNum = parseGrantRupees(project.sanctionedGrant || project.budget) || 73000;
+  const currentDisbursedNum = parseGrantRupees(project.disbursedAmount || project.disbursedGrant) || 0;
+  const pendingGrantNum = Math.max(0, totalSanctionedNum - currentDisbursedNum);
+  const isFullyPaid = currentDisbursedNum >= totalSanctionedNum && totalSanctionedNum > 0;
 
-  // Exact 3-Way Financial Status
-  const fin = getGrantFinancials(project.sanctionedGrant, project.disbursedAmount);
-
-  const handleValidate = () => {
-    if (onValidateDeployment) {
-      onValidateDeployment(project.id);
-    }
-    setIsEmailModalOpen(true);
+  const showToast = (msg) => {
+    setNotification(msg);
+    setTimeout(() => setNotification(null), 3500);
   };
 
-  const handleConfirmCompletion = (prjId, completionData) => {
-    if (onApproveCompletion) {
-      onApproveCompletion(prjId, completionData);
-    }
-    setIsEmailModalOpen(true);
-  };
+  // 3-Tranche Breakdown: Tranche 1 (50%), Tranche 2 (25%), Tranche 3 (25%)
+  const tranche1Target = Math.round(totalSanctionedNum * 0.5);
+  const tranche2Target = Math.round(totalSanctionedNum * 0.25);
+  const tranche3Target = totalSanctionedNum - tranche1Target - tranche2Target;
 
-  const handleDelete = () => {
-    if (window.confirm(`Are you sure you want to delete project ${project.id} (${project.title})?`)) {
-      if (onDeleteProject) {
-        onDeleteProject(project.id);
-      }
-      onBack();
+  // Real paid amounts per tranche based on actual currentDisbursedNum
+  const tranche1Paid = Math.min(tranche1Target, currentDisbursedNum);
+  const tranche1Remaining = Math.max(0, tranche1Target - tranche1Paid);
+  const isTranche1Complete = tranche1Paid >= tranche1Target;
+
+  const tranche2Paid = Math.max(0, Math.min(tranche2Target, currentDisbursedNum - tranche1Target));
+  const tranche2Remaining = Math.max(0, tranche2Target - tranche2Paid);
+  const isTranche2Complete = isTranche1Complete && tranche2Paid >= tranche2Target;
+
+  const tranche3Paid = Math.max(0, Math.min(tranche3Target, currentDisbursedNum - tranche1Target - tranche2Target));
+  const tranche3Remaining = Math.max(0, tranche3Target - tranche3Paid);
+  const isTranche3Complete = isFullyPaid;
+
+  const handlePayInstallment = (trancheName, amountNum) => {
+    if (onInitiateNextTranche) {
+      onInitiateNextTranche({
+        ...project,
+        installmentType: trancheName,
+        suggestedAmount: formatRupeesINR(amountNum)
+      });
+    } else {
+      setIsPaymentModalOpen(true);
     }
   };
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto pb-12 select-none animate-fadeIn">
-      {/* Top Back & Quick Action Navigation Bar */}
+      {/* Toast */}
+      {notification && (
+        <div className="fixed bottom-6 right-6 z-50 px-4 py-3 rounded-xl shadow-xl border text-xs font-bold flex items-center space-x-2 bg-slate-900 text-white border-slate-800 animate-slideUp">
+          <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+          <span>{notification}</span>
+        </div>
+      )}
+
+      {/* Top Back & Header Bar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-4 rounded-xl border border-slate-200 shadow-2xs">
         <button
           type="button"
@@ -89,417 +88,170 @@ export const ActiveProjectDetailView = ({
           className="inline-flex items-center space-x-2 text-xs font-bold text-slate-700 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 px-3 py-1.5 rounded-lg transition-colors cursor-pointer w-fit"
         >
           <ArrowLeft className="w-4 h-4" />
-          <span>Back to Projects List</span>
+          <span>Back to Active Projects</span>
         </button>
 
-        <div className="flex flex-wrap items-center gap-2">
-          {/* Pay Grant Button */}
-          {!fin.isFullyPaid && (
-            <button
-              type="button"
-              onClick={() => setIsPaymentModalOpen(true)}
-              className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition-colors cursor-pointer flex items-center space-x-1.5 shadow-2xs"
+        <div className="flex items-center space-x-2">
+          {!isFullyPaid ? (
+            <a
+              href="?tab=csr"
+              className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold transition-colors cursor-pointer flex items-center space-x-1.5 shadow-2xs"
             >
-              <IndianRupee className="w-3.5 h-3.5" />
-              <span>Release Grant Payment ({fin.pendingStr} Pending)</span>
-            </button>
-          )}
-
-          <button
-            type="button"
-            onClick={() => setIsEditModalOpen(true)}
-            className="px-3 py-1.5 bg-white text-slate-700 hover:bg-slate-50 border border-slate-300 rounded-lg text-xs font-bold transition-colors cursor-pointer flex items-center space-x-1"
-          >
-            <Edit className="w-3.5 h-3.5 text-slate-500" />
-            <span>Edit Project</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setIsEmailModalOpen(true)}
-            className="px-3 py-1.5 bg-white text-slate-700 hover:bg-slate-50 border border-slate-300 rounded-lg text-xs font-bold transition-colors cursor-pointer flex items-center space-x-1"
-          >
-            <Mail className="w-3.5 h-3.5 text-slate-500" />
-            <span>Send Email</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setIsCertificateOpen(true)}
-            className="px-3 py-1.5 bg-white text-slate-700 hover:bg-slate-50 border border-slate-300 rounded-lg text-xs font-bold transition-colors cursor-pointer flex items-center space-x-1"
-          >
-            <Printer className="w-3.5 h-3.5 text-slate-500" />
-            <span>Certificate</span>
-          </button>
-
-          {!isCompleted ? (
-            <button
-              type="button"
-              onClick={() => setIsCompletionModalOpen(true)}
-              className="px-3.5 py-1.5 bg-slate-900 hover:bg-slate-800 text-white rounded-lg text-xs font-bold transition-colors cursor-pointer flex items-center space-x-1.5 shadow-2xs"
-            >
-              <Award className="w-4 h-4 text-emerald-400" />
-              <span>Approve Completion</span>
-            </button>
+              <IndianRupee className="w-3.5 h-3.5 text-emerald-400" />
+              <span>
+                {!isTranche1Complete
+                  ? `Pay Tranche 1 Balance (${formatRupeesINR(tranche1Remaining)})`
+                  : !isTranche2Complete
+                  ? `Disburse Tranche 2 (${formatRupeesINR(tranche2Remaining)})`
+                  : `Disburse Tranche 3 (${formatRupeesINR(tranche3Remaining)})`}
+              </span>
+            </a>
           ) : (
-            <span className="px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center space-x-1">
+            <span className="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center space-x-1.5">
               <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-              <span>Completed ✓</span>
+              <span>All Tranches Disbursed (100%) ✓</span>
             </span>
           )}
-
-          <button
-            type="button"
-            onClick={handleDelete}
-            className="p-1.5 bg-white text-rose-600 hover:bg-rose-50 border border-rose-200 rounded-lg transition-colors cursor-pointer"
-            title="Delete Project"
-          >
-            <Trash2 className="w-4 h-4" />
-          </button>
         </div>
       </div>
 
-      {/* Main Title & Header */}
-      <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-2xs space-y-3">
+      {/* Main Title & Institution Info */}
+      <div className="bg-white border border-slate-200 rounded-xl p-5 sm:p-6 shadow-2xs space-y-4">
         <div className="flex flex-wrap items-center gap-2 text-xs font-bold">
           <span className="px-2.5 py-0.5 rounded-md font-mono text-[10px] font-black bg-slate-900 text-white">
             {project.id}
           </span>
-          <span className="text-slate-500">{project.sector}</span>
+          <span className="text-slate-500">{project.sector || 'State Innovation Project'}</span>
           <span>•</span>
-          <span className="text-slate-700">{project.district} District</span>
+          <span className="text-slate-700">{project.district || 'Ranchi'} District</span>
           <span>•</span>
-          <span className="px-2 py-0.5 rounded-md bg-slate-100 text-slate-800 border border-slate-200">
-            {project.trlLevel} ({project.prototypeType})
-          </span>
-          <span>•</span>
-          <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold ${
-            fin.isFullyPaid ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-amber-50 text-amber-800 border border-amber-200'
-          }`}>
-            {fin.isFullyPaid ? 'Grant Fully Paid (100%) ✓' : `Grant Partially Paid (${fin.percentage}% Disbursed)`}
+          <span className="text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200 font-bold">
+            Execution Status: Active Telemetry
           </span>
         </div>
 
-        <h1 className="text-lg sm:text-xl font-bold text-slate-900">{project.title}</h1>
+        <h1 className="text-lg sm:text-xl font-bold text-slate-900 tracking-tight">
+          {project.title}
+        </h1>
 
-        {/* Project Completed Banner if done */}
-        {isCompleted && (
-          <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center justify-between text-emerald-950 text-xs">
-            <div className="flex items-center space-x-3">
-              <div className="w-9 h-9 rounded-lg bg-emerald-600 text-white flex items-center justify-center font-bold">
-                <Award className="w-5 h-5" />
-              </div>
-              <div>
-                <span className="font-bold text-sm block">Project Officially Completed & Approved by Government!</span>
-                <span className="text-xs text-emerald-800">All milestones verified and field deployment successfully handed over.</span>
-                {project.completedByOfficer && (
-                  <span className="block text-[11px] text-emerald-700 mt-0.5 font-medium">
-                    Signed off by: {project.completedByOfficer} ({project.officerDesignation})
-                  </span>
-                )}
-              </div>
-            </div>
-            <button
-              type="button"
-              onClick={() => setIsCertificateOpen(true)}
-              className="px-3.5 py-2 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs shadow-2xs cursor-pointer"
-            >
-              Download Handover Certificate
-            </button>
-          </div>
-        )}
-
-        {/* Quick Stats Grid with Exact 3-Way Financials */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-3 border-t border-slate-100 text-xs">
-          <div className="p-3 bg-slate-50 rounded-lg border border-slate-100">
-            <span className="text-[10px] font-bold text-slate-400 uppercase block">Executing Institution</span>
-            <span className="font-bold text-slate-900 block mt-0.5">{project.hei}</span>
-            <span className="text-[11px] text-slate-500">{project.teamLead}</span>
+        {/* Institution Strip */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-3 border-t border-slate-100 text-xs">
+          <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200/80 space-y-1">
+            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+              Executing Institution
+            </span>
+            <span className="font-bold text-slate-900 text-sm block">
+              {project.hei || 'Ranchi University (RU001)'}
+            </span>
+            <span className="text-[11px] text-slate-500 font-medium">
+              Nodal State R&D Center
+            </span>
           </div>
 
-          <div className="p-3 bg-slate-50 rounded-lg border border-slate-100">
-            <span className="text-[10px] font-bold text-slate-400 uppercase block">Current Stage</span>
-            <span className="font-bold text-slate-900 block mt-0.5">{project.milestonePhase}</span>
-            <span className="text-[11px] text-slate-500 font-semibold">{project.milestoneProgress || 50}% Done</span>
+          <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200/80 space-y-1">
+            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+              Sanctioned Grant Corpus
+            </span>
+            <span className="font-mono font-black text-slate-900 text-base block">
+              {formatRupeesINR(totalSanctionedNum)}
+            </span>
+            <span className="text-[11px] text-[#007A61] font-bold">
+              Disbursed: {formatRupeesINR(currentDisbursedNum)}
+            </span>
           </div>
 
-          <div className="p-3 bg-slate-50 rounded-lg border border-slate-100">
-            <span className="text-[10px] font-bold text-slate-400 uppercase block">Approved Grant</span>
-            <span className="font-bold text-slate-900 text-sm block mt-0.5">{fin.sanctionedStr}</span>
-            <span className="text-[11px] text-emerald-700 font-semibold">Paid: {fin.disbursedStr}</span>
-          </div>
-
-          <div className="p-3 bg-slate-50 rounded-lg border border-slate-100">
-            <span className="text-[10px] font-bold text-slate-400 uppercase block">Pending Payment</span>
-            {fin.isFullyPaid ? (
-              <span className="font-bold text-emerald-700 text-sm block mt-0.5">Fully Paid (100%) ✓</span>
-            ) : (
-              <span className="font-bold text-amber-700 text-sm block mt-0.5">{fin.pendingStr}</span>
-            )}
-            <span className="text-[11px] text-slate-500">{fin.percentage}% Disbursed</span>
+          <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200/80 space-y-1">
+            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+              Pending Grant Balance
+            </span>
+            <span className="font-mono font-black text-amber-700 text-base block">
+              {formatRupeesINR(pendingGrantNum)}
+            </span>
+            <span className="text-[11px] text-slate-500 font-medium">
+              {isFullyPaid ? '100% Released ✓' : 'Subject to Milestone Gate Clearance'}
+            </span>
           </div>
         </div>
       </div>
 
-      {/* Sub-Tabs */}
-      <div className="flex items-center space-x-2 border-b border-slate-200 pb-2 overflow-x-auto">
-        {[
-          { id: 'overview', label: '1. Project Overview & System Details', icon: Cpu },
-          { id: 'milestones', label: '2. Project Steps & Verification', icon: CheckCircle2 },
-          { id: 'telemetry', label: '3. Location Map & Area Ground Data', icon: MapPin },
-          { id: 'finances', label: '4. Grant Funding & Payments', icon: IndianRupee }
-        ].map((tab) => {
-          const TabIcon = tab.icon;
-          const isActive = activeSubTab === tab.id;
-          return (
-            <button
-              key={tab.id}
-              type="button"
-              onClick={() => setActiveSubTab(tab.id)}
-              className={`px-3.5 py-2 rounded-lg text-xs font-bold transition-all flex items-center space-x-1.5 cursor-pointer whitespace-nowrap ${
-                isActive
-                  ? 'bg-slate-900 text-white shadow-2xs'
-                  : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-100'
-              }`}
-            >
-              <TabIcon className="w-3.5 h-3.5" />
-              <span>{tab.label}</span>
-            </button>
-          );
-        })}
+      {/* Tabs */}
+      <div className="flex items-center space-x-2 border-b border-slate-200 pb-2">
+        <button
+          type="button"
+          onClick={() => setActiveSubTab('milestones')}
+          className={`px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center space-x-1.5 cursor-pointer ${
+            activeSubTab === 'milestones'
+              ? 'bg-slate-900 text-white shadow-2xs'
+              : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-100'
+          }`}
+        >
+          <CheckCircle2 className="w-3.5 h-3.5" />
+          <span>1. Project Steps & Milestone Verification</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveSubTab('finances')}
+          className={`px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center space-x-1.5 cursor-pointer ${
+            activeSubTab === 'finances'
+              ? 'bg-slate-900 text-white shadow-2xs'
+              : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-100'
+          }`}
+        >
+          <IndianRupee className="w-3.5 h-3.5" />
+          <span>2. Grant Funding & Tranche Disbursal Ledger</span>
+        </button>
       </div>
 
-      {/* TAB 1: OVERVIEW & SPECS */}
-      {activeSubTab === 'overview' && (
-        <div className="space-y-4">
-          {/* Location Mapping Card */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-2xs space-y-1">
-              <span className="text-[10px] font-bold text-rose-700 uppercase tracking-wider flex items-center space-x-1">
-                <AlertCircle className="w-3.5 h-3.5" />
-                <span>Problem Location (Yeh Samasya Kahan Ki Hai):</span>
-              </span>
-              <p className="text-xs font-bold text-slate-900 leading-snug">
-                {project.problemOrigin || `${project.district} District Ground Problem Zone`}
-              </p>
-              <span className="text-[11px] text-slate-500 block">District: <strong>{project.district}</strong></span>
-            </div>
-
-            <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-2xs space-y-1">
-              <span className="text-[10px] font-bold text-emerald-800 uppercase tracking-wider flex items-center space-x-1">
-                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-                <span>Active Work Site (Kaam Kahan Ho Rha Hai):</span>
-              </span>
-              <p className="text-xs font-bold text-slate-900 leading-snug">
-                {project.activeWorkSite || `${project.hei} Campus Lab & Field Testing Site`}
-              </p>
-              <span className="text-[11px] text-slate-500 block">Executing Institution: <strong>{project.hei}</strong></span>
-            </div>
-          </div>
-
-          <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-2xs space-y-3">
-            <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
-              System Specifications & Solution Details
-            </h3>
-            <div className="p-3.5 bg-slate-50 rounded-lg border border-slate-100 text-xs text-slate-800 leading-relaxed font-sans">
-              {project.hardwareSpecs || 'Industrial Grade Embedded Microcontroller, Sub-GHz Transceiver, Integrated Solar Harvester.'}
-            </div>
-            <div className="flex flex-wrap items-center justify-between text-xs text-slate-500 pt-2 border-t border-slate-100 gap-2">
-              <span><strong>Testing Lab:</strong> {project.labsAndFacilities}</span>
-              <span><strong>Field Deployment Area:</strong> {project.deploymentLocation}</span>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* TAB 2: MILESTONES & STEPS */}
+      {/* TAB 1: MILESTONES */}
       {activeSubTab === 'milestones' && (
         <div className="space-y-4">
           <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-2xs space-y-3">
             <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
-                  Project Delivery Steps & Approvals
-                </h3>
-                <p className="text-[11px] text-slate-500 font-medium">Verify each deliverable step to complete the project</p>
-              </div>
-              <span className="text-xs font-bold text-slate-800 bg-slate-100 px-2.5 py-1 rounded-lg">
-                {completedMilestones} of {milestonesList.length} Steps Verified
+              <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
+                Research & Execution Milestones (4 Stage Gates)
+              </h3>
+              <span className="text-xs font-mono font-bold text-slate-700 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">
+                Progress: {project.progress || 57}%
               </span>
             </div>
 
-            <div className="space-y-3 pt-2">
-              {milestonesList.map((m) => {
-                const isDone = m.status === 'Completed';
-
-                return (
-                  <div
-                    key={m.id}
-                    className="p-4 bg-slate-50 rounded-xl border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs"
-                  >
-                    <div className="flex items-start space-x-3">
-                      <div
-                        className={`w-7 h-7 rounded-lg flex items-center justify-center font-bold text-xs shrink-0 ${
-                          isDone
-                            ? 'bg-emerald-600 text-white'
-                            : 'bg-slate-200 text-slate-700'
-                        }`}
-                      >
-                        {m.id}
-                      </div>
-                      <div>
-                        <div className="flex items-center space-x-2">
-                          <h4 className="font-bold text-slate-900">{m.title}</h4>
-                          <span
-                            className={`px-2 py-0.2 rounded-full text-[10px] font-bold ${
-                              isDone ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-200 text-slate-700'
-                            }`}
-                          >
-                            {m.status}
-                          </span>
-                        </div>
-                        <p className="text-slate-600 text-[11px] mt-0.5 italic">"{m.remarks}"</p>
-                        {m.date && <span className="text-[10px] text-slate-400 font-mono">Date: {m.date}</span>}
-                      </div>
-                    </div>
-
-                    {!isDone ? (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          if (onUpdateMilestoneStatus) {
-                            onUpdateMilestoneStatus(project.id, m.id, 'Completed');
-                          }
-                        }}
-                        className="px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-white rounded-lg text-xs font-bold transition-colors cursor-pointer flex items-center space-x-1 shadow-2xs self-end sm:self-center"
-                      >
-                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-                        <span>Verify Step</span>
-                      </button>
-                    ) : (
-                      <span className="text-emerald-700 font-bold text-xs flex items-center space-x-1 self-end sm:self-center">
-                        <CheckCircle2 className="w-4 h-4" />
-                        <span>Step Verified</span>
-                      </span>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* TAB 3: EXACT LOCATION MAP & DETAILED AREA GROUND DATA */}
-      {activeSubTab === 'telemetry' && (
-        <div className="space-y-5">
-          {/* Specific Project Location Map */}
-          <ProjectSpecificLocationMap
-            project={project}
-            height="360px"
-          />
-
-          {/* Area Ground Challenges & Socio-Economic Demographics */}
-          <AreaProblemProfile project={project} />
-        </div>
-      )}
-
-      {/* TAB 4: FINANCIALS & GRANT PAYMENTS (100% RIGOROUS & ACCURATE) */}
-      {activeSubTab === 'finances' && (
-        <div className="space-y-4">
-          <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 bg-white p-5 rounded-xl border border-slate-200 text-center text-xs">
-            <div className="p-3 bg-slate-50 rounded-lg border border-slate-100">
-              <span className="text-[10px] font-bold text-slate-400 uppercase block">1. Total Sanctioned</span>
-              <span className="text-base font-black text-slate-900 mt-1 block">{fin.sanctionedStr}</span>
-              <span className="text-[10px] text-slate-500">Total Approved Pool</span>
-            </div>
-
-            <div className="p-3 bg-slate-50 rounded-lg border border-slate-100">
-              <span className="text-[10px] font-bold text-slate-400 uppercase block">2. Already Paid</span>
-              <span className="text-base font-black text-emerald-700 mt-1 block">{fin.disbursedStr}</span>
-              <span className="text-[10px] text-slate-500">{fin.percentage}% Disbursed</span>
-            </div>
-
-            <div className="p-3 bg-slate-50 rounded-lg border border-slate-100">
-              <span className="text-[10px] font-bold text-slate-400 uppercase block">3. Pending to Disburse</span>
-              {fin.isFullyPaid ? (
-                <span className="text-sm font-black text-emerald-700 mt-1 block">₹ 0.00 Lakhs</span>
-              ) : (
-                <span className="text-base font-black text-amber-700 mt-1 block">{fin.pendingStr}</span>
-              )}
-              <span className="text-[10px] text-slate-500">
-                {fin.isFullyPaid ? '100% Fully Paid ✓' : 'Remaining Balance'}
-              </span>
-            </div>
-
-            <div className="flex flex-col items-center justify-center p-3 bg-slate-50 rounded-lg border border-slate-100">
-              {!fin.isFullyPaid ? (
-                <button
-                  type="button"
-                  onClick={() => setIsPaymentModalOpen(true)}
-                  className="w-full py-2.5 px-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-bold text-xs shadow-2xs transition-colors cursor-pointer flex items-center justify-center space-x-1"
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5 text-xs">
+              {[
+                { stage: 'Stage 1', title: 'Problem Baseline & DPR Formulation', dur: 'Days 1-30', status: isTranche1Complete ? 'Completed' : 'In Progress', note: 'Architecture verified and initial DPR sanctioned by State Council.' },
+                { stage: 'Stage 2', title: 'Lab Prototyping & Embedded Build', dur: 'Days 31-75', status: isTranche1Complete ? 'In Progress' : 'Pending Tranche 1', note: 'Hardware prototype under calibration at Ranchi University Lab.' },
+                { stage: 'Stage 3', title: 'District Field Trial & Telemetry', dur: 'Days 76-135', status: isTranche2Complete ? 'In Progress' : 'Pending', note: 'Awaiting completion of Stage 2 lab calibration.' },
+                { stage: 'Stage 4', title: 'NABL Certification & Handover', dur: 'Days 136-180', status: isFullyPaid ? 'In Progress' : 'Pending', note: 'Final compliance benchmarking and district deployment.' }
+              ].map((m, i) => (
+                <div
+                  key={i}
+                  className={`p-4 rounded-xl border space-y-2 ${
+                    m.status === 'Completed'
+                      ? 'bg-emerald-50/50 border-emerald-200'
+                      : m.status === 'In Progress'
+                      ? 'bg-blue-50/40 border-blue-200'
+                      : 'bg-slate-50 border-slate-200'
+                  }`}
                 >
-                  <IndianRupee className="w-3.5 h-3.5" />
-                  <span>Release Payment</span>
-                </button>
-              ) : (
-                <div className="text-center">
-                  <span className="text-xs font-bold text-emerald-700 bg-emerald-100 px-3 py-1.5 rounded-lg border border-emerald-300 inline-block">
-                    Fully Paid (100%) ✓
-                  </span>
-                  <span className="text-[10px] text-slate-500 block mt-1">No pending dues</span>
-                </div>
-              )}
-            </div>
-          </div>
-
-          <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-2xs space-y-3 text-xs">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
-                  Grant Payment Vouchers & Disbursal Ledger
-                </h3>
-                <p className="text-[11px] text-slate-500">Record of all treasury tranches released for this project</p>
-              </div>
-
-              {!fin.isFullyPaid && (
-                <button
-                  type="button"
-                  onClick={() => setIsPaymentModalOpen(true)}
-                  className="text-xs font-bold text-emerald-700 hover:text-emerald-800 cursor-pointer flex items-center space-x-1"
-                >
-                  <span>+ Release Next Payment</span>
-                </button>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              {(project.paymentRecords || [
-                {
-                  id: 'JH-GR-0981',
-                  trancheName: 'Tranche 1: Equipment & Prototype Start',
-                  amount: '₹ 8.00 Lakhs',
-                  date: '2026-02-15',
-                  paymentMode: 'PFMS Direct Treasury Transfer',
-                  status: 'Paid'
-                },
-                {
-                  id: 'JH-GR-1042',
-                  trancheName: 'Tranche 2: Field Trial & Testing',
-                  amount: '₹ 5.50 Lakhs',
-                  date: '2026-05-10',
-                  paymentMode: 'State Innovation Fund DBT',
-                  status: 'Paid'
-                }
-              ]).map((pRec, idx) => (
-                <div key={idx} className="p-3 bg-slate-50 rounded-lg border border-slate-100 flex items-center justify-between">
-                  <div>
-                    <span className="font-bold text-slate-900">{pRec.trancheName}</span>
-                    <span className="text-slate-500 block text-[11px]">
-                      Voucher #{pRec.id} • {pRec.paymentMode} • {pRec.date}
+                  <div className="flex items-center justify-between">
+                    <span className="font-mono text-[10px] font-black uppercase text-slate-500 bg-white px-1.5 py-0.5 rounded border border-slate-200">
+                      {m.stage} • {m.dur}
+                    </span>
+                    <span
+                      className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
+                        m.status === 'Completed'
+                          ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
+                          : m.status === 'In Progress'
+                          ? 'bg-blue-100 text-blue-800 border-blue-300'
+                          : 'bg-slate-200 text-slate-600 border-slate-300'
+                      }`}
+                    >
+                      {m.status}
                     </span>
                   </div>
-                  <span className="font-mono font-bold text-emerald-700">{pRec.amount} [{pRec.status}]</span>
+
+                  <h4 className="font-bold text-slate-900 text-xs">{m.title}</h4>
+                  <p className="text-[11px] text-slate-600 font-medium leading-relaxed">{m.note}</p>
                 </div>
               ))}
             </div>
@@ -507,43 +259,135 @@ export const ActiveProjectDetailView = ({
         </div>
       )}
 
-      {/* Official Certificate Modal */}
-      <ProjectCertificateModal
-        project={project}
-        isOpen={isCertificateOpen}
-        onClose={() => setIsCertificateOpen(false)}
-      />
+      {/* TAB 2: GRANT FUNDING & INSTALLMENTS */}
+      {activeSubTab === 'finances' && (
+        <div className="space-y-4">
+          <div className="bg-white border border-slate-200 rounded-xl shadow-2xs overflow-hidden">
+            <div className="p-4 border-b border-slate-200 flex items-center justify-between bg-slate-50">
+              <div>
+                <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
+                  Tranche Disbursal Schedule & Installments
+                </h3>
+                <p className="text-[11px] text-slate-500 font-medium">
+                  State PFMS Host-to-Host payments linked to Milestone Gate clearance
+                </p>
+              </div>
+              <span className="text-sm font-black font-mono text-slate-900">
+                Total Grant: {formatRupeesINR(totalSanctionedNum)}
+              </span>
+            </div>
 
-      {/* Email Modal */}
-      <ValidationEmailModal
-        project={project}
-        isOpen={isEmailModalOpen}
-        onClose={() => setIsEmailModalOpen(false)}
-      />
+            <div className="divide-y divide-slate-100 text-xs">
+              {/* Tranche 1 */}
+              <div className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-slate-50">
+                <div className="space-y-1">
+                  <div className="flex items-center space-x-2">
+                    <span className="font-bold text-slate-900 text-xs">
+                      Tranche 1 (50% = {formatRupeesINR(tranche1Target)})
+                    </span>
+                    <span className={`px-2 py-0.5 rounded text-[10px] font-bold border ${isTranche1Complete ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-amber-50 text-amber-800 border-amber-200'}`}>
+                      {isTranche1Complete ? 'Initial Mobilization & DPR (Fully Paid)' : `Partially Disbursed: ${formatRupeesINR(tranche1Paid)}`}
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-slate-500">
+                    Purpose: Baseline Sensor Acquisition, BOM Components & DPR Inception
+                  </p>
+                </div>
+                <div className="flex items-center space-x-3">
+                  <span className="font-mono font-black text-[#007A61] text-sm">
+                    {formatRupeesINR(tranche1Paid)} / {formatRupeesINR(tranche1Target)}
+                  </span>
+                  {isTranche1Complete ? (
+                    <span className="px-2.5 py-1 rounded-md text-[10px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">
+                      Disbursed via PFMS ✓
+                    </span>
+                  ) : (
+                    <a
+                      href="?tab=csr"
+                      className="px-3.5 py-1.5 bg-slate-900 hover:bg-slate-800 text-white rounded-lg font-bold text-xs shadow-2xs cursor-pointer flex items-center space-x-1"
+                    >
+                      <IndianRupee className="w-3.5 h-3.5 text-slate-300" />
+                      <span>Release Balance ({formatRupeesINR(tranche1Remaining)})</span>
+                    </a>
+                  )}
+                </div>
+              </div>
 
-      {/* Final Completion Modal */}
-      <FinalProjectCompletionModal
-        project={project}
-        isOpen={isCompletionModalOpen}
-        onClose={() => setIsCompletionModalOpen(false)}
-        onConfirmCompletion={handleConfirmCompletion}
-      />
+              {/* Tranche 2 */}
+              <div className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-slate-50">
+                <div className="space-y-1">
+                  <div className="flex items-center space-x-2">
+                    <span className="font-bold text-slate-900 text-xs">
+                      Tranche 2 (25% = {formatRupeesINR(tranche2Target)})
+                    </span>
+                    <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-200">
+                      Hardware Prototyping
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-slate-500">
+                    Purpose: Lab Testing, Embedded Firmware Prototyping & Calibration
+                  </p>
+                </div>
+                <div className="flex items-center space-x-3">
+                  <span className="font-mono font-black text-slate-900 text-sm">
+                    {formatRupeesINR(tranche2Paid)} / {formatRupeesINR(tranche2Target)}
+                  </span>
+                  {isTranche2Complete ? (
+                    <span className="px-2.5 py-1 rounded-md text-[10px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">
+                      Disbursed ✓
+                    </span>
+                  ) : (
+                    <a
+                      href="?tab=csr"
+                      disabled={!isTranche1Complete}
+                      className="px-3.5 py-1.5 bg-slate-900 hover:bg-slate-800 text-white rounded-lg font-bold text-xs shadow-2xs cursor-pointer flex items-center space-x-1 disabled:opacity-40 disabled:cursor-not-allowed"
+                    >
+                      <IndianRupee className="w-3.5 h-3.5 text-slate-300" />
+                      <span>Release Tranche 2</span>
+                    </a>
+                  )}
+                </div>
+              </div>
 
-      {/* Grant Payment Modal */}
-      <GrantPaymentModal
-        project={project}
-        isOpen={isPaymentModalOpen}
-        onClose={() => setIsPaymentModalOpen(false)}
-        onConfirmPayment={onConfirmPayment}
-      />
-
-      {/* Edit Project Modal */}
-      <EditProjectModal
-        project={project}
-        isOpen={isEditModalOpen}
-        onClose={() => setIsEditModalOpen(false)}
-        onSave={onSaveProject}
-      />
+              {/* Tranche 3 */}
+              <div className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-slate-50">
+                <div className="space-y-1">
+                  <div className="flex items-center space-x-2">
+                    <span className="font-bold text-slate-900 text-xs">
+                      Tranche 3 (25% = {formatRupeesINR(tranche3Target)})
+                    </span>
+                    <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-purple-50 text-purple-700 border border-purple-200">
+                      Field Deployment & Handover
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-slate-500">
+                    Purpose: Final District Deployment, NABL Proof Benchmark & Public Rollout
+                  </p>
+                </div>
+                <div className="flex items-center space-x-3">
+                  <span className="font-mono font-black text-slate-900 text-sm">
+                    {formatRupeesINR(tranche3Paid)} / {formatRupeesINR(tranche3Target)}
+                  </span>
+                  {isTranche3Complete ? (
+                    <span className="px-2.5 py-1 rounded-md text-[10px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">
+                      Disbursed ✓
+                    </span>
+                  ) : (
+                    <a
+                      href="?tab=csr"
+                      disabled={!isTranche2Complete}
+                      className="px-3.5 py-1.5 bg-slate-900 hover:bg-slate-800 text-white rounded-lg font-bold text-xs shadow-2xs cursor-pointer flex items-center space-x-1 disabled:opacity-40 disabled:cursor-not-allowed"
+                    >
+                      <IndianRupee className="w-3.5 h-3.5 text-slate-300" />
+                      <span>Release Tranche 3</span>
+                    </a>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

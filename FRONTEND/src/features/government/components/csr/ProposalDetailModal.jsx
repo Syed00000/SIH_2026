@@ -6,9 +6,18 @@ import {
   IndianRupee,
   DollarSign,
   ShieldCheck,
-  Printer
+  Printer,
+  RotateCcw,
+  CheckCircle2,
+  AlertCircle
 } from 'lucide-react';
+import { ProposalOverviewTab } from './dossier/ProposalOverviewTab.jsx';
+import { ProposalTechnicalTab } from './dossier/ProposalTechnicalTab.jsx';
+import { ProposalBudgetTab } from './dossier/ProposalBudgetTab.jsx';
+import { ProposalPaymentsTab } from './dossier/ProposalPaymentsTab.jsx';
+import { ProposalDueDiligenceTab } from './dossier/ProposalDueDiligenceTab.jsx';
 import { projectCsrSyncService } from '../../services/projectCsrSyncService.js';
+import apiClient from '../../../../infrastructure/api/client.js';
 
 export const ProposalDetailModal = ({
   isOpen,
@@ -20,20 +29,24 @@ export const ProposalDetailModal = ({
   if (!isOpen || !proposal) return null;
 
   const [activeSubTab, setActiveSubTab] = useState('overview');
-  const [localDueDiligence, setLocalDueDiligence] = useState(proposal.dueDiligence || 'Passed (All Checks)');
+  const [localDueDiligence, setLocalDueDiligence] = useState(proposal.dueDiligence || 'Passed (Technical Review)');
   const [localBoardApproval, setLocalBoardApproval] = useState(proposal.boardApproval || 'Approved (A-Grade)');
   const [localMouExecution, setLocalMouExecution] = useState(proposal.mouExecution || 'Signed & Active');
   const [adminNote, setAdminNote] = useState('');
   const [isSaved, setIsSaved] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
 
-  // Fetch live payment history for this proposal
   const activeProjects = projectCsrSyncService.getActiveProjects();
-  const linkedProject = activeProjects.find((p) => p.id === proposal.id || p.id === proposal.id.replace('PROP-', 'PRJ-') || p.title === proposal.projectTitle);
+  const linkedProject = activeProjects.find(
+    (p) => p.id === proposal.id || p.id === proposal.id?.replace('PROP-', '') || p.id === proposal.projectId || p.title === proposal.projectTitle
+  );
 
   const paymentLedger = projectCsrSyncService.getCsrLedger();
-  const linkedPayments = paymentLedger.filter((p) => p.projectRef === proposal.id || p.payee?.toLowerCase().includes(proposal.institutionName?.toLowerCase()));
+  const linkedPayments = paymentLedger.filter(
+    (p) => p.projectRef === proposal.id || p.projectRef === proposal.projectId || p.projectRef === proposal.id?.replace('PROP-', '') || (proposal.institutionName && p.payee?.toLowerCase().includes(proposal.institutionName.toLowerCase()))
+  );
 
-  const handleSaveStatus = () => {
+  const handleSaveStatus = async () => {
     const isFailed =
       localDueDiligence.includes('Failed') ||
       localDueDiligence.includes('Rejected') ||
@@ -46,11 +59,90 @@ export const ProposalDetailModal = ({
       boardApproval: localBoardApproval,
       boardApprovalStatus: isFailed ? 'rejected' : localBoardApproval.includes('Approved') ? 'approved' : 'pending',
       mouExecution: localMouExecution,
-      remarks: adminNote ? `${proposal.remarks || ''} | Update: ${adminNote}` : proposal.remarks
+      remarks: adminNote ? `${proposal.remarks || ''} | Note: ${adminNote}` : proposal.remarks
     };
+
     onUpdateProposal(updated);
     setIsSaved(true);
     setTimeout(() => setIsSaved(false), 2500);
+  };
+
+  const handleRequestRevision = async () => {
+    setIsProcessing(true);
+    const noteText = adminNote || 'Government Authority requested revision in budget line items and methodology.';
+    const updated = {
+      ...proposal,
+      dueDiligence: 'Needs Clarification / Revision',
+      dueDiligenceStatus: 'review',
+      boardApproval: 'Revision Requested by Government',
+      boardApprovalStatus: 'pending',
+      budgetStatus: 'Changes Required by Government',
+      governmentRemarks: noteText,
+      remarks: `${proposal.remarks || ''} | Revision Requested: ${noteText}`
+    };
+
+    try {
+      const projId = proposal.projectId || proposal.id?.replace('PROP-', '');
+      if (projId) {
+        await apiClient.put(`university/projects/${projId}`, {
+          budgetStatus: 'Changes Required by Government',
+          adminRemarks: noteText,
+          governmentRemarks: noteText
+        });
+      }
+    } catch (e) {
+      console.warn('Sync revision to university project:', e);
+    }
+
+    onUpdateProposal(updated);
+    setIsProcessing(false);
+    setIsSaved(true);
+    setTimeout(() => {
+      setIsSaved(false);
+      onClose();
+    }, 1200);
+  };
+
+  const handleApproveAndSanction = async () => {
+    setIsProcessing(true);
+    const sanctionOrderNo = `JH-GOV-RD-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`;
+    const sanctionedAmount = proposal.fundingRequested || proposal.allocatedAmount || '₹ 75,000';
+
+    const updated = {
+      ...proposal,
+      dueDiligence: 'Passed (All Checks)',
+      dueDiligenceStatus: 'passed',
+      boardApproval: 'Approved (A-Grade)',
+      boardApprovalStatus: 'approved',
+      mouExecution: 'Signed & Active',
+      budgetStatus: 'Grant Sanctioned by Government',
+      sanctionOrderNo,
+      sanctionedAmount,
+      remarks: `Grant sanctioned by Government under Order ${sanctionOrderNo}`
+    };
+
+    try {
+      const projId = proposal.projectId || proposal.id?.replace('PROP-', '');
+      if (projId) {
+        await apiClient.put(`university/projects/${projId}`, {
+          budgetStatus: 'Grant Sanctioned by Government',
+          sanctionOrderNo,
+          sanctionedBudget: sanctionedAmount,
+          adminRemarks: `Grant Sanctioned under Order ${sanctionOrderNo}`,
+          progressPercentage: 57,
+          milestonesCompleted: 4
+        });
+      }
+    } catch (e) {
+      console.warn('Sync grant sanction to university project:', e);
+    }
+
+    onUpdateProposal(updated);
+    setIsProcessing(false);
+    onClose();
+    if (onInitiateDisbursal) {
+      onInitiateDisbursal(updated);
+    }
   };
 
   const handlePrintSanctionOrder = () => {
@@ -60,121 +152,100 @@ export const ProposalDetailModal = ({
       return;
     }
 
-    const html = `
-<!DOCTYPE html>
-<html>
-<head>
-  <title>Sanction Order - ${proposal.id}</title>
-  <style>
-    body { font-family: 'Times New Roman', serif; padding: 40px; color: #111; line-height: 1.5; font-size: 13px; }
-    .header { text-align: center; border-bottom: 2px solid #000; padding-bottom: 12px; margin-bottom: 24px; }
-    .header h2 { margin: 0; font-size: 16px; text-transform: uppercase; }
-    .header h3 { margin: 4px 0 0 0; font-size: 13px; font-weight: normal; }
-    .meta-table { width: 100%; border-collapse: collapse; margin: 20px 0; }
-    .meta-table td { padding: 6px 10px; border: 1px solid #999; }
-    .meta-table td.label { font-weight: bold; background: #f4f4f4; width: 30%; }
-    .seal { margin-top: 50px; display: flex; justify-content: space-between; }
-    .seal div { text-align: center; }
-  </style>
-</head>
-<body>
-  <div class="header">
-    <h2>Government of Jharkhand</h2>
-    <h3>Department of Higher & Technical Education · JoharSetu Innovation Hub</h3>
-    <p style="margin: 4px 0 0; font-size: 11px; font-weight: bold;">STATUTORY CSR / GRANT SANCTION ORDER</p>
-  </div>
-
-  <p><strong>Sanction Order Reference:</strong> DHTE/CSR-JH/${new Date().getFullYear()}/${proposal.id}</p>
-  <p><strong>Date of Sanction:</strong> ${new Date().toLocaleDateString('en-IN')}</p>
-
-  <p>In exercise of powers conferred under the State Innovation & CSR Facilitation Policy, administrative sanction is hereby accorded for the release and implementation of the project described below:</p>
-
-  <table class="meta-table">
-    <tr><td class="label">Proposal Code</td><td>${proposal.id}</td></tr>
-    <tr><td class="label">Beneficiary Institution</td><td>${proposal.institutionName} (${proposal.district} District)</td></tr>
-    <tr><td class="label">Project Title</td><td>${proposal.projectTitle || 'Societal Innovation & Research Initiative'}</td></tr>
-    <tr><td class="label">Funding Source & Scheme</td><td>${proposal.sourceScheme} (${proposal.donor || 'State & Corporate Pool'})</td></tr>
-    <tr><td class="label">Total Approved Grant</td><td>${proposal.allocatedAmount}</td></tr>
-    <tr><td class="label">Disbursed to Date</td><td>${proposal.disbursedToDate || (linkedProject?.disbursedAmount || '₹ 0.00 Lakhs')}</td></tr>
-    <tr><td class="label">MCA CSR-1 Registration</td><td>${proposal.csr1Number || 'CSR00018921'}</td></tr>
-    <tr><td class="label">Income Tax 80G / 12A Ref</td><td>${proposal.pan80G || '80G-VALIDATED'}</td></tr>
-    <tr><td class="label">MoU Legal Status</td><td>${localMouExecution}</td></tr>
-    <tr><td class="label">Apex Committee Sanction</td><td>${localBoardApproval}</td></tr>
-  </table>
-
-  <p><strong>Special Terms & Escrow Lock-in:</strong></p>
-  <ol>
-    <li>Funds shall be credited strictly to the designated Zero-Balance Escrow Vault.</li>
-    <li>GFR 12-A Utilization Certificate must be submitted within 90 days of tranche consumption.</li>
-    <li>All expenditures are subject to independent CA Audit under Schedule VII norms.</li>
-  </ol>
-
-  <div class="seal">
-    <div>
-      <br/><br/>
-      __________________________<br/>
-      <strong>State Financial Advisor</strong><br/>
-      Govt of Jharkhand
-    </div>
-    <div>
-      <br/><br/>
-      __________________________<br/>
-      <strong>Principal Secretary</strong><br/>
-      Dept of Higher & Tech Education
-    </div>
-  </div>
-</body>
-</html>
+    const orderNo = proposal.sanctionOrderNo || `JH-GOV-RD-${new Date().getFullYear()}-8842`;
+    const docHtml = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Government of Jharkhand - Sanction Order ${orderNo}</title>
+          <style>
+            body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; padding: 40px; color: #0f172a; }
+            .header { text-align: center; border-bottom: 2px solid #007A61; padding-bottom: 15px; margin-bottom: 25px; }
+            .title { font-size: 18px; font-weight: 800; text-transform: uppercase; color: #007A61; }
+            .sub { font-size: 12px; color: #475569; margin-top: 4px; }
+            .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin: 20px 0; font-size: 12px; }
+            .badge { background: #ecfdf5; color: #065f46; padding: 4px 10px; border-radius: 6px; font-weight: 700; font-size: 11px; display: inline-block; }
+            .amount-box { background: #f8fafc; border: 1px solid #cbd5e1; padding: 15px; border-radius: 8px; font-size: 18px; font-weight: 800; margin: 20px 0; text-align: center; color: #007A61; }
+            .footer { margin-top: 40px; padding-top: 20px; border-top: 1px solid #e2e8f0; display: flex; justify-content: space-between; font-size: 11px; color: #64748b; }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <div class="title">Government of Jharkhand</div>
+            <div class="sub">Department of Higher & Technical Education • State Innovation Council</div>
+            <div style="margin-top: 8px; font-weight: 700; font-size: 13px;">OFFICIAL GRANT SANCTION ORDER</div>
+          </div>
+          <div class="grid">
+            <div><strong>Sanction Order No:</strong> ${orderNo}</div>
+            <div><strong>Date:</strong> ${new Date().toLocaleDateString('en-IN')}</div>
+            <div><strong>Proposal ID:</strong> ${proposal.id}</div>
+            <div><strong>Beneficiary University:</strong> ${proposal.institutionName}</div>
+            <div><strong>Lead Investigator:</strong> ${proposal.leadMentor || proposal.teamLead || 'Faculty Lead'}</div>
+            <div><strong>Scheme / Category:</strong> ${proposal.sourceScheme}</div>
+          </div>
+          <div><strong>Project Title:</strong> ${proposal.projectTitle || proposal.title}</div>
+          <div class="amount-box">
+            Sanctioned Grant Allocation: ${proposal.fundingRequested || proposal.allocatedAmount || '₹ 75,000'}
+          </div>
+          <div style="font-size: 12px; line-height: 1.6; color: #334155;">
+            The Competent Authority is pleased to convey administrative sanction and fund commitment for the implementation of the above research prototype. Payment tranches shall be released directly to the dedicated University Escrow Account against verified milestone deliverables.
+          </div>
+          <div class="footer">
+            <div>Generated by JoharSetu Governance Engine</div>
+            <div>Authorized Signatory: Principal Secretary, Govt of Jharkhand</div>
+          </div>
+          <script>window.print();</script>
+        </body>
+      </html>
     `;
-
-    printWin.document.write(html);
+    printWin.document.write(docHtml);
     printWin.document.close();
-    setTimeout(() => {
-      printWin.print();
-    }, 500);
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-5 animate-fadeIn select-none">
-      <div className="bg-white rounded-lg max-w-4xl w-full shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[90vh]">
-        {/* Modal Header - Pure Text, No Gray Background Box */}
-        <div className="px-5 py-4 border-b border-slate-200 flex items-center justify-between bg-white">
-          <div className="space-y-0.5">
-            <div className="flex items-center space-x-2">
-              <span className="font-mono font-bold text-sm text-slate-900">{proposal.id}</span>
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-slate-900/60 backdrop-blur-xs select-none animate-in fade-in duration-200">
+      <div
+        className="bg-white border border-slate-200 rounded-2xl shadow-2xl w-full max-w-4xl max-h-[92vh] flex flex-col overflow-hidden transition-all"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Header */}
+        <div className="px-6 py-4 bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 text-white flex items-center justify-between shrink-0">
+          <div className="flex-1 pr-4 min-w-0">
+            <div className="flex flex-wrap items-center gap-2 mb-1">
+              <span className="font-mono font-black text-xs px-2 py-0.5 bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 rounded-md">
+                {proposal.id}
+              </span>
+              <span className="font-bold text-xs text-slate-200">{proposal.institutionName}</span>
               <span className="text-slate-400">•</span>
-              <h3 className="text-sm sm:text-base font-bold text-slate-900">{proposal.institutionName}</h3>
-              <span className="text-slate-400">•</span>
-              <span className="text-xs text-slate-600 font-medium">{proposal.district || 'Jharkhand'}</span>
-              <span className="text-slate-400">•</span>
-              <span className="text-xs text-slate-600 font-medium">{proposal.sourceScheme}</span>
+              <span className="text-xs text-slate-300">{proposal.sourceScheme}</span>
             </div>
-            <p className="text-xs text-slate-600 font-normal line-clamp-1">
-              {proposal.projectTitle || proposal.title || 'Societal Innovation Project'}
+            <p className="text-xs text-slate-300 font-medium line-clamp-1">
+              {proposal.projectTitle || proposal.title || 'Societal Problem Resolution Project'}
             </p>
           </div>
 
           <div className="flex items-center space-x-2 shrink-0">
             <button
+              type="button"
               onClick={handlePrintSanctionOrder}
-              className="px-3 py-1.5 rounded-md border border-slate-200 hover:bg-slate-50 text-slate-900 flex items-center space-x-1.5 text-xs font-semibold cursor-pointer shadow-xs"
-              title="Print Official Sanction Order"
+              className="px-3 py-1.5 rounded-xl border border-white/15 bg-white/10 hover:bg-white/20 text-white flex items-center space-x-1.5 text-xs font-bold cursor-pointer transition-all shadow-2xs"
             >
-              <Printer className="w-3.5 h-3.5 text-slate-900" />
+              <Printer className="w-3.5 h-3.5 text-emerald-300" />
               <span className="hidden sm:inline">Sanction Order</span>
             </button>
 
             <button
+              type="button"
               onClick={onClose}
-              className="w-8 h-8 rounded-md border border-slate-200 hover:bg-slate-50 flex items-center justify-center text-slate-900 cursor-pointer"
+              className="p-1.5 rounded-xl text-slate-400 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
             >
-              <X className="w-4 h-4 text-slate-900" />
+              <X className="w-5 h-5" />
             </button>
           </div>
         </div>
 
-        {/* 5 Tabs - Perfectly fitting in 1 line with NO horizontal scrollbar */}
-        <div className="flex items-center justify-between px-5 border-b border-slate-200 bg-white text-xs font-semibold">
+        {/* 5 Tab Navigation */}
+        <div className="flex items-center justify-between px-6 border-b border-slate-200 bg-white text-xs font-semibold overflow-x-auto">
           {[
             { id: 'overview', label: '1. Executive Abstract', icon: FileText },
             { id: 'methodology', label: '2. Technical Architecture', icon: Layers },
@@ -189,346 +260,96 @@ export const ProposalDetailModal = ({
                 key={tab.id}
                 type="button"
                 onClick={() => setActiveSubTab(tab.id)}
-                className={`py-3 px-2 border-b-2 transition-all cursor-pointer flex items-center space-x-1.5 whitespace-nowrap ${
+                className={`py-3 px-2.5 border-b-2 transition-all cursor-pointer flex items-center space-x-1.5 whitespace-nowrap ${
                   isActive
-                    ? 'border-slate-900 text-slate-900 font-bold'
+                    ? 'border-[#007A61] text-[#007A61] font-bold'
                     : 'border-transparent text-slate-500 hover:text-slate-900'
                 }`}
               >
-                <TabIcon className="w-3.5 h-3.5 text-slate-900" />
+                <TabIcon className={`w-3.5 h-3.5 ${isActive ? 'text-[#007A61]' : 'text-slate-400'}`} />
                 <span>{tab.label}</span>
               </button>
             );
           })}
         </div>
 
-        {/* Modal Body - Fixed 460px Height so tabs never jump */}
-        <div className="p-5 overflow-y-auto space-y-4 text-xs h-[460px] max-h-[460px] bg-white">
-          {/* TAB 1: EXECUTIVE ABSTRACT */}
+        {/* Modal Body */}
+        <div className="p-6 overflow-y-auto space-y-4 text-xs flex-1 bg-[#fafafa]">
           {activeSubTab === 'overview' && (
-            <div className="space-y-4">
-              {/* 3 Metric Cards - Pure Monochrome Black & White */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <div className="bg-white border border-slate-200 rounded-lg p-3.5 shadow-xs">
-                  <span className="text-[10.5px] uppercase font-bold text-slate-500 block tracking-wider">
-                    Approved DPR Budget
-                  </span>
-                  <span className="text-base font-bold text-slate-900 block mt-1">
-                    {proposal.allocatedAmount || proposal.requestedGrant}
-                  </span>
-                  <span className="text-[11px] text-slate-500 font-normal mt-0.5 block">
-                    Source: {proposal.donor || proposal.sourceScheme}
-                  </span>
-                </div>
-
-                <div className="bg-white border border-slate-200 rounded-lg p-3.5 shadow-xs">
-                  <span className="text-[10.5px] uppercase font-bold text-slate-500 block tracking-wider">
-                    Disbursed to Escrow
-                  </span>
-                  <span className="text-base font-bold text-slate-900 block mt-1">
-                    {proposal.disbursedToDate || (linkedProject?.disbursedAmount || '₹ 5.00 Lakhs')}
-                  </span>
-                  <span className="text-[11px] text-slate-500 font-normal mt-0.5 block">
-                    Initial Tranche Released
-                  </span>
-                </div>
-
-                <div className="bg-white border border-slate-200 rounded-lg p-3.5 shadow-xs">
-                  <span className="text-[10.5px] uppercase font-bold text-slate-500 block tracking-wider">
-                    Feasibility Score
-                  </span>
-                  <span className="text-base font-bold text-slate-900 block mt-1">
-                    {proposal.feasibilityScore || '94/100'}
-                  </span>
-                  <span className="text-[11px] text-slate-500 font-normal mt-0.5 block">
-                    Technical Committee Rating
-                  </span>
-                </div>
-              </div>
-
-              {/* Problem Statement & Summary */}
-              <div className="bg-white border border-slate-200 rounded-lg p-4 space-y-2 shadow-xs">
-                <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
-                  Project Abstract
-                </h4>
-                <p className="text-slate-700 leading-relaxed font-normal text-xs">
-                  {proposal.projectTitle
-                    ? `${proposal.projectTitle}. Project implementation in ${proposal.district || 'Jharkhand'} district under State Higher & Technical Education innovation facilitation.`
-                    : 'Societal innovation initiative addressing ground community challenges in Jharkhand state.'}
-                </p>
-                <div className="pt-2 border-t border-slate-100 flex flex-wrap items-center gap-4 text-[11px] text-slate-600 font-normal">
-                  <span><strong>Lead PI:</strong> {proposal.leadSpoc || proposal.teamLead || 'Dr. Amitabh Verma'}</span>
-                  <span><strong>Funding Donor:</strong> {proposal.donor || 'Tata Steel CSR / State Pool'}</span>
-                  <span><strong>District:</strong> {proposal.district || 'Ranchi'}</span>
-                </div>
-              </div>
-
-              {/* Statutory Registrations */}
-              <div className="border border-slate-200 rounded-lg p-4 bg-white space-y-3 shadow-xs">
-                <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
-                  Statutory Registrations
-                </h4>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
-                  <div>
-                    <span className="text-slate-500 block text-[10px] font-semibold uppercase">MCA CSR-1 No.</span>
-                    <span className="font-mono font-bold text-slate-900 text-[11.5px]">{proposal.csr1Number || 'CSR00018921'}</span>
-                  </div>
-                  <div>
-                    <span className="text-slate-500 block text-[10px] font-semibold uppercase">80G / 12A Status</span>
-                    <span className="font-mono font-bold text-slate-900 text-[11.5px]">{proposal.pan80G || '80G-VALIDATED'}</span>
-                  </div>
-                  <div>
-                    <span className="text-slate-500 block text-[10px] font-semibold uppercase">Board Approval</span>
-                    <span className="font-bold text-slate-900 text-[11.5px]">{proposal.boardApproval}</span>
-                  </div>
-                  <div>
-                    <span className="text-slate-500 block text-[10px] font-semibold uppercase">MoU Status</span>
-                    <span className="font-bold text-slate-900 text-[11.5px]">{proposal.mouExecution}</span>
-                  </div>
-                </div>
-              </div>
-            </div>
+            <ProposalOverviewTab proposal={proposal} linkedProject={linkedProject} />
           )}
 
-          {/* TAB 2: TECHNICAL ARCHITECTURE */}
           {activeSubTab === 'methodology' && (
-            <div className="space-y-4">
-              <div className="p-4 bg-white rounded-lg border border-slate-200 space-y-2 shadow-xs">
-                <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
-                  Technical Specifications
-                </h4>
-                <p className="text-slate-700 leading-relaxed font-normal text-xs">
-                  {proposal.hardwareSpecs || (linkedProject?.hardwareSpecs || 'Integrated embedded microcontroller with LoRaWAN wireless telemetry, solar harvesting, and cloud synchronization to JoharSetu state portal.')}
-                </p>
-              </div>
-
-              <div className="p-4 bg-white rounded-lg border border-slate-200 space-y-2.5 shadow-xs">
-                <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
-                  Milestone Roadmap
-                </h4>
-                <div className="grid grid-cols-1 sm:grid-cols-4 gap-2 text-center text-xs">
-                  <div className="p-3 bg-white border border-slate-200 rounded-md">
-                    <span className="text-[10px] font-bold text-slate-500 uppercase block">Stage 1</span>
-                    <span className="font-bold text-slate-900 text-[11px] mt-0.5 block">Lab CAD & Circuit Rig</span>
-                  </div>
-                  <div className="p-3 bg-white border border-slate-200 rounded-md">
-                    <span className="text-[10px] font-bold text-slate-500 uppercase block">Stage 2</span>
-                    <span className="font-bold text-slate-900 text-[11px] mt-0.5 block">Field Ground Testing</span>
-                  </div>
-                  <div className="p-3 bg-white border border-slate-200 rounded-md">
-                    <span className="text-[10px] font-bold text-slate-500 uppercase block">Stage 3</span>
-                    <span className="font-bold text-slate-900 text-[11px] mt-0.5 block">NABL Lab Certification</span>
-                  </div>
-                  <div className="p-3 bg-white border border-slate-200 rounded-md">
-                    <span className="text-[10px] font-bold text-slate-500 uppercase block">Stage 4</span>
-                    <span className="font-bold text-slate-900 text-[11px] mt-0.5 block">Public Rollout & Scale</span>
-                  </div>
-                </div>
-              </div>
-            </div>
+            <ProposalTechnicalTab proposal={proposal} linkedProject={linkedProject} />
           )}
 
-          {/* TAB 3: DPR BUDGET TABLE */}
           {activeSubTab === 'budget' && (
-            <div className="space-y-4">
-              <div className="flex items-center justify-between bg-white p-4 rounded-lg border border-slate-200 shadow-xs">
-                <div>
-                  <span className="text-[10.5px] font-bold text-slate-500 uppercase block">Approved Grant Budget</span>
-                  <div className="text-base font-black text-slate-900 mt-0.5">{proposal.budgetSanctioned || proposal.allocatedAmount || proposal.requestedGrant || proposal.budgetRequested || '₹ 0'}</div>
-                </div>
-                <span className="text-xs font-medium text-slate-600">
-                  Itemized DPR Allocation
-                </span>
-              </div>
-
-              <div className="bg-white rounded-lg border border-slate-200 overflow-hidden shadow-xs">
-                <table className="w-full text-left text-xs border-collapse">
-                  <thead>
-                    <tr className="border-b border-slate-200 bg-slate-50 text-[10px] font-bold text-slate-500 uppercase tracking-wider">
-                      <th className="py-3 px-4">Line Item Description</th>
-                      <th className="py-3 px-4">Category</th>
-                      <th className="py-3 px-4 text-right">Estimated Cost</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100">
-                    {((proposal.dprBudgetItems && proposal.dprBudgetItems.length > 0)
-                      ? proposal.dprBudgetItems
-                      : (proposal.budgetBreakdown && proposal.budgetBreakdown.length > 0)
-                      ? proposal.budgetBreakdown.map((b) => ({
-                          item: b.item || b.description || b.category,
-                          category: b.category || 'General',
-                          cost: b.cost || b.amount || '—'
-                        }))
-                      : [
-                          { item: 'Core Prototype Hardware Fabrication & Embedded Sensors', cost: '₹ 8.50 Lakhs', category: 'Hardware CapEx' },
-                          { item: 'Wireless LoRaWAN Nodes & Field Telemetry Rig', cost: '₹ 4.00 Lakhs', category: 'Sensors' },
-                          { item: 'Research Scholars / JRF Field Testing Stipends', cost: '₹ 3.60 Lakhs', category: 'Human Resource' },
-                          { item: 'NABL Certified Laboratory Benchmark Fees', cost: '₹ 2.40 Lakhs', category: 'Testing & Quality' }
-                        ]
-                    ).map((b, idx) => (
-                      <tr key={idx} className="hover:bg-slate-50/60">
-                        <td className="py-3 px-4 font-semibold text-slate-900">{b.item}</td>
-                        <td className="py-3 px-4 text-slate-600 font-medium">
-                          {b.category}
-                        </td>
-                        <td className="py-3 px-4 text-right font-mono font-bold text-slate-900">{b.cost}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
+            <ProposalBudgetTab proposal={proposal} linkedProject={linkedProject} />
           )}
 
-          {/* TAB 4: TRANCHES & PAYMENTS */}
           {activeSubTab === 'payments' && (
-            <div className="space-y-4">
-              <div className="bg-white border border-slate-200 rounded-lg p-4 space-y-3 shadow-xs">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider">Payment History & UTR Ledger</h4>
-                    <p className="text-[11px] text-slate-500 font-medium">Direct Escrow bank disbursements for {proposal.institutionName}</p>
-                  </div>
-
-                  <button
-                    onClick={() => {
-                      onClose();
-                      onInitiateDisbursal?.(proposal);
-                    }}
-                    className="px-3.5 py-1.5 rounded-md bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs shadow-xs cursor-pointer flex items-center space-x-1.5"
-                  >
-                    <span>Initiate Tranche Disbursal</span>
-                  </button>
-                </div>
-
-                {linkedPayments.length > 0 ? (
-                  <div className="space-y-2">
-                    {linkedPayments.map((pay) => (
-                      <div key={pay.id} className="p-3 bg-white rounded-lg border border-slate-200 flex items-center justify-between text-xs">
-                        <div className="space-y-0.5">
-                          <div className="flex items-center space-x-2">
-                            <span className="font-mono font-bold text-slate-900">{pay.id}</span>
-                            <span className="font-mono text-[11px] text-slate-700">
-                              UTR: {pay.utrNumber}
-                            </span>
-                            <span className="text-[11px] text-slate-700 font-medium">
-                              • {pay.mode}
-                            </span>
-                          </div>
-                          <p className="text-[11px] text-slate-600 font-normal">
-                            Disbursed: <strong>{pay.disbursedAmount}</strong> · Payer: {pay.payer} · TDS: {pay.tdsAmount || 'Sec 194C @ 2%'}
-                          </p>
-                        </div>
-                        <span className="text-[11px] font-semibold text-slate-900">
-                          {pay.makerCheckerSign || 'Verified'}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="p-3.5 bg-white border border-slate-200 rounded-lg flex items-center justify-between text-xs">
-                    <div>
-                      <span className="font-bold text-slate-900 block">Tranche 1: Advance Rig Setup</span>
-                      <span className="text-[11px] text-slate-500">Transferred via RTGS from State Bank of India Escrow Vault</span>
-                    </div>
-                    <span className="text-[11px] font-semibold text-slate-900">
-                      Disbursed & Active
-                    </span>
-                  </div>
-                )}
-              </div>
-            </div>
+            <ProposalPaymentsTab
+              proposal={proposal}
+              linkedPayments={linkedPayments}
+              onInitiateDisbursal={onInitiateDisbursal}
+            />
           )}
 
-          {/* TAB 5: STATUTORY DUE DILIGENCE & MOU */}
           {activeSubTab === 'statutory' && (
-            <div className="space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div className="bg-white border border-slate-200 rounded-lg p-4 space-y-2 shadow-xs">
-                  <label className="text-xs font-bold text-slate-900 uppercase tracking-wider block">
-                    Board Approval Committee Decision
-                  </label>
-                  <select
-                    value={localBoardApproval}
-                    onChange={(e) => setLocalBoardApproval(e.target.value)}
-                    className="w-full px-3 py-2 bg-white border border-slate-200 rounded-md font-semibold text-slate-900 text-xs focus:border-slate-900 focus:outline-hidden"
-                  >
-                    <option value="Approved (A-Grade)">Approved (A-Grade)</option>
-                    <option value="Sanctioned Board">Sanctioned Board</option>
-                    <option value="Under Technical Review">Under Technical Review</option>
-                    <option value="Pending Meeting">Pending Meeting</option>
-                    <option value="Rejected (Technical Review Failed)">Rejected (Technical Review Failed)</option>
-                  </select>
-                </div>
-
-                <div className="bg-white border border-slate-200 rounded-lg p-4 space-y-2 shadow-xs">
-                  <label className="text-xs font-bold text-slate-900 uppercase tracking-wider block">
-                    Statutory Due Diligence Status
-                  </label>
-                  <select
-                    value={localDueDiligence}
-                    onChange={(e) => setLocalDueDiligence(e.target.value)}
-                    className="w-full px-3 py-2 bg-white border border-slate-200 rounded-md font-semibold text-slate-900 text-xs focus:border-slate-900 focus:outline-hidden"
-                  >
-                    <option value="Passed (All Checks)">Passed (All Checks)</option>
-                    <option value="Under Technical Review">Under Technical Review</option>
-                    <option value="Needs Clarification / Revision">Needs Clarification / Revision</option>
-                    <option value="Failed / Disqualified">Failed / Disqualified</option>
-                  </select>
-                </div>
-              </div>
-
-              <div className="bg-white border border-slate-200 rounded-lg p-4 space-y-2 shadow-xs">
-                <label className="text-xs font-bold text-slate-900 uppercase tracking-wider block">
-                  MoU Legal Execution Stage
-                </label>
-                <select
-                  value={localMouExecution}
-                  onChange={(e) => setLocalMouExecution(e.target.value)}
-                  className="w-full px-3 py-2 bg-white border border-slate-200 rounded-md font-semibold text-slate-900 text-xs focus:border-slate-900 focus:outline-hidden"
-                >
-                  <option value="Signed & Active">Signed & Active</option>
-                  <option value="Executed">Executed</option>
-                  <option value="Drafting Stage">Drafting Stage</option>
-                  <option value="Sent to University Registrar">Sent to University Registrar</option>
-                  <option value="Terminated / Not Executed">Terminated / Not Executed</option>
-                </select>
-              </div>
-
-              <div className="bg-white border border-slate-200 rounded-lg p-4 space-y-2 shadow-xs">
-                <label className="text-xs font-bold text-slate-900 uppercase tracking-wider block">
-                  Official Audit Remarks & Notes
-                </label>
-                <input
-                  type="text"
-                  placeholder="e.g. Cleared by State Technical Steering Committee"
-                  value={adminNote}
-                  onChange={(e) => setAdminNote(e.target.value)}
-                  className="w-full px-3.5 py-2 bg-white border border-slate-200 rounded-md text-xs font-medium text-slate-900 focus:border-slate-900 focus:outline-hidden"
-                />
-              </div>
-            </div>
+            <ProposalDueDiligenceTab
+              localBoardApproval={localBoardApproval}
+              setLocalBoardApproval={setLocalBoardApproval}
+              localDueDiligence={localDueDiligence}
+              setLocalDueDiligence={setLocalDueDiligence}
+              localMouExecution={localMouExecution}
+              setLocalMouExecution={setLocalMouExecution}
+              adminNote={adminNote}
+              setAdminNote={setAdminNote}
+            />
           )}
         </div>
 
         {/* Footer Actions */}
-        <div className="px-5 py-3.5 border-t border-slate-200 bg-white flex items-center justify-between">
-          <div className="text-[11px] font-bold text-slate-900">
-            {isSaved && '✓ Status updated & synchronized successfully!'}
+        <div className="px-6 py-3.5 border-t border-slate-200 bg-white flex flex-col sm:flex-row items-center justify-between gap-3 shrink-0">
+          <div className="text-[11px] font-bold text-slate-700">
+            {isSaved && '✓ Proposal status updated and synchronized with University!'}
           </div>
 
-          <div className="flex items-center space-x-2">
+          <div className="flex flex-wrap items-center space-x-2 justify-end w-full sm:w-auto">
             <button
+              type="button"
               onClick={onClose}
-              className="px-4 py-2 rounded-md text-xs font-semibold text-slate-700 border border-slate-200 hover:bg-slate-50 cursor-pointer"
+              className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-700 border border-slate-200 hover:bg-slate-50 cursor-pointer transition-all shadow-2xs"
             >
               Close Dossier
             </button>
+
             <button
+              type="button"
               onClick={handleSaveStatus}
-              className="px-5 py-2 rounded-md text-xs font-bold bg-slate-900 hover:bg-slate-800 text-white cursor-pointer shadow-xs"
+              className="px-4 py-2 rounded-xl text-xs font-bold bg-slate-900 hover:bg-slate-800 text-white cursor-pointer shadow-2xs transition-all"
             >
-              Save & Synchronize Changes
+              Save Notes
+            </button>
+
+            <button
+              type="button"
+              disabled={isProcessing}
+              onClick={handleRequestRevision}
+              className="px-4 py-2 rounded-xl text-xs font-bold bg-amber-500 hover:bg-amber-600 text-white cursor-pointer shadow-2xs flex items-center space-x-1.5 transition-all"
+            >
+              <RotateCcw className="w-3.5 h-3.5" />
+              <span>Request Revision</span>
+            </button>
+
+            <button
+              type="button"
+              disabled={isProcessing}
+              onClick={handleApproveAndSanction}
+              className="px-5 py-2 rounded-xl text-xs font-bold bg-[#007A61] hover:bg-[#006650] text-white cursor-pointer shadow-2xs flex items-center space-x-1.5 transition-all"
+            >
+              <ShieldCheck className="w-4 h-4" />
+              <span>Approve & Sanction Grant</span>
             </button>
           </div>
         </div>

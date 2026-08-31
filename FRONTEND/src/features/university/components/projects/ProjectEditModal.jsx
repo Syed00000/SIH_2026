@@ -1,68 +1,97 @@
-import React, { useState } from 'react';
-import { X, Loader2, Edit3 } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { X, Loader2, Edit3, UserCheck } from 'lucide-react';
 
 export const ProjectEditModal = ({ isOpen, onClose, project, onUpdate }) => {
-  const [progress, setProgress] = useState(project?.progressPercentage || 64);
-  const [status, setStatus] = useState(project?.status || 'In Progress');
-  const [leadMentor, setLeadMentor] = useState(project?.leadMentor || 'Dr. Priya Sharma');
-  const [budget, setBudget] = useState(
-    typeof project?.budget === 'object'
-      ? `₹ ${(project?.budget?.total || 75000).toLocaleString('en-IN')}`
-      : (project?.budget || '₹ 75,000')
-  );
-  const [milestonesDone, setMilestonesDone] = useState(project?.milestonesCompleted || 3);
+  const [status, setStatus] = useState('Proposal Stage');
+  const [leadMentor, setLeadMentor] = useState('');
+  const [budget, setBudget] = useState('N/A');
+  const [milestonesDone, setMilestonesDone] = useState(1);
   const [loading, setLoading] = useState(false);
 
+  useEffect(() => {
+    if (project) {
+      setStatus(project.status || 'Proposal Stage');
+      setLeadMentor(project.facultyMentor?.name || project.leadMentor || '');
+      setBudget(
+        typeof project.budget === 'object'
+          ? project.budget.total
+            ? `₹ ${project.budget.total.toLocaleString('en-IN')}`
+            : 'N/A'
+          : (project.budget || 'N/A')
+      );
+      setMilestonesDone(project.milestonesCompleted || 1);
+    }
+  }, [project]);
+
   if (!isOpen || !project) return null;
+
+  const totalMilestones = project.milestonesTotal || 7;
+  const calculatedProgress = Math.round((Number(milestonesDone) / totalMilestones) * 100);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     await onUpdate({
       ...project,
-      progressPercentage: Number(progress),
       status,
-      leadMentor,
-      facultyMentor: { name: leadMentor, department: project.facultyMentor?.department || 'Engineering' },
+      leadMentor: leadMentor.trim() || 'Unassigned',
+      facultyMentor: leadMentor.trim()
+        ? { name: leadMentor.trim(), department: project.facultyMentor?.department || 'Engineering' }
+        : null,
       budget,
-      milestonesCompleted: Number(milestonesDone)
+      milestonesCompleted: Number(milestonesDone),
+      progressPercentage: calculatedProgress
     });
     setLoading(false);
     onClose();
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 select-none backdrop-blur-xs">
-      <div className="bg-white border border-slate-200 w-full max-w-md shadow-xl overflow-hidden rounded-none">
-        <div className="p-3.5 border-b border-slate-200 flex items-center justify-between bg-slate-50">
-          <div className="flex items-center space-x-2">
-            <Edit3 className="w-4 h-4 text-blue-600" />
-            <h2 className="text-sm font-bold text-slate-900">Edit Project & Assign Mentor</h2>
+    <div
+      className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-5 select-none animate-in fade-in duration-150"
+      onClick={onClose}
+    >
+      <div
+        className="bg-white border border-slate-200/90 rounded-2xl shadow-2xl max-w-md w-full overflow-hidden flex flex-col animate-in zoom-in-95 duration-150"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="p-4 border-b border-slate-100 bg-[#f8fafc] flex items-center justify-between">
+          <div className="flex items-center space-x-2.5">
+            <div className="w-8 h-8 rounded-xl bg-emerald-50 text-[#007A61] flex items-center justify-center border border-emerald-200 shadow-2xs">
+              <Edit3 className="w-4 h-4" />
+            </div>
+            <div>
+              <h2 className="text-sm font-extrabold text-slate-900">Edit Project Configuration</h2>
+              <span className="text-[10px] text-slate-400 font-mono">ID: {project.projectId}</span>
+            </div>
           </div>
-          <button onClick={onClose} className="text-slate-400 hover:text-slate-900 cursor-pointer">
+          <button
+            type="button"
+            onClick={onClose}
+            className="text-slate-400 hover:text-slate-800 p-1.5 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer"
+          >
             <X className="w-4 h-4" />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-4 space-y-3 text-xs">
+        <form onSubmit={handleSubmit} className="p-4 space-y-3.5 text-xs">
           <div>
-            <div className="text-xs font-bold text-slate-900 mb-0.5">{project.title}</div>
-            <div className="text-[10px] text-slate-500 font-mono">ID: {project.projectId}</div>
+            <div className="font-extrabold text-slate-900 text-xs truncate">{project.title}</div>
+            <div className="text-[10.5px] text-slate-500 font-mono mt-0.5">Domain: {project.domain}</div>
           </div>
 
           <div>
             <label className="font-bold text-slate-700 block mb-1">
-              Lead Faculty Mentor (Reassign / Remove)
+              Lead Faculty Mentor
             </label>
             <input
               type="text"
               value={leadMentor}
               onChange={(e) => setLeadMentor(e.target.value)}
-              placeholder="e.g. Dr. Amit Singh (or Unassigned)"
-              className="w-full p-2 border border-slate-200 text-xs focus:border-slate-900 focus:outline-none rounded-none"
+              placeholder="e.g. Dr. Binod Kumar (or leave blank if unassigned)"
+              className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:ring-1 focus:ring-[#007A61] focus:bg-white transition-all shadow-2xs"
             />
           </div>
-
 
           <div className="grid grid-cols-2 gap-2.5">
             <div>
@@ -70,52 +99,59 @@ export const ProjectEditModal = ({ isOpen, onClose, project, onUpdate }) => {
               <select
                 value={status}
                 onChange={(e) => setStatus(e.target.value)}
-                className="w-full p-2 border border-slate-200 text-xs focus:border-slate-900 focus:outline-none rounded-none cursor-pointer"
+                className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-800 focus:outline-none focus:ring-1 focus:ring-[#007A61] focus:bg-white shadow-2xs"
               >
-                <option value="In Progress">In Progress</option>
-                <option value="Planning">Planning</option>
+                <option value="Proposal Stage">Proposal Stage</option>
+                <option value="In Progress">In Progress (Active R&D)</option>
                 <option value="Completed">Completed</option>
-                <option value="Delayed">Delayed</option>
               </select>
             </div>
             <div>
-              <label className="font-bold text-slate-700 block mb-1">Milestones Completed</label>
+              <label className="font-bold text-slate-700 block mb-1">Milestones Done ({totalMilestones})</label>
               <input
                 type="number"
                 min="0"
-                max={project.milestonesTotal || 7}
+                max={totalMilestones}
                 value={milestonesDone}
                 onChange={(e) => setMilestonesDone(e.target.value)}
-                className="w-full p-2 border border-slate-200 text-xs focus:border-slate-900 focus:outline-none rounded-none"
+                className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:ring-1 focus:ring-[#007A61] focus:bg-white shadow-2xs"
               />
             </div>
           </div>
 
           <div>
-            <label className="font-bold text-slate-700 block mb-1">Allocated Budget</label>
+            <label className="font-bold text-slate-700 block mb-1">Sanctioned Budget</label>
             <input
               type="text"
               value={budget}
               onChange={(e) => setBudget(e.target.value)}
-              className="w-full p-2 border border-slate-200 text-xs focus:border-slate-900 focus:outline-none rounded-none"
+              placeholder="e.g. N/A or ₹ 75,000 (after Govt approval)"
+              className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:ring-1 focus:ring-[#007A61] focus:bg-white shadow-2xs"
             />
           </div>
 
-          <div className="flex items-center justify-end space-x-2 pt-2 border-t border-slate-100">
+          <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between">
+            <span className="text-slate-600 font-semibold">Calculated Progress:</span>
+            <span className="font-extrabold font-mono text-[#007A61] text-xs">
+              {calculatedProgress}% ({milestonesDone} / {totalMilestones} Milestones)
+            </span>
+          </div>
+
+          <div className="pt-2 border-t border-slate-100 flex items-center justify-end space-x-2">
             <button
               type="button"
               onClick={onClose}
-              className="px-3.5 py-1.5 border border-slate-200 text-slate-700 font-bold hover:bg-slate-50 cursor-pointer rounded-none"
+              className="px-4 py-2 border border-slate-200 hover:bg-slate-100 text-slate-700 rounded-xl text-xs font-bold transition-colors cursor-pointer"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={loading}
-              className="px-4 py-1.5 bg-blue-600 hover:bg-blue-700 text-white font-bold flex items-center space-x-1 cursor-pointer transition-colors shadow-2xs rounded-none"
+              className="px-5 py-2 bg-[#007A61] hover:bg-[#006650] text-white rounded-xl text-xs font-bold transition-all cursor-pointer shadow-2xs flex items-center space-x-1.5"
             >
-              {loading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : null}
-              <span>{loading ? 'Saving...' : 'Save Changes'}</span>
+              {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <UserCheck className="w-4 h-4" />}
+              <span>Save Changes</span>
             </button>
           </div>
         </form>

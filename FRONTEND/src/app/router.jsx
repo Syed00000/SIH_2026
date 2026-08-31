@@ -12,6 +12,7 @@ import { DashboardContainer } from '../features/dashboard/components/DashboardCo
 import { CitizenPortal } from '../features/citizen/CitizenPortal.jsx';
 import { NodalPortal } from '../features/nodal/NodalPortal.jsx';
 import { UniversityLayout } from '../features/university/components/layout/UniversityLayout.jsx';
+import { FacultyLayout } from '../features/faculty/components/layout/FacultyLayout.jsx';
 import { GovernmentLayout } from '../features/government/components/layout/GovernmentLayout.jsx';
 
 export function Router() {
@@ -120,7 +121,16 @@ export function Router() {
       );
     }
 
-    // (c) University / HEI Portal
+    // (c) Faculty Portal
+    if (currentPath === '/faculty' || currentPath === '/faculty-portal') {
+      return (
+        <ProtectedRoute allowedRoles={['FACULTY', 'UNIVERSITY', 'GOVERNMENT', 'ADMIN']} onNavigate={navigate}>
+          <FacultyLayout user={user} onLogout={handleLogout} />
+        </ProtectedRoute>
+      );
+    }
+
+    // (d) University / HEI Portal
     if (currentPath === '/university' || currentPath === '/hei' || currentPath === '/university-portal') {
       return (
         <ProtectedRoute allowedRoles={['UNIVERSITY', 'HEI', 'GOVERNMENT', 'ADMIN']} onNavigate={navigate}>

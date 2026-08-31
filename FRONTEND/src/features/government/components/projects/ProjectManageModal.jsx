@@ -71,9 +71,7 @@ export const ProjectManageModal = ({
         <div className="px-6 border-b border-slate-200 flex items-center space-x-6 bg-white overflow-x-auto">
           {[
             { id: 'overview', label: '1. Overview & Hardware Specs', icon: Cpu },
-            { id: 'milestones', label: '2. Stage-Gate Milestones', icon: CheckCircle2 },
-            { id: 'telemetry', label: '3. Live IoT Telemetry', icon: Activity },
-            { id: 'finances', label: '4. Financials & Tranches', icon: IndianRupee }
+            { id: 'milestones', label: '2. Stage-Gate Milestones', icon: CheckCircle2 }
           ].map((tab) => {
             const TabIcon = tab.icon;
             const isActive = activeSubTab === tab.id;
@@ -240,119 +238,7 @@ export const ProjectManageModal = ({
             </div>
           )}
 
-          {/* TAB 3: LIVE IOT TELEMETRY */}
-          {activeSubTab === 'telemetry' && (
-            <div className="space-y-4">
-              <div className="grid grid-cols-3 gap-3 text-center">
-                <div className="p-3 bg-white rounded-xl border border-slate-200">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase block">Telemetry Uptime</span>
-                  <span className="text-base font-black text-emerald-700 mt-0.5">{project.telemetryUptime || '99.4%'}</span>
-                </div>
-                <div className="p-3 bg-white rounded-xl border border-slate-200">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase block">Active Sensor Nodes</span>
-                  <span className="text-base font-black text-slate-900 mt-0.5">{project.liveSensorsCount || 12} Nodes</span>
-                </div>
-                <div className="p-3 bg-white rounded-xl border border-slate-200">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase block">Citizen Beneficiaries</span>
-                  <span className="text-base font-black text-slate-900 mt-0.5">{project.beneficiariesCount || '45,000+'}</span>
-                </div>
-              </div>
 
-              <div className="bg-white rounded-xl border border-slate-200 p-4 space-y-3">
-                <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
-                  Real-time Sensor Broadcast Feed
-                </h4>
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left text-xs border-collapse">
-                    <thead>
-                      <tr className="border-b border-slate-200 bg-slate-50 text-[10px] font-bold text-slate-500 uppercase">
-                        <th className="py-2.5 px-3">Timestamp</th>
-                        <th className="py-2.5 px-3">Sensor Node</th>
-                        <th className="py-2.5 px-3">Telemetry Readings</th>
-                        <th className="py-2.5 px-3">Operational Status</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-100">
-                      {(project.telemetryReadings || [
-                        { timestamp: '10:00 AM', node: 'NODE-01', ph: '7.4', status: 'Optimal' },
-                        { timestamp: '12:00 PM', node: 'NODE-02', ph: '7.2', status: 'Optimal' }
-                      ]).map((r, i) => (
-                        <tr key={i} className="hover:bg-slate-50">
-                          <td className="py-2.5 px-3 font-mono text-slate-500">{r.timestamp}</td>
-                          <td className="py-2.5 px-3 font-bold text-slate-800">{r.node}</td>
-                          <td className="py-2.5 px-3 font-mono text-slate-700">
-                            {r.ph ? `pH: ${r.ph} | Turbidity: ${r.turbidity || '2 NTU'}` : r.chamberTemp ? `Temp: ${r.chamberTemp} | Humidity: ${r.humidity}` : JSON.stringify(r)}
-                          </td>
-                          <td className="py-2.5 px-3">
-                            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                              {r.status}
-                            </span>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* TAB 4: FINANCIALS & TRANCHES */}
-          {activeSubTab === 'finances' && (
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-white p-4 rounded-xl border border-slate-200 text-center">
-                <div>
-                  <span className="text-[10px] font-bold text-slate-400 uppercase block">Sanctioned Grant</span>
-                  <span className="text-base font-black text-slate-900">{project.sanctionedGrant}</span>
-                </div>
-                <div>
-                  <span className="text-[10px] font-bold text-slate-400 uppercase block">Total Disbursed</span>
-                  <span className="text-base font-black text-emerald-700">{project.disbursedAmount}</span>
-                </div>
-                <div>
-                  <span className="text-[10px] font-bold text-slate-400 uppercase block">Disbursal Progress</span>
-                  <span className="text-base font-black text-slate-900">{project.disbursedPercentage || 70}%</span>
-                </div>
-                <div>
-                  <span className="text-[10px] font-bold text-slate-400 uppercase block">Audit Status</span>
-                  <span className="text-xs font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md inline-block mt-1">
-                    UC Verified ✓
-                  </span>
-                </div>
-              </div>
-
-              <div className="bg-white rounded-xl border border-slate-200 p-4 space-y-3">
-                <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
-                  Grant Tranche Schedule & Ledger
-                </h4>
-                <div className="space-y-2 text-xs">
-                  <div className="p-3 bg-slate-50 rounded-xl border border-slate-100 flex items-center justify-between">
-                    <div>
-                      <span className="font-bold text-slate-900">Tranche 1 (Advance & CapEx)</span>
-                      <span className="text-slate-500 block text-[11px]">Voucher #JH-GR-0981 • Disbursed upon RFP approval</span>
-                    </div>
-                    <span className="font-mono font-bold text-emerald-700">₹ 8.00 Lakhs [Paid]</span>
-                  </div>
-
-                  <div className="p-3 bg-slate-50 rounded-xl border border-slate-100 flex items-center justify-between">
-                    <div>
-                      <span className="font-bold text-slate-900">Tranche 2 (Prototype Lab Validation)</span>
-                      <span className="text-slate-500 block text-[11px]">Voucher #JH-GR-1042 • Disbursed upon Stage Gate 2 sign-off</span>
-                    </div>
-                    <span className="font-mono font-bold text-emerald-700">₹ 5.50 Lakhs [Paid]</span>
-                  </div>
-
-                  <div className="p-3 bg-slate-50 rounded-xl border border-slate-100 flex items-center justify-between">
-                    <div>
-                      <span className="font-bold text-slate-900">Tranche 3 (Field Scaling & Final Report)</span>
-                      <span className="text-slate-500 block text-[11px]">Subject to final state deployment validation</span>
-                    </div>
-                    <span className="font-mono font-bold text-amber-700">₹ 5.00 Lakhs [Pending]</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
         </div>
 
         {/* Modal Bottom Action Bar */}

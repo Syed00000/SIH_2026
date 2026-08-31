@@ -1,12 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   X,
   CreditCard,
   Building2,
   ShieldCheck,
-  Send
+  Send,
+  IndianRupee
 } from 'lucide-react';
-import { projectCsrSyncService } from '../../services/projectCsrSyncService.js';
+import { parseGrantRupees, formatRupeesINR } from '../projects/GrantPaymentModal.jsx';
 
 export const InitiateDisbursalModal = ({
   isOpen,
@@ -16,30 +17,34 @@ export const InitiateDisbursalModal = ({
   initialProposal = null
 }) => {
   const [selectedProposalId, setSelectedProposalId] = useState(
-    initialProposal ? initialProposal.id : (proposals[0]?.id || 'PROP-011')
+    initialProposal ? initialProposal.id : (proposals[0]?.id || '')
   );
-  const [projects] = useState(() => projectCsrSyncService.getActiveProjects());
-  
-  // Dynamically map projects to dedicated escrow accounts
-  const vaults = projects.map((proj, idx) => {
-    const bankNames = ['State Bank of India', 'Punjab National Bank', 'Bank of Baroda'];
-    const bankName = bankNames[idx % bankNames.length];
-    return {
-      vaultId: `VLT-${proj.id.slice(-4)}`,
-      bankName,
-      currentBalance: proj.disbursedGrant || '₹ 0'
-    };
-  });
 
-  const [vaultId, setVaultId] = useState(vaults[0]?.vaultId || 'VAULT-SBI-01');
-  const [grossAmount, setGrossAmount] = useState(250000);
+  const currentProposal =
+    proposals.find((p) => p.id === selectedProposalId) || initialProposal || proposals[0];
+
+  const totalBudget = parseGrantRupees(
+    currentProposal?.fundingRequested || currentProposal?.allocatedAmount || currentProposal?.budget || '₹ 75,000'
+  );
+
+  const [grossAmount, setGrossAmount] = useState(Math.round(totalBudget * 0.5) || 37500);
   const [tdsType, setTdsType] = useState('194C'); // 194C (2%) or 194J (10%)
-  const [mode, setMode] = useState('RTGS');
-  const [purpose, setPurpose] = useState('Tranche Payout: Equipment & Sensor Telemetry Setup');
+  const [mode, setMode] = useState('PFMS');
+  const [purpose, setPurpose] = useState('Tranche 1 Payout: Hardware CAD, Rig Prototyping & Sensor Bench Setup');
+
+  useEffect(() => {
+    if (initialProposal) {
+      setSelectedProposalId(initialProposal.id);
+      const b = parseGrantRupees(
+        initialProposal.fundingRequested || initialProposal.allocatedAmount || initialProposal.budget || '₹ 75,000'
+      );
+      if (b > 0) {
+        setGrossAmount(Math.round(b * 0.5));
+      }
+    }
+  }, [initialProposal?.id]);
 
   if (!isOpen) return null;
-
-  const currentProposal = proposals.find((p) => p.id === selectedProposalId) || proposals[0];
 
   // Calculate TDS
   const tdsPercent = tdsType === '194C' ? 0.02 : 0.10;
@@ -49,26 +54,29 @@ export const InitiateDisbursalModal = ({
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!grossAmount || grossAmount <= 0) {
-      alert('Please enter a valid disbursement amount');
+      alert('Please enter a valid disbursement amount greater than ₹0');
       return;
     }
 
     const newPayment = {
       id: `PAY-${Math.floor(90000 + Math.random() * 9999)}`,
-      payer: currentProposal ? `${currentProposal.donor || 'Govt Escrow'}` : 'Govt Escrow',
-      payee: currentProposal ? currentProposal.institutionName : 'BIT Mesra',
-      disbursedAmount: `₹${grossAmount.toLocaleString('en-IN')}`,
+      payer: 'Govt State Treasury (PFMS Escrow)',
+      payee: currentProposal ? currentProposal.institutionName : 'Ranchi University (RU001)',
+      amount: formatRupeesINR(grossAmount),
+      rawAmount: grossAmount,
+      disbursedAmount: formatRupeesINR(grossAmount),
       mode: mode,
-      utrNumber: `UTR${Math.floor(1000000000 + Math.random() * 9000000000)}`,
-      makerCheckerSign: 'Pending Sign-off',
-      makerCheckerStatus: 'pending',
-      bankAckStatus: 'In Transit',
-      bankStatus: 'transit',
-      timestamp: new Date().toLocaleString('en-IN'),
-      scheme: currentProposal ? currentProposal.sourceScheme : 'Corporate CSR (Tata)',
-      projectRef: selectedProposalId,
-      tdsAmount: `₹${tdsAmount.toLocaleString('en-IN')} (${tdsType} @ ${tdsType === '194C' ? '2%' : '10%'})`,
-      netDisbursed: `₹${netAmount.toLocaleString('en-IN')}`,
+      utr: `JH-PFMS-${Math.floor(1000000000 + Math.random() * 9000000000)}`,
+      utrNumber: `JH-PFMS-${Math.floor(1000000000 + Math.random() * 9000000000)}`,
+      makerCheckerSign: 'Authorized by State Nodal Officer',
+      makerCheckerStatus: 'Approved',
+      bankAckStatus: 'Credited to University Escrow',
+      bankStatus: 'success',
+      timestamp: new Date().toLocaleDateString('en-IN'),
+      scheme: currentProposal ? currentProposal.sourceScheme : 'State Innovation Grant',
+      projectRef: selectedProposalId || currentProposal?.id,
+      tdsAmount: `₹ ${tdsAmount.toLocaleString('en-IN')} (${tdsType} @ ${tdsType === '194C' ? '2%' : '10%'})`,
+      netDisbursed: formatRupeesINR(netAmount),
       purpose: purpose
     };
 
@@ -78,163 +86,172 @@ export const InitiateDisbursalModal = ({
 
   return (
     <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-5 select-none animate-fadeIn">
-      <div className="bg-white rounded-lg max-w-xl w-full shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[90vh]">
-        {/* Modal Header */}
-        <div className="px-5 py-4 border-b border-slate-200 flex items-center justify-between bg-white">
+      <div
+        className="bg-white border border-slate-200 rounded-2xl shadow-2xl w-full max-w-xl max-h-[92vh] flex flex-col overflow-hidden"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Header */}
+        <div className="px-6 py-4 bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 text-white flex items-center justify-between shrink-0">
           <div className="flex items-center space-x-2.5">
-            <CreditCard className="w-5 h-5 text-slate-900 shrink-0" />
+            <div className="p-2 rounded-xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+              <CreditCard className="w-5 h-5" />
+            </div>
             <div>
-              <h3 className="text-sm sm:text-base font-bold text-slate-900">Initiate Escrow Fund Disbursal</h3>
-              <p className="text-xs text-slate-500 font-normal">Create tranche payment order with automated TDS withholding</p>
+              <h3 className="font-extrabold text-sm text-white">
+                Direct State Grant Tranche Disbursal
+              </h3>
+              <p className="text-[11px] text-slate-300">
+                Direct PFMS Escrow release to beneficiary university account
+              </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="w-8 h-8 rounded-md border border-slate-200 hover:bg-slate-50 flex items-center justify-center text-slate-900 cursor-pointer"
+            className="p-1.5 rounded-xl text-slate-400 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
           >
-            <X className="w-4 h-4 text-slate-900" />
+            <X className="w-5 h-5" />
           </button>
         </div>
 
-        {/* Form Body - Clean and spacious */}
-        <form onSubmit={handleSubmit} className="p-5 space-y-3.5 text-xs overflow-y-auto flex-1 bg-white">
-          {/* Target Proposal */}
-          <div>
-            <label className="block text-[11px] font-semibold text-slate-700 mb-1">
-              Target Institution & Proposal *
+        {/* Form Body */}
+        <form onSubmit={handleSubmit} className="p-6 overflow-y-auto space-y-4 text-xs flex-1 bg-[#fafafa]">
+          {/* Target Proposal Selector */}
+          <div className="space-y-1 bg-white p-3.5 border border-slate-200/90 rounded-xl shadow-2xs">
+            <label className="text-[10.5px] font-extrabold text-slate-600 uppercase tracking-wider block">
+              Beneficiary Project & University
             </label>
             <select
               value={selectedProposalId}
-              onChange={(e) => setSelectedProposalId(e.target.value)}
-              className="w-full px-3 py-2 bg-white border border-slate-200 rounded-md text-xs font-semibold text-slate-900 outline-none focus:border-slate-900"
+              onChange={(e) => {
+                setSelectedProposalId(e.target.value);
+                const found = proposals.find((p) => p.id === e.target.value);
+                if (found) {
+                  const b = parseGrantRupees(found.fundingRequested || found.allocatedAmount || '₹ 75,000');
+                  setGrossAmount(Math.round(b * 0.5));
+                }
+              }}
+              className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-900 text-xs focus:outline-none focus:bg-white"
             >
               {proposals.map((p) => (
                 <option key={p.id} value={p.id}>
-                  {p.id} — {p.institutionName} ({p.sourceScheme})
+                  {p.id} — {p.institutionName} ({p.fundingRequested || p.allocatedAmount || '₹ 75,000'})
                 </option>
               ))}
             </select>
           </div>
 
-          {/* Source Escrow Vault & Payment Channel */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <label className="block text-[11px] font-semibold text-slate-700 mb-1">
-                Source Escrow Vault *
+          {/* Amount and Tranche Quick Select */}
+          <div className="bg-white p-4 border border-slate-200/90 rounded-xl shadow-2xs space-y-3">
+            <div className="flex items-center justify-between">
+              <label className="text-[10.5px] font-extrabold text-slate-700 uppercase tracking-wider block">
+                Disbursal Tranche Amount (INR) *
               </label>
-              <select
-                value={vaultId}
-                onChange={(e) => setVaultId(e.target.value)}
-                className="w-full px-3 py-2 bg-white border border-slate-200 rounded-md text-xs font-medium text-slate-900 outline-none focus:border-slate-900"
-              >
-                {vaults.map((v) => (
-                  <option key={v.vaultId} value={v.vaultId}>
-                    {v.vaultId} — {v.bankName} (Bal: {v.currentBalance})
-                  </option>
-                ))}
-              </select>
+              <div className="flex items-center space-x-1">
+                <button
+                  type="button"
+                  onClick={() => setGrossAmount(Math.round(totalBudget * 0.25))}
+                  className="px-2 py-0.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded text-[10px] font-bold cursor-pointer"
+                >
+                  25%
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setGrossAmount(Math.round(totalBudget * 0.50))}
+                  className="px-2 py-0.5 bg-emerald-50 hover:bg-emerald-100 text-[#007A61] border border-emerald-200 rounded text-[10px] font-bold cursor-pointer"
+                >
+                  50% (Tranche 1)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setGrossAmount(totalBudget)}
+                  className="px-2 py-0.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded text-[10px] font-bold cursor-pointer"
+                >
+                  100% (Full)
+                </button>
+              </div>
             </div>
 
-            <div>
-              <label className="block text-[11px] font-semibold text-slate-700 mb-1">
-                Payment Mode Channel *
+            <div className="relative">
+              <span className="absolute left-3.5 top-1/2 -translate-y-1/2 font-bold text-slate-400 text-sm">
+                ₹
+              </span>
+              <input
+                type="number"
+                required
+                min="1"
+                value={grossAmount}
+                onChange={(e) => setGrossAmount(Number(e.target.value) || 0)}
+                className="w-full pl-8 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-mono font-black text-slate-900 text-sm focus:outline-none focus:bg-white"
+              />
+            </div>
+            <div className="flex justify-between text-[11px] text-slate-500 font-medium">
+              <span>Total Sanctioned: <strong>{formatRupeesINR(totalBudget)}</strong></span>
+              <span>Net Credited (Post TDS): <strong className="text-[#007A61]">{formatRupeesINR(netAmount)}</strong></span>
+            </div>
+          </div>
+
+          {/* Payment Routing Method */}
+          <div className="grid grid-cols-2 gap-3">
+            <div className="bg-white p-3.5 border border-slate-200/90 rounded-xl shadow-2xs space-y-1.5">
+              <label className="text-[10px] font-extrabold text-slate-600 uppercase block">
+                Disbursal Channel
               </label>
               <select
                 value={mode}
                 onChange={(e) => setMode(e.target.value)}
-                className="w-full px-3 py-2 bg-white border border-slate-200 rounded-md text-xs font-medium text-slate-900 outline-none focus:border-slate-900"
+                className="w-full px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-bold text-slate-900 focus:outline-none"
               >
-                <option value="RTGS">RTGS API (Real-Time Settlement &gt; ₹2L)</option>
-                <option value="NEFT">NEFT Batch (Hourly Clearing)</option>
-                <option value="Direct PFMS">Direct PFMS (Central Treasury Map)</option>
+                <option value="Direct PFMS">Direct PFMS (Govt Portal)</option>
+                <option value="RTGS">RTGS Treasury Wire</option>
+                <option value="NEFT">NEFT Direct Account</option>
               </select>
             </div>
-          </div>
 
-          {/* Amount and TDS */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <label className="block text-[11px] font-semibold text-slate-700 mb-1">
-                Gross Tranche Amount (₹) *
-              </label>
-              <input
-                type="number"
-                min="10000"
-                step="5000"
-                value={grossAmount}
-                onChange={(e) => setGrossAmount(Number(e.target.value))}
-                required
-                className="w-full px-3 py-2 bg-white border border-slate-200 rounded-md text-xs font-mono font-bold text-slate-900 outline-none focus:border-slate-900"
-              />
-            </div>
-
-            <div>
-              <label className="block text-[11px] font-semibold text-slate-700 mb-1">
-                TDS Section & Rate
+            <div className="bg-white p-3.5 border border-slate-200/90 rounded-xl shadow-2xs space-y-1.5">
+              <label className="text-[10px] font-extrabold text-slate-600 uppercase block">
+                Statutory TDS Deduction
               </label>
               <select
                 value={tdsType}
                 onChange={(e) => setTdsType(e.target.value)}
-                className="w-full px-3 py-2 bg-white border border-slate-200 rounded-md text-xs font-medium text-slate-900 outline-none focus:border-slate-900"
+                className="w-full px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-bold text-slate-900 focus:outline-none"
               >
-                <option value="194C">Section 194C (2% - Contractors & Equipment)</option>
-                <option value="194J">Section 194J (10% - Technical Consultancy)</option>
-                <option value="EXEMPT">Exempt (0% - Direct State Grant)</option>
+                <option value="194C">Section 194C (2% R&D Service)</option>
+                <option value="194J">Section 194J (10% Technical)</option>
+                <option value="NIL">Nil (Exempt 80G Entity)</option>
               </select>
             </div>
           </div>
 
-          {/* Live Calculation Preview - Clean Monochrome Box */}
-          <div className="p-3.5 bg-white border border-slate-200 rounded-lg space-y-1.5 text-xs shadow-xs">
-            <div className="flex items-center justify-between">
-              <span className="text-slate-500 font-medium">Gross Disbursal:</span>
-              <span className="font-mono font-bold text-slate-900">₹{grossAmount.toLocaleString('en-IN')}</span>
-            </div>
-            <div className="flex items-center justify-between text-slate-600">
-              <span>TDS Deduction ({tdsType}):</span>
-              <span className="font-mono font-medium text-slate-900">- ₹{tdsAmount.toLocaleString('en-IN')}</span>
-            </div>
-            <div className="pt-1.5 border-t border-slate-200 flex items-center justify-between text-xs font-bold text-slate-900">
-              <span>Net Bank Credit Amount:</span>
-              <span className="font-mono text-sm font-bold text-slate-900">₹{netAmount.toLocaleString('en-IN')}</span>
-            </div>
-          </div>
-
-          {/* Purpose */}
-          <div>
-            <label className="block text-[11px] font-semibold text-slate-700 mb-1">
-              Tranche Purpose & Description *
+          {/* Purpose & Remarks */}
+          <div className="bg-white p-3.5 border border-slate-200/90 rounded-xl shadow-2xs space-y-1">
+            <label className="text-[10px] font-extrabold text-slate-600 uppercase block">
+              Tranche Description & Release Purpose
             </label>
             <input
               type="text"
+              required
               value={purpose}
               onChange={(e) => setPurpose(e.target.value)}
-              required
-              className="w-full px-3 py-2 bg-white border border-slate-200 rounded-md text-xs font-medium text-slate-900 outline-none focus:border-slate-900"
+              className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs text-slate-900 focus:outline-none focus:bg-white"
             />
           </div>
 
-          {/* Maker-Checker Info Box */}
-          <div className="p-3 bg-slate-50 border border-slate-200 rounded-md flex items-start space-x-2 text-[11px] text-slate-700 leading-relaxed">
-            <ShieldCheck className="w-4 h-4 text-slate-900 shrink-0 mt-0.5" />
-            <span>This payment order will be registered on the live ledger and queued for Dual-Key Maker-Checker signature before bank release.</span>
-          </div>
-
-          {/* Submit Actions */}
-          <div className="pt-3 border-t border-slate-200 flex items-center justify-end space-x-2">
+          {/* Action Buttons */}
+          <div className="pt-2 flex items-center justify-end space-x-2">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 rounded-md text-xs font-semibold text-slate-700 border border-slate-200 hover:bg-slate-50 cursor-pointer"
+              className="px-4 py-2.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-700 hover:bg-slate-100 transition-all cursor-pointer"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-5 py-2 rounded-md text-xs font-bold bg-slate-900 hover:bg-slate-800 text-white cursor-pointer shadow-xs flex items-center space-x-1.5"
+              className="px-5 py-2.5 rounded-xl bg-[#007A61] hover:bg-[#006650] text-white text-xs font-bold transition-all shadow-2xs flex items-center space-x-1.5 cursor-pointer"
             >
-              <Send className="w-3.5 h-3.5 text-white" />
-              <span>Queue Disbursal</span>
+              <Send className="w-3.5 h-3.5" />
+              <span>Confirm & Disburse {formatRupeesINR(grossAmount)}</span>
             </button>
           </div>
         </form>

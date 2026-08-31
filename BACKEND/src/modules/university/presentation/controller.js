@@ -137,6 +137,22 @@ export class UniversityController {
     } catch (error) { next(error); }
   }
 
+  async getActivities(req, res, next) {
+    try {
+      const code = req.query.universityCode || req.user?.profile?.aisheCode || 'RU001';
+      const data = await universityService.getActivities(code);
+      res.status(200).json({ status: 'SUCCESS', data });
+    } catch (error) { next(error); }
+  }
+
+  async clearActivities(req, res, next) {
+    try {
+      const code = req.query.universityCode || req.body.universityCode || req.user?.profile?.aisheCode || 'RU001';
+      const data = await universityService.clearActivities(code);
+      res.status(200).json({ status: 'SUCCESS', message: 'All activities cleared successfully', data });
+    } catch (error) { next(error); }
+  }
+
   async getApprovals(req, res, next) {
     try {
       const code = req.query.universityCode || req.user?.profile?.aisheCode || 'RUNI-JH';

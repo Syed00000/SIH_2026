@@ -66,27 +66,49 @@ export const JharkhandGisHeatmap = ({ selectedDistrict = 'All', onSelectDistrict
           };
         });
 
-        // 1. Fetch active projects to extract problems & completed milestones
-        const res = await apiClient.get('university/projects?universityCode=RU001');
-        const projects = res.data?.data || res.data || [];
-        const projectsList = Array.isArray(projects) ? projects : [];
-
-        projectsList.forEach((p) => {
-          const dist = String(p.district || 'Ranchi').toLowerCase().trim();
-          if (baseline[dist]) {
-            baseline[dist].totalProblems += 1;
-            
-            // Count completed milestones
-            const completedCount = (p.milestones || []).filter(m => m.status === 'Completed').length;
-            baseline[dist].resolvedProblems += completedCount > 0 ? 1 : 0;
-            
-            // Recalculate score based on live problems count
-            baseline[dist].overallScore = Math.min(100, baseline[dist].totalProblems * 15);
-            baseline[dist].riskLevel = baseline[dist].totalProblems > 0 ? 'Active Need' : 'Zero / Clean';
+        // 1. Fetch citizen challenges for ground problem telemetry & severity
+        try {
+          const citizenRes = await apiClient.get('citizen/challenges?limit=100');
+          const cChallenges = citizenRes.data?.data || citizenRes.data || [];
+          if (Array.isArray(cChallenges)) {
+            cChallenges.forEach((c) => {
+              const dist = String(c.location?.district || c.district || 'Ranchi').toLowerCase().trim();
+              if (baseline[dist]) {
+                baseline[dist].totalProblems += 1;
+                const sev = String(c.severity || c.priority || 'High').toUpperCase();
+                if (c.status === 'Resolved' || c.status === 'COMPLETED') {
+                  baseline[dist].resolvedProblems += 1;
+                } else {
+                  baseline[dist].pendingProblems += 1;
+                }
+                baseline[dist].riskLevel = sev === 'CRITICAL' ? 'Critical / Urgent' : sev === 'HIGH' ? 'High Concern' : 'Active Need';
+                baseline[dist].overallScore = Math.min(100, Math.max(45, baseline[dist].totalProblems * 25));
+                if (c.title) {
+                  baseline[dist].topProblemAreas = Array.from(new Set([...(baseline[dist].topProblemAreas || []), c.title])).slice(0, 3);
+                }
+              }
+            });
           }
-        });
+        } catch (e) {}
 
-        // 2. Fetch active HEIs count from overview stats
+        // 2. Fetch active projects to extract completed milestones
+        try {
+          const res = await apiClient.get('university/projects?universityCode=RU001');
+          const projects = res.data?.data || res.data || [];
+          const projectsList = Array.isArray(projects) ? projects : [];
+
+          projectsList.forEach((p) => {
+            const dist = String(p.district || 'Ranchi').toLowerCase().trim();
+            if (baseline[dist]) {
+              const completedCount = (p.milestones || []).filter((m) => m.status === 'Completed').length;
+              if (completedCount > 0) {
+                baseline[dist].resolvedProblems += 1;
+              }
+            }
+          });
+        } catch (e) {}
+
+        // 3. Fetch active HEIs count from overview stats
         const statsRes = await apiClient.get('government/overview/stats');
         const stats = statsRes.data?.data || statsRes.data || {};
         const heisByDist = stats.heisByDistrict || [];
@@ -106,16 +128,24 @@ export const JharkhandGisHeatmap = ({ selectedDistrict = 'All', onSelectDistrict
     fetchMapData();
   }, []);
 
-  // Compute District Color based on live problem density
+  // Compute District Color based on live problem density & severity
   const getDistrictColor = useCallback((distId) => {
     const data = districtsData[distId];
-    if (!data) return '#22c55e';
+    if (!data) return '#f8fafc';
     const count = data.totalProblems || 0;
-    if (count >= 50) return '#ef4444';
-    if (count >= 20) return '#fb923c';
-    if (count >= 10) return '#fde047';
-    if (count >= 1) return '#86efac';
-    return '#22c55e';
+    const resolved = data.resolvedProblems || 0;
+    const unresolved = count - resolved;
+    const risk = String(data.riskLevel || '').toUpperCase();
+
+    if (unresolved > 0) {
+      if (risk.includes('CRITICAL') || unresolved >= 3) return '#ef4444'; // Bright Red for Critical Grievances
+      if (risk.includes('HIGH') || unresolved >= 2) return '#f97316'; // Orange for High Severity
+      return '#f59e0b'; // Amber for Active Need
+    }
+    if (count > 0 && unresolved === 0) {
+      return '#10b981'; // Emerald Green for 100% Resolved
+    }
+    return '#e2e8f0'; // Neutral Slate for zero reported grievances
   }, [districtsData]);
 
   const updateBasemap = (mode) => {

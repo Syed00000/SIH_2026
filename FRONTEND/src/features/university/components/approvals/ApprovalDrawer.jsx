@@ -1,22 +1,35 @@
 import React, { useState, useEffect } from 'react';
 import {
-  X, CheckCircle2, RotateCcw, XCircle, Paperclip,
-  Users, User, Calendar, Banknote, Tag, Clock, ChevronRight
+  X,
+  CheckCircle2,
+  RotateCcw,
+  XCircle,
+  Users,
+  User,
+  Calendar,
+  Banknote,
+  Tag,
+  Clock,
+  Send,
+  Building2,
+  FileText,
+  Layers,
+  Sparkles
 } from 'lucide-react';
 
 const statusPill = (s = '') => {
-  if (s === 'Approved') return 'bg-emerald-100 text-emerald-800 border-emerald-300';
-  if (s === 'Pending') return 'bg-amber-100 text-amber-800 border-amber-300';
-  if (s === 'Rejected') return 'bg-rose-100 text-rose-800 border-rose-300';
-  if (s === 'Changes Required') return 'bg-orange-100 text-orange-800 border-orange-300';
+  if (s === 'Approved') return 'bg-emerald-50 text-emerald-800 border-emerald-300';
+  if (s === 'Pending') return 'bg-amber-50 text-amber-800 border-amber-300';
+  if (s === 'Rejected') return 'bg-rose-50 text-rose-800 border-rose-300';
+  if (s === 'Changes Required') return 'bg-orange-50 text-orange-800 border-orange-300';
   return 'bg-slate-100 text-slate-700 border-slate-200';
 };
 
 const typePill = (t = '') => {
-  if (t.includes('Project')) return 'bg-blue-100 text-blue-800 border-blue-200';
-  if (t.includes('Proposal')) return 'bg-purple-100 text-purple-800 border-purple-200';
-  if (t.includes('Partnership')) return 'bg-amber-100 text-amber-800 border-amber-200';
-  if (t.includes('Payment')) return 'bg-emerald-100 text-emerald-800 border-emerald-200';
+  if (t.includes('Project')) return 'bg-blue-50 text-blue-800 border-blue-200';
+  if (t.includes('Proposal')) return 'bg-emerald-50 text-[#007A61] border-emerald-200';
+  if (t.includes('Partnership')) return 'bg-amber-50 text-amber-800 border-amber-200';
+  if (t.includes('Payment')) return 'bg-emerald-50 text-emerald-800 border-emerald-200';
   return 'bg-slate-100 text-slate-700 border-slate-200';
 };
 
@@ -24,21 +37,17 @@ const historyDot = (action = '') => {
   if (action.includes('Approved')) return 'bg-emerald-500';
   if (action.includes('Rejected')) return 'bg-rose-500';
   if (action.includes('Changes')) return 'bg-orange-400';
-  if (action.includes('Submitted')) return 'bg-blue-500';
+  if (action.includes('Submitted')) return 'bg-[#007A61]';
   return 'bg-slate-400';
 };
 
-const Row = ({ icon: Icon, label, children }) => (
-  <div className="flex items-start py-2 border-b border-slate-100 last:border-0">
-    <div className="flex items-center space-x-2 w-36 shrink-0 text-slate-500">
-      <Icon className="w-3.5 h-3.5 shrink-0 text-slate-400" />
-      <span className="text-[11px] font-semibold">{label}</span>
-    </div>
-    <div className="flex-1 text-right">{children}</div>
-  </div>
-);
-
-export const ApprovalDrawer = ({ approval, onClose, onApprove, onReject, onRequestChanges }) => {
+export const ApprovalDrawer = ({
+  approval,
+  onClose,
+  onApprove,
+  onReject,
+  onRequestChanges
+}) => {
   const [remarks, setRemarks] = useState('');
   const [toast, setToast] = useState(null);
 
@@ -53,13 +62,13 @@ export const ApprovalDrawer = ({ approval, onClose, onApprove, onReject, onReque
   const history = Array.isArray(approval.history) && approval.history.length > 0
     ? approval.history
     : [
-        { action: 'Request Submitted', performedBy: approval.requestedBy, timestamp: `${approval.date}, ${approval.dateTime || '10:30 AM'}`, note: `${approval.type} submitted for review.` },
-        { action: 'Under Review', performedBy: 'Dr. Ankit Verma', timestamp: `${approval.date}, 11:05 AM`, note: 'Assigned to nodal authority for evaluation.' }
+        {
+          action: 'Proposal Submitted by Faculty',
+          performedBy: approval.requestedBy || 'Faculty Mentor',
+          timestamp: `${approval.date}, ${approval.dateTime || '10:30 AM'}`,
+          note: `Itemized R&D Budget of ${approval.proposedBudget || approval.estimatedBudget || '₹ 80,000'} submitted for review.`
+        }
       ];
-
-  const supportTypes = Array.isArray(approval.supportTypes) && approval.supportTypes.length > 0
-    ? approval.supportTypes
-    : ['Funding', 'Equipment'];
 
   const showToast = (msg, type = 'success') => {
     setToast({ msg, type });
@@ -68,177 +77,278 @@ export const ApprovalDrawer = ({ approval, onClose, onApprove, onReject, onReque
 
   const handleApprove = () => {
     onApprove(approval, remarks);
-    showToast('Approval submitted successfully.');
+    showToast('Proposal Approved & Forwarded to Government for Grant Sanction.');
   };
+
   const handleReject = () => {
     onReject(approval, remarks);
-    showToast('Request rejected.', 'error');
+    showToast('Proposal rejected.', 'error');
   };
+
   const handleChanges = () => {
     onRequestChanges(approval, remarks);
-    showToast('Changes requested from faculty.', 'warn');
+    showToast('Revision requested from Faculty Mentor.', 'warn');
   };
 
   return (
-    <div className="bg-white border border-slate-200 shadow-lg rounded-none flex flex-col" style={{ maxHeight: 'calc(100vh - 180px)' }}>
+    <div className="bg-white border border-slate-200/90 rounded-2xl shadow-xl flex flex-col overflow-hidden transition-all max-h-[85vh]">
+      {/* Toast Alert */}
+      {toast && (
+        <div
+          className={`p-2.5 text-xs font-bold text-center text-white transition-all ${
+            toast.type === 'error'
+              ? 'bg-rose-600'
+              : toast.type === 'warn'
+              ? 'bg-amber-600'
+              : 'bg-[#007A61]'
+          }`}
+        >
+          {toast.msg}
+        </div>
+      )}
 
-      {/* ── Header ── */}
-      <div className="px-4 py-3 bg-slate-50 border-b border-slate-200 shrink-0">
-        <div className="flex items-start justify-between mb-2">
-          <div className="space-y-1">
+      {/* ── Sticky Header ── */}
+      <div className="px-5 py-3.5 bg-gradient-to-r from-slate-50 to-emerald-50/40 border-b border-slate-200 shrink-0">
+        <div className="flex items-start justify-between gap-3">
+          <div className="space-y-1 min-w-0">
             <div className="flex items-center space-x-2 flex-wrap gap-y-1">
-              <span className="font-mono font-black text-slate-900 text-sm">{approval.approvalId}</span>
-              <span className={`px-2 py-0.5 text-[10px] font-bold border rounded-none ${statusPill(approval.status)}`}>
+              <span className="font-mono font-black text-slate-900 text-sm">
+                {approval.approvalId}
+              </span>
+              <span
+                className={`px-2 py-0.5 text-[10px] font-bold border rounded-full ${statusPill(
+                  approval.status
+                )}`}
+              >
                 {approval.status}
               </span>
+              <span
+                className={`px-2 py-0.5 text-[10px] font-bold border rounded-full ${typePill(
+                  approval.type
+                )}`}
+              >
+                {approval.type}
+              </span>
             </div>
-            <span className={`inline-block px-2 py-0.5 text-[10px] font-bold border rounded-none ${typePill(approval.type)}`}>
-              {approval.type}
-            </span>
+            <h2 className="text-xs font-extrabold text-slate-900 line-clamp-1 leading-snug">
+              {approval.project}
+            </h2>
           </div>
-          <button onClick={onClose} className="p-1.5 rounded-none text-slate-400 hover:text-slate-900 hover:bg-slate-100 cursor-pointer transition-colors shrink-0">
+
+          <button
+            onClick={onClose}
+            className="p-1.5 rounded-xl text-slate-400 hover:text-slate-900 hover:bg-slate-200/60 cursor-pointer transition-colors shrink-0"
+            title="Close dossier"
+          >
             <X className="w-4 h-4" />
           </button>
         </div>
-        <div className="flex items-center space-x-1.5 text-slate-500">
+
+        <div className="flex items-center space-x-1.5 text-slate-500 mt-1">
           <Clock className="w-3 h-3 text-slate-400" />
-          <span className="text-[10.5px] font-medium">Requested on {approval.date}{approval.dateTime ? `, ${approval.dateTime}` : ''}</span>
+          <span className="text-[10.5px] font-medium">
+            Submitted on {approval.date}
+            {approval.dateTime ? `, ${approval.dateTime}` : ''}
+          </span>
         </div>
       </div>
 
       {/* ── Scrollable Body ── */}
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+        {/* Project & Research Team Overview Card */}
+        <div className="p-3.5 bg-slate-50 border border-slate-200/90 rounded-xl space-y-2.5">
+          <div className="flex items-center justify-between pb-2 border-b border-slate-200/70">
+            <div className="flex items-center space-x-2">
+              <div className="w-6 h-6 rounded-lg bg-emerald-100 text-[#007A61] flex items-center justify-center font-bold text-xs">
+                <Building2 className="w-3.5 h-3.5" />
+              </div>
+              <span className="text-xs font-extrabold text-slate-900">
+                R&D Project & Investigator Dossier
+              </span>
+            </div>
+            {approval.challengeId && (
+              <span className="text-[10px] font-mono font-bold bg-white border border-slate-200 px-2 py-0.5 rounded-md text-slate-700">
+                {approval.challengeId}
+              </span>
+            )}
+          </div>
 
-        {/* Project Details */}
-        <div className="px-4 pt-3 pb-1">
-          <p className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400 mb-1">Project Details</p>
-          <Row icon={Tag} label="Project">
-            <span className="text-xs font-bold text-slate-900 leading-snug">{approval.project}</span>
-          </Row>
-          {approval.challengeId && (
-            <Row icon={Tag} label="Challenge ID">
-              <span className="text-xs font-mono font-bold text-slate-900">{approval.challengeId}</span>
-            </Row>
-          )}
-          <Row icon={User} label="Faculty">
-            <div>
-              <div className="text-xs font-bold text-slate-900">{approval.faculty?.name || approval.requestedBy}</div>
-              <div className="text-[10.5px] text-slate-500 font-medium">{approval.faculty?.department || approval.requestedByDept}</div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+            <div className="space-y-0.5">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">
+                Lead Faculty Mentor
+              </span>
+              <p className="font-bold text-slate-900">
+                {approval.faculty?.name || approval.requestedBy}
+              </p>
+              <p className="text-[10.5px] text-slate-500 font-medium">
+                {approval.faculty?.department || approval.requestedByDept || 'Engineering'}
+              </p>
             </div>
-          </Row>
-          <Row icon={Users} label="Team">
-            <div>
-              <div className="text-xs font-bold text-slate-900">{approval.team?.name || 'Smart Aqua Innovators'}</div>
-              <div className="text-[10.5px] text-slate-500 font-medium">({approval.team?.membersCount || 5} Members)</div>
+
+            <div className="space-y-0.5">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">
+                Student Research Team
+              </span>
+              <p className="font-bold text-slate-900">
+                {approval.team?.name || 'Student Research Team'}
+              </p>
+              <p className="text-[10.5px] text-slate-500 font-medium">
+                {approval.team?.membersCount || 4} Student Researchers
+              </p>
             </div>
-          </Row>
-          <Row icon={User} label="Requested By">
-            <span className="text-xs font-bold text-slate-900">{approval.requestedBy}</span>
-          </Row>
-          <Row icon={Calendar} label="Start Date">
-            <span className="text-xs font-bold text-slate-900">{approval.startDate || '20 May 2026'}</span>
-          </Row>
-          <Row icon={Banknote} label="Est. Budget">
-            <span className="text-xs font-mono font-bold text-slate-900">{approval.estimatedBudget || '₹ 75,000'}</span>
-          </Row>
-          <Row icon={Tag} label="Req. Support">
-            <div className="flex flex-wrap gap-1 justify-end">
-              {supportTypes.map((s) => (
-                <span key={s} className="px-1.5 py-0.5 bg-slate-100 border border-slate-200 text-[10px] font-bold text-slate-800 rounded-none">{s}</span>
-              ))}
-            </div>
-          </Row>
-          <Row icon={Paperclip} label="Documents">
-            <div className="flex items-center space-x-1.5 justify-end">
-              <span className="text-xs font-bold text-slate-900">{approval.documentsCount || 4} Files</span>
-              <button className="text-[10px] font-bold text-blue-700 underline cursor-pointer">View All</button>
-            </div>
-          </Row>
+          </div>
         </div>
 
-        {/* Divider */}
-        <div className="mx-4 border-t border-dashed border-slate-200 my-3" />
-
-        {/* Remarks */}
-        <div className="px-4">
-          <p className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400 mb-1.5">Approval Remarks</p>
-          <textarea
-            value={remarks}
-            onChange={(e) => setRemarks(e.target.value)}
-            rows={3}
-            maxLength={500}
-            placeholder="Add your remarks here..."
-            className="w-full px-3 py-2.5 bg-white border border-slate-200 text-xs text-slate-900 placeholder:text-slate-400 resize-none focus:outline-none focus:border-slate-900 rounded-none font-medium"
-          />
-          <div className="text-[10px] text-slate-400 text-right mt-0.5">{remarks.length}/500</div>
-        </div>
-
-        {/* Action Buttons */}
-        {canAct && (
-          <div className="px-4 mt-2">
-            <p className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400 mb-1.5">Action</p>
-            <div className="grid grid-cols-3 gap-2">
-              <button
-                onClick={handleApprove}
-                className="py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold flex items-center justify-center space-x-1.5 cursor-pointer transition-colors rounded-none"
-              >
-                <CheckCircle2 className="w-3.5 h-3.5" />
-                <span>Approve</span>
-              </button>
-              <button
-                onClick={handleChanges}
-                className="py-2 bg-white hover:bg-amber-50 border border-amber-400 text-amber-800 text-[11px] font-bold flex items-center justify-center space-x-1 cursor-pointer transition-colors rounded-none"
-              >
-                <RotateCcw className="w-3.5 h-3.5" />
-                <span className="text-[10px]">Request Changes</span>
-              </button>
-              <button
-                onClick={handleReject}
-                className="py-2 bg-white hover:bg-rose-50 border border-rose-300 text-rose-700 text-[11px] font-bold flex items-center justify-center space-x-1.5 cursor-pointer transition-colors rounded-none"
-              >
-                <XCircle className="w-3.5 h-3.5" />
-                <span>Reject</span>
-              </button>
+        {/* Technical Methodology & Research Plan */}
+        {approval.methodology && (
+          <div className="space-y-1.5">
+            <div className="flex items-center space-x-1.5">
+              <FileText className="w-3.5 h-3.5 text-[#007A61]" />
+              <p className="text-[10.5px] font-extrabold uppercase tracking-wider text-[#007A61]">
+                Technical Methodology & Research Plan
+              </p>
+            </div>
+            <div className="text-xs text-slate-800 leading-relaxed font-sans bg-slate-50/70 p-3.5 border border-slate-200 rounded-xl whitespace-pre-wrap">
+              {approval.methodology}
             </div>
           </div>
         )}
 
-        {/* Divider */}
-        <div className="mx-4 border-t border-dashed border-slate-200 my-3" />
+        {/* Itemized Line-Item Budget Allocation */}
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-1.5">
+              <Layers className="w-3.5 h-3.5 text-[#007A61]" />
+              <p className="text-[10.5px] font-extrabold uppercase tracking-wider text-slate-700">
+                Itemized Line-Item Budget
+              </p>
+            </div>
+            <div className="text-right">
+              <span className="text-[10px] text-slate-400 block font-bold uppercase">
+                Total Grant Requested
+              </span>
+              <span className="text-sm font-mono font-black text-[#007A61]">
+                {approval.proposedBudget || approval.estimatedBudget || '₹ 80,000'}
+              </span>
+            </div>
+          </div>
 
-        {/* History */}
-        <div className="px-4 pb-4">
-          <p className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400 mb-2.5">Approval History</p>
-          <div className="space-y-3 relative">
-            <div className="absolute left-[5px] top-2 bottom-2 w-px bg-slate-100" />
-            {history.map((h, i) => (
-              <div key={i} className="flex items-start space-x-3 relative">
-                <div className={`w-2.5 h-2.5 rounded-full mt-1 shrink-0 z-10 ring-2 ring-white ${historyDot(h.action)}`} />
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between gap-1">
-                    <span className="text-xs font-bold text-slate-900">{h.action}</span>
+          {Array.isArray(approval.budgetBreakdown) && approval.budgetBreakdown.length > 0 ? (
+            <div className="border border-slate-200 rounded-xl overflow-hidden bg-white divide-y divide-slate-100 text-xs">
+              {approval.budgetBreakdown.map((item, idx) => (
+                <div
+                  key={idx}
+                  className="p-2.5 flex items-center justify-between hover:bg-slate-50 transition-colors"
+                >
+                  <div className="flex items-center space-x-2.5 min-w-0 pr-2">
+                    <span className="w-5 h-5 rounded-full bg-emerald-50 text-[#007A61] border border-emerald-200 text-[10px] font-black flex items-center justify-center shrink-0">
+                      {idx + 1}
+                    </span>
+                    <span className="font-semibold text-slate-800 truncate">
+                      {item.category || item.title}
+                    </span>
                   </div>
-                  <div className="text-[10.5px] text-slate-500 font-medium">By {h.performedBy}</div>
-                  <div className="text-[10px] text-slate-400">{h.timestamp}</div>
-                  {h.note && <div className="text-[10.5px] text-slate-500 mt-0.5 leading-relaxed">{h.note}</div>}
+                  <span className="font-mono font-bold text-slate-900 shrink-0">
+                    {item.amount}
+                  </span>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl text-center text-xs text-slate-500 font-semibold">
+              Total Proposed Grant: {approval.proposedBudget || approval.estimatedBudget || '₹ 80,000'}
+            </div>
+          )}
+        </div>
+
+        {/* Support Request */}
+        <div className="p-3 bg-emerald-50/50 border border-emerald-200/80 rounded-xl flex items-center justify-between text-xs">
+          <div className="flex items-center space-x-2 text-emerald-900 font-bold">
+            <Sparkles className="w-4 h-4 text-[#007A61]" />
+            <span>Requested Government Support:</span>
+          </div>
+          <span className="font-semibold text-[#007A61]">
+            Direct Research Grant Disbursal
+          </span>
+        </div>
+
+        {/* Approval Remarks Input */}
+        <div className="space-y-1.5">
+          <label className="block text-[10.5px] font-extrabold uppercase tracking-wider text-slate-600">
+            Nodal Authority Remarks & Feedback
+          </label>
+          <textarea
+            value={remarks}
+            onChange={(e) => setRemarks(e.target.value)}
+            rows={2}
+            maxLength={500}
+            placeholder="Add university comments or directives for the government grant committee..."
+            className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-[#007A61] focus:bg-white resize-none"
+          />
+          <div className="text-[10px] text-slate-400 text-right">
+            {remarks.length}/500
+          </div>
+        </div>
+
+        {/* Approval History */}
+        <div className="pt-2 border-t border-slate-100 space-y-2">
+          <p className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400">
+            Audit Trail
+          </p>
+          <div className="space-y-2">
+            {history.map((h, i) => (
+              <div key={i} className="flex items-start space-x-2.5 text-xs">
+                <div
+                  className={`w-2 h-2 rounded-full mt-1.5 shrink-0 ${historyDot(
+                    h.action
+                  )}`}
+                />
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between">
+                    <span className="font-bold text-slate-800">{h.action}</span>
+                    <span className="text-[10px] text-slate-400 font-mono">
+                      {h.timestamp}
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-slate-500 font-medium">
+                    {h.performedBy} — {h.note}
+                  </p>
                 </div>
               </div>
             ))}
           </div>
-          <button className="mt-3 text-[11px] font-bold text-slate-700 hover:text-slate-900 underline cursor-pointer flex items-center space-x-0.5">
-            <span>View Full History</span>
-            <ChevronRight className="w-3 h-3" />
-          </button>
         </div>
       </div>
 
-      {/* Toast */}
-      {toast && (
-        <div className={`px-4 py-2.5 text-xs font-bold border-t shrink-0
-          ${toast.type === 'success' ? 'bg-emerald-50 text-emerald-800 border-emerald-200' :
-            toast.type === 'error' ? 'bg-rose-50 text-rose-800 border-rose-200' :
-            'bg-amber-50 text-amber-800 border-amber-200'}`}>
-          {toast.msg}
+      {/* ── Sticky Action Footer ── */}
+      {canAct && (
+        <div className="p-3.5 bg-slate-50 border-t border-slate-200 shrink-0">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+            <button
+              onClick={handleApprove}
+              className="py-2.5 px-3 bg-[#007A61] hover:bg-[#006650] text-white text-xs font-bold rounded-xl flex items-center justify-center space-x-1.5 transition-all shadow-2xs cursor-pointer sm:col-span-1"
+            >
+              <CheckCircle2 className="w-4 h-4 text-emerald-300" />
+              <span>Approve & Forward</span>
+            </button>
+
+            <button
+              onClick={handleChanges}
+              className="py-2.5 px-3 bg-white hover:bg-amber-50 border border-amber-300 text-amber-800 text-xs font-bold rounded-xl flex items-center justify-center space-x-1.5 transition-all shadow-2xs cursor-pointer sm:col-span-1"
+            >
+              <RotateCcw className="w-3.5 h-3.5 text-amber-600" />
+              <span>Request Revision</span>
+            </button>
+
+            <button
+              onClick={handleReject}
+              className="py-2.5 px-3 bg-white hover:bg-rose-50 border border-rose-200 text-rose-700 text-xs font-bold rounded-xl flex items-center justify-center space-x-1.5 transition-all shadow-2xs cursor-pointer sm:col-span-1"
+            >
+              <XCircle className="w-3.5 h-3.5 text-rose-500" />
+              <span>Reject</span>
+            </button>
+          </div>
         </div>
       )}
     </div>

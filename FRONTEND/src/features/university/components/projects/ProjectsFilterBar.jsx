@@ -1,5 +1,5 @@
 import React from 'react';
-import { Search, Plus, Calendar, RotateCcw } from 'lucide-react';
+import { Search, Plus, RotateCcw } from 'lucide-react';
 
 export const ProjectsFilterBar = ({
   search,
@@ -15,27 +15,29 @@ export const ProjectsFilterBar = ({
   onOpenCreateModal
 }) => {
   return (
-    <div className="bg-white border border-slate-200 p-2.5 space-y-2 shadow-2xs select-none rounded-none">
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2 items-center">
+    <div className="bg-white border border-slate-200/90 p-3 rounded-2xl shadow-2xs select-none">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2.5 items-center">
+        {/* Search */}
         <div className="relative">
           <input
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search projects..."
-            className="w-full pl-8 pr-3 py-1.5 bg-slate-50 border border-slate-200 text-xs text-slate-900 placeholder:text-slate-400 focus:bg-white focus:outline-none focus:border-slate-900 rounded-none"
+            placeholder="Search projects by title, domain..."
+            className="w-full pl-8 pr-3 py-2 bg-slate-50 border border-slate-200 text-xs text-slate-900 placeholder:text-slate-400 focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#007A61] focus:border-[#007A61] rounded-xl transition-all shadow-2xs"
           />
           <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
         </div>
 
+        {/* Domain Filter */}
         <div>
           <select
             value={domainFilter}
             onChange={(e) => setDomainFilter(e.target.value)}
-            className="w-full px-2.5 py-1.5 bg-slate-50 border border-slate-200 text-xs text-slate-800 font-medium focus:bg-white focus:outline-none focus:border-slate-900 rounded-none cursor-pointer"
+            className="w-full px-3 py-2 bg-slate-50 border border-slate-200 text-xs text-slate-800 font-semibold focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#007A61] focus:border-[#007A61] rounded-xl cursor-pointer shadow-2xs"
           >
             <option value="All">All Domains</option>
-            <option value="Water">Water</option>
+            <option value="Water">Water & Sanitation</option>
             <option value="Infrastructure">Infrastructure</option>
             <option value="Environment">Environment</option>
             <option value="Healthcare">Healthcare</option>
@@ -45,49 +47,55 @@ export const ProjectsFilterBar = ({
           </select>
         </div>
 
+        {/* Status Filter */}
         <div>
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="w-full px-2.5 py-1.5 bg-slate-50 border border-slate-200 text-xs text-slate-800 font-medium focus:bg-white focus:outline-none focus:border-slate-900 rounded-none cursor-pointer"
+            className="w-full px-3 py-2 bg-slate-50 border border-slate-200 text-xs text-slate-800 font-semibold focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#007A61] focus:border-[#007A61] rounded-xl cursor-pointer shadow-2xs"
           >
             <option value="All">All Statuses</option>
             <option value="In Progress">In Progress</option>
-            <option value="Planning">Planning</option>
+            <option value="Planning">Proposal Stage</option>
             <option value="Completed">Completed</option>
-            <option value="Delayed">Delayed</option>
           </select>
         </div>
 
+        {/* Faculty Filter */}
         <div>
           <select
             value={facultyFilter}
             onChange={(e) => setFacultyFilter(e.target.value)}
-            className="w-full px-2.5 py-1.5 bg-slate-50 border border-slate-200 text-xs text-slate-800 font-medium focus:bg-white focus:outline-none focus:border-slate-900 rounded-none cursor-pointer"
+            className="w-full px-3 py-2 bg-slate-50 border border-slate-200 text-xs text-slate-800 font-semibold focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#007A61] focus:border-[#007A61] rounded-xl cursor-pointer shadow-2xs"
           >
-            <option value="All">All Faculty</option>
+            <option value="All">All Mentors</option>
             {facultyOptions.map((f, i) => (
-              <option key={i} value={f}>{f}</option>
+              <option key={i} value={f}>
+                {f}
+              </option>
             ))}
           </select>
         </div>
 
-        <div className="relative">
-          <div className="w-full px-2.5 py-1.5 bg-slate-50 border border-slate-200 text-xs text-slate-500 flex items-center justify-between cursor-pointer rounded-none">
-            <span>Select date range</span>
-            <Calendar className="w-3.5 h-3.5 text-slate-400" />
-          </div>
+        {/* Actions */}
+        <div className="flex items-center space-x-2">
+          <button
+            type="button"
+            onClick={onResetFilters}
+            className="p-2 border border-slate-200 hover:bg-slate-100 text-slate-600 rounded-xl text-xs font-bold transition-colors cursor-pointer"
+            title="Reset Filters"
+          >
+            <RotateCcw className="w-4 h-4" />
+          </button>
+          <button
+            type="button"
+            onClick={onOpenCreateModal}
+            className="flex-1 px-3.5 py-2 bg-[#007A61] hover:bg-[#006650] text-white rounded-xl text-xs font-bold flex items-center justify-center space-x-1.5 transition-all cursor-pointer shadow-2xs"
+          >
+            <Plus className="w-4 h-4" />
+            <span>Create Project</span>
+          </button>
         </div>
-      </div>
-
-      <div className="flex items-center justify-end space-x-2 pt-1.5 border-t border-slate-100">
-        <button
-          onClick={onResetFilters}
-          className="px-3 py-1.5 border border-slate-200 hover:bg-slate-50 text-xs font-bold text-slate-700 rounded-none flex items-center space-x-1 cursor-pointer transition-colors"
-        >
-          <RotateCcw className="w-3 h-3 text-slate-400" />
-          <span>Clear Filters</span>
-        </button>
       </div>
     </div>
   );

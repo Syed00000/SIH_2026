@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import bcrypt from 'bcryptjs';
 import UserRepository from '../domain/repository.js';
 import User from '../domain/user.js';
 import MongooseUser from './model.js';
@@ -112,6 +113,45 @@ export class MongoUserRepository extends UserRepository {
         }
       } catch (uniErr) {
         // Continue fallback
+      }
+
+      // 5. University Faculty lookup & account reconciliation
+      try {
+        const { UniversityFaculty } = await import('../../university/infrastructure/model.js');
+        const fac = await UniversityFaculty.findOne({
+          $or: [
+            { email: lower },
+            { email: clean },
+            { name: new RegExp(`^${clean}$`, 'i') },
+            { phone: clean }
+          ]
+        });
+        if (fac) {
+          doc = await MongooseUser.findOne({ email: fac.email.toLowerCase() }).select('+passwordHash');
+          if (!doc) {
+            const newPasswordHash = fac.passwordHash || (await bcrypt.hash('Faculty@123456', 12));
+            doc = await MongooseUser.create({
+              fullName: fac.name,
+              email: fac.email.toLowerCase(),
+              mobileNumber: fac.phone?.replace(/[^0-9]/g, '').slice(-10) || `98${Math.floor(10000000 + Math.random() * 90000000)}`,
+              passwordHash: newPasswordHash,
+              role: 'FACULTY',
+              accountStatus: 'ACTIVE',
+              emailVerification: { verified: true, verifiedAt: new Date() },
+              profile: {
+                universityCode: fac.universityCode,
+                department: fac.department,
+                designation: fac.designation
+              }
+            });
+            await UniversityFaculty.findByIdAndUpdate(fac._id, {
+              $set: { userId: doc._id, passwordHash: newPasswordHash }
+            });
+          }
+          if (doc) return this._toEntity(doc);
+        }
+      } catch (facErr) {
+        // Continue
       }
     }
 

@@ -20,6 +20,16 @@ export const UniversityRecentActivity = ({
         <h2 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
           Recent Activity
         </h2>
+        {activities.length > 0 && onClear && (
+          <button
+            type="button"
+            onClick={onClear}
+            className="text-[10px] font-bold text-slate-500 hover:text-red-600 transition-colors cursor-pointer"
+            title="Clear all activity logs"
+          >
+            Clear
+          </button>
+        )}
       </div>
 
       {/* Activity Timeline List */}

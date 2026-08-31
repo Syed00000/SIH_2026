@@ -13,6 +13,7 @@ import overviewRoutes from './modules/government/overview/presentation/routes.js
 import universityRoutes from './modules/university/presentation/routes.js';
 import citizenRoutes from './modules/citizen/presentation/routes.js';
 import clarificationRoutes from './modules/clarification/presentation/routes.js';
+import grantRoutes from './modules/government/grants/routes.js';
 
 const app = express();
 
@@ -67,6 +68,7 @@ app.use('/api/v1/government/industries', industryRoutes);
 
 app.use('/api/v1/government/admins', adminRoutes);
 app.use('/api/v1/government/overview', overviewRoutes);
+app.use('/api/v1/government/funds', grantRoutes);
 app.use('/api/v1/university', universityRoutes);
 app.use('/api/v1/citizen', citizenRoutes);
 app.use('/api/v1/clarification-chat', clarificationRoutes);

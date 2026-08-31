@@ -142,6 +142,8 @@ export class UniversityService {
   async assignFacultyToProject(universityCode, id, facultyInfo) { return await universityDashboardRepository.assignFacultyToProject(universityCode, id, facultyInfo); }
 
   async getTeams(universityCode) { return await universityDashboardRepository.getTeamsByUniversity(universityCode); }
+  async getActivities(universityCode) { return await universityDashboardRepository.getActivitiesByUniversity(universityCode); }
+  async clearActivities(universityCode) { return await universityDashboardRepository.clearActivities(universityCode); }
   async getPartners(universityCode) { return await universityDashboardRepository.getPartnersByUniversity(universityCode); }
   async getApprovals(universityCode) { return await universityDashboardRepository.getApprovalsByUniversity(universityCode); }
   async updateApproval(approvalId, universityCode, status) { return await universityDashboardRepository.updateApprovalStatus(approvalId, universityCode, status); }

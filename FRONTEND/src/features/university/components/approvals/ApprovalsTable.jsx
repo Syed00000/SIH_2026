@@ -1,12 +1,11 @@
 import React, { useState } from 'react';
-import { MoreVertical, ChevronLeft, ChevronRight } from 'lucide-react';
+import { MoreVertical, ChevronLeft, ChevronRight, Eye, CheckCircle2 } from 'lucide-react';
 
 const getTypePill = (type = '') => {
   if (type.includes('Project')) return 'bg-blue-50 text-blue-800 border-blue-200';
-  if (type.includes('Proposal')) return 'bg-purple-50 text-purple-800 border-purple-200';
+  if (type.includes('Proposal')) return 'bg-emerald-50 text-[#007A61] border-emerald-200';
   if (type.includes('Partnership')) return 'bg-amber-50 text-amber-800 border-amber-200';
   if (type.includes('Payment')) return 'bg-emerald-50 text-emerald-800 border-emerald-200';
-  if (type.includes('Lab') || type.includes('Equipment') || type.includes('Field') || type.includes('Admin')) return 'bg-slate-100 text-slate-800 border-slate-200';
   return 'bg-slate-100 text-slate-800 border-slate-200';
 };
 
@@ -18,7 +17,12 @@ const getStatusPill = (status = '') => {
   return 'bg-slate-100 text-slate-700 border-slate-200';
 };
 
-export const ApprovalsTable = ({ approvals = [], selectedId, onSelect, loading = false }) => {
+export const ApprovalsTable = ({
+  approvals = [],
+  selectedId,
+  onSelect,
+  loading = false
+}) => {
   const [page, setPage] = useState(1);
   const pageSize = 8;
   const totalPages = Math.max(1, Math.ceil(approvals.length / pageSize));
@@ -27,38 +31,43 @@ export const ApprovalsTable = ({ approvals = [], selectedId, onSelect, loading =
   const items = approvals.slice(start, start + pageSize);
 
   return (
-    <div className="bg-white border border-slate-200 shadow-2xs rounded-none flex flex-col justify-between select-none">
+    <div className="bg-white border border-slate-200/90 shadow-2xs rounded-2xl flex flex-col justify-between select-none overflow-hidden">
       <div>
-        <div className="px-3 py-2.5 border-b border-slate-200 bg-slate-50 flex items-center justify-between">
-          <h2 className="text-xs font-bold text-slate-900 uppercase tracking-tight">
-            Approval List ({approvals.length})
+        <div className="px-4 py-3 border-b border-slate-100 bg-slate-50/70 flex items-center justify-between">
+          <h2 className="text-xs font-extrabold text-slate-900 uppercase tracking-wider">
+            Approval Dossiers ({approvals.length})
           </h2>
+          <span className="text-[10.5px] text-slate-500 font-medium">
+            Click any row to inspect proposal dossier
+          </span>
         </div>
 
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs text-slate-700">
-            <thead className="bg-slate-50 border-b border-slate-200 text-slate-600 font-bold uppercase tracking-wider text-[10.5px]">
+            <thead className="bg-slate-50/50 border-b border-slate-200/80 text-slate-500 font-extrabold uppercase tracking-wider text-[10px]">
               <tr>
-                <th className="py-2.5 px-3">Approval ID</th>
-                <th className="py-2.5 px-3">Project / Challenge</th>
-                <th className="py-2.5 px-3">Type</th>
-                <th className="py-2.5 px-3">Requested By</th>
-                <th className="py-2.5 px-3">Date</th>
-                <th className="py-2.5 px-3">Status</th>
-                <th className="py-2.5 px-3 text-right">Action</th>
+                <th className="py-2.5 px-3.5">Approval ID</th>
+                <th className="py-2.5 px-3.5">Project / Challenge</th>
+                <th className="py-2.5 px-3.5">Type</th>
+                <th className="py-2.5 px-3.5">Faculty Lead</th>
+                <th className="py-2.5 px-3.5">Date</th>
+                <th className="py-2.5 px-3.5">Status</th>
+                <th className="py-2.5 px-3.5 text-right">Action</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 font-medium">
               {loading ? (
-                [1, 2, 3, 4, 5, 6].map((i) => (
+                [1, 2, 3, 4].map((i) => (
                   <tr key={i} className="animate-pulse">
-                    <td colSpan={7} className="py-3 px-3"><div className="h-4 bg-slate-100 w-full" /></td>
+                    <td colSpan={7} className="py-3 px-3.5">
+                      <div className="h-4 bg-slate-100 rounded w-full" />
+                    </td>
                   </tr>
                 ))
               ) : items.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="py-8 text-center text-slate-500 text-xs font-medium">
-                    No approvals match the selected filters.
+                  <td colSpan={7} className="py-8 text-center text-slate-400 text-xs font-semibold">
+                    No approval requests match the selected filters.
                   </td>
                 </tr>
               ) : (
@@ -68,52 +77,78 @@ export const ApprovalsTable = ({ approvals = [], selectedId, onSelect, loading =
                     <tr
                       key={apr.approvalId || apr._id}
                       onClick={() => onSelect(apr)}
-                      className={`hover:bg-slate-50 transition-colors cursor-pointer ${
-                        isSelected ? 'bg-slate-50 border-l-2 border-l-slate-900' : ''
+                      className={`hover:bg-emerald-50/30 transition-colors cursor-pointer ${
+                        isSelected
+                          ? 'bg-emerald-50/60 border-l-3 border-l-[#007A61]'
+                          : ''
                       }`}
                     >
-                      <td className="py-2.5 px-3 font-mono font-bold text-slate-900">{apr.approvalId}</td>
-                      <td className="py-2.5 px-3">
-                        <div className="font-bold text-slate-900 truncate max-w-[180px]">{apr.project}</div>
+                      <td className="py-3 px-3.5 font-mono font-bold text-slate-900 text-xs">
+                        {apr.approvalId}
+                      </td>
+                      <td className="py-3 px-3.5">
+                        <div className="font-bold text-slate-900 truncate max-w-[180px]">
+                          {apr.project}
+                        </div>
                         {apr.challengeId && (
-                          <div className="text-[10.5px] text-slate-500 font-mono">({apr.challengeId})</div>
+                          <div className="text-[10px] text-slate-400 font-mono">
+                            {apr.challengeId}
+                          </div>
                         )}
                       </td>
-                      <td className="py-2.5 px-3">
-                        <span className={`px-2 py-0.5 text-[10px] font-bold border rounded-none ${getTypePill(apr.type)}`}>
+                      <td className="py-3 px-3.5">
+                        <span
+                          className={`px-2 py-0.5 text-[10px] font-bold border rounded-md ${getTypePill(
+                            apr.type
+                          )}`}
+                        >
                           {apr.type}
                         </span>
                       </td>
-                      <td className="py-2.5 px-3">
-                        <div className="flex items-center space-x-1.5">
-                          <div className="w-5 h-5 rounded-full bg-slate-900 text-white text-[8px] font-bold flex items-center justify-center shrink-0">
-                            {(apr.requestedBy || '').split(' ').map(w => w[0]).join('').slice(0, 2)}
+                      <td className="py-3 px-3.5">
+                        <div className="flex items-center space-x-2">
+                          <div className="w-6 h-6 rounded-lg bg-slate-100 text-slate-700 text-[9px] font-black flex items-center justify-center shrink-0 border border-slate-200">
+                            {(apr.requestedBy || '')
+                              .split(' ')
+                              .map((w) => w[0])
+                              .join('')
+                              .slice(0, 2)}
                           </div>
                           <div>
-                            <div className="font-bold text-slate-900 text-xs leading-none">{apr.requestedBy}</div>
-                            <div className="text-[10px] text-slate-500 font-medium">{apr.requestedByDept}</div>
+                            <div className="font-bold text-slate-900 text-xs leading-none">
+                              {apr.requestedBy}
+                            </div>
+                            <div className="text-[10px] text-slate-400 font-medium mt-0.5">
+                              {apr.requestedByDept}
+                            </div>
                           </div>
                         </div>
                       </td>
-                      <td className="py-2.5 px-3 text-slate-700">
-                        <div className="font-semibold">{apr.date}</div>
-                        <div className="text-[10px] text-slate-500">{apr.dateTime}</div>
+                      <td className="py-3 px-3.5 text-slate-700">
+                        <div className="font-semibold text-xs">{apr.date}</div>
+                        <div className="text-[10px] text-slate-400">{apr.dateTime}</div>
                       </td>
-                      <td className="py-2.5 px-3">
-                        <span className={`px-2 py-0.5 text-[10px] font-bold border rounded-none ${getStatusPill(apr.status)}`}>
+                      <td className="py-3 px-3.5">
+                        <span
+                          className={`px-2 py-0.5 text-[10px] font-bold border rounded-md ${getStatusPill(
+                            apr.status
+                          )}`}
+                        >
                           {apr.status}
                         </span>
                       </td>
-                      <td className="py-2.5 px-3 text-right">
-                        <div className="flex items-center justify-end space-x-1" onClick={(e) => e.stopPropagation()}>
+                      <td className="py-3 px-3.5 text-right">
+                        <div
+                          className="flex items-center justify-end space-x-1"
+                          onClick={(e) => e.stopPropagation()}
+                        >
                           <button
                             onClick={() => onSelect(apr)}
-                            className="px-2.5 py-1 bg-white hover:bg-slate-900 hover:text-white border border-slate-200 text-slate-900 text-xs font-bold rounded-none cursor-pointer transition-colors"
+                            className="px-3 py-1 bg-white hover:bg-[#007A61] hover:text-white border border-slate-200 hover:border-[#007A61] text-slate-900 text-xs font-bold rounded-lg cursor-pointer transition-all shadow-2xs"
                           >
-                            {apr.status === 'Pending' || apr.status === 'Changes Required' ? 'Review' : 'View'}
-                          </button>
-                          <button className="p-1 text-slate-400 hover:text-slate-900">
-                            <MoreVertical className="w-3.5 h-3.5" />
+                            {apr.status === 'Pending' || apr.status === 'Changes Required'
+                              ? 'Review'
+                              : 'Inspect'}
                           </button>
                         </div>
                       </td>
@@ -126,13 +161,16 @@ export const ApprovalsTable = ({ approvals = [], selectedId, onSelect, loading =
         </div>
       </div>
 
-      <div className="px-3.5 py-2 border-t border-slate-200 flex items-center justify-between text-xs text-slate-500 bg-slate-50">
-        <span>Showing {approvals.length === 0 ? 0 : start + 1} to {Math.min(start + pageSize, approvals.length)} of {approvals.length} approvals</span>
+      <div className="px-4 py-2.5 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500 bg-slate-50/70">
+        <span>
+          Showing {approvals.length === 0 ? 0 : start + 1} to{' '}
+          {Math.min(start + pageSize, approvals.length)} of {approvals.length} approvals
+        </span>
         <div className="flex items-center space-x-1">
           <button
             disabled={currentPage === 1}
-            onClick={() => setPage(p => Math.max(1, p - 1))}
-            className="p-1 border border-slate-200 rounded-none hover:bg-slate-100 disabled:opacity-40 cursor-pointer"
+            onClick={() => setPage((p) => Math.max(1, p - 1))}
+            className="p-1 border border-slate-200 rounded-lg hover:bg-slate-100 disabled:opacity-30 cursor-pointer"
           >
             <ChevronLeft className="w-3.5 h-3.5" />
           </button>
@@ -140,18 +178,19 @@ export const ApprovalsTable = ({ approvals = [], selectedId, onSelect, loading =
             <button
               key={pNum}
               onClick={() => setPage(pNum)}
-              className={`w-6 h-6 rounded-none font-bold text-xs flex items-center justify-center cursor-pointer ${
-                currentPage === pNum ? 'bg-slate-900 text-white' : 'border border-slate-200 hover:bg-slate-100 text-slate-700'
+              className={`w-6 h-6 rounded-lg text-xs font-bold transition-colors cursor-pointer ${
+                currentPage === pNum
+                  ? 'bg-[#007A61] text-white'
+                  : 'bg-white border border-slate-200 hover:bg-slate-100 text-slate-700'
               }`}
             >
               {pNum}
             </button>
           ))}
-          {totalPages > 7 && <span className="text-slate-400 font-bold">...</span>}
           <button
             disabled={currentPage === totalPages}
-            onClick={() => setPage(p => Math.min(totalPages, p + 1))}
-            className="p-1 border border-slate-200 rounded-none hover:bg-slate-100 disabled:opacity-40 cursor-pointer"
+            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+            className="p-1 border border-slate-200 rounded-lg hover:bg-slate-100 disabled:opacity-30 cursor-pointer"
           >
             <ChevronRight className="w-3.5 h-3.5" />
           </button>

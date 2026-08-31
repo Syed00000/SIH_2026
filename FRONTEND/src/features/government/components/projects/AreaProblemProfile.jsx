@@ -11,7 +11,9 @@ import {
   Activity,
   HeartHandshake,
   Landmark,
-  Compass
+  Compass,
+  Cpu,
+  Layers
 } from 'lucide-react';
 import { JHARKHAND_24_DISTRICTS } from '../../data/jharkhand24DistrictsData.js';
 
@@ -21,83 +23,91 @@ export const AreaProblemProfile = ({ project }) => {
   // Look up district data
   const distData = JHARKHAND_24_DISTRICTS.find((d) => d.name === project?.district) || JHARKHAND_24_DISTRICTS[0];
 
+  const problemTitle = project?.problemOrigin || distData?.primaryProblem || project?.title || 'Civic Problem Statement';
+
   return (
-    <div className="bg-white rounded-xl border border-slate-200 p-5 space-y-4 shadow-2xs select-none">
+    <div className="bg-white rounded-2xl border border-slate-200 p-5 space-y-4 shadow-2xs select-none">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 border-b border-slate-100 pb-3">
         <div>
-          <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider flex items-center space-x-1.5">
-            <Compass className="w-4 h-4 text-slate-700" />
-            <span>Ground Area & Local Problem Data ({project?.district || 'Jharkhand'})</span>
+          <h4 className="text-xs font-extrabold text-slate-900 uppercase tracking-wider flex items-center space-x-1.5">
+            <Compass className="w-4 h-4 text-[#007A61]" />
+            <span>Ground Area & Citizen Problem Dossier ({project?.district || 'Jharkhand'})</span>
           </h4>
-          <p className="text-[11px] text-slate-500 font-medium">
-            Detailed ground challenges, affected population, and local village data around this project site
+          <p className="text-[11px] text-slate-500 font-medium mt-0.5">
+            Ground challenges, affected jurisdiction, and technical methodology for this project
           </p>
         </div>
 
-        <div className="flex items-center space-x-1 bg-slate-100 p-0.5 rounded-lg">
+        <div className="flex items-center space-x-1 bg-slate-100 p-1 rounded-xl">
           <button
             type="button"
             onClick={() => setActiveTab('problems')}
-            className={`px-2.5 py-1 rounded text-xs font-bold transition-colors cursor-pointer ${
+            className={`px-3 py-1 rounded-lg text-xs font-extrabold transition-all cursor-pointer ${
               activeTab === 'problems' ? 'bg-white shadow-xs text-slate-900' : 'text-slate-500 hover:text-slate-800'
             }`}
           >
-            1. Ground Problems
+            1. Problem Statement
           </button>
           <button
             type="button"
             onClick={() => setActiveTab('demographics')}
-            className={`px-2.5 py-1 rounded text-xs font-bold transition-colors cursor-pointer ${
+            className={`px-3 py-1 rounded-lg text-xs font-extrabold transition-all cursor-pointer ${
               activeTab === 'demographics' ? 'bg-white shadow-xs text-slate-900' : 'text-slate-500 hover:text-slate-800'
             }`}
           >
-            2. Affected Population & Area
+            2. Area & Demographics
           </button>
           <button
             type="button"
             onClick={() => setActiveTab('solution_impact')}
-            className={`px-2.5 py-1 rounded text-xs font-bold transition-colors cursor-pointer ${
+            className={`px-3 py-1 rounded-lg text-xs font-extrabold transition-all cursor-pointer ${
               activeTab === 'solution_impact' ? 'bg-white shadow-xs text-slate-900' : 'text-slate-500 hover:text-slate-800'
             }`}
           >
-            3. How Project Solves It
+            3. Proposed Solution
           </button>
         </div>
       </div>
 
-      {/* TAB 1: GROUND PROBLEMS IN THIS SPECIFIC AREA */}
+      {/* TAB 1: GROUND PROBLEMS */}
       {activeTab === 'problems' && (
         <div className="space-y-3">
-          <div className="p-3.5 bg-rose-50/70 border border-rose-200 rounded-xl space-y-1.5 text-xs text-rose-950">
-            <span className="font-bold text-rose-800 uppercase tracking-wider flex items-center space-x-1">
-              <AlertCircle className="w-4 h-4" />
-              <span>Primary Ground Problem Statement in {distData.name}</span>
+          <div className="p-4 bg-rose-50/70 border border-rose-200 rounded-xl space-y-1.5 text-xs text-rose-950">
+            <span className="font-extrabold text-rose-800 uppercase tracking-wider flex items-center space-x-1.5 text-[10.5px]">
+              <AlertCircle className="w-4 h-4 text-rose-600" />
+              <span>Citizen Problem Origin & Challenge Statement</span>
             </span>
-            <p className="font-semibold text-rose-900 leading-relaxed">
-              {distData.primaryProblem}
+            <p className="font-bold text-slate-900 leading-relaxed text-xs">
+              {problemTitle}
             </p>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
             <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200 space-y-1">
-              <span className="text-[10px] font-bold text-slate-400 uppercase block">1. Ground Hazard & Cause</span>
+              <span className="text-[10px] font-extrabold text-slate-400 uppercase block tracking-wider">
+                1. Affected District & Blocks
+              </span>
               <p className="font-semibold text-slate-900 leading-relaxed">
-                Direct environmental & physical risk affecting daily citizen life in {distData.affectedBlocks}.
+                {distData?.name || 'Ranchi'} District ({distData?.affectedBlocks || 'Primary Municipal Zones'})
               </p>
             </div>
 
             <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200 space-y-1">
-              <span className="text-[10px] font-bold text-slate-400 uppercase block">2. Public Health & Safety</span>
+              <span className="text-[10px] font-extrabold text-slate-400 uppercase block tracking-wider">
+                2. Domain / Sector
+              </span>
               <p className="font-semibold text-slate-900 leading-relaxed">
-                Drinking water safety, air quality, and seasonal health vulnerability across local panchayats.
+                {project?.sector || project?.domain || 'Smart Infrastructure & Telemetry'}
               </p>
             </div>
 
             <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200 space-y-1">
-              <span className="text-[10px] font-bold text-slate-400 uppercase block">3. Livelihood Impact</span>
+              <span className="text-[10px] font-extrabold text-slate-400 uppercase block tracking-wider">
+                3. Lead Institution
+              </span>
               <p className="font-semibold text-slate-900 leading-relaxed">
-                Loss of crop yield, worker wage disruption, and transport bottleneck for small producers.
+                {project?.hei || 'Ranchi University (RU001)'}
               </p>
             </div>
           </div>
@@ -137,7 +147,7 @@ export const AreaProblemProfile = ({ project }) => {
           <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200 space-y-1.5 text-xs">
             <span className="font-bold text-slate-900 block">Specific Affected Blocks & Local Localities:</span>
             <div className="flex flex-wrap gap-1.5 pt-1">
-              {distData.affectedBlocks.split(',').map((block, idx) => (
+              {(distData.affectedBlocks || 'Ranchi Urban, Kanke, Namkum').split(',').map((block, idx) => (
                 <span key={idx} className="px-2.5 py-1 bg-white border border-slate-200 rounded-lg text-slate-800 font-semibold text-xs shadow-2xs">
                   📍 {block.trim()} Block
                 </span>
@@ -150,35 +160,41 @@ export const AreaProblemProfile = ({ project }) => {
       {/* TAB 3: HOW THIS SPECIFIC PROJECT SOLVES THE AREA PROBLEM */}
       {activeTab === 'solution_impact' && (
         <div className="space-y-3 text-xs">
-          <div className="p-3.5 bg-emerald-50/70 border border-emerald-200 rounded-xl space-y-1 text-emerald-950">
-            <span className="font-bold text-emerald-800 uppercase tracking-wider flex items-center space-x-1">
-              <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-              <span>Active Solution Roadmap by {project?.hei}</span>
+          <div className="p-4 bg-emerald-50/70 border border-emerald-200 rounded-xl space-y-1.5 text-emerald-950">
+            <span className="font-extrabold text-[#007A61] uppercase tracking-wider flex items-center space-x-1.5 text-[10.5px]">
+              <CheckCircle2 className="w-4 h-4 text-[#007A61]" />
+              <span>Technical Solution & Methodology by {project?.hei || 'University Team'}</span>
             </span>
-            <p className="font-semibold text-emerald-900 leading-relaxed">
-              {project?.title ? `Direct field solution deployment for ${project.title} across ${distData.name} district.` : 'Active field solution roadmap deployed.'}
+            <p className="font-semibold text-slate-900 leading-relaxed text-xs">
+              {project?.methodology || `Field deployment of ${project?.title || 'solution'} engineered to resolve ground problems in ${distData.name} district.`}
             </p>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div className="p-3 bg-white rounded-xl border border-slate-200 space-y-1">
-              <span className="text-[10px] font-bold text-emerald-700 uppercase block">1. Immediate Ground Impact</span>
-              <p className="text-slate-800 leading-relaxed">
-                Direct deployment in priority pilot villages/sites giving immediate relief to families.
+            <div className="p-3.5 bg-white rounded-xl border border-slate-200 space-y-1">
+              <span className="text-[10px] font-extrabold text-[#007A61] uppercase block tracking-wider">
+                1. Prototype Phase & TRL
+              </span>
+              <p className="text-slate-900 font-bold leading-relaxed">
+                {project?.trlLevel || 'TRL-3'} — {project?.stage || 'Lab Prototyping'}
               </p>
             </div>
 
-            <div className="p-3 bg-white rounded-xl border border-slate-200 space-y-1">
-              <span className="text-[10px] font-bold text-emerald-700 uppercase block">2. District Administration Scale</span>
-              <p className="text-slate-800 leading-relaxed">
-                Handover of working machine/app to District Collectorate & Block Panchayats.
+            <div className="p-3.5 bg-white rounded-xl border border-slate-200 space-y-1">
+              <span className="text-[10px] font-extrabold text-[#007A61] uppercase block tracking-wider">
+                2. Hardware & Tech Specs
+              </span>
+              <p className="text-slate-900 font-semibold leading-relaxed">
+                {project?.hardwareSpecs || 'Microcontroller telemetry probes & field sensors'}
               </p>
             </div>
 
-            <div className="p-3 bg-white rounded-xl border border-slate-200 space-y-1">
-              <span className="text-[10px] font-bold text-emerald-700 uppercase block">3. Permanent State Benefit</span>
-              <p className="text-slate-800 leading-relaxed">
-                Permanent elimination of the local bottleneck across all affected blocks.
+            <div className="p-3.5 bg-white rounded-xl border border-slate-200 space-y-1">
+              <span className="text-[10px] font-extrabold text-[#007A61] uppercase block tracking-wider">
+                3. Lead Faculty & Team
+              </span>
+              <p className="text-slate-900 font-semibold leading-relaxed">
+                {project?.teamLead || project?.leadMentor || 'Faculty Mentor'} {project?.studentTeam ? `(${project.studentTeam})` : ''}
               </p>
             </div>
           </div>

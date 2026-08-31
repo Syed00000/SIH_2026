@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { ApprovalsKpis } from './ApprovalsKpis.jsx';
 import { ApprovalsFilterBar } from './ApprovalsFilterBar.jsx';
 import { ApprovalsTable } from './ApprovalsTable.jsx';
-import { ApprovalDrawer } from './ApprovalDrawer.jsx';
+import { ApprovalDetailModal } from './ApprovalDetailModal.jsx';
 import { universityApiService } from '../../services/universityApiService.js';
 
 const UNIVERSITY_CODE = 'RU001';
@@ -11,6 +11,7 @@ export const ApprovalsPanel = () => {
   const [approvals, setApprovals] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [search, setSearch] = useState('');
   const [typeFilter, setTypeFilter] = useState('All');
   const [statusFilter, setStatusFilter] = useState('All');
@@ -21,7 +22,6 @@ export const ApprovalsPanel = () => {
       const data = await universityApiService.getApprovals(UNIVERSITY_CODE);
       const list = Array.isArray(data) ? data : [];
       setApprovals(list);
-      if (list.length > 0 && !selected) setSelected(list[0]);
     } catch (err) {
       console.error('fetchApprovals error:', err.message);
     } finally {
@@ -33,9 +33,24 @@ export const ApprovalsPanel = () => {
     fetchApprovals();
   }, []);
 
+  const handleOpenReview = (approval) => {
+    setSelected(approval);
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setSelected(null);
+  };
+
   const handleUpdateStatus = async (approval, newStatus, remarks = '') => {
     try {
-      await universityApiService.updateApprovalStatus(approval.approvalId || approval._id, UNIVERSITY_CODE, newStatus, remarks);
+      await universityApiService.updateApprovalStatus(
+        approval.approvalId || approval._id,
+        UNIVERSITY_CODE,
+        newStatus,
+        remarks
+      );
       setApprovals((prev) =>
         prev.map((a) =>
           (a.approvalId || a._id) === (approval.approvalId || approval._id)
@@ -43,7 +58,6 @@ export const ApprovalsPanel = () => {
             : a
         )
       );
-      setSelected((prev) => prev ? { ...prev, status: newStatus, adminRemarks: remarks } : prev);
     } catch (err) {
       console.error('updateApprovalStatus error:', err.message);
     }
@@ -66,13 +80,23 @@ export const ApprovalsPanel = () => {
   const rejected = approvals.filter((a) => a.status === 'Rejected').length;
 
   return (
-    <div className="space-y-3 max-w-7xl mx-auto select-none">
+    <div className="space-y-4 max-w-7xl mx-auto select-none pb-12">
       <div>
-        <h1 className="text-xl font-bold text-slate-900 tracking-tight">Approvals</h1>
-        <p className="text-xs text-slate-600 mt-0.5">Review and take action on all approval requests from across the university.</p>
+        <h1 className="text-xl font-bold text-slate-900 tracking-tight">
+          University Approvals & Proposal Dossiers
+        </h1>
+        <p className="text-xs text-slate-600 mt-0.5">
+          Review, evaluate technical methodologies, and forward R&D project proposals to the Government for grant sanction.
+        </p>
       </div>
 
-      <ApprovalsKpis total={total} pending={pending} approved={approved} rejected={rejected} loading={loading} />
+      <ApprovalsKpis
+        total={total}
+        pending={pending}
+        approved={approved}
+        rejected={rejected}
+        loading={loading}
+      />
 
       <ApprovalsFilterBar
         search={search}
@@ -81,31 +105,34 @@ export const ApprovalsPanel = () => {
         setTypeFilter={setTypeFilter}
         statusFilter={statusFilter}
         setStatusFilter={setStatusFilter}
-        onReset={() => { setSearch(''); setTypeFilter('All'); setStatusFilter('All'); }}
+        onReset={() => {
+          setSearch('');
+          setTypeFilter('All');
+          setStatusFilter('All');
+        }}
       />
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 items-start">
-        <div className={`${selected ? 'lg:col-span-7' : 'lg:col-span-12'} transition-all`}>
-          <ApprovalsTable
-            approvals={filtered}
-            selectedId={selected?.approvalId || selected?._id}
-            onSelect={(a) => setSelected(a)}
-            loading={loading}
-          />
-        </div>
-
-        {selected && (
-          <div className="lg:col-span-5 sticky top-20">
-            <ApprovalDrawer
-              approval={selected}
-              onClose={() => setSelected(null)}
-              onApprove={(apr, remarks) => handleUpdateStatus(apr, 'Approved', remarks)}
-              onReject={(apr, remarks) => handleUpdateStatus(apr, 'Rejected', remarks)}
-              onRequestChanges={(apr, remarks) => handleUpdateStatus(apr, 'Changes Required', remarks)}
-            />
-          </div>
-        )}
+      {/* Full Width Table */}
+      <div className="w-full">
+        <ApprovalsTable
+          approvals={filtered}
+          selectedId={selected?.approvalId || selected?._id}
+          onSelect={handleOpenReview}
+          loading={loading}
+        />
       </div>
+
+      {/* Centered High-End Detail Popup Modal */}
+      {isModalOpen && selected && (
+        <ApprovalDetailModal
+          approval={selected}
+          isOpen={isModalOpen}
+          onClose={handleCloseModal}
+          onApprove={(apr, remarks) => handleUpdateStatus(apr, 'Approved', remarks)}
+          onReject={(apr, remarks) => handleUpdateStatus(apr, 'Rejected', remarks)}
+          onRequestChanges={(apr, remarks) => handleUpdateStatus(apr, 'Changes Required', remarks)}
+        />
+      )}
     </div>
   );
 };

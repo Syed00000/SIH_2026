@@ -61,6 +61,7 @@ export const OnboardFacultyPanel = ({ onBack, onSuccess }) => {
         experience: formData.experience,
         specialization: specsList.length > 0 ? specsList : ['Applied Research', 'Innovation'],
         bio: formData.bio || `${formData.name} is specialized in ${formData.department} with active contributions to grassroots research.`,
+        password: formData.password || 'Faculty@123456',
         status: 'Active',
         availabilityStatus: formData.availabilityStatus || 'Available',
         activeProjects: 0,

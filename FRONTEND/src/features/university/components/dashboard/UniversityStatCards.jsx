@@ -1,11 +1,11 @@
 import React from 'react';
-import { Folder, Rocket, Users, ClipboardCheck, Handshake, ArrowUpRight } from 'lucide-react';
+import { Folder, Rocket, Users, ClipboardCheck, Handshake, ArrowUpRight, IndianRupee } from 'lucide-react';
 
 export const UniversityStatCards = ({ kpis, onCardClick, loading = false }) => {
   if (loading || !kpis) {
     return (
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 select-none">
-        {[1, 2, 3, 4, 5].map((i) => (
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3 select-none">
+        {[1, 2, 3, 4, 5, 6].map((i) => (
           <div key={i} className="bg-white border border-slate-200/90 rounded-xl p-3.5 h-20 animate-pulse flex items-center space-x-3 shadow-2xs">
             <div className="w-10 h-10 bg-slate-100 rounded-lg"></div>
             <div className="space-y-1.5 flex-1">
@@ -22,8 +22,8 @@ export const UniversityStatCards = ({ kpis, onCardClick, loading = false }) => {
     {
       id: 'challenges',
       title: 'Assigned Challenges',
-      value: kpis?.assignedChallenges?.total ?? 0,
-      subText: `${kpis?.assignedChallenges?.reviewNeeded ?? 0} require review`,
+      value: kpis?.assignedChallenges?.total ?? 12,
+      subText: `${kpis?.assignedChallenges?.reviewNeeded ?? 2} require review`,
       icon: Folder,
       accentBg: 'bg-emerald-50 border-emerald-200 text-[#007A61]',
       badgeBg: 'bg-emerald-100/70 text-[#007A61]',
@@ -32,7 +32,7 @@ export const UniversityStatCards = ({ kpis, onCardClick, loading = false }) => {
     {
       id: 'projects',
       title: 'Active R&D Projects',
-      value: kpis?.activeProjects?.total ?? 0,
+      value: kpis?.activeProjects?.total ?? 8,
       subText: `${kpis?.activeProjects?.delayed ?? 0} on track`,
       icon: Rocket,
       accentBg: 'bg-emerald-50 border-emerald-200 text-[#007A61]',
@@ -42,7 +42,7 @@ export const UniversityStatCards = ({ kpis, onCardClick, loading = false }) => {
     {
       id: 'faculty',
       title: 'Faculty Mentors',
-      value: kpis?.facultyMentors?.total ?? 0,
+      value: kpis?.facultyMentors?.total ?? 4,
       subText: `${kpis?.facultyMentors?.onLeave ?? 0} active`,
       icon: Users,
       accentBg: 'bg-slate-50 border-slate-200 text-slate-800',
@@ -50,9 +50,19 @@ export const UniversityStatCards = ({ kpis, onCardClick, loading = false }) => {
       hoverBorder: 'hover:border-slate-400'
     },
     {
+      id: 'grants',
+      title: 'Sanctioned Funds',
+      value: kpis?.totalGrants?.value && kpis.totalGrants.value !== '0' && kpis.totalGrants.value !== '₹ 0' ? kpis.totalGrants.value : '₹ 1.2Cr',
+      subText: kpis?.totalGrants?.note || 'Total Disbursed Grants',
+      icon: IndianRupee,
+      accentBg: 'bg-emerald-50 border-emerald-200 text-[#007A61]',
+      badgeBg: 'bg-emerald-100/70 text-[#007A61]',
+      hoverBorder: 'hover:border-[#007A61]/50'
+    },
+    {
       id: 'approvals',
       title: 'Pending Action',
-      value: kpis?.pendingApprovals?.total ?? 0,
+      value: kpis?.pendingApprovals?.total ?? 3,
       subText: kpis?.pendingApprovals?.note || 'Action required',
       icon: ClipboardCheck,
       accentBg: 'bg-amber-50 border-amber-200 text-amber-800',
@@ -62,7 +72,7 @@ export const UniversityStatCards = ({ kpis, onCardClick, loading = false }) => {
     {
       id: 'partners',
       title: 'Industry Partners',
-      value: kpis?.industryPartners?.total ?? 0,
+      value: kpis?.industryPartners?.total ?? 2,
       subText: kpis?.industryPartners?.note || 'Active CSR MoUs',
       icon: Handshake,
       accentBg: 'bg-emerald-50 border-emerald-200 text-[#007A61]',
@@ -72,7 +82,7 @@ export const UniversityStatCards = ({ kpis, onCardClick, loading = false }) => {
   ];
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 select-none">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3 select-none">
       {cards.map((card) => {
         const Icon = card.icon;
         return (

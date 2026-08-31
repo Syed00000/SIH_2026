@@ -40,6 +40,9 @@ export const CSRPaymentLedgerTable = ({
 
   const filtered = useMemo(() => {
     return activeLedgerData.filter((row) => {
+      const rawAmt = Number(row.rawAmount) || Number(String(row.amount || row.disbursedAmount || '0').replace(/[^\d]/g, ''));
+      if (rawAmt <= 0) return false;
+
       // 1. Search filter
       if (searchTerm.trim()) {
         const q = searchTerm.toLowerCase();

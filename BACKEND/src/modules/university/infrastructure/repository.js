@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import bcrypt from 'bcryptjs';
 import {
   UniversityChallenge,
   UniversityProject,
@@ -247,13 +248,16 @@ export class UniversityDashboardRepository {
             title: chl.title,
             problemStatement: chl.description || chl.problemStatement || chl.title,
             domain: chl.domain || chl.category || 'General',
-            budget: chl.budget || (chl.estimatedCost ? `₹ ${Number(chl.estimatedCost).toLocaleString('en-IN')}` : 'N/A'),
+            estimatedCost: chl.estimatedCost || null,
+            sanctionedBudget: chl.sanctionedBudget || null,
+            budget: chl.sanctionedBudget ? (typeof chl.sanctionedBudget === 'number' ? `₹ ${chl.sanctionedBudget.toLocaleString('en-IN')}` : chl.sanctionedBudget) : 'N/A',
+            budgetStatus: chl.budgetStatus || 'Pending Proposal',
             leadMentor: mentor || 'Unassigned',
             facultyMentor: mentor ? { name: mentor, department: dept, designation: 'Lead Faculty Mentor' } : null,
-            status: chl.status === 'Resolved' ? 'Completed' : 'In Progress',
-            progressPercentage: mentor ? 25 : 10,
+            status: chl.status === 'Resolved' ? 'Completed' : (chl.status === 'Active R&D' ? 'In Progress' : 'Proposal Stage'),
             milestonesCompleted: mentor ? 2 : 1,
             milestonesTotal: 7,
+            progressPercentage: chl.status === 'Resolved' ? 100 : Math.round(((mentor ? 2 : 1) / 7) * 100),
             deadline: 'N/A',
             timeline: 'N/A',
             daysLeft: 'N/A',
@@ -262,13 +266,13 @@ export class UniversityDashboardRepository {
             recentActivity: [],
             isDeleted: false,
             milestones: [
-              { id: 1, title: 'Project & Challenge Allocation', status: 'Completed', dueDate: 'N/A', completedAt: chl.createdAt || new Date() },
-              { id: 2, title: mentor ? `Lead Mentor Onboarded (${mentor})` : 'Faculty Mentor Assignment', status: mentor ? 'Completed' : 'In Progress', dueDate: 'N/A', completedAt: mentor ? new Date() : null },
-              { id: 3, title: 'Student Team Formation & Scoping', status: mentor ? 'In Progress' : 'Pending', dueDate: 'N/A' },
-              { id: 4, title: 'Sensor Rig Prototyping (TRL-4)', status: 'Pending', dueDate: 'N/A' },
-              { id: 5, title: 'Pilot Testing & Field Calibration', status: 'Pending', dueDate: 'N/A' },
-              { id: 6, title: 'Solution Validation & District Trials', status: 'Pending', dueDate: 'N/A' },
-              { id: 7, title: 'Government Handover & Impact Review', status: 'Pending', dueDate: 'N/A' }
+              { id: 1, title: 'Problem Statement Allocated & Scoped', status: 'Completed', dueDate: 'N/A', completedAt: chl.createdAt || new Date() },
+              { id: 2, title: mentor ? `Lead Faculty Mentor Assigned (${mentor})` : 'Lead Faculty Mentor Assignment', status: mentor ? 'Completed' : 'In Progress', dueDate: 'N/A', completedAt: mentor ? new Date() : null },
+              { id: 3, title: 'Faculty Solution Analysis & Budget Proposal', status: mentor ? 'In Progress' : 'Pending', dueDate: 'N/A' },
+              { id: 4, title: 'University Review & Submission to Government', status: 'Pending', dueDate: 'N/A' },
+              { id: 5, title: 'Government Budget Sanction & Grant Disbursal', status: 'Pending', dueDate: 'N/A' },
+              { id: 6, title: 'Prototype Development & Field Testing', status: 'Pending', dueDate: 'N/A' },
+              { id: 7, title: 'Government Handover & Final Audit', status: 'Pending', dueDate: 'N/A' }
             ]
           };
 
@@ -278,7 +282,7 @@ export class UniversityDashboardRepository {
               { $setOnInsert: projDoc },
               { upsert: true, new: true }
             );
-          } catch (e) {}
+          } catch (e) { }
 
           projects.push(projDoc);
           existingChallengeIds.add(chl.challengeId);
@@ -312,9 +316,149 @@ export class UniversityDashboardRepository {
     const query =
       typeof projectId === 'string' && projectId.match(/^[0-9a-fA-F]{24}$/)
         ? { _id: projectId }
-        : { projectId };
+        : { $or: [{ projectId }, { challengeId: projectId }] };
     try {
       const res = await UniversityProject.findOneAndUpdate(query, { $set: updateData }, { new: true });
+      const uniCode = (universityCode || res?.universityCode || 'RU001').toUpperCase();
+
+      // Auto-record activity for University
+      if (updateData.teamMembers && Array.isArray(updateData.teamMembers)) {
+        await UniversityActivity.create({
+          universityCode: uniCode,
+          text: `Student Research Team (${updateData.teamMembers.length} members) organized for project ${res?.projectId || projectId}.`,
+          type: 'TEAM_UPDATED',
+          timestamp: new Date()
+        });
+      }
+      // Auto-create/sync UniversityApproval request for University Review
+      if (updateData.budgetStatus === 'Submitted to University for Review' || updateData.proposedBudget || updateData.budgetBreakdown) {
+        const approvalId = `APP-${res?.projectId || projectId || Date.now().toString().slice(-4)}`;
+        const isRevision = updateData.isRevised || updateData.revisionCount > 0;
+        const approvalType = isRevision ? `Re-Proposal (Revised v${updateData.revisionCount || 2})` : 'R&D Grant Proposal';
+
+        await UniversityApproval.findOneAndUpdate(
+          { approvalId },
+          {
+            $set: {
+              approvalId,
+              universityCode: uniCode,
+              title: `${isRevision ? 'Revised ' : ''}R&D Grant Proposal & Line-Item Budget: ${res?.title || updateData.title || 'Innovation Project'}`,
+              type: approvalType,
+              isRevised: isRevision,
+              revisionCount: updateData.revisionCount || (isRevision ? 2 : 1),
+              project: res?.title || updateData.title || 'Innovation Project',
+              projectId: res?.projectId || projectId,
+              challengeId: res?.challengeId || '',
+              requestedBy: res?.leadMentor || updateData.leadMentor || res?.facultyMentor?.name || 'Faculty Mentor',
+              requestedByDept: res?.facultyMentor?.department || 'Engineering',
+              date: new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }),
+              dateTime: new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }),
+              status: 'Pending',
+              faculty: {
+                name: res?.leadMentor || res?.facultyMentor?.name || 'Faculty Mentor',
+                department: res?.facultyMentor?.department || 'Engineering'
+              },
+              team: {
+                name: res?.studentTeam || 'Student Research Team',
+                membersCount: res?.teamMembers?.length || 4
+              },
+              startDate: res?.startDate || '20 May 2026',
+              estimatedBudget: updateData.proposedBudget || updateData.budget || '₹ 80,000',
+              proposedBudget: updateData.proposedBudget || updateData.budget || '₹ 80,000',
+              methodology: updateData.methodology || res?.methodology || '',
+              budgetBreakdown: updateData.budgetBreakdown || res?.budgetBreakdown || [],
+              supportTypes: ['Government Grant Funding', 'Lab Testing Bench'],
+              documentsCount: 3
+            },
+            $push: {
+              history: {
+                action: isRevision ? `Re-Proposal Submitted (v${updateData.revisionCount || 2})` : 'Proposal Submitted by Faculty',
+                performedBy: res?.leadMentor || 'Faculty Mentor',
+                timestamp: `${new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}, ${new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}`,
+                note: isRevision
+                  ? 'Faculty submitted revised research proposal & budget in response to University Authority feedback.'
+                  : `Itemized R&D Budget of ${updateData.proposedBudget || updateData.budget || '₹ 80,000'} submitted for review.`
+              }
+            }
+          },
+          { upsert: true, new: true }
+        );
+
+        await UniversityActivity.create({
+          universityCode: uniCode,
+          text: isRevision
+            ? `Re-Proposal (Revised v${updateData.revisionCount || 2}) submitted by Faculty for "${res?.title || projectId}". Action required by University Authority.`
+            : `R&D Grant Proposal & Line-Item Budget (${updateData.proposedBudget || updateData.budget || 'Submitted'}) formulated for project ${res?.projectId || projectId}.`,
+          type: isRevision ? 'RE_PROPOSAL_SUBMITTED' : 'PROPOSAL_SUBMITTED',
+          timestamp: new Date()
+        });
+      }
+
+      // Handle Government Clarification / Revision Request
+      if (updateData.budgetStatus === 'Changes Required by Government') {
+        const approvalId = `APP-${res?.projectId || projectId || ''}`;
+        const note = updateData.governmentRemarks || updateData.adminRemarks || 'Government Authority requested line-item revision.';
+        await UniversityApproval.findOneAndUpdate(
+          { approvalId },
+          {
+            $set: {
+              status: 'Changes Required',
+              adminRemarks: `Government Directive: ${note}`,
+              governmentRemarks: note
+            },
+            $push: {
+              history: {
+                action: 'Clarification Requested by Government',
+                performedBy: 'Government Authority',
+                timestamp: `${new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}, ${new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}`,
+                note
+              }
+            }
+          }
+        );
+
+        await UniversityActivity.create({
+          universityCode: uniCode,
+          text: `⚠️ Government Authority requested proposal revision for "${res?.title || projectId}": ${note}`,
+          type: 'GOVERNMENT_REVISION_REQUESTED',
+          timestamp: new Date()
+        });
+      }
+
+      // Handle Government Grant Sanction & Fund Disbursal
+      if (updateData.budgetStatus === 'Grant Sanctioned by Government') {
+        const approvalId = `APP-${res?.projectId || projectId || ''}`;
+        const orderNo = updateData.sanctionOrderNo || 'JH-GOV-RD-2026-8842';
+        const grantAmt = updateData.sanctionedBudget || updateData.budget || '₹ 75,000';
+
+        await UniversityApproval.findOneAndUpdate(
+          { approvalId },
+          {
+            $set: {
+              status: 'Approved',
+              sanctionOrderNo: orderNo,
+              sanctionedBudget: grantAmt,
+              adminRemarks: `Grant Sanctioned under Sanction Order ${orderNo}`
+            },
+            $push: {
+              history: {
+                action: 'Grant Sanctioned & Disbursed by Government',
+                performedBy: 'State Innovation Council (Govt of Jharkhand)',
+                timestamp: `${new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}, ${new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}`,
+                note: `Sanction Order ${orderNo} approved for ${grantAmt}. Escrow funds active.`
+              }
+            }
+          }
+        );
+
+        await UniversityActivity.create({
+          universityCode: uniCode,
+          text: `🏛️ Grant sanctioned and funds released under Order ${orderNo} for "${res?.title || projectId}" (${grantAmt}).`,
+          type: 'GRANT_SANCTIONED_BY_GOVERNMENT',
+          timestamp: new Date()
+        });
+      }
+
       if (res) return res;
     } catch (err) { }
     return { projectId, ...updateData };
@@ -333,19 +477,22 @@ export class UniversityDashboardRepository {
       const milestones = existingProj?.milestones?.length
         ? existingProj.milestones.map((m, idx) => {
           if (idx === 0) return { ...m, status: 'Completed', completedAt: m.completedAt || new Date() };
-          if (idx === 1) return { ...m, status: 'Completed', title: `Lead Mentor Onboarded (${facultyInfo.name})`, completedAt: new Date() };
+          if (idx === 1) return { ...m, status: 'Completed', title: `Lead Faculty Mentor Assigned (${facultyInfo.name})`, completedAt: new Date() };
           if (idx === 2 && m.status !== 'Completed') return { ...m, status: 'In Progress' };
           return m;
         })
         : [
-          { id: 1, title: 'Project & Challenge Allocation', status: 'Completed', dueDate: 'N/A', completedAt: new Date() },
-          { id: 2, title: `Lead Mentor Onboarded (${facultyInfo.name})`, status: 'Completed', dueDate: 'N/A', completedAt: new Date() },
-          { id: 3, title: 'Student Team Formation & Scoping', status: 'In Progress', dueDate: 'N/A' },
-          { id: 4, title: 'Sensor Rig Prototyping (TRL-4)', status: 'Pending', dueDate: 'N/A' },
-          { id: 5, title: 'Pilot Testing & Calibration', status: 'Pending', dueDate: 'N/A' },
-          { id: 6, title: 'Validation & Field Trials', status: 'Pending', dueDate: 'N/A' },
-          { id: 7, title: 'Government Handover & Report', status: 'Pending', dueDate: 'N/A' }
+          { id: 1, title: 'Problem Statement Allocated & Scoped', status: 'Completed', dueDate: 'N/A', completedAt: new Date() },
+          { id: 2, title: `Lead Faculty Mentor Assigned (${facultyInfo.name})`, status: 'Completed', dueDate: 'N/A', completedAt: new Date() },
+          { id: 3, title: 'Faculty Solution Analysis & Budget Proposal', status: 'In Progress', dueDate: 'N/A' },
+          { id: 4, title: 'University Review & Submission to Government', status: 'Pending', dueDate: 'N/A' },
+          { id: 5, title: 'Government Budget Sanction & Grant Disbursal', status: 'Pending', dueDate: 'N/A' },
+          { id: 6, title: 'Prototype Development & Field Testing', status: 'Pending', dueDate: 'N/A' },
+          { id: 7, title: 'Government Handover & Final Audit', status: 'Pending', dueDate: 'N/A' }
         ];
+
+      const completedCount = milestones.filter((m) => m.status === 'Completed' || m.status === 'COMPLETED').length;
+      const progressPercentage = Math.round((completedCount / (milestones.length || 7)) * 100);
 
       const res = await UniversityProject.findOneAndUpdate(
         query,
@@ -359,8 +506,8 @@ export class UniversityDashboardRepository {
               designation: facultyInfo.designation || 'Lead Faculty Mentor'
             },
             status: 'In Progress',
-            progressPercentage: Math.max(existingProj?.progressPercentage || 0, 25),
-            milestonesCompleted: Math.max(existingProj?.milestonesCompleted || 0, 2),
+            progressPercentage,
+            milestonesCompleted: completedCount,
             milestones,
             updatedAt: new Date()
           }
@@ -450,73 +597,136 @@ export class UniversityDashboardRepository {
   }
 
   async getFacultyByUniversity(universityCode) {
-    const code = (universityCode || '').toUpperCase();
+    const rawCode = (universityCode || '').trim();
+    const uniDoc = await this.findUniversityByCodeOrId(rawCode);
+    const code = (uniDoc?.code || rawCode).toUpperCase();
+    const aishe = (uniDoc?.aisheCode || '').toUpperCase();
+    const validCodes = Array.from(new Set([code, rawCode.toUpperCase(), aishe, uniDoc?.shortName].filter(Boolean)));
+
     try {
-      let faculty = await UniversityFaculty.find({ universityCode: code }).sort({ name: 1 }).lean();
-      if (!faculty || faculty.length === 0) {
-        const anyFaculty = await UniversityFaculty.find({}).sort({ name: 1 }).lean();
-        if (anyFaculty && anyFaculty.length > 0) {
-          faculty = anyFaculty;
-        } else {
-          const defaultFac = await UniversityFaculty.create({
-            universityCode: code,
-            name: 'Prof. Rajesh Chandra',
-            designation: 'Professor & Head of Department',
-            department: 'Civil & Environmental Engineering',
-            email: 'rajesh.chandra@university.ac.in',
-            phone: '+91 98351 24780',
-            specialization: ['Environmental Engineering', 'Water Resource Systems', 'Rural Infrastructure'],
-            experience: '16 Years',
-            qualification: 'Ph.D. in Environmental Systems',
-            researchAreas: ['Groundwater Quality', 'GIS Spatial Mapping', 'Low-cost Filtration'],
-            activeProjects: 1,
-            completedProjects: 4,
-            currentLoad: 1,
-            availabilityStatus: 'Available',
-            bio: 'Senior Professor specializing in grassroots environmental technologies, hydrological systems, and rural infrastructure.'
-          });
-          faculty = [defaultFac.toObject ? defaultFac.toObject() : defaultFac];
-        }
-      }
-      return faculty;
+      const faculty = await UniversityFaculty.find({
+        $or: [
+          { universityCode: { $in: validCodes } },
+          { universityCode: code }
+        ]
+      }).sort({ name: 1 }).lean();
+      return faculty || [];
     } catch (err) {
-      return [{
-        name: 'Prof. Rajesh Chandra',
-        designation: 'Professor & Head of Department',
-        department: 'Civil & Environmental Engineering',
-        email: 'rajesh.chandra@university.ac.in',
-        phone: '+91 98351 24780',
-        availabilityStatus: 'Available',
-        activeProjects: 1,
-        experience: '16 Years'
-      }];
+      return [];
     }
   }
 
   async createFaculty(universityCode, facultyData) {
-    const code = (universityCode || '').toUpperCase();
+    const rawCode = (universityCode || '').trim();
+    const uniDoc = await this.findUniversityByCodeOrId(rawCode);
+    const code = (uniDoc?.code || rawCode).toUpperCase();
+    const cleanEmail = (facultyData.email || '').trim().toLowerCase();
+    const cleanName = (facultyData.name || '').trim();
+    const cleanPhone = (facultyData.phone || '+91 98765 43210').trim();
+    const password = facultyData.password || 'Faculty@123456';
+    const passwordHash = await bcrypt.hash(password, 12);
+
     try {
-      const existing = await UniversityFaculty.findOne({
+      // 1. Create or Update User account in users collection for authentication
+      let userAccount = await User.findOne({ email: cleanEmail });
+      if (!userAccount) {
+        userAccount = await User.create({
+          fullName: cleanName,
+          email: cleanEmail,
+          mobileNumber: cleanPhone.replace(/[^0-9]/g, '').slice(-10) || `98${Math.floor(10000000 + Math.random() * 90000000)}`,
+          passwordHash,
+          role: 'FACULTY',
+          accountStatus: 'ACTIVE',
+          emailVerification: { verified: true, verifiedAt: new Date() },
+          profile: {
+            institutionName: uniDoc?.name || 'Ranchi University',
+            aisheCode: uniDoc?.aisheCode || code,
+            universityCode: code,
+            department: facultyData.department || 'Engineering',
+            designation: facultyData.designation || 'Associate Professor'
+          }
+        });
+      } else {
+        await User.findByIdAndUpdate(userAccount._id, {
+          $set: {
+            fullName: cleanName,
+            passwordHash,
+            role: 'FACULTY',
+            accountStatus: 'ACTIVE',
+            emailVerification: { verified: true, verifiedAt: new Date() },
+            'profile.universityCode': code,
+            'profile.department': facultyData.department || 'Engineering'
+          }
+        });
+      }
+
+      // 2. Create or Update UniversityFaculty in university_faculty collection
+      let existingFac = await UniversityFaculty.findOne({
         $or: [
-          { universityCode: code, name: new RegExp(`^${(facultyData.name || '').trim()}$`, 'i') },
-          { universityCode: code, email: new RegExp(`^${(facultyData.email || '').trim()}$`, 'i') }
+          { universityCode: code, email: cleanEmail },
+          { email: cleanEmail }
         ]
       });
-      if (existing) return existing;
-      return await UniversityFaculty.create({ ...facultyData, universityCode: code });
+
+      const facultyPayload = {
+        ...facultyData,
+        email: cleanEmail,
+        name: cleanName,
+        universityCode: code,
+        passwordHash,
+        userId: userAccount?._id || null,
+        status: 'Active',
+        availabilityStatus: facultyData.availabilityStatus || 'Available'
+      };
+
+      if (existingFac) {
+        const updated = await UniversityFaculty.findByIdAndUpdate(
+          existingFac._id,
+          { $set: facultyPayload },
+          { new: true }
+        );
+        return updated.toObject ? updated.toObject() : updated;
+      }
+
+      const created = await UniversityFaculty.create(facultyPayload);
+      return created.toObject ? created.toObject() : created;
     } catch (err) {
-      return { id: `FAC-${Date.now().toString().slice(-4)}`, ...facultyData, universityCode: code };
+      console.warn('Error creating faculty:', err);
+      return {
+        id: `FAC-${Date.now().toString().slice(-4)}`,
+        ...facultyData,
+        email: cleanEmail,
+        name: cleanName,
+        universityCode: code
+      };
     }
   }
 
   async updateFaculty(universityCode, facultyId, updateData) {
     const code = (universityCode || '').toUpperCase();
     try {
+      let passwordHash = undefined;
+      if (updateData.password) {
+        passwordHash = await bcrypt.hash(updateData.password, 12);
+        updateData.passwordHash = passwordHash;
+      }
+
       const query =
         facultyId && facultyId.match(/^[0-9a-fA-F]{24}$/)
           ? { _id: facultyId }
           : { $or: [{ name: facultyId }, { email: facultyId }, { facultyId: facultyId }, { id: facultyId }] };
+
       const updated = await UniversityFaculty.findOneAndUpdate(query, { $set: updateData }, { new: true });
+
+      // Synchronize User password if updated
+      const facEmail = updated?.email || updateData.email;
+      if (facEmail && passwordHash) {
+        await User.findOneAndUpdate(
+          { email: facEmail.toLowerCase() },
+          { $set: { passwordHash, accountStatus: 'ACTIVE', 'emailVerification.verified': true } }
+        );
+      }
+
       return updated ? updated.toObject() : { _id: facultyId, ...updateData, universityCode: code };
     } catch (err) {
       return { _id: facultyId, ...updateData, universityCode: code };
@@ -591,9 +801,64 @@ export class UniversityDashboardRepository {
     }
   }
 
-  async updateApprovalStatus(approvalId, universityCode, status) {
+  async updateApprovalStatus(approvalId, universityCode, status, remarks = '') {
     try {
-      const res = await UniversityApproval.findOneAndUpdate({ approvalId }, { $set: { status } }, { new: true });
+      const res = await UniversityApproval.findOneAndUpdate(
+        { approvalId },
+        {
+          $set: {
+            status,
+            adminRemarks: remarks
+          },
+          $push: {
+            history: {
+              action: status === 'Approved' ? 'Approved by University Authority' : status === 'Changes Required' ? 'Changes Requested' : 'Rejected',
+              performedBy: 'University Nodal Officer',
+              timestamp: `${new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}, ${new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}`,
+              note: remarks || (status === 'Approved' ? 'Proposal approved and forwarded to Government for grant sanction.' : 'Review decision updated.')
+            }
+          }
+        },
+        { new: true }
+      );
+
+      // Update corresponding project status, remarks & advance lifecycle
+      if (res) {
+        const projId = res.projectId || approvalId.replace('APP-', '');
+        let newBudgetStatus = 'Submitted to University for Review';
+        let progressPct = 43;
+        let milestonesDone = 3;
+
+        if (status === 'Approved' || status === 'APPROVED') {
+          newBudgetStatus = 'Forwarded to Government for Grant Sanction';
+          progressPct = 57;
+          milestonesDone = 4;
+        } else if (status === 'Changes Required') {
+          newBudgetStatus = 'Changes Required by University';
+        } else if (status === 'Rejected') {
+          newBudgetStatus = 'Rejected by University';
+        }
+
+        await UniversityProject.findOneAndUpdate(
+          { $or: [{ projectId: projId }, { challengeId: projId }] },
+          {
+            $set: {
+              budgetStatus: newBudgetStatus,
+              adminRemarks: remarks,
+              progressPercentage: progressPct,
+              milestonesCompleted: milestonesDone
+            }
+          }
+        );
+
+        await UniversityActivity.create({
+          universityCode: (universityCode || 'RU001').toUpperCase(),
+          text: `R&D Proposal for "${res.project}" review decision: ${status.toUpperCase()} by University Authority.${remarks ? ` Remarks: "${remarks}"` : ''}`,
+          type: status === 'Approved' ? 'PROPOSAL_APPROVED' : 'PROPOSAL_REVIEWED',
+          timestamp: new Date()
+        });
+      }
+
       if (res) return res;
     } catch (err) { }
     return { approvalId, status };
@@ -605,6 +870,16 @@ export class UniversityDashboardRepository {
       return (await UniversityActivity.find({ universityCode: code }).sort({ timestamp: -1 }).limit(limit).lean()) || [];
     } catch (err) {
       return [];
+    }
+  }
+
+  async clearActivities(universityCode) {
+    const code = (universityCode || 'RU001').toUpperCase();
+    try {
+      await UniversityActivity.deleteMany({ universityCode: code });
+      return { success: true, message: 'All activities cleared' };
+    } catch (err) {
+      return { success: false, error: err.message };
     }
   }
 

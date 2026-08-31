@@ -34,8 +34,8 @@ export const ProjectsPanel = ({ onNavigateTab }) => {
   }, []);
 
   const totalCount = projects.length;
-  const inProgressCount = projects.filter((p) => p.status === 'In Progress').length;
-  const planningCount = projects.filter((p) => p.status === 'Planning').length;
+  const inProgressCount = projects.filter((p) => p.status === 'In Progress' || p.status === 'Active R&D').length;
+  const planningCount = projects.filter((p) => p.status === 'Proposal Stage' || p.status === 'Planning' || p.status === 'Pending Proposal' || !p.status).length;
   const completedCount = projects.filter((p) => p.status === 'Completed').length;
 
   const facultyOptions = Array.from(
@@ -53,8 +53,8 @@ export const ProjectsPanel = ({ onNavigateTab }) => {
     await universityApiService.createProject({
       ...newProj,
       projectId: `PRJ-${Math.floor(1000 + Math.random() * 9000)}`,
-      status: 'In Progress',
-      progressPercentage: 10
+      status: 'Proposal Stage',
+      progressPercentage: 14
     });
     await fetchProjects();
   };
@@ -77,29 +77,41 @@ export const ProjectsPanel = ({ onNavigateTab }) => {
         daysLeft: 'Completed'
       };
       await handleUpdateProject(updated);
-      await fetchProjects();
     }
   };
 
   const handleSoftDeleteProject = async (proj) => {
-    if (window.confirm(`Are you sure you want to archive project "${proj.title}"? Government portal will maintain full audit history.`)) {
-      await universityApiService.deleteProject(proj.projectId || proj._id, 'RU001');
+    if (window.confirm(`Archive project "${proj.title}" from active view?`)) {
+      await universityApiService.deleteProject(proj.projectId || proj._id);
       await fetchProjects();
+      if (selectedProject?.projectId === proj.projectId) {
+        setSelectedProject(null);
+      }
     }
   };
 
   const filtered = projects.filter((p) => {
     if (domainFilter !== 'All' && p.domain !== domainFilter) return false;
-    if (statusFilter !== 'All' && p.status !== statusFilter) return false;
+    if (statusFilter !== 'All') {
+      if (statusFilter === 'Planning' || statusFilter === 'Proposal Stage') {
+        if (p.status !== 'Proposal Stage' && p.status !== 'Planning' && p.status !== 'Pending Proposal') return false;
+      } else if (p.status !== statusFilter) {
+        return false;
+      }
+    }
     if (facultyFilter !== 'All') {
-      const mentor = p.facultyMentor?.name || p.leadMentor || '';
+      const mentor = p.facultyMentor?.name || p.leadMentor;
       if (mentor !== facultyFilter) return false;
     }
     if (search.trim()) {
       const q = search.toLowerCase();
-      const mentor = p.facultyMentor?.name || p.leadMentor || '';
-      const id = p.projectId || p.challengeId || '';
-      return p.title.toLowerCase().includes(q) || id.toLowerCase().includes(q) || mentor.toLowerCase().includes(q);
+      return (
+        (p.title || '').toLowerCase().includes(q) ||
+        (p.projectId || '').toLowerCase().includes(q) ||
+        (p.challengeId || '').toLowerCase().includes(q) ||
+        (p.domain || '').toLowerCase().includes(q) ||
+        (p.facultyMentor?.name || p.leadMentor || '').toLowerCase().includes(q)
+      );
     }
     return true;
   });

@@ -65,8 +65,8 @@ export const GovernmentSidebar = ({
       label: 'Projects & Solutions',
       icon: FolderKanban,
       subItems: [
-        { id: 'projects_active', label: 'Active Projects', icon: PlayCircle },
         { id: 'projects_proposals', label: 'Solution Proposals', icon: FileCheck },
+        { id: 'projects_active', label: 'Active Projects', icon: PlayCircle },
         { id: 'projects_milestones', label: 'Milestones & Monitoring', icon: CheckCircle2 },
         { id: 'projects_prototypes', label: 'Prototypes & TRL', icon: Cpu }
       ]

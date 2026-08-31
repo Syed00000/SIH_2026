@@ -142,6 +142,22 @@ export const universityApiService = {
     return [];
   },
 
+  async getActivities(universityCode = DEFAULT_UNIVERSITY_CODE) {
+    try {
+      const res = await apiClient.get(`university/activities?universityCode=${encodeURIComponent(universityCode)}`);
+      if (res?.data) return res.data;
+    } catch (err) { console.error('API getActivities error:', err.message); }
+    return [];
+  },
+
+  async clearActivities(universityCode = DEFAULT_UNIVERSITY_CODE) {
+    try {
+      const res = await apiClient.post(`university/activities/clear?universityCode=${encodeURIComponent(universityCode)}`, { universityCode });
+      if (res?.data) return res.data;
+    } catch (err) { console.error('API clearActivities error:', err.message); }
+    return { success: true };
+  },
+
   async getApprovals(universityCode = DEFAULT_UNIVERSITY_CODE) {
     try {
       const res = await apiClient.get(`university/approvals?universityCode=${encodeURIComponent(universityCode)}`);

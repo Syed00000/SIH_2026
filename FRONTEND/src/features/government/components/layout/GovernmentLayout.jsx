@@ -85,12 +85,19 @@ export const GovernmentLayout = ({ onLogout }) => {
   const [trendData, setTrendData] = useState(() => governmentDataService.getFilteredTrend(selectedDistrict, selectedSector, trendInterval));
   const [heis, setHeis] = useState(() => governmentDataService.getFilteredHeis(selectedDistrict));
 
-  // Automatically recalculate data whenever filters or timeframes change
-  useEffect(() => {
+  // Automatically recalculate data whenever filters or timeframes change & poll live stats
+  const refreshStats = async () => {
+    await governmentDataService.fetchLiveDatabaseStats();
     setKpis(governmentDataService.getFilteredKpis(selectedDistrict, selectedSector));
     setSectors(governmentDataService.getFilteredSectors(selectedDistrict, sectorTimeframe));
     setTrendData(governmentDataService.getFilteredTrend(selectedDistrict, selectedSector, trendInterval));
     setHeis(governmentDataService.getFilteredHeis(selectedDistrict));
+  };
+
+  useEffect(() => {
+    refreshStats();
+    const interval = setInterval(refreshStats, 4000);
+    return () => clearInterval(interval);
   }, [selectedDistrict, selectedSector, sectorTimeframe, trendInterval]);
 
   const handleApproveTriage = (id) => {
