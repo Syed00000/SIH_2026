@@ -161,6 +161,15 @@ export class UniversityController {
     } catch (error) { next(error); }
   }
 
+  async submitPrototype(req, res, next) {
+    try {
+      const { id } = req.params;
+      const code = req.query.universityCode || req.user?.profile?.aisheCode || 'RUNI-JH';
+      const data = await universityService.submitPrototype(id, code, req.body);
+      res.status(200).json({ status: 'SUCCESS', message: 'Prototype submitted successfully', data });
+    } catch (error) { next(error); }
+  }
+
   async updateApproval(req, res, next) {
     try {
       const { id } = req.params;
@@ -168,6 +177,31 @@ export class UniversityController {
       const { status } = req.body;
       const data = await universityService.updateApproval(id, code, status);
       res.status(200).json({ status: 'SUCCESS', message: 'Approval status updated', data });
+    } catch (error) { next(error); }
+  }
+
+  async deleteApproval(req, res, next) {
+    try {
+      const { id } = req.params;
+      const code = req.query.universityCode || req.user?.profile?.aisheCode || 'RUNI-JH';
+      const data = await universityService.deleteApproval(id, code);
+      res.status(200).json({ status: 'SUCCESS', message: 'Approval deleted', data });
+    } catch (error) { next(error); }
+  }
+
+  async createIndustryRequest(req, res, next) {
+    try {
+      const code = req.query.universityCode || req.user?.profile?.aisheCode || 'RU001';
+      const data = await universityService.createIndustryRequest(code, req.body);
+      res.status(200).json({ status: 'SUCCESS', message: 'Industry Request Sent', data });
+    } catch (error) { next(error); }
+  }
+
+  async getIndustryRequests(req, res, next) {
+    try {
+      const code = req.query.universityCode || req.user?.profile?.aisheCode || 'RU001';
+      const data = await universityService.getIndustryRequests(code);
+      res.status(200).json({ status: 'SUCCESS', data });
     } catch (error) { next(error); }
   }
 

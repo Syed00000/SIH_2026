@@ -291,6 +291,33 @@ export const InspectPrototypeModal = ({
             </div>
           )}
 
+          {/* Real Submitted Phase Technical Documentation from Faculty */}
+          {(() => {
+            const phases = project.prototypeData?.phases;
+            const legacy = project.prototypeData?.content;
+            const phaseContent = phases 
+              ? (activeStageTab === 1 ? phases.labDesign : activeStageTab === 2 ? phases.fieldTest : activeStageTab === 3 ? phases.stateCert : phases.publicDeploy)
+              : (activeStageTab === 1 ? legacy : null);
+
+            if (phaseContent && phaseContent.replace(/<[^>]*>/g, '').trim().length > 0) {
+              return (
+                <div className="bg-white p-4 rounded-xl border border-emerald-200/80 space-y-2 shadow-2xs">
+                  <div className="flex items-center space-x-2 text-[#007A61]">
+                    <FileCheck2 className="w-4 h-4" />
+                    <h4 className="text-xs font-bold uppercase tracking-wide">
+                      Faculty Submitted Technical Blueprint (Phase {activeStageTab})
+                    </h4>
+                  </div>
+                  <div
+                    className="ql-editor prose prose-sm prose-slate max-w-none text-xs text-slate-700 leading-relaxed bg-emerald-50/30 p-3 rounded-lg border border-emerald-100"
+                    dangerouslySetInnerHTML={{ __html: phaseContent }}
+                  />
+                </div>
+              );
+            }
+            return null;
+          })()}
+
           {/* Interactive Checklist for Selected Stage */}
           <div className="bg-white rounded-xl border border-slate-200 p-4 space-y-2.5 shadow-2xs">
             <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wide flex items-center justify-between">

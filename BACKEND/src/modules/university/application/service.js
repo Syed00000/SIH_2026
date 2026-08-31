@@ -64,6 +64,16 @@ export class UniversityService {
       percent: allChallenges.length > 0 ? Math.round((domainMap[dom] / allChallenges.length) * 100) : 0
     }));
 
+    let totalGrantsAmount = 0;
+    projects.forEach((p) => {
+      let amt = p.disbursedAmount || p.sanctionedBudget || p.budget || 0;
+      if (typeof amt === 'string') {
+        amt = parseFloat(amt.replace(/[^0-9.]/g, '')) || 0;
+      }
+      totalGrantsAmount += amt;
+    });
+    const formattedGrants = totalGrantsAmount > 0 ? `₹ ${totalGrantsAmount.toLocaleString('en-IN')}` : '₹ 0';
+
     return {
       name: university?.name || 'University Innovation Portal',
       shortName: university?.shortName || code,
@@ -78,8 +88,9 @@ export class UniversityService {
       challenges: allChallenges,
       kpis: {
         assignedChallenges: { total: challengesRes.total || allChallenges.length, reviewNeeded: reviewNeededCount },
-        activeProjects: { total: activeProjectsCount, delayed: delayedProjectsCount },
-        facultyMentors: { total: facultyCount, onLeave: onLeaveCount },
+        activeProjects: { total: activeProjectsCount, delayed: delayedProjectsCount, onTrack: onTrackCount },
+        facultyMentors: { total: facultyCount, active: facultyCount - onLeaveCount, onLeave: onLeaveCount },
+        totalGrants: { value: formattedGrants, note: 'Total Disbursed Grants' },
         pendingApprovals: { total: pendingApprovalsCount, note: 'Requires action' },
         industryPartners: { total: partners.length, note: 'Active collaborations' }
       },
@@ -147,6 +158,10 @@ export class UniversityService {
   async getPartners(universityCode) { return await universityDashboardRepository.getPartnersByUniversity(universityCode); }
   async getApprovals(universityCode) { return await universityDashboardRepository.getApprovalsByUniversity(universityCode); }
   async updateApproval(approvalId, universityCode, status) { return await universityDashboardRepository.updateApprovalStatus(approvalId, universityCode, status); }
+  async deleteApproval(approvalId, universityCode) { return await universityDashboardRepository.deleteApproval(approvalId, universityCode); }
+  async createIndustryRequest(universityCode, payload) { return await universityDashboardRepository.createIndustryRequest(universityCode, payload); }
+  async getIndustryRequests(universityCode) { return await universityDashboardRepository.getIndustryRequests(universityCode); }
+  async submitPrototype(projectId, universityCode, prototypeData) { return await universityDashboardRepository.submitPrototype(projectId, universityCode, prototypeData); }
 
   async getProfile(universityCode) {
     return await universityDashboardRepository.getUniversityProfile(universityCode);

@@ -29,6 +29,7 @@ export const ApprovalsFilterBar = ({
           <option value="All">All Types</option>
           <option value="Project Approval">Project Approval</option>
           <option value="Proposal Approval">Proposal Approval</option>
+          <option value="Prototype Approval">Prototype Approval</option>
           <option value="Partnership Approval">Partnership Approval</option>
           <option value="Payment Approval">Payment Approval</option>
           <option value="Lab Clearance">Lab Clearance</option>

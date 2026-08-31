@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { MoreVertical, ChevronLeft, ChevronRight, Eye, CheckCircle2 } from 'lucide-react';
+import { MoreVertical, ChevronLeft, ChevronRight, Eye, CheckCircle2, FlaskConical } from 'lucide-react';
 
 const getTypePill = (type = '') => {
   if (type.includes('Project')) return 'bg-blue-50 text-blue-800 border-blue-200';
+  if (type.includes('Prototype')) return 'bg-purple-50 text-purple-800 border-purple-200';
   if (type.includes('Proposal')) return 'bg-emerald-50 text-[#007A61] border-emerald-200';
   if (type.includes('Partnership')) return 'bg-amber-50 text-amber-800 border-amber-200';
   if (type.includes('Payment')) return 'bg-emerald-50 text-emerald-800 border-emerald-200';
@@ -97,13 +98,16 @@ export const ApprovalsTable = ({
                         )}
                       </td>
                       <td className="py-3 px-3.5">
-                        <span
-                          className={`px-2 py-0.5 text-[10px] font-bold border rounded-md ${getTypePill(
-                            apr.type
-                          )}`}
-                        >
-                          {apr.type}
-                        </span>
+                        <div className="flex items-center space-x-1.5">
+                          {apr.type?.includes('Prototype') && <FlaskConical className="w-3.5 h-3.5 text-purple-600" />}
+                          <span
+                            className={`px-2 py-0.5 text-[10px] font-bold border rounded-full ${getTypePill(
+                              apr.type
+                            )}`}
+                          >
+                            {apr.type}
+                          </span>
+                        </div>
                       </td>
                       <td className="py-3 px-3.5">
                         <div className="flex items-center space-x-2">

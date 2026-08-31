@@ -27,10 +27,12 @@ const PRESET_TEAM_NAMES = [
 export const FacultyTeamsPanel = ({
   projects = [],
   faculty,
-  onRefresh
+  onRefresh,
+  initialProjectId = null,
+  hideHeader = false
 }) => {
   const [selectedProjectId, setSelectedProjectId] = useState(
-    projects[0]?.projectId || projects[0]?.challengeId || ''
+    initialProjectId || projects[0]?.projectId || projects[0]?.challengeId || ''
   );
 
   const currentProject =
@@ -139,24 +141,26 @@ export const FacultyTeamsPanel = ({
   };
 
   return (
-    <div className="space-y-4 max-w-7xl mx-auto select-none pb-12">
+    <div className={`space-y-4 max-w-7xl mx-auto select-none ${hideHeader ? '' : 'pb-12'}`}>
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-3 border-b border-slate-200">
-        <div>
-          <div className="flex items-center space-x-2 text-xs font-semibold text-slate-500 mb-1">
-            <span>Faculty Research Node</span>
-            <span>/</span>
-            <span className="text-slate-900 font-bold">Student Research Team Management</span>
+      {!hideHeader && (
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-3 border-b border-slate-200">
+          <div>
+            <div className="flex items-center space-x-2 text-xs font-semibold text-slate-500 mb-1">
+              <span>Faculty Research Node</span>
+              <span>/</span>
+              <span className="text-slate-900 font-bold">Student Research Team Management</span>
+            </div>
+            <h1 className="text-xl font-bold text-slate-900 tracking-tight flex items-center space-x-2">
+              <Users className="w-5 h-5 text-[#007A61]" />
+              <span>Form & Name Student Research Teams</span>
+            </h1>
+            <p className="text-xs text-slate-500 mt-0.5">
+              Assign custom team names, recruit student researchers from Ranchi University departments, and designate Team Leads.
+            </p>
           </div>
-          <h1 className="text-xl font-bold text-slate-900 tracking-tight flex items-center space-x-2">
-            <Users className="w-5 h-5 text-[#007A61]" />
-            <span>Form & Name Student Research Teams</span>
-          </h1>
-          <p className="text-xs text-slate-500 mt-0.5">
-            Assign custom team names, recruit student researchers from Ranchi University departments, and designate Team Leads.
-          </p>
         </div>
-      </div>
+      )}
 
       {projects.length === 0 ? (
         <div className="bg-white border border-slate-200/90 rounded-2xl p-10 text-center text-slate-400 space-y-2">
@@ -169,24 +173,26 @@ export const FacultyTeamsPanel = ({
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           {/* Left 2 Cols: Team Name, Roster & Add Form */}
-          <div className="lg:col-span-2 space-y-4">
+          <div className={hideHeader ? "space-y-4" : "lg:col-span-2 space-y-4"}>
             {/* Project Selector */}
-            <div className="bg-white border border-slate-200/90 rounded-2xl p-4 shadow-2xs space-y-2">
-              <label className="block text-[10.5px] font-extrabold uppercase tracking-wider text-slate-600">
-                Active Project Selection *
-              </label>
-              <select
-                value={selectedProjectId}
-                onChange={(e) => handleProjectSelect(e.target.value)}
-                className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:outline-none focus:ring-1 focus:ring-[#007A61] focus:bg-white shadow-2xs cursor-pointer"
-              >
-                {projects.map((p, i) => (
-                  <option key={p.projectId || i} value={p.projectId || p.challengeId}>
-                    {p.projectId} — {p.title} ({p.domain})
-                  </option>
-                ))}
-              </select>
-            </div>
+            {!hideHeader && (
+              <div className="bg-white border border-slate-200/90 rounded-2xl p-4 shadow-2xs space-y-2">
+                <label className="block text-[10.5px] font-extrabold uppercase tracking-wider text-slate-600">
+                  Active Project Selection *
+                </label>
+                <select
+                  value={selectedProjectId}
+                  onChange={(e) => handleProjectSelect(e.target.value)}
+                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:outline-none focus:ring-1 focus:ring-[#007A61] focus:bg-white shadow-2xs cursor-pointer"
+                >
+                  {projects.map((p, i) => (
+                    <option key={p.projectId || i} value={p.projectId || p.challengeId}>
+                      {p.projectId} — {p.title} ({p.domain})
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
 
             {/* Team Name Configuration Card */}
             <div className="bg-white border border-slate-200/90 rounded-2xl p-4 shadow-2xs space-y-3">
@@ -411,7 +417,8 @@ export const FacultyTeamsPanel = ({
           </div>
 
           {/* Right 1 Col: Guidelines & Fellowship Info */}
-          <div className="space-y-3.5">
+          {!hideHeader && (
+            <div className="space-y-3.5">
             <div className="bg-white border border-slate-200/90 rounded-2xl p-4 shadow-2xs space-y-3">
               <h3 className="text-xs font-extrabold text-slate-900 uppercase tracking-wider">
                 Team Guidelines
@@ -431,7 +438,8 @@ export const FacultyTeamsPanel = ({
                 </p>
               </div>
             </div>
-          </div>
+            </div>
+          )}
         </div>
       )}
     </div>

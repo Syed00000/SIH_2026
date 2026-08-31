@@ -3,6 +3,7 @@ import { ApprovalsKpis } from './ApprovalsKpis.jsx';
 import { ApprovalsFilterBar } from './ApprovalsFilterBar.jsx';
 import { ApprovalsTable } from './ApprovalsTable.jsx';
 import { ApprovalDetailModal } from './ApprovalDetailModal.jsx';
+import { IndustryRequestModal } from './IndustryRequestModal.jsx';
 import { universityApiService } from '../../services/universityApiService.js';
 
 const UNIVERSITY_CODE = 'RU001';
@@ -12,9 +13,11 @@ export const ApprovalsPanel = () => {
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isIndustryModalOpen, setIsIndustryModalOpen] = useState(false);
   const [search, setSearch] = useState('');
   const [typeFilter, setTypeFilter] = useState('All');
   const [statusFilter, setStatusFilter] = useState('All');
+  const [activeTab, setActiveTab] = useState('budget'); // 'budget' or 'prototype'
 
   const fetchApprovals = async () => {
     setLoading(true);
@@ -63,7 +66,28 @@ export const ApprovalsPanel = () => {
     }
   };
 
+  const handleDelete = async (approval) => {
+    try {
+      const id = approval.approvalId || approval._id;
+      await universityApiService.deleteApproval(id, UNIVERSITY_CODE);
+      setApprovals(prev => prev.filter(a => (a.approvalId || a._id) !== id));
+      handleCloseModal();
+    } catch (err) {
+      console.error('deleteApproval error:', err.message);
+    }
+  };
+
+  const handleOpenIndustryModal = (approval) => {
+    setIsIndustryModalOpen(true);
+    // Keep the Detail modal open underneath or close it, 
+    // it's up to UX. We can just overlay it.
+  };
+
   const filtered = approvals.filter((a) => {
+    // Tab splitting logic
+    if (activeTab === 'budget' && a.type === 'Prototype Approval') return false;
+    if (activeTab === 'prototype' && a.type !== 'Prototype Approval') return false;
+
     if (typeFilter !== 'All' && a.type !== typeFilter) return false;
     if (statusFilter !== 'All' && a.status !== statusFilter) return false;
     if (search.trim()) {
@@ -112,6 +136,30 @@ export const ApprovalsPanel = () => {
         }}
       />
 
+      {/* Tabs */}
+      <div className="flex items-center space-x-1 bg-slate-100/50 p-1 rounded-xl w-max border border-slate-200">
+        <button
+          onClick={() => setActiveTab('budget')}
+          className={`px-4 py-2 text-xs font-bold rounded-lg transition-all ${
+            activeTab === 'budget'
+              ? 'bg-white text-[#007A61] shadow-sm ring-1 ring-slate-200/50'
+              : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/50'
+          }`}
+        >
+          Grant & Budget Approvals
+        </button>
+        <button
+          onClick={() => setActiveTab('prototype')}
+          className={`px-4 py-2 text-xs font-bold rounded-lg transition-all ${
+            activeTab === 'prototype'
+              ? 'bg-white text-purple-700 shadow-sm ring-1 ring-slate-200/50'
+              : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/50'
+          }`}
+        >
+          Prototype Approvals
+        </button>
+      </div>
+
       {/* Full Width Table */}
       <div className="w-full">
         <ApprovalsTable
@@ -131,8 +179,20 @@ export const ApprovalsPanel = () => {
           onApprove={(apr, remarks) => handleUpdateStatus(apr, 'Approved', remarks)}
           onReject={(apr, remarks) => handleUpdateStatus(apr, 'Rejected', remarks)}
           onRequestChanges={(apr, remarks) => handleUpdateStatus(apr, 'Changes Required', remarks)}
+          onDelete={handleDelete}
+          onOpenIndustryModal={handleOpenIndustryModal}
         />
       )}
+
+      <IndustryRequestModal
+        isOpen={isIndustryModalOpen}
+        onClose={() => setIsIndustryModalOpen(false)}
+        approval={selected}
+        onSuccess={() => {
+          // Optionally update the UI to show it's been forwarded, e.g., by changing its state locally
+          handleCloseModal();
+        }}
+      />
     </div>
   );
 };

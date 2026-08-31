@@ -6,11 +6,13 @@ import { FacultyAssignedChallenges } from '../challenges/FacultyAssignedChalleng
 import { FacultyProposalsPanel } from '../proposals/FacultyProposalsPanel.jsx';
 import { FacultyTeamsPanel } from '../teams/FacultyTeamsPanel.jsx';
 import { FacultyProjectsPanel } from '../projects/FacultyProjectsPanel.jsx';
+import { FacultyProjectWorkspace } from '../projects/FacultyProjectWorkspace.jsx';
 import { FacultyProfilePanel } from '../profile/FacultyProfilePanel.jsx';
 import { facultyApiService } from '../../services/facultyApiService.js';
 
 export const FacultyLayout = ({ user, onLogout }) => {
   const [activeTab, setActiveTab] = useState('dashboard');
+  const [selectedProjectId, setSelectedProjectId] = useState(null);
   const [isSidebarExpanded, setIsSidebarExpanded] = useState(true);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [selectedDistrict, setSelectedDistrict] = useState('All');
@@ -103,26 +105,24 @@ export const FacultyLayout = ({ user, onLogout }) => {
                 faculty={data.faculty}
                 challenges={data.challenges}
                 projects={data.projects}
-                onNavigateTab={(tab) => setActiveTab(tab)}
+                onNavigateTab={(tab, id = null) => {
+                  if (id) setSelectedProjectId(id);
+                  setActiveTab(tab);
+                }}
               />
             ) : activeTab === 'challenges' ? (
               <FacultyAssignedChallenges
                 challenges={data.challenges}
                 faculty={data.faculty}
-                onDraftProposal={() => setActiveTab('proposals')}
+                onDraftProposal={() => setActiveTab('dashboard')} // redirect since global proposal tab is removed
               />
-            ) : activeTab === 'proposals' ? (
-              <FacultyProposalsPanel
-                projects={data.projects}
-                challenges={data.challenges}
-                faculty={data.faculty}
-                onRefresh={loadData}
-              />
-            ) : activeTab === 'teams' ? (
-              <FacultyTeamsPanel
+            ) : activeTab === 'project-workspace' ? (
+              <FacultyProjectWorkspace
+                project={data.projects.find(p => p.projectId === selectedProjectId || p.challengeId === selectedProjectId)}
                 projects={data.projects}
                 faculty={data.faculty}
                 onRefresh={loadData}
+                onBack={() => setActiveTab('dashboard')}
               />
             ) : activeTab === 'projects' ? (
               <FacultyProjectsPanel
@@ -141,7 +141,10 @@ export const FacultyLayout = ({ user, onLogout }) => {
                 faculty={data.faculty}
                 challenges={data.challenges}
                 projects={data.projects}
-                onNavigateTab={(tab) => setActiveTab(tab)}
+                onNavigateTab={(tab, id = null) => {
+                  if (id) setSelectedProjectId(id);
+                  setActiveTab(tab);
+                }}
               />
             )}
           </main>

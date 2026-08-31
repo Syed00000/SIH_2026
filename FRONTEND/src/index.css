@@ -151,3 +151,52 @@
   }
 }
 
+/* Revert Tailwind's base reset for React Quill editor so bold, italic, headings work */
+.ql-editor h1 {
+  font-size: 2em;
+  font-weight: bold;
+  margin-bottom: 0.5em;
+}
+.ql-editor h2 {
+  font-size: 1.5em;
+  font-weight: bold;
+  margin-bottom: 0.5em;
+}
+.ql-editor h3 {
+  font-size: 1.17em;
+  font-weight: bold;
+  margin-bottom: 0.5em;
+}
+.ql-editor p {
+  margin-bottom: 1em;
+}
+.ql-editor ul {
+  list-style-type: disc !important;
+  padding-left: 1.5em !important;
+  margin-bottom: 1em;
+}
+.ql-editor ol {
+  list-style-type: decimal !important;
+  padding-left: 1.5em !important;
+  margin-bottom: 1em;
+}
+.ql-editor strong, .ql-editor b {
+  font-weight: bold !important;
+}
+.ql-editor em, .ql-editor i {
+  font-style: italic !important;
+}
+.ql-editor u {
+  text-decoration: underline !important;
+}
+.ql-editor a {
+  color: #2563eb !important;
+  text-decoration: underline !important;
+}
+.ql-editor blockquote {
+  border-left: 4px solid #cbd5e1;
+  padding-left: 1em;
+  color: #64748b;
+  font-style: italic;
+  margin-bottom: 1em;
+}

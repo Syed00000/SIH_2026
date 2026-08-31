@@ -22,6 +22,7 @@ router.put('/projects/:id', (req, res, next) => universityController.updateProje
 router.delete('/projects/:id', (req, res, next) => universityController.deleteProject(req, res, next));
 router.post('/projects/:id/assign-faculty', (req, res, next) => universityController.assignFacultyToProject(req, res, next));
 router.patch('/projects/:id/assign-faculty', (req, res, next) => universityController.assignFacultyToProject(req, res, next));
+router.post('/projects/:id/prototype', (req, res, next) => universityController.submitPrototype(req, res, next));
 
 router.get('/activities', (req, res, next) => universityController.getActivities(req, res, next));
 router.delete('/activities', (req, res, next) => universityController.clearActivities(req, res, next));
@@ -30,6 +31,9 @@ router.post('/activities/clear', (req, res, next) => universityController.clearA
 router.get('/partners', (req, res, next) => universityController.getPartners(req, res, next));
 router.get('/approvals', (req, res, next) => universityController.getApprovals(req, res, next));
 router.patch('/approvals/:id', (req, res, next) => universityController.updateApproval(req, res, next));
+router.delete('/approvals/:id', (req, res, next) => universityController.deleteApproval(req, res, next));
+router.post('/industry-request', (req, res, next) => universityController.createIndustryRequest(req, res, next));
+router.get('/industry-requests', (req, res, next) => universityController.getIndustryRequests(req, res, next));
 router.get('/reports', (req, res, next) => universityController.getReports(req, res, next));
 router.get('/profile', (req, res, next) => universityController.getProfile(req, res, next));
 router.put('/profile', (req, res, next) => universityController.updateProfile(req, res, next));

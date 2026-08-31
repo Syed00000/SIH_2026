@@ -7,7 +7,8 @@ import {
   UniversityTeam,
   UniversityPartner,
   UniversityApproval,
-  UniversityActivity
+  UniversityActivity,
+  UniversityIndustryRequest
 } from './model.js';
 import MongooseUniversity from '../../government/heis/infrastructure/model.js';
 import MongooseIndustry from '../../government/industries/infrastructure/model.js';
@@ -864,6 +865,68 @@ export class UniversityDashboardRepository {
     return { approvalId, status };
   }
 
+  async submitPrototype(projectId, universityCode, prototypeData) {
+    try {
+      const code = (universityCode || 'RU001').toUpperCase();
+      
+      // Update Project
+      const project = await UniversityProject.findOneAndUpdate(
+        { $or: [{ projectId }, { challengeId: projectId }] },
+        { $set: { prototypeStatus: 'In Review', prototypeData } },
+        { new: true }
+      );
+
+      if (project) {
+        // Create an Approval document for University Approvals Panel
+        const newApproval = await UniversityApproval.create({
+          approvalId: `APP-PROTO-${Date.now()}`,
+          universityCode: code,
+          title: 'Prototype Blueprint Review',
+          type: 'Prototype Approval',
+          project: project.title,
+          projectId: project.projectId,
+          challengeId: project.challengeId,
+          requestedBy: prototypeData.facultyName || prototypeData.facultyEmail || project.leadMentor || 'Faculty Mentor',
+          teamName: project.teamName || project.studentTeam || null,
+          teamMembersCount: Array.isArray(project.teamMembers) ? project.teamMembers.length : null,
+          faculty: project.facultyMentor || { name: prototypeData.facultyName, email: prototypeData.facultyEmail },
+          team: {
+            name: project.teamName || project.studentTeam || null,
+            membersCount: Array.isArray(project.teamMembers) ? project.teamMembers.length : null,
+            members: Array.isArray(project.teamMembers) ? project.teamMembers.map(m => ({ name: m.name, role: m.role })) : []
+          },
+          date: new Date(),
+          status: 'Pending',
+          metadata: {
+            prototypeContent: prototypeData.content,
+            phases: prototypeData.phases || null,
+            timeline: prototypeData.timeline
+          },
+          history: [{
+            action: 'Prototype Submitted',
+            performedBy: prototypeData.facultyName || prototypeData.facultyEmail || project.leadMentor || 'Faculty Mentor',
+            timestamp: `${new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}, ${new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}`,
+            note: 'Prototype blueprint submitted for university technical evaluation.'
+          }]
+        });
+
+        // Add activity
+        await UniversityActivity.create({
+          universityCode: code,
+          text: `Prototype blueprint for "${project.title}" submitted by Faculty Mentor.`,
+          type: 'PROTOTYPE_SUBMITTED',
+          timestamp: new Date()
+        });
+
+        return { success: true, projectId, approvalId: newApproval.approvalId };
+      }
+      return { success: false, message: 'Project not found' };
+    } catch (err) {
+      console.error('Error submitting prototype:', err);
+      return { success: false, error: err.message };
+    }
+  }
+
   async getActivitiesByUniversity(universityCode, limit = 10) {
     const code = (universityCode || '').toUpperCase();
     try {
@@ -1060,6 +1123,69 @@ export class UniversityDashboardRepository {
       } catch (err) { }
     }
     return await this.getUniversityProfile(code);
+  }
+
+  async deleteApproval(approvalId, universityCode) {
+    try {
+      await UniversityApproval.findOneAndDelete({ 
+        $or: [{ approvalId }, { _id: approvalId }] 
+      });
+      return { success: true };
+    } catch (err) {
+      console.warn('Error deleting approval in DB:', err);
+      return { success: false };
+    }
+  }
+
+  async createIndustryRequest(universityCode, payload) {
+    try {
+      const code = (universityCode || 'RU001').toUpperCase();
+      const requestId = `IND-REQ-${Date.now()}`;
+
+      const newReq = await UniversityIndustryRequest.create({
+        requestId,
+        universityCode: code,
+        projectTitle: payload.projectTitle,
+        projectId: payload.projectId || '',
+        partnerId: payload.partnerId || '',
+        partnerName: payload.partnerName || 'Industry Partner',
+        partnerEmail: payload.partnerEmail || '',
+        fundingRequested: Boolean(payload.fundingRequested),
+        labAccessRequested: Boolean(payload.labAccessRequested),
+        mentorshipRequested: Boolean(payload.mentorshipRequested),
+        estimatedBudget: payload.estimatedBudget || '',
+        duration: payload.duration || '3 Months',
+        executionOutcome: payload.executionOutcome || '',
+        facultyName: payload.facultyName || '',
+        studentTeam: payload.studentTeam || '',
+        status: 'Pending',
+        submittedAt: new Date()
+      });
+
+      await UniversityActivity.create({
+        universityCode: code,
+        text: `Industry Partnership Proposal dispatched to "${payload.partnerName}" for project "${payload.projectTitle}"`,
+        type: 'INDUSTRY_REQUEST',
+        user: 'University Nodal Officer',
+        time: `${new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}`,
+        timestamp: new Date()
+      });
+
+      return { success: true, request: newReq };
+    } catch (err) {
+      console.warn('Error creating industry request in DB:', err);
+      return { success: false, error: err.message };
+    }
+  }
+
+  async getIndustryRequests(universityCode) {
+    try {
+      const code = (universityCode || 'RU001').toUpperCase();
+      return await UniversityIndustryRequest.find({ universityCode: code }).sort({ createdAt: -1 }).lean();
+    } catch (err) {
+      console.warn('Error fetching industry requests in DB:', err);
+      return [];
+    }
   }
 }
 

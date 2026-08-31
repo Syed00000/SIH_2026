@@ -175,6 +175,29 @@ const universityActivitySchema = new mongoose.Schema(
   { timestamps: true, collection: 'university_activities' }
 );
 
+const universityIndustryRequestSchema = new mongoose.Schema(
+  {
+    requestId: { type: String, required: true, index: true },
+    universityCode: { type: String, required: true, index: true },
+    projectTitle: { type: String, required: true },
+    projectId: { type: String, default: '' },
+    partnerId: { type: String, default: '' },
+    partnerName: { type: String, required: true },
+    partnerEmail: { type: String, default: '' },
+    fundingRequested: { type: Boolean, default: true },
+    labAccessRequested: { type: Boolean, default: false },
+    mentorshipRequested: { type: Boolean, default: true },
+    estimatedBudget: { type: String, default: '' },
+    duration: { type: String, default: '3 Months' },
+    executionOutcome: { type: String, default: '' },
+    facultyName: { type: String, default: '' },
+    studentTeam: { type: String, default: '' },
+    status: { type: String, enum: ['Pending', 'Accepted', 'Declined', 'Under Evaluation'], default: 'Pending' },
+    submittedAt: { type: Date, default: Date.now }
+  },
+  { timestamps: true, collection: 'university_industry_requests', strict: false }
+);
+
 export const UniversityChallenge = mongoose.models.UniversityChallenge || mongoose.model('UniversityChallenge', universityChallengeSchema);
 export const UniversityProject = mongoose.models.UniversityProject || mongoose.model('UniversityProject', universityProjectSchema);
 export const UniversityFaculty = mongoose.models.UniversityFaculty || mongoose.model('UniversityFaculty', universityFacultySchema);
@@ -182,7 +205,8 @@ export const UniversityTeam = mongoose.models.UniversityTeam || mongoose.model('
 export const UniversityPartner = mongoose.models.UniversityPartner || mongoose.model('UniversityPartner', universityPartnerSchema);
 export const UniversityApproval = mongoose.models.UniversityApproval || mongoose.model('UniversityApproval', universityApprovalSchema);
 export const UniversityActivity = mongoose.models.UniversityActivity || mongoose.model('UniversityActivity', universityActivitySchema);
+export const UniversityIndustryRequest = mongoose.models.UniversityIndustryRequest || mongoose.model('UniversityIndustryRequest', universityIndustryRequestSchema);
 
 export default {
-  UniversityChallenge, UniversityProject, UniversityFaculty, UniversityTeam, UniversityPartner, UniversityApproval, UniversityActivity
+  UniversityChallenge, UniversityProject, UniversityFaculty, UniversityTeam, UniversityPartner, UniversityApproval, UniversityActivity, UniversityIndustryRequest
 };

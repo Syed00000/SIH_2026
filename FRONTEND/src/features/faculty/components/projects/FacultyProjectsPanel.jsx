@@ -18,9 +18,15 @@ export const FacultyProjectsPanel = ({
   projects = [],
   faculty,
   onRefresh,
-  onNavigateTab
+  onNavigateTab,
+  initialProjectId = null,
+  hideHeader = false
 }) => {
-  const [selectedProject, setSelectedProject] = useState(projects[0] || null);
+  const [selectedProject, setSelectedProject] = useState(
+    initialProjectId 
+      ? projects.find(p => p.projectId === initialProjectId || p.challengeId === initialProjectId) || projects[0]
+      : projects[0] || null
+  );
   const [updating, setUpdating] = useState(false);
 
   const handleAdvanceMilestone = async (project, milestoneId) => {
@@ -58,24 +64,26 @@ export const FacultyProjectsPanel = ({
   };
 
   return (
-    <div className="space-y-4 max-w-7xl mx-auto select-none pb-12">
+    <div className={`space-y-4 max-w-7xl mx-auto select-none ${hideHeader ? '' : 'pb-12'}`}>
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-3 border-b border-slate-200">
-        <div>
-          <div className="flex items-center space-x-2 text-xs font-semibold text-slate-500 mb-1">
-            <span>Faculty Research Node</span>
-            <span>/</span>
-            <span className="text-slate-900 font-bold">R&D Projects & Prototypes</span>
+      {!hideHeader && (
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-3 border-b border-slate-200">
+          <div>
+            <div className="flex items-center space-x-2 text-xs font-semibold text-slate-500 mb-1">
+              <span>Faculty Research Node</span>
+              <span>/</span>
+              <span className="text-slate-900 font-bold">R&D Projects & Prototypes</span>
+            </div>
+            <h1 className="text-xl font-bold text-slate-900 tracking-tight flex items-center space-x-2">
+              <FolderGit2 className="w-5 h-5 text-[#007A61]" />
+              <span>Active Prototyping & Project Tracking</span>
+            </h1>
+            <p className="text-xs text-slate-500 mt-0.5">
+              Monitor R&D milestones, student engineering progress, and district pilot trial handovers.
+            </p>
           </div>
-          <h1 className="text-xl font-bold text-slate-900 tracking-tight flex items-center space-x-2">
-            <FolderGit2 className="w-5 h-5 text-[#007A61]" />
-            <span>Active Prototyping & Project Tracking</span>
-          </h1>
-          <p className="text-xs text-slate-500 mt-0.5">
-            Monitor R&D milestones, student engineering progress, and district pilot trial handovers.
-          </p>
         </div>
-      </div>
+      )}
 
       {projects.length === 0 ? (
         <div className="bg-white border border-slate-200/90 rounded-2xl p-10 text-center text-slate-400 space-y-2">
@@ -86,57 +94,65 @@ export const FacultyProjectsPanel = ({
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <div className={`grid grid-cols-1 gap-4 ${hideHeader ? 'lg:grid-cols-1' : 'lg:grid-cols-3'}`}>
           {/* Project List */}
-          <div className="space-y-2.5">
-            <h3 className="text-xs font-extrabold text-slate-900 uppercase tracking-wider">
-              Mentored Projects ({projects.length})
-            </h3>
-            {projects.map((p, idx) => {
-              const isSelected = (selectedProject?.projectId || selectedProject?.challengeId) === (p.projectId || p.challengeId);
-              const done = p.milestonesCompleted || 1;
-              const pct = p.progressPercentage || Math.round((done / 7) * 100);
+          {!hideHeader && (
+            <div className="space-y-2.5">
+              <h3 className="text-xs font-extrabold text-slate-900 uppercase tracking-wider">
+                Mentored Projects ({projects.length})
+              </h3>
+              {projects.map((p, idx) => {
+                const isSelected = (selectedProject?.projectId || selectedProject?.challengeId) === (p.projectId || p.challengeId);
+                const done = p.milestonesCompleted || 1;
+                const pct = p.progressPercentage || Math.round((done / 7) * 100);
 
-              return (
-                <div
-                  key={p.projectId || idx}
-                  onClick={() => setSelectedProject(p)}
-                  className={`p-3.5 rounded-2xl border transition-all cursor-pointer space-y-2 shadow-2xs ${
-                    isSelected
-                      ? 'bg-emerald-50/50 border-[#007A61] ring-1 ring-[#007A61]'
-                      : 'bg-white border-slate-200/90 hover:border-emerald-200'
-                  }`}
-                >
-                  <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-mono font-bold bg-white border border-slate-200 px-1.5 py-0.5 rounded text-slate-600">
-                      {p.projectId}
-                    </span>
-                    <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-amber-50 text-amber-800 border border-amber-200">
-                      {p.status || 'Proposal Stage'}
-                    </span>
-                  </div>
-
-                  <h4 className="text-xs font-extrabold text-slate-900 line-clamp-2">
-                    {p.title}
-                  </h4>
-
-                  <div className="space-y-1 pt-1">
-                    <div className="flex justify-between items-center text-[10px] font-semibold text-slate-600">
-                      <span>Progress</span>
-                      <span className="font-mono text-[#007A61] font-bold">{pct}%</span>
+                return (
+                  <div
+                    key={p.projectId || idx}
+                    onClick={() => setSelectedProject(p)}
+                    className={`p-3.5 rounded-2xl border transition-all cursor-pointer space-y-2 shadow-2xs ${
+                      isSelected
+                        ? 'bg-emerald-50/50 border-[#007A61] ring-1 ring-[#007A61]'
+                        : 'bg-white border-slate-200/90 hover:border-emerald-200'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] font-mono font-bold bg-white border border-slate-200 px-1.5 py-0.5 rounded text-slate-600">
+                        {p.projectId}
+                      </span>
+                      <span className={`text-[10px] font-extrabold px-2 py-0.5 rounded-full border ${
+                        p.prototypeStatus === 'Approved'
+                          ? 'bg-emerald-50 text-emerald-800 border-emerald-300'
+                          : p.prototypeStatus === 'In Review'
+                          ? 'bg-blue-50 text-blue-800 border-blue-200'
+                          : 'bg-amber-50 text-amber-800 border-amber-200'
+                      }`}>
+                        {p.prototypeStatus === 'Approved' ? '✓ Prototype Done' : p.prototypeStatus === 'In Review' ? '⏳ Proto In Review' : (p.status || 'Proposal Stage')}
+                      </span>
                     </div>
-                    <div className="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
-                      <div className="bg-[#007A61] h-1.5 rounded-full" style={{ width: `${pct}%` }} />
+
+                    <h4 className="text-xs font-extrabold text-slate-900 line-clamp-2">
+                      {p.title}
+                    </h4>
+
+                    <div className="space-y-1 pt-1">
+                      <div className="flex justify-between items-center text-[10px] font-semibold text-slate-600">
+                        <span>Progress</span>
+                        <span className="font-mono text-[#007A61] font-bold">{pct}%</span>
+                      </div>
+                      <div className="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
+                        <div className="bg-[#007A61] h-1.5 rounded-full" style={{ width: `${pct}%` }} />
+                      </div>
                     </div>
                   </div>
-                </div>
-              );
-            })}
-          </div>
+                );
+              })}
+            </div>
+          )}
 
           {/* Project Details & Milestone Stepper */}
           {selectedProject && (
-            <div className="lg:col-span-2 space-y-4">
+            <div className={hideHeader ? "" : "lg:col-span-2 space-y-4"}>
               <div className="bg-white border border-slate-200/90 rounded-2xl p-5 shadow-2xs space-y-4">
                 {/* Top Info */}
                 <div className="space-y-2 pb-3 border-b border-slate-100">
@@ -157,7 +173,7 @@ export const FacultyProjectsPanel = ({
                 </div>
 
                 {/* Key Metrics */}
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 text-xs">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-xs">
                   <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl">
                     <span className="text-[10px] text-slate-400 font-bold uppercase block">Sanctioned Grant</span>
                     <span className="font-extrabold text-slate-900 text-xs mt-0.5 block truncate">
@@ -169,6 +185,13 @@ export const FacultyProjectsPanel = ({
                     <span className="text-[10px] text-slate-400 font-bold uppercase block">Student Team</span>
                     <span className="font-extrabold text-slate-900 text-xs mt-0.5 block truncate">
                       {selectedProject.teamMembers?.length ? `${selectedProject.teamMembers.length} Researchers` : 'Formation in Progress'}
+                    </span>
+                  </div>
+
+                  <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl">
+                    <span className="text-[10px] text-slate-400 font-bold uppercase block">Prototype ETA</span>
+                    <span className="font-extrabold text-slate-900 text-xs mt-0.5 block truncate">
+                      {selectedProject.prototypeData?.timeline || 'Not Specified'}
                     </span>
                   </div>
 

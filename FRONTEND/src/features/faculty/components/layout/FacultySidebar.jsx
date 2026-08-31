@@ -16,8 +16,6 @@ import {
 const NAV_ITEMS = [
   { id: 'dashboard', label: 'Dashboard', icon: Home },
   { id: 'challenges', label: 'Assigned Challenges', icon: Layers },
-  { id: 'proposals', label: 'Proposals & Budget', icon: FileText },
-  { id: 'teams', label: 'Student Teams', icon: Users },
   { id: 'projects', label: 'Projects Portfolio', icon: Briefcase },
   { id: 'profile', label: 'Faculty Profile', icon: User }
 ];

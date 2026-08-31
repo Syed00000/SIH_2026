@@ -33,7 +33,7 @@ export const UniversityStatCards = ({ kpis, onCardClick, loading = false }) => {
       id: 'projects',
       title: 'Active R&D Projects',
       value: kpis?.activeProjects?.total ?? 8,
-      subText: `${kpis?.activeProjects?.delayed ?? 0} on track`,
+      subText: `${kpis?.activeProjects?.onTrack ?? 0} on track`,
       icon: Rocket,
       accentBg: 'bg-emerald-50 border-emerald-200 text-[#007A61]',
       badgeBg: 'bg-emerald-100/70 text-[#007A61]',
@@ -42,8 +42,8 @@ export const UniversityStatCards = ({ kpis, onCardClick, loading = false }) => {
     {
       id: 'faculty',
       title: 'Faculty Mentors',
-      value: kpis?.facultyMentors?.total ?? 4,
-      subText: `${kpis?.facultyMentors?.onLeave ?? 0} active`,
+      value: kpis?.facultyMentors?.total ?? 0,
+      subText: `${kpis?.facultyMentors?.active ?? 0} active`,
       icon: Users,
       accentBg: 'bg-slate-50 border-slate-200 text-slate-800',
       badgeBg: 'bg-slate-100/70 text-slate-900',
@@ -52,7 +52,7 @@ export const UniversityStatCards = ({ kpis, onCardClick, loading = false }) => {
     {
       id: 'grants',
       title: 'Sanctioned Funds',
-      value: kpis?.totalGrants?.value && kpis.totalGrants.value !== '0' && kpis.totalGrants.value !== '₹ 0' ? kpis.totalGrants.value : '₹ 1.2Cr',
+      value: kpis?.totalGrants?.value ?? '₹ 0',
       subText: kpis?.totalGrants?.note || 'Total Disbursed Grants',
       icon: IndianRupee,
       accentBg: 'bg-emerald-50 border-emerald-200 text-[#007A61]',

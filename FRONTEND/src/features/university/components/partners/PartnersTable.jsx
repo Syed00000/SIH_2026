@@ -1,28 +1,14 @@
 import React, { useState } from 'react';
-import { MoreVertical, ChevronLeft, ChevronRight } from 'lucide-react';
-
-const getStatusPill = (status = '') => {
-  if (status === 'Active') return 'bg-emerald-50 text-emerald-800 border-emerald-300';
-  if (status === 'Pending') return 'bg-amber-50 text-amber-800 border-amber-300';
-  if (status === 'Invited') return 'bg-slate-100 text-slate-800 border-slate-300';
-  if (status === 'Completed') return 'bg-purple-50 text-purple-800 border-purple-300';
-  return 'bg-rose-50 text-rose-800 border-rose-300';
-};
-
-const getSupportBadge = (supp = '') => {
-  const s = supp.toLowerCase();
-  if (s.includes('funding')) return 'bg-emerald-50 text-emerald-800 border-emerald-200';
-  if (s.includes('mentorship')) return 'bg-slate-100 text-slate-800 border-slate-200';
-  if (s.includes('equipment')) return 'bg-amber-50 text-amber-800 border-amber-200';
-  if (s.includes('lab')) return 'bg-purple-50 text-purple-800 border-purple-200';
-  if (s.includes('pilot')) return 'bg-blue-50 text-blue-800 border-blue-200';
-  return 'bg-slate-100 text-slate-800 border-slate-200';
-};
+import { 
+  Building2, Factory, ChevronLeft, ChevronRight, Send, 
+  ExternalLink, Eye, ShieldCheck, MapPin, CheckCircle2 
+} from 'lucide-react';
 
 export const PartnersTable = ({
   partners = [],
   selectedPartnerId,
   onSelectPartner,
+  onOpenSendRequest,
   loading = false
 }) => {
   const [currentPage, setCurrentPage] = useState(1);
@@ -34,91 +20,133 @@ export const PartnersTable = ({
   const paginatedItems = partners.slice(startIndex, startIndex + pageSize);
 
   return (
-    <div className="bg-white border border-slate-200 shadow-2xs select-none rounded-none overflow-hidden flex flex-col justify-between">
+    <div className="bg-white border border-slate-200/90 rounded-2xl shadow-2xs select-none overflow-hidden flex flex-col justify-between">
       <div>
-        <div className="p-3 border-b border-slate-200 flex items-center justify-between bg-slate-50">
-          <h2 className="text-xs font-bold text-slate-900 tracking-tight uppercase">
-            Partner List ({partners.length})
-          </h2>
+        {/* Table Header */}
+        <div className="p-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/70">
+          <div className="flex items-center space-x-2">
+            <Factory className="w-4 h-4 text-[#007A61]" />
+            <h2 className="text-xs font-extrabold text-slate-900 tracking-wider uppercase">
+              Registered Industry Partners ({partners.length})
+            </h2>
+          </div>
+          <span className="text-[11px] font-bold text-slate-400">
+            Official CSR / R&D Collaborators
+          </span>
         </div>
 
+        {/* Table Body */}
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs text-slate-700">
-            <thead className="bg-slate-50 border-b border-slate-200 text-slate-700 font-bold uppercase tracking-wider text-[10.5px]">
+            <thead className="bg-slate-50/50 border-b border-slate-100 text-slate-400 font-extrabold uppercase tracking-wider text-[10px]">
               <tr>
-                <th className="py-2.5 px-3">Partner</th>
-                <th className="py-2.5 px-3">Industry Type</th>
-                <th className="py-2.5 px-3">Support Offered</th>
-                <th className="py-2.5 px-3">Active Projects</th>
-                <th className="py-2.5 px-3">Status</th>
-                <th className="py-2.5 px-3 text-right">Action</th>
+                <th className="py-3 px-4">Partner Entity</th>
+                <th className="py-3 px-4">Category</th>
+                <th className="py-3 px-4">Thematic Domains</th>
+                <th className="py-3 px-4">Location</th>
+                <th className="py-3 px-4">Status</th>
+                <th className="py-3 px-4 text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 font-medium">
               {loading ? (
-                [1, 2, 3, 4, 5, 6].map((i) => (
+                [1, 2, 3, 4, 5].map((i) => (
                   <tr key={i} className="animate-pulse">
-                    <td colSpan={6} className="py-3 px-3">
-                      <div className="h-4 bg-slate-100 w-full" />
+                    <td colSpan={6} className="py-4 px-4">
+                      <div className="h-4 bg-slate-100 rounded-lg w-full" />
                     </td>
                   </tr>
                 ))
               ) : paginatedItems.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="py-8 text-center text-slate-500 font-medium text-xs">
+                  <td colSpan={6} className="py-12 text-center text-slate-400 font-semibold text-xs">
                     No corporate partners match the selected criteria.
                   </td>
                 </tr>
               ) : (
                 paginatedItems.map((p) => {
-                  const isSelected = selectedPartnerId === (p.partnerId || p._id);
-                  const supports = Array.isArray(p.supportOffered) ? p.supportOffered : ['Funding', 'Mentorship'];
+                  const partnerName = p.name || p.legalName || 'Industry Partner';
+                  const category = p.industryType || p.type || p.category || 'Private Industry';
+                  const location = p.location || (p.address?.city ? `${p.address.city}, JH` : 'Jharkhand');
+                  const domains = Array.isArray(p.domains) && p.domains.length > 0
+                    ? p.domains
+                    : [p.focusArea || p.thematicDomain || 'Technology'];
 
                   return (
                     <tr
                       key={p.partnerId || p._id}
+                      className="hover:bg-slate-50/80 transition-colors group cursor-pointer"
                       onClick={() => onSelectPartner(p)}
-                      className={`hover:bg-slate-50 transition-colors cursor-pointer ${
-                        isSelected ? 'bg-slate-100 border-l-4 border-l-slate-900' : ''
-                      }`}
                     >
-                      <td className="py-2.5 px-3">
-                        <div className="flex items-center space-x-2.5">
-                          <div className="w-7 h-7 rounded-none bg-slate-100 border border-slate-200 font-bold text-[10px] text-slate-900 flex items-center justify-center shrink-0">
-                            {p.logoText || (p.name ? p.name.slice(0, 3).toUpperCase() : 'ABC')}
+                      <td className="py-3 px-4">
+                        <div className="flex items-center space-x-3">
+                          <div className="w-8 h-8 rounded-xl bg-emerald-50 border border-emerald-100 font-black text-[11px] text-[#007A61] flex items-center justify-center shrink-0 shadow-2xs group-hover:bg-[#007A61] group-hover:text-white transition-colors">
+                            {p.logoText || partnerName.slice(0, 2).toUpperCase()}
                           </div>
-                          <div className="font-bold text-slate-900 truncate max-w-[180px]">{p.name}</div>
+                          <div className="min-w-0">
+                            <div className="font-extrabold text-slate-900 truncate max-w-[200px] text-xs">
+                              {partnerName}
+                            </div>
+                            <div className="text-[10px] text-slate-400 font-mono">
+                              {p.partnerId || 'IND-JH-2026'}
+                            </div>
+                          </div>
                         </div>
                       </td>
-                      <td className="py-2.5 px-3 text-slate-700 font-medium">{p.industryType || p.type || 'Technology'}</td>
-                      <td className="py-2.5 px-3">
+
+                      <td className="py-3 px-4 text-slate-700 font-semibold">
+                        <span className="px-2 py-0.5 bg-slate-100 text-slate-700 rounded-md text-[10.5px] font-bold border border-slate-200/60">
+                          {category}
+                        </span>
+                      </td>
+
+                      <td className="py-3 px-4">
                         <div className="flex items-center space-x-1 flex-wrap gap-y-1">
-                          {supports.slice(0, 2).map((s, idx) => (
-                            <span key={idx} className={`px-2 py-0.5 text-[10px] font-bold border rounded-none ${getSupportBadge(s)}`}>
-                              {s}
+                          {domains.slice(0, 2).map((d, idx) => (
+                            <span key={idx} className="px-2 py-0.5 text-[10px] font-bold border rounded-md bg-emerald-50 text-[#007A61] border-emerald-200">
+                              {d}
                             </span>
                           ))}
-                          {supports.length > 2 && (
-                            <span className="text-[10px] font-bold text-slate-500 px-1">+ {supports.length - 2}</span>
+                          {domains.length > 2 && (
+                            <span className="text-[10px] text-slate-400 font-bold">
+                              +{domains.length - 2}
+                            </span>
                           )}
                         </div>
                       </td>
-                      <td className="py-2.5 px-3 font-mono font-bold text-slate-900">{p.activeProjectsCount || p.activePilots || 3} Projects</td>
-                      <td className="py-2.5 px-3">
-                        <span className={`px-2 py-0.5 text-[10px] font-bold border rounded-none ${getStatusPill(p.status)}`}>
-                          {p.status}
+
+                      <td className="py-3 px-4 text-slate-500 font-medium">
+                        <span className="flex items-center space-x-1">
+                          <MapPin className="w-3 h-3 text-slate-400 shrink-0" />
+                          <span className="truncate max-w-[130px]">{location}</span>
                         </span>
                       </td>
-                      <td className="py-2.5 px-3 text-right">
-                        <div className="flex items-center justify-end space-x-1" onClick={(e) => e.stopPropagation()}>
+
+                      <td className="py-3 px-4">
+                        <span className="px-2.5 py-1 text-[10px] font-extrabold border rounded-full bg-emerald-50 text-emerald-800 border-emerald-200 flex items-center space-x-1 w-max">
+                          <ShieldCheck className="w-3 h-3 text-[#007A61]" />
+                          <span>Active MoU</span>
+                        </span>
+                      </td>
+
+                      <td className="py-3 px-4 text-right">
+                        <div className="flex items-center justify-end space-x-1.5" onClick={(e) => e.stopPropagation()}>
                           <button
                             onClick={() => onSelectPartner(p)}
-                            className="px-2.5 py-1 bg-slate-900 hover:bg-black text-white text-xs font-bold rounded-none cursor-pointer transition-colors"
+                            title="View Profile Dossier"
+                            className="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-bold transition-colors cursor-pointer flex items-center space-x-1"
                           >
-                            View Profile
+                            <Eye className="w-3.5 h-3.5" />
+                            <span>View</span>
                           </button>
-                          <button className="p-1 text-slate-400 hover:text-slate-900 cursor-pointer">
-                            <MoreVertical className="w-3.5 h-3.5" />
+
+                          <button
+                            onClick={() => onOpenSendRequest && onOpenSendRequest(p)}
+                            title="Initiate Partnership / Request CSR"
+                            className="px-3 py-1.5 bg-[#007A61] hover:bg-[#00604c] text-white rounded-lg text-xs font-bold transition-all shadow-2xs cursor-pointer flex items-center space-x-1"
+                          >
+                            <Send className="w-3.5 h-3.5" />
+                            <span>Request</span>
                           </button>
                         </div>
                       </td>
@@ -131,38 +159,30 @@ export const PartnersTable = ({
         </div>
       </div>
 
-      <div className="px-3.5 py-2 border-t border-slate-200 flex items-center justify-between text-xs text-slate-500 bg-slate-50">
-        <div>Showing {partners.length === 0 ? 0 : startIndex + 1} to {Math.min(startIndex + pageSize, partners.length)} of {partners.length} partners</div>
-        <div className="flex items-center space-x-1">
-          <button
-            disabled={activePage === 1}
-            onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-            className="p-1 border border-slate-200 rounded-none hover:bg-slate-100 disabled:opacity-40 text-slate-600 cursor-pointer"
-          >
-            <ChevronLeft className="w-3.5 h-3.5" />
-          </button>
-
-          {Array.from({ length: totalPages }, (_, i) => i + 1).map((pNum) => (
+      {/* Pagination Footer */}
+      {totalPages > 1 && (
+        <div className="p-3 border-t border-slate-100 bg-slate-50/50 flex items-center justify-between">
+          <span className="text-[11px] font-bold text-slate-400">
+            Page {activePage} of {totalPages}
+          </span>
+          <div className="flex items-center space-x-1.5">
             <button
-              key={pNum}
-              onClick={() => setCurrentPage(pNum)}
-              className={`w-6 h-6 rounded-none font-bold text-xs flex items-center justify-center cursor-pointer ${
-                activePage === pNum ? 'bg-slate-900 text-white' : 'border border-slate-200 hover:bg-slate-100 text-slate-700'
-              }`}
+              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+              disabled={activePage === 1}
+              className="p-1.5 bg-white border border-slate-200 rounded-lg text-slate-600 hover:bg-slate-50 disabled:opacity-40 cursor-pointer shadow-2xs"
             >
-              {pNum}
+              <ChevronLeft className="w-3.5 h-3.5" />
             </button>
-          ))}
-
-          <button
-            disabled={activePage === totalPages || totalPages === 0}
-            onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-            className="p-1 border border-slate-200 rounded-none hover:bg-slate-100 disabled:opacity-40 text-slate-600 cursor-pointer"
-          >
-            <ChevronRight className="w-3.5 h-3.5" />
-          </button>
+            <button
+              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+              disabled={activePage === totalPages}
+              className="p-1.5 bg-white border border-slate-200 rounded-lg text-slate-600 hover:bg-slate-50 disabled:opacity-40 cursor-pointer shadow-2xs"
+            >
+              <ChevronRight className="w-3.5 h-3.5" />
+            </button>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };

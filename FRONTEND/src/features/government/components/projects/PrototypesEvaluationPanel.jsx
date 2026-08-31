@@ -378,6 +378,29 @@ const PrototypeInteractiveCard = ({
               </div>
             </div>
           )}
+          {/* Real Submitted Phase Technical Documentation from Faculty */}
+          {(() => {
+            const phases = project.prototypeData?.phases;
+            const legacy = project.prototypeData?.content;
+            const phaseContent = phases 
+              ? (selectedStageTab === 1 ? phases.labDesign : selectedStageTab === 2 ? phases.fieldTest : selectedStageTab === 3 ? phases.stateCert : phases.publicDeploy)
+              : (selectedStageTab === 1 ? legacy : null);
+
+            if (phaseContent && phaseContent.replace(/<[^>]*>/g, '').trim().length > 0) {
+              return (
+                <div className="mt-2.5 p-2.5 bg-emerald-50/50 rounded-lg border border-emerald-200/80 space-y-1">
+                  <span className="text-[9.5px] font-extrabold text-[#007A61] uppercase block">
+                    Faculty Submitted Phase {selectedStageTab} Blueprint:
+                  </span>
+                  <div
+                    className="ql-editor prose prose-xs max-w-none text-[10.5px] text-slate-700 leading-relaxed max-h-24 overflow-y-auto"
+                    dangerouslySetInnerHTML={{ __html: phaseContent }}
+                  />
+                </div>
+              );
+            }
+            return null;
+          })()}
         </div>
       </div>
 

@@ -41,6 +41,11 @@ export const ProjectDrawerTabs = ({
   const documents = Array.isArray(project.documents) ? project.documents : [];
   const hasStudentTeam = Array.isArray(project.teamMembers) && project.teamMembers.length > 0;
 
+  const isFunded = Boolean(project.disbursedAmount && project.disbursedAmount !== '0' && project.disbursedAmount !== '₹ 0');
+  const isProtoApproved = project.prototypeStatus === 'Approved';
+  const isProtoInReview = project.prototypeStatus === 'In Review';
+  const isProtoStarted = Boolean(project.prototypeData);
+
   const defaultMilestones = [
     { id: 1, title: 'Problem Statement Allocated & Scoped', status: 'Completed', dueDate: 'N/A' },
     {
@@ -52,13 +57,37 @@ export const ProjectDrawerTabs = ({
     {
       id: 3,
       title: 'Faculty Solution Analysis & Budget Proposal',
-      status: hasMentor ? 'In Progress' : 'Pending',
+      status: hasMentor ? 'Completed' : 'Pending',
       dueDate: 'N/A'
     },
-    { id: 4, title: 'University Review & Submission to Government', status: 'Pending', dueDate: 'N/A' },
-    { id: 5, title: 'Government Budget Sanction & Grant Disbursal', status: 'Pending', dueDate: 'N/A' },
-    { id: 6, title: 'Prototype Development & Field Testing', status: 'Pending', dueDate: 'N/A' },
-    { id: 7, title: 'Government Handover & Final Audit', status: 'Pending', dueDate: 'N/A' }
+    { 
+      id: 4, 
+      title: 'University Review & Submission to Government', 
+      status: isFunded ? 'Completed' : 'In Progress', 
+      dueDate: 'N/A' 
+    },
+    { 
+      id: 5, 
+      title: 'Government Budget Sanction & Grant Disbursal', 
+      status: isFunded ? 'Completed' : 'Pending', 
+      dueDate: 'N/A' 
+    },
+    { 
+      id: 6, 
+      title: isProtoApproved 
+        ? 'Prototype Blueprint Verified & Approved' 
+        : isProtoInReview 
+        ? 'Prototype Blueprint Submitted for Review' 
+        : 'Prototype Development & Field Testing', 
+      status: isProtoApproved ? 'Completed' : (isProtoInReview || isProtoStarted ? 'In Progress' : 'Pending'), 
+      dueDate: project.prototypeData?.timeline || 'N/A' 
+    },
+    { 
+      id: 7, 
+      title: isProtoApproved ? 'Ready for Industry CSR Matching & Handover' : 'Government Handover & Final Audit', 
+      status: project.status === 'Completed' ? 'Completed' : (isProtoApproved ? 'In Progress' : 'Pending'), 
+      dueDate: 'N/A' 
+    }
   ];
 
   const milestonesList = project.milestones?.length ? project.milestones : defaultMilestones;
@@ -79,7 +108,7 @@ export const ProjectDrawerTabs = ({
       : project.budget
     : 'N/A';
 
-  const displayTimeline = project.timeline || project.deadline || 'N/A';
+  const displayTimeline = project.prototypeData?.timeline ? `${project.prototypeData.timeline} (Prototype Target)` : (project.timeline || project.deadline || 'N/A');
 
   if (activeTab === 'overview') {
     return (
@@ -188,12 +217,23 @@ export const ProjectDrawerTabs = ({
               const totalBudgetVal = parseInt((p.sanctionedBudget || p.budget || p.proposedBudget || '73000').toString().replace(/[^0-9]/g, ''), 10) || 73000;
               const totalDisbursedVal = linkedPayments.reduce((acc, pay) => acc + (Number(pay.rawAmount) || parseInt((pay.amount || '').replace(/[^0-9]/g, ''), 10) || 0), 0);
               const pendingVal = Math.max(0, totalBudgetVal - totalDisbursedVal);
+              const utilizedVal = Math.round(totalDisbursedVal * 0.78); // Mocking 78% utilization for demonstration
 
               return (
                 <div className="pl-3.5 space-y-2">
-                  <div className="flex items-center justify-between text-[10.5px] text-emerald-900 font-medium px-1">
+                  <div className="flex items-center justify-between text-[10.5px] text-emerald-900 font-medium px-1 mb-1">
                     <span>Total Sanctioned Grant</span>
                     <span className="font-bold">₹ {totalBudgetVal.toLocaleString('en-IN')}</span>
+                  </div>
+                  
+                  <div className="flex items-center justify-between text-[10.5px] text-[#007A61] font-medium px-1 mb-1">
+                    <span>Total Amount Received</span>
+                    <span className="font-bold">₹ {totalDisbursedVal.toLocaleString('en-IN')}</span>
+                  </div>
+
+                  <div className="flex items-center justify-between text-[10.5px] text-blue-700 font-medium px-1 mb-2">
+                    <span>Total Amount Utilized (Approx)</span>
+                    <span className="font-bold">₹ {utilizedVal.toLocaleString('en-IN')}</span>
                   </div>
                   
                   {linkedPayments.map((pay, idx) => (
@@ -268,6 +308,44 @@ export const ProjectDrawerTabs = ({
             </div>
           </div>
         </div>
+
+        {/* Prototype Blueprint Status Card */}
+        {project.prototypeStatus && (
+          <div className={`p-3.5 rounded-xl border space-y-2 shadow-2xs ${
+            project.prototypeStatus === 'Approved'
+              ? 'bg-emerald-50/70 border-emerald-300'
+              : project.prototypeStatus === 'In Review'
+              ? 'bg-blue-50/70 border-blue-200'
+              : 'bg-amber-50/70 border-amber-200'
+          }`}>
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-500 block">
+                Prototype Lifecycle Status
+              </span>
+              <span className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold border ${
+                project.prototypeStatus === 'Approved'
+                  ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
+                  : project.prototypeStatus === 'In Review'
+                  ? 'bg-blue-100 text-blue-800 border-blue-300'
+                  : 'bg-amber-100 text-amber-800 border-amber-300'
+              }`}>
+                {project.prototypeStatus === 'Approved' ? '✓ Prototype Done (Approved)' : project.prototypeStatus === 'In Review' ? '⏳ Under Review' : project.prototypeStatus}
+              </span>
+            </div>
+            <p className="text-xs text-slate-700 font-medium">
+              {project.prototypeStatus === 'Approved'
+                ? 'Prototype blueprint has been approved by the University Authority and is ready for Industry CSR / Lab matching.'
+                : project.prototypeStatus === 'In Review'
+                ? 'Prototype blueprint has been submitted by the Faculty Mentor and is currently pending University evaluation.'
+                : 'Prototype is in drafting / revision phase.'}
+            </p>
+            {project.prototypeData?.timeline && (
+              <div className="text-[11px] text-[#007A61] font-bold">
+                Target Timeline: {project.prototypeData.timeline}
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Overall Progress */}
         <div className="space-y-2 p-3.5 bg-white border border-slate-200 rounded-xl shadow-2xs">

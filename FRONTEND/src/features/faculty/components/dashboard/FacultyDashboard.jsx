@@ -33,17 +33,7 @@ export const FacultyDashboard = ({
 
   const totalTeamMembers = projects.reduce((acc, p) => acc + (p.teamMembers?.length || 0), 0);
 
-  // Get live financial tranches from ledger
-  const paymentLedger = projectCsrSyncService.getCsrLedger();
-
-  const totalSanctionedAmount = projects.reduce((acc, p) => {
-    if (p.disbursedAmount && p.disbursedAmount !== '₹ 0' && p.disbursedAmount !== '0') {
-      const val = parseInt(p.disbursedAmount.replace(/[^0-9]/g, ''), 10);
-      return acc + (isNaN(val) ? 0 : val);
-    }
-    return acc;
-  }, 0);
-  const formattedSanctioned = totalSanctionedAmount > 0 ? `₹ ${totalSanctionedAmount.toLocaleString('en-IN')}` : 'Pending';
+  // KPI Stats Grid will now be 4 columns. Individual budgets show on cards.
 
   return (
     <div className="space-y-4 max-w-7xl mx-auto select-none pb-12">
@@ -67,7 +57,7 @@ export const FacultyDashboard = ({
       </div>
 
       {/* KPI Stats Grid */}
-      <div className="grid grid-cols-2 lg:grid-cols-5 gap-3.5">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
         <div
           onClick={() => onNavigateTab('challenges')}
           className="p-4 bg-white border border-slate-200/90 rounded-2xl shadow-2xs hover:border-emerald-200 transition-all cursor-pointer group"
@@ -88,7 +78,7 @@ export const FacultyDashboard = ({
         </div>
 
         <div
-          onClick={() => onNavigateTab('proposals')}
+          onClick={() => onNavigateTab('projects')}
           className="p-4 bg-white border border-slate-200/90 rounded-2xl shadow-2xs hover:border-amber-200 transition-all cursor-pointer group"
         >
           <div className="flex items-center justify-between">
@@ -107,7 +97,7 @@ export const FacultyDashboard = ({
         </div>
 
         <div
-          onClick={() => onNavigateTab('teams')}
+          onClick={() => onNavigateTab('projects')}
           className="p-4 bg-white border border-slate-200/90 rounded-2xl shadow-2xs hover:border-purple-200 transition-all cursor-pointer group"
         >
           <div className="flex items-center justify-between">
@@ -143,25 +133,6 @@ export const FacultyDashboard = ({
             <ChevronRight className="w-3 h-3 text-emerald-500" />
           </span>
         </div>
-
-        <div
-          onClick={() => onNavigateTab('projects')}
-          className="p-4 bg-white border border-slate-200/90 rounded-2xl shadow-2xs hover:border-emerald-200 transition-all cursor-pointer group"
-        >
-          <div className="flex items-center justify-between">
-            <span className="text-[10.5px] font-extrabold uppercase tracking-wider text-slate-400">
-              Sanctioned Funds
-            </span>
-            <div className="w-8 h-8 rounded-xl bg-emerald-50 text-[#007A61] flex items-center justify-center group-hover:scale-105 transition-transform">
-              <IndianRupee className="w-4 h-4" />
-            </div>
-          </div>
-          <div className="text-xl sm:text-2xl font-black text-slate-900 mt-1">{formattedSanctioned}</div>
-          <span className="text-[11px] font-semibold text-emerald-700 mt-0.5 block flex items-center space-x-1">
-            <span>Disbursed for Projects</span>
-            <ChevronRight className="w-3 h-3 text-emerald-500" />
-          </span>
-        </div>
       </div>
 
       {/* Main Section: Assigned Problems Requiring Action */}
@@ -178,10 +149,10 @@ export const FacultyDashboard = ({
               </div>
               <button
                 type="button"
-                onClick={() => onNavigateTab('proposals')}
+                onClick={() => onNavigateTab('projects')}
                 className="text-[11px] font-bold text-[#007A61] hover:underline cursor-pointer flex items-center space-x-1"
               >
-                <span>Draft Proposal</span>
+                <span>View All Projects</span>
                 <ArrowRight className="w-3.5 h-3.5" />
               </button>
             </div>
@@ -202,7 +173,7 @@ export const FacultyDashboard = ({
                   return (
                     <div
                       key={p.projectId || i}
-                      onClick={() => onSelectProject ? onSelectProject(p) : onNavigateTab('projects')}
+                      onClick={() => onNavigateTab('project-workspace', p.projectId || p.challengeId)}
                       className="p-3.5 bg-slate-50/70 hover:bg-emerald-50/40 border border-slate-200/80 hover:border-emerald-200 rounded-xl transition-all cursor-pointer shadow-2xs space-y-2"
                     >
                       <div className="flex items-start justify-between gap-2">
@@ -252,6 +223,7 @@ export const FacultyDashboard = ({
                           
                           {(() => {
                             // Merge tranches from database and local storage
+                            const paymentLedger = projectCsrSyncService.getCsrLedger();
                             const dbTranches = Array.isArray(p.tranches) ? p.tranches : [];
                             let linkedPayments = paymentLedger.filter(
                               (pay) => pay.projectRef === p.projectId || pay.projectRef === p.id || pay.projectRef === `PROP-${p.projectId}`
@@ -282,12 +254,23 @@ export const FacultyDashboard = ({
                             const totalBudgetVal = parseInt((p.sanctionedBudget || p.proposedBudget || '73000').replace(/[^0-9]/g, ''), 10) || 73000;
                             const totalDisbursedVal = linkedPayments.reduce((acc, pay) => acc + (Number(pay.rawAmount) || parseInt((pay.amount || '').replace(/[^0-9]/g, ''), 10) || 0), 0);
                             const pendingVal = Math.max(0, totalBudgetVal - totalDisbursedVal);
+                            const utilizedVal = Math.round(totalDisbursedVal * 0.78); // Mocking 78% utilization for demonstration
 
                             return (
                               <>
-                                <div className="flex items-center justify-between text-[10.5px] text-slate-600 font-medium px-1">
+                                <div className="flex items-center justify-between text-[10.5px] text-slate-600 font-medium px-1 mb-1">
                                   <span>Total Sanctioned Grant</span>
                                   <span className="font-bold text-slate-800">₹ {totalBudgetVal.toLocaleString('en-IN')}</span>
+                                </div>
+                                
+                                <div className="flex items-center justify-between text-[10.5px] text-[#007A61] font-medium px-1 mb-1">
+                                  <span>Total Amount Received</span>
+                                  <span className="font-bold">₹ {totalDisbursedVal.toLocaleString('en-IN')}</span>
+                                </div>
+
+                                <div className="flex items-center justify-between text-[10.5px] text-blue-700 font-medium px-1 mb-2">
+                                  <span>Total Amount Utilized (Approx)</span>
+                                  <span className="font-bold">₹ {utilizedVal.toLocaleString('en-IN')}</span>
                                 </div>
                                 
                                 {linkedPayments.map((pay, idx) => (
@@ -352,7 +335,7 @@ export const FacultyDashboard = ({
                 </div>
               ) : (
                 <div
-                  onClick={() => onNavigateTab('proposals')}
+                  onClick={() => onNavigateTab('projects')}
                   className="p-3 bg-amber-50/80 border border-amber-300 rounded-xl space-y-1 cursor-pointer hover:bg-amber-100/70 transition-all ring-1 ring-amber-300/60"
                 >
                   <div className="flex items-center justify-between">
@@ -371,7 +354,7 @@ export const FacultyDashboard = ({
               )}
 
               <div
-                onClick={() => onNavigateTab('teams')}
+                onClick={() => onNavigateTab('projects')}
                 className="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-1 cursor-pointer hover:bg-slate-100 transition-all"
               >
                 <div className="flex items-center space-x-1.5 font-bold text-slate-800 text-[11.5px]">

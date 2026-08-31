@@ -1,4 +1,5 @@
 import { universityApiService } from '../../university/services/universityApiService.js';
+import apiClient from '../../../infrastructure/api/client.js';
 
 export const facultyApiService = {
   // Fetch all data for this faculty
@@ -56,6 +57,44 @@ export const facultyApiService = {
 
   async updateProject(projectId, updateData) {
     return universityApiService.updateProject(projectId, updateData);
+  },
+
+  async submitPrototype(projectId, data) {
+    try {
+      const res = await apiClient.post(`university/projects/${encodeURIComponent(projectId)}/prototype?universityCode=RU001`, data);
+      if (res?.data) return { success: true, ...res.data };
+      return { success: false };
+    } catch (err) {
+      console.error('API submitPrototype error:', err.message);
+      return { success: false };
+    }
+  },
+
+  async savePrototypeDraft(projectId, prototypeData) {
+    // Simply updates the project with the latest blocks and sets status to Drafting
+    try {
+      const res = await this.updateProject(projectId, { 
+        prototypeData,
+        prototypeStatus: 'Drafting'
+      });
+      return { success: true, projectId, status: 'Drafting' };
+    } catch (err) {
+      console.error('API savePrototypeDraft error:', err.message);
+      return { success: false };
+    }
+  },
+
+  async deletePrototypeDraft(projectId) {
+    try {
+      const res = await this.updateProject(projectId, { 
+        prototypeData: null,
+        prototypeStatus: 'Not Started'
+      });
+      return { success: true, projectId, status: 'Not Started' };
+    } catch (err) {
+      console.error('API deletePrototypeDraft error:', err.message);
+      return { success: false };
+    }
   }
 };
 

@@ -10,103 +10,74 @@ export const PartnersFilterBar = ({
   setSupportFilter,
   statusFilter,
   setStatusFilter,
-  domainFilter,
-  setDomainFilter,
-  onResetFilters,
-  onApplyFilters
+  onResetFilters
 }) => {
   return (
-    <div className="bg-white border border-slate-200 p-2.5 space-y-2 shadow-2xs select-none rounded-none">
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2 items-center">
+    <div className="bg-white border border-slate-200/90 p-3 rounded-2xl shadow-2xs select-none">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 items-center">
+        {/* Search */}
         <div className="relative">
           <input
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search by name or industry..."
-            className="w-full pl-8 pr-3 py-1.5 bg-slate-50 border border-slate-200 text-xs text-slate-900 placeholder:text-slate-400 focus:bg-white focus:outline-none focus:border-slate-900 rounded-none"
+            placeholder="Search by company name, sector, domain..."
+            className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 placeholder:text-slate-400 focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#007A61] focus:border-[#007A61] shadow-2xs"
           />
-          <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+          <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
         </div>
 
+        {/* Industry Category Filter */}
         <div>
           <select
             value={industryFilter}
             onChange={(e) => setIndustryFilter(e.target.value)}
-            className="w-full px-2.5 py-1.5 bg-slate-50 border border-slate-200 text-xs text-slate-800 font-medium focus:bg-white focus:outline-none focus:border-slate-900 rounded-none cursor-pointer"
+            className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-800 focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#007A61] focus:border-[#007A61] shadow-2xs cursor-pointer"
           >
-            <option value="All">All Industries</option>
-            <option value="Technology">Technology</option>
-            <option value="Environmental">Environmental</option>
-            <option value="Water Technology">Water Technology</option>
-            <option value="IT & Analytics">IT & Analytics</option>
-            <option value="Energy">Energy</option>
-            <option value="Infrastructure">Infrastructure</option>
-            <option value="Non-Profit">Non-Profit</option>
+            <option value="All">All Categories</option>
+            <option value="Private Industry">Private Industry</option>
+            <option value="Govt Dept">Govt Dept / PSU</option>
+            <option value="PSU / Mining">PSU / Mining & Energy</option>
+            <option value="Tech / IT">Tech / IT Services</option>
+            <option value="Manufacturing">Manufacturing & Heavy Eng</option>
           </select>
         </div>
 
+        {/* Support Type Filter */}
         <div>
           <select
             value={supportFilter}
             onChange={(e) => setSupportFilter(e.target.value)}
-            className="w-full px-2.5 py-1.5 bg-slate-50 border border-slate-200 text-xs text-slate-800 font-medium focus:bg-white focus:outline-none focus:border-slate-900 rounded-none cursor-pointer"
+            className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-800 focus:bg-white focus:outline-none focus:border-[#007A61] focus:ring-1 focus:ring-[#007A61] shadow-2xs cursor-pointer"
           >
             <option value="All">All Support Types</option>
-            <option value="Funding">Funding</option>
-            <option value="Mentorship">Mentorship</option>
-            <option value="Equipment">Equipment</option>
-            <option value="Lab Support">Lab Support</option>
-            <option value="Pilot Support">Pilot Support</option>
+            <option value="Funding">Direct CSR Co-Funding</option>
+            <option value="Mentorship">Technical Mentorship</option>
+            <option value="Equipment">Lab / Equipment Access</option>
+            <option value="Prototyping">Prototyping & Pilots</option>
           </select>
         </div>
 
-        <div>
+        {/* Reset */}
+        <div className="flex items-center space-x-2">
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="w-full px-2.5 py-1.5 bg-slate-50 border border-slate-200 text-xs text-slate-800 font-medium focus:bg-white focus:outline-none focus:border-slate-900 rounded-none cursor-pointer"
+            className="flex-1 px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-800 focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#007A61] focus:border-[#007A61] shadow-2xs cursor-pointer"
           >
             <option value="All">All Statuses</option>
-            <option value="Active">Active</option>
-            <option value="Pending">Pending</option>
-            <option value="Invited">Invited</option>
-            <option value="Completed">Completed</option>
-            <option value="Declined">Declined</option>
+            <option value="Active">Active / Verified</option>
+            <option value="Pending">Pending MoU</option>
           </select>
-        </div>
 
-        <div>
-          <select
-            value={domainFilter}
-            onChange={(e) => setDomainFilter(e.target.value)}
-            className="w-full px-2.5 py-1.5 bg-slate-50 border border-slate-200 text-xs text-slate-800 font-medium focus:bg-white focus:outline-none focus:border-slate-900 rounded-none cursor-pointer"
+          <button
+            onClick={onResetFilters}
+            title="Reset Filters"
+            className="p-2 border border-slate-200 hover:bg-slate-50 text-slate-600 rounded-xl flex items-center justify-center cursor-pointer transition-colors shadow-2xs shrink-0"
           >
-            <option value="All">All Domains</option>
-            <option value="Water">Water</option>
-            <option value="Environment">Environment</option>
-            <option value="Technology">Technology</option>
-            <option value="Energy">Energy</option>
-            <option value="Healthcare">Healthcare</option>
-          </select>
+            <RotateCcw className="w-4 h-4 text-slate-500" />
+          </button>
         </div>
-      </div>
-
-      <div className="flex items-center justify-end space-x-2 pt-1.5 border-t border-slate-100">
-        <button
-          onClick={onResetFilters}
-          className="px-3 py-1.5 border border-slate-200 hover:bg-slate-50 text-xs font-bold text-slate-700 rounded-none flex items-center space-x-1 cursor-pointer transition-colors"
-        >
-          <RotateCcw className="w-3 h-3 text-slate-400" />
-          <span>Clear Filters</span>
-        </button>
-        <button
-          onClick={onApplyFilters}
-          className="px-4 py-1.5 bg-slate-900 hover:bg-black text-white text-xs font-bold rounded-none flex items-center space-x-1 cursor-pointer transition-colors shadow-2xs"
-        >
-          <Filter className="w-3.5 h-3.5" />
-          <span>Apply Filters</span>
-        </button>
       </div>
     </div>
   );

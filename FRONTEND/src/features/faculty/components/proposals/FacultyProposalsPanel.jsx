@@ -64,10 +64,11 @@ export const FacultyProposalsPanel = ({
   faculty = {},
   projects = [],
   onRefresh,
-  initialProjectId = null
+  initialProjectId = null,
+  hideHeader = false
 }) => {
   const [selectedProjectId, setSelectedProjectId] = useState(
-    initialProjectId || (projects[0]?.projectId || projects[0]?.challengeId || '')
+    initialProjectId || projects[0]?.projectId || projects[0]?.challengeId || ''
   );
 
   const currentProject = projects.find(
@@ -257,53 +258,57 @@ export const FacultyProposalsPanel = ({
   };
 
   return (
-    <div className="space-y-4 max-w-7xl mx-auto select-none pb-12">
+    <div className={`space-y-4 max-w-7xl mx-auto select-none ${hideHeader ? '' : 'pb-12'}`}>
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-3 border-b border-slate-200">
-        <div>
-          <div className="flex items-center space-x-2 text-xs font-semibold text-slate-500 mb-1">
-            <span>Faculty Research Node</span>
-            <span>/</span>
-            <span className="text-slate-900 font-bold">Solution Proposal & Line-Item Budget Builder</span>
+      {!hideHeader && (
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-3 border-b border-slate-200">
+          <div>
+            <div className="flex items-center space-x-2 text-xs font-semibold text-slate-500 mb-1">
+              <span>Faculty Research Node</span>
+              <span>/</span>
+              <span className="text-slate-900 font-bold">Solution Proposal & Line-Item Budget Builder</span>
+            </div>
+            <h1 className="text-xl font-bold text-slate-900 tracking-tight flex items-center space-x-2">
+              <FileText className="w-5 h-5 text-[#007A61]" />
+              <span>R&D Grant Proposal & Dynamic Roadmap Builder</span>
+            </h1>
+            <p className="text-xs text-slate-500 mt-0.5">
+              Formulate technical methodology, milestone stages, and itemized line-item budgets for University and Government sanction review.
+            </p>
           </div>
-          <h1 className="text-xl font-bold text-slate-900 tracking-tight flex items-center space-x-2">
-            <FileText className="w-5 h-5 text-[#007A61]" />
-            <span>R&D Grant Proposal & Dynamic Roadmap Builder</span>
-          </h1>
-          <p className="text-xs text-slate-500 mt-0.5">
-            Formulate technical methodology, milestone stages, and itemized line-item budgets for University and Government sanction review.
-          </p>
-        </div>
 
-        <div className="flex items-center space-x-2">
-          <div className="px-3 py-1.5 bg-emerald-50 border border-emerald-200 rounded-xl text-xs font-bold text-[#007A61] flex items-center space-x-1.5">
-            <Building2 className="w-3.5 h-3.5" />
-            <span>{faculty?.department || 'Engineering Lab'}</span>
+          <div className="flex items-center space-x-2">
+            <div className="px-3 py-1.5 bg-emerald-50 border border-emerald-200 rounded-xl text-xs font-bold text-[#007A61] flex items-center space-x-1.5">
+              <Building2 className="w-3.5 h-3.5" />
+              <span>{faculty?.department || 'Engineering Lab'}</span>
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
         {/* Left Column: Project Selector & Proposal Formulation Form */}
-        <div className="lg:col-span-2 space-y-4">
+        <div className={hideHeader ? "lg:col-span-3 space-y-4" : "lg:col-span-2 space-y-4"}>
           <form onSubmit={handleSubmitProposal} className="bg-white border border-slate-200/90 rounded-2xl p-5 shadow-2xs space-y-4">
             {/* Project Selection Dropdown */}
-            <div>
-              <label className="block text-[10.5px] font-extrabold uppercase tracking-wider text-slate-600 mb-1">
-                Select Assigned Problem Project *
-              </label>
-              <select
-                value={selectedProjectId}
-                onChange={(e) => handleProjectSelect(e.target.value)}
-                className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:outline-none focus:ring-1 focus:ring-[#007A61] focus:bg-white shadow-2xs cursor-pointer"
-              >
-                {projects.map((p, i) => (
-                  <option key={p.projectId || i} value={p.projectId || p.challengeId}>
-                    {p.projectId} — {p.title} ({p.domain})
-                  </option>
-                ))}
-              </select>
-            </div>
+            {!hideHeader && (
+              <div>
+                <label className="block text-[10.5px] font-extrabold uppercase tracking-wider text-slate-600 mb-1">
+                  Select Assigned Problem Project *
+                </label>
+                <select
+                  value={selectedProjectId}
+                  onChange={(e) => handleProjectSelect(e.target.value)}
+                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:outline-none focus:ring-1 focus:ring-[#007A61] focus:bg-white shadow-2xs cursor-pointer"
+                >
+                  {projects.map((p, i) => (
+                    <option key={p.projectId || i} value={p.projectId || p.challengeId}>
+                      {p.projectId} — {p.title} ({p.domain})
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
 
             {/* Problem Brief Card */}
             {currentProject && (
@@ -614,7 +619,8 @@ export const FacultyProposalsPanel = ({
         </div>
 
         {/* Right Column: Live Project Status & Governance Summary */}
-        <div className="space-y-4">
+        {!hideHeader && (
+          <div className="space-y-4">
           <div className="bg-white border border-slate-200/90 rounded-2xl p-5 shadow-2xs space-y-4">
             <h3 className="text-xs font-extrabold text-slate-900 uppercase tracking-wider">
               Governance & Approval Status
@@ -643,7 +649,8 @@ export const FacultyProposalsPanel = ({
               </div>
             </div>
           </div>
-        </div>
+          </div>
+        )}
       </div>
     </div>
   );

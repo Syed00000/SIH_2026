@@ -185,6 +185,39 @@ export const universityApiService = {
     return { approvalId, status, adminRemarks };
   },
 
+  async deleteApproval(approvalId, universityCode = DEFAULT_UNIVERSITY_CODE) {
+    try {
+      const res = await apiClient.delete(`university/approvals/${approvalId}?universityCode=${encodeURIComponent(universityCode)}`);
+      if (res?.data) return res.data;
+    } catch (err) { console.error('API deleteApproval error:', err.message); }
+    return { success: false };
+  },
+
+  async getPartners(universityCode = DEFAULT_UNIVERSITY_CODE) {
+    try {
+      const res = await apiClient.get(`university/partners?universityCode=${encodeURIComponent(universityCode)}`);
+      if (res?.data && Array.isArray(res.data)) return res.data;
+    } catch (err) { console.error('API getPartners error:', err.message); }
+    return [];
+  },
+
+  async createIndustryRequest(payload, universityCode = DEFAULT_UNIVERSITY_CODE) {
+    try {
+      const res = await apiClient.post(`university/industry-request?universityCode=${encodeURIComponent(universityCode)}`, payload);
+      if (res?.data) return res.data;
+    } catch (err) { console.error('API createIndustryRequest error:', err.message); }
+    return { success: false };
+  },
+
+  async getIndustryRequests(universityCode = DEFAULT_UNIVERSITY_CODE) {
+    try {
+      const res = await apiClient.get(`university/industry-requests?universityCode=${encodeURIComponent(universityCode)}`);
+      if (res?.data?.data && Array.isArray(res.data.data)) return res.data.data;
+      if (res?.data && Array.isArray(res.data)) return res.data;
+    } catch (err) { console.error('API getIndustryRequests error:', err.message); }
+    return [];
+  },
+
   async getReports(universityCode = DEFAULT_UNIVERSITY_CODE) {
     try {
       const res = await apiClient.get(`university/reports?universityCode=${encodeURIComponent(universityCode)}`);
