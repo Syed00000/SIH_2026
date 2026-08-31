@@ -1,156 +1,52 @@
 import { citizenService } from '../application/service.js';
-import logger from '../../../shared/logger/index.js';
+import { createSubmissionHandler } from './handlers/submission.handler.js';
+import { createQueryHandler } from './handlers/query.handler.js';
+import { createAnalyticsHandler } from './handlers/analytics.handler.js';
+import { createTriageHandler } from './handlers/triage.handler.js';
 
 export class CitizenController {
-  async submitChallenge(req, res, next) {
-    try {
-      const user = req.user || null;
-      const challengeData = req.body;
-
-      logger.info({ msg: 'Citizen submitting problem statement', title: challengeData?.title });
-      const challenge = await citizenService.submitChallenge(challengeData, user);
-
-      res.status(201).json({
-        success: true,
-        message: 'Problem statement submitted successfully to Jharkhand Innovation Portal',
-        data: challenge
-      });
-    } catch (error) {
-      logger.error({ msg: 'Failed to submit citizen challenge', error: error.message });
-      next(error);
-    }
+  constructor(service = citizenService) {
+    this.service = service;
+    this.submissionHandler = createSubmissionHandler(service);
+    this.queryHandler = createQueryHandler(service);
+    this.analyticsHandler = createAnalyticsHandler(service);
+    this.triageHandler = createTriageHandler(service);
   }
 
-  async getChallenges(req, res, next) {
-    try {
-      const { domain, status, district, search, page = 1, limit = 20 } = req.query;
-      const result = await citizenService.getChallenges({
-        domain,
-        status,
-        district,
-        search,
-        page,
-        limit
-      });
-
-      res.status(200).json({
-        success: true,
-        data: result
-      });
-    } catch (error) {
-      logger.error({ msg: 'Failed to fetch challenges', error: error.message });
-      next(error);
-    }
+  submitChallenge(req, res, next) {
+    return this.submissionHandler.submitChallenge(req, res, next);
   }
 
-  async getMyChallenges(req, res, next) {
-    try {
-      const user = req.user || null;
-      const { status, search, page = 1, limit = 20 } = req.query;
-
-      const result = await citizenService.getMyChallenges(user, {
-        status,
-        search,
-        page,
-        limit
-      });
-
-      res.status(200).json({
-        success: true,
-        data: result
-      });
-    } catch (error) {
-      logger.error({ msg: 'Failed to fetch citizen challenges', error: error.message });
-      next(error);
-    }
+  getChallenges(req, res, next) {
+    return this.queryHandler.getChallenges(req, res, next);
   }
 
-  async getChallengeById(req, res, next) {
-    try {
-      const { id } = req.params;
-      const challenge = await citizenService.getChallengeById(id);
-
-      res.status(200).json({
-        success: true,
-        data: challenge
-      });
-    } catch (error) {
-      logger.error({ msg: 'Failed to get challenge details', error: error.message });
-      next(error);
-    }
+  getMyChallenges(req, res, next) {
+    return this.queryHandler.getMyChallenges(req, res, next);
   }
 
-  async getStats(req, res, next) {
-    try {
-      const user = req.user || null;
-      const stats = await citizenService.getStats(user);
-
-      res.status(200).json({
-        success: true,
-        data: stats
-      });
-    } catch (error) {
-      logger.error({ msg: 'Failed to get citizen stats', error: error.message });
-      next(error);
-    }
+  getChallengeById(req, res, next) {
+    return this.queryHandler.getChallengeById(req, res, next);
   }
 
-  async getUpdates(req, res, next) {
-    try {
-      const updates = await citizenService.getUpdates();
-      res.status(200).json({
-        success: true,
-        data: updates
-      });
-    } catch (error) {
-      logger.error({ msg: 'Failed to fetch updates', error: error.message });
-      next(error);
-    }
+  getStats(req, res, next) {
+    return this.analyticsHandler.getStats(req, res, next);
   }
 
-  async getPopularAreas(req, res, next) {
-    try {
-      const areas = await citizenService.getPopularAreas();
-      res.status(200).json({
-        success: true,
-        data: areas
-      });
-    } catch (error) {
-      logger.error({ msg: 'Failed to fetch popular areas', error: error.message });
-      next(error);
-    }
+  getUpdates(req, res, next) {
+    return this.analyticsHandler.getUpdates(req, res, next);
   }
 
-  async triageChallenge(req, res, next) {
-    try {
-      const { id } = req.params;
-      const user = req.user || null;
-      const triageData = req.body;
-
-      logger.info({ msg: 'Nodal Officer triaging citizen challenge', id, triageData });
-      const updated = await citizenService.triageChallenge(id, triageData, user);
-
-      res.status(200).json({
-        success: true,
-        message: 'Challenge triaged and updated successfully',
-        data: updated
-      });
-    } catch (error) {
-      logger.error({ msg: 'Failed to triage citizen challenge', error: error.message });
-      next(error);
-    }
+  getPopularAreas(req, res, next) {
+    return this.analyticsHandler.getPopularAreas(req, res, next);
   }
 
-  async deleteChallenge(req, res, next) {
-    try {
-      const { id } = req.params;
-      logger.info({ msg: 'Nodal Officer deleting/dismissing citizen challenge', id });
-      const result = await citizenService.deleteChallenge(id);
-      res.status(200).json(result);
-    } catch (error) {
-      logger.error({ msg: 'Failed to delete citizen challenge', error: error.message });
-      next(error);
-    }
+  triageChallenge(req, res, next) {
+    return this.triageHandler.triageChallenge(req, res, next);
+  }
+
+  deleteChallenge(req, res, next) {
+    return this.triageHandler.deleteChallenge(req, res, next);
   }
 }
 
