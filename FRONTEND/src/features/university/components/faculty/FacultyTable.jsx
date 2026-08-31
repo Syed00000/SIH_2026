@@ -1,5 +1,8 @@
 import React, { useState } from 'react';
-import { Eye, Edit3, ChevronLeft, ChevronRight, ChevronDown, UserCheck } from 'lucide-react';
+import { UserCheck } from 'lucide-react';
+import { FacultyTableHeader } from './table/FacultyTableHeader.jsx';
+import { FacultyTableRow } from './table/FacultyTableRow.jsx';
+import { FacultyTablePagination } from './table/FacultyTablePagination.jsx';
 
 export const FacultyTable = ({
   facultyList = [],
@@ -21,18 +24,7 @@ export const FacultyTable = ({
     <div className="border border-slate-200/90 rounded-2xl overflow-hidden flex flex-col w-full shadow-xs select-none bg-white">
       <div className="overflow-x-auto w-full">
         <table className="w-full text-left border-collapse min-w-[850px]">
-          <thead>
-            <tr className="border-b border-slate-100 bg-slate-50/60 text-[10.5px] font-extrabold text-slate-400 uppercase tracking-wider select-none">
-              <th className="py-3 px-3 w-[45px] text-center">#</th>
-              <th className="py-3 px-3 min-w-[210px]">Faculty Mentor</th>
-              <th className="py-3 px-3 w-[150px]">Department</th>
-              <th className="py-3 px-3 w-[160px]">Contact Info</th>
-              <th className="py-3 px-3 w-[150px]">Specialization</th>
-              <th className="py-3 px-3 w-[105px]">Availability</th>
-              <th className="py-3 px-3 w-[90px]">Status</th>
-              <th className="py-3 px-3 w-[80px] text-right">Actions</th>
-            </tr>
-          </thead>
+          <FacultyTableHeader />
           <tbody className="divide-y divide-slate-100 text-xs">
             {loading ? (
               <tr>
@@ -48,213 +40,30 @@ export const FacultyTable = ({
                 </td>
               </tr>
             ) : (
-              paginatedItems.map((f, index) => {
-                const isSelected = selectedFacultyId === (f._id || f.id || f.name);
-                const name = f.name || 'Faculty Mentor';
-                const firstLetter = name.replace(/^Dr\.\s*|^Prof\.\s*/i, '').charAt(0).toUpperCase() || 'F';
-                const globalIndex = startIndex + index + 1;
-                const specs = Array.isArray(f.specialization)
-                  ? f.specialization
-                  : typeof f.specialization === 'string'
-                  ? f.specialization.split(',').map((s) => s.trim())
-                  : ['Water Resources', 'IoT'];
-
-                const avail = f.availabilityStatus || 'Available';
-                const isActive = f.status !== 'Inactive';
-
-                return (
-                  <tr
-                    key={f._id || f.id || index}
-                    onClick={() => onSelectFaculty(f)}
-                    className={`hover:bg-emerald-50/30 transition-colors group select-none cursor-pointer ${
-                      isSelected ? 'bg-emerald-50/60 border-l-4 border-l-[#007A61]' : ''
-                    }`}
-                  >
-                    {/* Index */}
-                    <td className="py-3 px-3 text-center font-mono text-[11px] font-bold text-slate-400">
-                      {globalIndex}
-                    </td>
-
-                    {/* Main Entity Tile */}
-                    <td className="py-3 px-3">
-                      <div className="flex items-center space-x-2.5">
-                        <div className="w-8 h-8 rounded-xl bg-emerald-50 text-[#007A61] font-black text-xs flex items-center justify-center shrink-0 border border-emerald-200 shadow-2xs">
-                          {firstLetter}
-                        </div>
-                        <div className="min-w-0 max-w-[210px]">
-                          <div
-                            className="font-extrabold text-slate-900 group-hover:text-[#007A61] text-xs truncate leading-tight transition-colors"
-                            title={name}
-                          >
-                            {name}
-                          </div>
-                          <div className="text-[10px] text-slate-400 font-mono mt-0.5 truncate">
-                            ID: {f.facultyId || f.id || 'FAC'} &bull; {f.designation || 'Professor'}
-                          </div>
-                        </div>
-                      </div>
-                    </td>
-
-                    {/* Department */}
-                    <td className="py-3 px-3">
-                      <div className="font-bold text-slate-800 text-xs truncate max-w-[140px]" title={f.department}>
-                        {f.department}
-                      </div>
-                      <div className="text-[10px] text-slate-400 mt-0.5">{f.experience || '10 Years'} Exp</div>
-                    </td>
-
-                    {/* Contact Info */}
-                    <td className="py-3 px-3">
-                      <div className="font-bold text-slate-900 text-xs leading-tight truncate max-w-[150px]">
-                        {f.email}
-                      </div>
-                      <div className="text-[10px] text-slate-400 font-mono mt-0.5 truncate">
-                        {f.phone || '+91 94311 22334'}
-                      </div>
-                    </td>
-
-                    {/* Specialization */}
-                    <td className="py-3 px-3">
-                      <div className="flex flex-wrap gap-1 max-w-[150px]">
-                        {specs.slice(0, 2).map((spec, sIdx) => (
-                          <span
-                            key={sIdx}
-                            className="px-2 py-0.5 bg-slate-50 border border-slate-200 text-slate-700 rounded-md text-[10px] font-semibold"
-                          >
-                            {spec}
-                          </span>
-                        ))}
-                        {specs.length > 2 && (
-                          <span className="text-[10px] font-bold text-[#007A61] self-center">
-                            +{specs.length - 2}
-                          </span>
-                        )}
-                      </div>
-                    </td>
-
-                    {/* Availability */}
-                    <td className="py-3 px-3 whitespace-nowrap">
-                      <span
-                        className={`inline-flex items-center space-x-1.5 text-[11px] font-bold ${
-                          avail === 'Available'
-                            ? 'text-[#007A61]'
-                            : avail === 'In Project'
-                            ? 'text-amber-600'
-                            : 'text-slate-600'
-                        }`}
-                      >
-                        <span
-                          className={`w-1.5 h-1.5 rounded-full ${
-                            avail === 'Available'
-                              ? 'bg-[#007A61]'
-                              : avail === 'In Project'
-                              ? 'bg-amber-500'
-                              : 'bg-slate-400'
-                          }`}
-                        />
-                        <span>{avail}</span>
-                      </span>
-                    </td>
-
-                    {/* Status */}
-                    <td className="py-3 px-3 whitespace-nowrap">
-                      <span
-                        className={`inline-flex items-center space-x-1 text-[11px] font-bold ${
-                          isActive ? 'text-[#007A61]' : 'text-slate-400'
-                        }`}
-                      >
-                        <span className={`w-1.5 h-1.5 rounded-full ${isActive ? 'bg-[#007A61]' : 'bg-slate-300'}`} />
-                        <span>{isActive ? 'Active' : 'Inactive'}</span>
-                      </span>
-                    </td>
-
-                    {/* Actions */}
-                    <td className="py-3 px-3 text-right whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
-                      <div className="flex items-center justify-end space-x-1">
-                        <button
-                          type="button"
-                          onClick={() => onSelectFaculty(f)}
-                          className="p-1.5 text-[#007A61] hover:text-emerald-900 bg-emerald-50 hover:bg-emerald-100 rounded-lg transition-colors cursor-pointer border border-emerald-200 shadow-2xs"
-                          title="View Profile"
-                        >
-                          <Eye className="w-3.5 h-3.5" />
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => onEditFaculty && onEditFaculty(f)}
-                          className="p-1.5 text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer border border-slate-200/80 shadow-2xs"
-                          title="Edit Faculty"
-                        >
-                          <Edit3 className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })
+              paginatedItems.map((f, index) => (
+                <FacultyTableRow
+                  key={f._id || f.id || index}
+                  f={f}
+                  globalIndex={startIndex + index + 1}
+                  isSelected={selectedFacultyId === (f._id || f.id || f.name)}
+                  onSelectFaculty={onSelectFaculty}
+                  onEditFaculty={onEditFaculty}
+                />
+              ))
             )}
           </tbody>
         </table>
       </div>
 
-      {/* Pagination Footer */}
-      <div className="p-3.5 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500 bg-slate-50/30">
-        <div>
-          Showing <span className="font-bold text-slate-800">{facultyList.length > 0 ? startIndex + 1 : 0}</span> to{' '}
-          <span className="font-bold text-slate-800">{Math.min(startIndex + itemsPerPage, totalRecords)}</span> of{' '}
-          <span className="font-bold text-slate-800">{totalRecords}</span> faculty
-        </div>
-
-        <div className="flex items-center space-x-2.5">
-          <div className="relative">
-            <select
-              value={itemsPerPage}
-              onChange={(e) => {
-                setItemsPerPage(Number(e.target.value));
-                setCurrentPage(1);
-              }}
-              className="bg-white border border-slate-200 rounded-md px-2 py-1 pr-6 text-xs font-medium text-slate-700 hover:border-slate-300 focus:outline-none cursor-pointer appearance-none shadow-2xs"
-            >
-              <option value={5}>5 per page</option>
-              <option value={10}>10 per page</option>
-              <option value={20}>20 per page</option>
-            </select>
-            <ChevronDown className="w-3.5 h-3.5 text-slate-400 absolute right-1.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-          </div>
-
-          <div className="flex items-center space-x-1">
-            <button
-              disabled={activePage <= 1}
-              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-              className="w-7 h-7 rounded-md border border-slate-200 flex items-center justify-center text-slate-600 hover:bg-slate-50 disabled:opacity-40 cursor-pointer shadow-2xs"
-            >
-              <ChevronLeft className="w-3.5 h-3.5" />
-            </button>
-
-            {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => (
-              <button
-                key={pageNum}
-                onClick={() => setCurrentPage(pageNum)}
-                className={`w-7 h-7 rounded-md text-xs font-bold transition-colors cursor-pointer ${
-                  activePage === pageNum
-                    ? 'bg-slate-900 text-white shadow-xs'
-                    : 'border border-slate-200 text-slate-700 hover:bg-slate-50'
-                }`}
-              >
-                {pageNum}
-              </button>
-            ))}
-
-            <button
-              disabled={activePage >= totalPages}
-              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-              className="w-7 h-7 rounded-md border border-slate-200 flex items-center justify-center text-slate-600 hover:bg-slate-50 disabled:opacity-40 cursor-pointer shadow-2xs"
-            >
-              <ChevronRight className="w-3.5 h-3.5" />
-            </button>
-          </div>
-        </div>
-      </div>
+      <FacultyTablePagination
+        filteredCount={facultyList.length}
+        startIndex={startIndex}
+        itemsPerPage={itemsPerPage}
+        setItemsPerPage={setItemsPerPage}
+        activePage={activePage}
+        totalPages={totalPages}
+        setCurrentPage={setCurrentPage}
+      />
     </div>
   );
 };

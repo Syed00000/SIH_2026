@@ -2,20 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { UniversityHeader } from './UniversityHeader.jsx';
 import { UniversitySidebar } from './UniversitySidebar.jsx';
 import { UniversityFooter } from './UniversityFooter.jsx';
-import { UniversityDashboard } from '../dashboard/UniversityDashboard.jsx';
-import { AssignedChallengesPanel } from '../challenges/AssignedChallengesPanel.jsx';
-import { FacultyMentorsPanel } from '../faculty/FacultyMentorsPanel.jsx';
-import { FacultyDetailPanel } from '../faculty/FacultyDetailPanel.jsx';
-import { EditFacultyPanel } from '../faculty/EditFacultyPanel.jsx';
-import { OnboardFacultyPanel } from '../faculty/OnboardFacultyPanel.jsx';
-import { ProjectsPanel } from '../projects/ProjectsPanel.jsx';
-import { CreateProjectPanel } from '../projects/CreateProjectPanel.jsx';
-import { IndustryPartnersPanel } from '../partners/IndustryPartnersPanel.jsx';
-import { ApprovalsPanel } from '../approvals/ApprovalsPanel.jsx';
-import { ReportsPanel } from '../reports/ReportsPanel.jsx';
-import { UniversityNotificationsPanel } from '../notifications/UniversityNotificationsPanel.jsx';
-import { UniversityProfilePanel } from '../profile/UniversityProfilePanel.jsx';
-import { UniversitySettingsPanel } from '../settings/UniversitySettingsPanel.jsx';
+import { UniversityTabContent } from './UniversityTabContent.jsx';
 import { universityApiService } from '../../services/universityApiService.js';
 
 export const UniversityLayout = ({ user, onLogout }) => {
@@ -97,101 +84,22 @@ export const UniversityLayout = ({ user, onLogout }) => {
               <div className="flex items-center justify-center h-64 text-xs font-bold text-slate-600">
                 Loading University Innovation Portal...
               </div>
-            ) : activeTab === 'dashboard' ? (
-              <UniversityDashboard
-                data={dashboardData}
-                adminName={adminName}
-                universityName={uniName}
-                universityCode={universityCode}
-                onNavigateTab={(tab) => setActiveTab(tab)}
-                onUpdateChallenge={handleUpdateChallenge}
-              />
-            ) : activeTab === 'challenges' ? (
-              <AssignedChallengesPanel
-                challenges={dashboardData?.challenges || []}
-                universityCode={universityCode}
-                onUpdateChallengeStatus={handleUpdateChallengeStatus}
-                onAssignFaculty={handleUpdateChallenge}
-              />
-            ) : activeTab === 'faculty' ? (
-              <FacultyMentorsPanel
-                onNavigateTab={(tab) => setActiveTab(tab)}
-                onSelectFacultyDetail={(faculty, projects, challenges) => {
-                  setSelectedFacultyForDetail(faculty);
-                  setSelectedFacultyForEdit(faculty);
-                  setFacultyDetailContext({ projects: projects || [], challenges: challenges || [] });
-                }}
-                onSelectFacultyEdit={(faculty) => {
-                  setSelectedFacultyForEdit(faculty);
-                  setSelectedFacultyForDetail(faculty);
-                }}
-              />
-            ) : activeTab === 'faculty-detail' && selectedFacultyForDetail ? (
-              <FacultyDetailPanel
-                faculty={selectedFacultyForDetail}
-                projects={facultyDetailContext.projects}
-                challenges={facultyDetailContext.challenges}
-                onBack={() => setActiveTab('faculty')}
-                onEdit={(faculty) => {
-                  setSelectedFacultyForEdit(faculty);
-                  setActiveTab('edit-faculty');
-                }}
-                onDeleteFaculty={async (id) => {
-                  const { universityApiService } = await import('../../services/universityApiService.js');
-                  await universityApiService.deleteFaculty(id);
-                  setActiveTab('faculty');
-                }}
-                onUnassignProject={async (projectId, facultyName) => {
-                  if (window.confirm(`Unassign ${facultyName} from this project?`)) {
-                    const { universityApiService } = await import('../../services/universityApiService.js');
-                    await universityApiService.updateProject(projectId, { leadMentor: 'Unassigned Mentor', facultyMentor: null }, 'RU001');
-                    setActiveTab('faculty');
-                  }
-                }}
-                onAssignChallenge={() => {}}
-              />
-            ) : activeTab === 'edit-faculty' && (selectedFacultyForEdit || selectedFacultyForDetail) ? (
-              <EditFacultyPanel
-                faculty={selectedFacultyForEdit || selectedFacultyForDetail}
-                onBack={() => setActiveTab(selectedFacultyForDetail ? 'faculty-detail' : 'faculty')}
-                onSuccess={(updated) => {
-                  if (updated) {
-                    setSelectedFacultyForDetail(updated);
-                    setSelectedFacultyForEdit(updated);
-                  }
-                  setActiveTab('faculty');
-                }}
-              />
-            ) : activeTab === 'onboard-faculty' ? (
-              <OnboardFacultyPanel
-                onBack={() => setActiveTab('faculty')}
-                onSuccess={() => setActiveTab('faculty')}
-              />
-            ) : activeTab === 'projects' ? (
-              <ProjectsPanel onNavigateTab={(tab) => setActiveTab(tab)} />
-            ) : activeTab === 'create-project' ? (
-              <CreateProjectPanel
-                onBack={() => setActiveTab('projects')}
-                onSuccess={() => setActiveTab('projects')}
-              />
-            ) : activeTab === 'partners' ? (
-              <IndustryPartnersPanel />
-            ) : activeTab === 'approvals' ? (
-              <ApprovalsPanel />
-            ) : activeTab === 'reports' ? (
-              <ReportsPanel />
-            ) : activeTab === 'notifications' ? (
-              <UniversityNotificationsPanel />
-            ) : activeTab === 'profile' ? (
-              <UniversityProfilePanel universityData={dashboardData?.university} />
-            ) : activeTab === 'settings' ? (
-              <UniversitySettingsPanel />
             ) : (
-              <UniversityDashboard
-                data={dashboardData}
+              <UniversityTabContent
+                activeTab={activeTab}
+                setActiveTab={setActiveTab}
+                dashboardData={dashboardData}
                 adminName={adminName}
-                onNavigateTab={(tab) => setActiveTab(tab)}
-                onUpdateChallenge={handleUpdateChallenge}
+                uniName={uniName}
+                universityCode={universityCode}
+                handleUpdateChallenge={handleUpdateChallenge}
+                handleUpdateChallengeStatus={handleUpdateChallengeStatus}
+                selectedFacultyForDetail={selectedFacultyForDetail}
+                setSelectedFacultyForDetail={setSelectedFacultyForDetail}
+                selectedFacultyForEdit={selectedFacultyForEdit}
+                setSelectedFacultyForEdit={setSelectedFacultyForEdit}
+                facultyDetailContext={facultyDetailContext}
+                setFacultyDetailContext={setFacultyDetailContext}
               />
             )}
           </main>
