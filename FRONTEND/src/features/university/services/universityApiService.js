@@ -218,6 +218,28 @@ export const universityApiService = {
     return [];
   },
 
+  async forwardPrototypeToGovernment(projectId, universityCode = DEFAULT_UNIVERSITY_CODE, remarks = '') {
+    try {
+      const res = await apiClient.post(
+        `university/projects/${encodeURIComponent(projectId)}/forward-to-government?universityCode=${encodeURIComponent(universityCode)}`,
+        { remarks }
+      );
+      if (res?.data) return res.data;
+    } catch (err) { console.error('API forwardPrototypeToGovernment error:', err.message); }
+    return { success: false };
+  },
+
+  async updateGovernmentPrototypeStatus(projectId, status, trlLevel, remarks = '', universityCode = DEFAULT_UNIVERSITY_CODE) {
+    try {
+      const res = await apiClient.patch(
+        `university/projects/${encodeURIComponent(projectId)}/government-prototype-status?universityCode=${encodeURIComponent(universityCode)}`,
+        { status, trlLevel, remarks }
+      );
+      if (res?.data) return res.data;
+    } catch (err) { console.error('API updateGovernmentPrototypeStatus error:', err.message); }
+    return { success: false };
+  },
+
   async getReports(universityCode = DEFAULT_UNIVERSITY_CODE) {
     try {
       const res = await apiClient.get(`university/reports?universityCode=${encodeURIComponent(universityCode)}`);

@@ -13,8 +13,10 @@ import {
   Users,
   Award,
   Clock,
+  Send
 } from 'lucide-react';
 import { projectCsrSyncService } from '../../../government/services/projectCsrSyncService.js';
+import { universityApiService } from '../../services/universityApiService.js';
 
 export const ProjectDrawerTabs = ({
   project,
@@ -342,6 +344,29 @@ export const ProjectDrawerTabs = ({
             {project.prototypeData?.timeline && (
               <div className="text-[11px] text-[#007A61] font-bold">
                 Target Timeline: {project.prototypeData.timeline}
+              </div>
+            )}
+
+            {project.prototypeStatus === 'Approved' && (
+              <div className="pt-2.5 border-t border-emerald-200/80 flex items-center justify-between">
+                <span className="text-[10px] font-bold text-emerald-900">
+                  {project.sentToGovernment ? '✓ Forwarded to Government (DHTE)' : 'Ready to Ship for State Evaluation'}
+                </span>
+                <button
+                  type="button"
+                  onClick={async () => {
+                    try {
+                      await universityApiService.forwardPrototypeToGovernment(project.projectId || project.id, 'RU001');
+                      project.sentToGovernment = true;
+                    } catch (e) {
+                      console.error(e);
+                    }
+                  }}
+                  className="px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-white rounded-lg text-[10px] font-bold flex items-center space-x-1 shadow-2xs cursor-pointer"
+                >
+                  <Send className="w-3 h-3 text-blue-400" />
+                  <span>{project.sentToGovernment ? 'Resync with Government' : 'Ship to Government'}</span>
+                </button>
               </div>
             )}
           </div>

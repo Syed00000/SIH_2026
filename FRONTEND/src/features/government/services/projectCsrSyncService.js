@@ -68,8 +68,9 @@ class ProjectCsrSyncService {
           district: p.district || 'Ranchi',
           hei: uniName,
           universityCode: uniCode,
-          teamLead: p.leadMentor || p.facultyMentor?.name || 'Lead Faculty Investigator',
-          studentTeam: p.studentTeam || '',
+          teamLead: p.leadMentor || p.facultyMentor?.name || p.faculty || 'Dr. Binod Kumar',
+          studentTeam: p.studentTeam || p.teamName || 'Binod GANG',
+          teamName: p.teamName || p.studentTeam || 'Binod GANG',
           requestedGrant: formatBudget(p.proposedBudget || p.budget || 73000),
           budgetRequested: formatBudget(p.proposedBudget || p.budget || 73000),
           allocatedAmount: formatBudget(p.sanctionedBudget || p.proposedBudget || p.budget || 73000),
@@ -78,7 +79,12 @@ class ProjectCsrSyncService {
           budgetStatus: isFunded ? 'Grant Sanctioned by Government' : isApproved ? 'Forwarded to CSR Grants Pipeline' : (p.budgetStatus || 'Pending Review'),
           sourceScheme: p.domain ? `${p.domain} State Innovation Grant` : 'Govt State R&D & CSR Pool',
           stage: p.stage || 'Stage 1: Formulation & DPR',
-          trlLevel: p.trlLevel || 'TRL-3',
+          trlLevel: p.trlLevel || 'TRL-4',
+          prototypeData: p.prototypeData || {},
+          prototypeStatus: p.prototypeStatus || 'Not Started',
+          sentToGovernment: p.sentToGovernment || false,
+          governmentStatus: p.governmentStatus || 'Under State Evaluation',
+          forwardedToGovAt: p.forwardedToGovAt,
           dueDiligence: isApproved ? 'Passed (State Tech Council)' : 'Under Government Evaluation',
           dueDiligenceStatus: isApproved ? 'passed' : 'review',
           boardApproval: isApproved ? 'Approved (A-Grade)' : 'Under Board Evaluation',
@@ -103,11 +109,11 @@ class ProjectCsrSyncService {
         );
       });
 
-      // 5. Active Projects (Funded / In Execution)
+      // 5. Active Projects (Funded / In Execution / Forwarded Prototypes)
       this.activeProjects = this.solutionProposals
         .filter((p) => {
           const disbNum = Number(String(p.disbursedAmount || '0').replace(/[^\d]/g, '')) || 0;
-          return disbNum > 0 || p.budgetStatus === 'Grant Sanctioned by Government';
+          return disbNum > 0 || p.budgetStatus === 'Grant Sanctioned by Government' || p.prototypeStatus === 'Approved' || p.sentToGovernment;
         })
         .map((p) => {
           return {
@@ -116,18 +122,25 @@ class ProjectCsrSyncService {
             sector: p.sector,
             district: p.district,
             hei: p.hei,
-            progress: 57,
+            progress: p.prototypeStatus === 'Approved' ? 85 : 57,
             status: 'Active',
-            stage: 'R&D Lab Phase',
+            stage: p.prototypeStatus === 'Approved' ? 'Prototype Testing & Validation (TRL-4 to TRL-7)' : 'R&D Lab Phase',
             trlLevel: p.trlLevel || 'TRL-4',
             sanctionedGrant: p.allocatedAmount || p.requestedGrant,
             disbursedGrant: p.disbursedAmount,
             disbursedAmount: p.disbursedAmount,
-            budgetStatus: 'Grant Sanctioned by Government',
+            budgetStatus: p.budgetStatus,
             rawBudget: p.rawBudget,
             telemetryStatus: 'Active Telemetry',
-            hardwareSpecs: '',
+            hardwareSpecs: p.hardwareSpecs || '',
             teamLead: p.teamLead,
+            studentTeam: p.studentTeam,
+            teamName: p.teamName,
+            prototypeData: p.prototypeData,
+            prototypeStatus: p.prototypeStatus,
+            sentToGovernment: p.sentToGovernment,
+            governmentStatus: p.governmentStatus,
+            forwardedToGovAt: p.forwardedToGovAt,
             milestones: p.milestones || []
           };
         });

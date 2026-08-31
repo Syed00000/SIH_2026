@@ -66,7 +66,12 @@ export const PrototypesEvaluationView = ({ projects = [], onManageProject, onAdv
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {filteredProjects.map((prj) => {
+          {filteredProjects.length === 0 ? (
+            <div className="col-span-2 bg-white rounded-2xl p-12 text-center border border-slate-200 text-slate-400">
+              No prototypes forwarded from Universities yet matching this filter.
+            </div>
+          ) : (
+            filteredProjects.map((prj) => {
             const curTrlNum = parseInt(String(prj.trlLevel || '4').replace('TRL-', ''), 10) || 4;
 
             return (

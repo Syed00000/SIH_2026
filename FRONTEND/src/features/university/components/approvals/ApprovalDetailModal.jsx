@@ -21,6 +21,7 @@ import {
   TestTube2,
   Rocket
 } from 'lucide-react';
+import { universityApiService } from '../../services/universityApiService.js';
 
 const statusBadge = (s = '') => {
   if (s === 'Approved') return 'bg-emerald-50 text-emerald-800 border-emerald-300';
@@ -195,14 +196,30 @@ export const ApprovalDetailModal = ({
 }) => {
   const [remarks, setRemarks] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
+  const [forwarded, setForwarded] = useState(false);
+  const [isForwarding, setIsForwarding] = useState(false);
 
   useEffect(() => {
     setRemarks(approval?.adminRemarks || '');
-  }, [approval?.approvalId]);
+    setForwarded(Boolean(approval?.sentToGovernment));
+  }, [approval?.approvalId, approval?.sentToGovernment]);
 
   if (!isOpen || !approval) return null;
 
   const canAct = approval.status === 'Pending' || approval.status === 'Changes Required';
+
+  const handleForwardToGov = async () => {
+    setIsForwarding(true);
+    try {
+      const projId = approval.projectId || approval.approvalId.replace('APP-', '');
+      await universityApiService.forwardPrototypeToGovernment(projId, 'RU001', remarks);
+      setForwarded(true);
+    } catch (err) {
+      console.error('Failed to forward prototype to government:', err);
+    } finally {
+      setIsForwarding(false);
+    }
+  };
 
   const handleAction = async (actionFn) => {
     setIsProcessing(true);
@@ -488,20 +505,36 @@ export const ApprovalDetailModal = ({
               )}
               
               {approval.type === 'Prototype Approval' && approval.status === 'Approved' && (
-                <button
-                  type="button"
-                  onClick={() => onOpenIndustryModal(approval)}
-                  className="px-4 py-2 bg-[#007A61] hover:bg-[#00604c] text-white text-xs font-bold rounded-xl flex items-center space-x-1.5 transition-all shadow-2xs cursor-pointer"
-                >
-                  <Building2 className="w-4 h-4 text-emerald-200" />
-                  <span>Request Industry Partnership</span>
-                </button>
+                <>
+                  <button
+                    type="button"
+                    onClick={handleForwardToGov}
+                    disabled={isForwarding}
+                    className={`px-4 py-2 text-xs font-bold rounded-xl flex items-center space-x-1.5 transition-all shadow-2xs cursor-pointer ${
+                      forwarded
+                        ? 'bg-blue-50 border border-blue-200 text-blue-800'
+                        : 'bg-slate-900 hover:bg-slate-800 text-white'
+                    }`}
+                  >
+                    <Send className="w-3.5 h-3.5 text-blue-400" />
+                    <span>{forwarded ? '✓ Shipped to Government (DHTE)' : 'Ship to Government'}</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => onOpenIndustryModal(approval)}
+                    className="px-4 py-2 bg-[#007A61] hover:bg-[#00604c] text-white text-xs font-bold rounded-xl flex items-center space-x-1.5 transition-all shadow-2xs cursor-pointer"
+                  >
+                    <Building2 className="w-4 h-4 text-emerald-200" />
+                    <span>Request Industry Partnership</span>
+                  </button>
+                </>
               )}
               
               <button
                 type="button"
                 onClick={onClose}
-                className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold rounded-xl transition-all shadow-2xs cursor-pointer"
+                className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold rounded-xl transition-all shadow-2xs cursor-pointer"
               >
                 Close Dossier
               </button>

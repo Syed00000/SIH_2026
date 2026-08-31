@@ -809,7 +809,8 @@ export class UniversityDashboardRepository {
         {
           $set: {
             status,
-            adminRemarks: remarks
+            adminRemarks: remarks,
+            ...(status === 'Approved' ? { sentToGovernment: true, governmentStatus: 'Under State Evaluation' } : {})
           },
           $push: {
             history: {
@@ -826,43 +827,122 @@ export class UniversityDashboardRepository {
       // Update corresponding project status, remarks & advance lifecycle
       if (res) {
         const projId = res.projectId || approvalId.replace('APP-', '');
+        const isPrototype = res.type === 'Prototype Approval' || res.type === 'PROTOTYPE_SUBMISSION';
+
         let newBudgetStatus = 'Submitted to University for Review';
         let progressPct = 43;
         let milestonesDone = 3;
 
         if (status === 'Approved' || status === 'APPROVED') {
-          newBudgetStatus = 'Forwarded to Government for Grant Sanction';
-          progressPct = 57;
-          milestonesDone = 4;
+          newBudgetStatus = isPrototype ? 'Prototype Approved & Shipped to Government' : 'Forwarded to Government for Grant Sanction';
+          progressPct = isPrototype ? 85 : 57;
+          milestonesDone = isPrototype ? 6 : 4;
         } else if (status === 'Changes Required') {
-          newBudgetStatus = 'Changes Required by University';
+          newBudgetStatus = isPrototype ? 'Prototype Changes Required by University' : 'Changes Required by University';
         } else if (status === 'Rejected') {
-          newBudgetStatus = 'Rejected by University';
+          newBudgetStatus = isPrototype ? 'Prototype Rejected by University' : 'Rejected by University';
+        }
+
+        const projectUpdate = {
+          budgetStatus: newBudgetStatus,
+          adminRemarks: remarks,
+          progressPercentage: progressPct,
+          milestonesCompleted: milestonesDone
+        };
+
+        if (isPrototype) {
+          projectUpdate.prototypeStatus = status;
+          if (status === 'Approved') {
+            projectUpdate.sentToGovernment = true;
+            projectUpdate.governmentStatus = 'Under State Evaluation';
+            projectUpdate.forwardedToGovAt = new Date();
+            projectUpdate.trlLevel = 'TRL-4';
+          }
         }
 
         await UniversityProject.findOneAndUpdate(
           { $or: [{ projectId: projId }, { challengeId: projId }] },
-          {
-            $set: {
-              budgetStatus: newBudgetStatus,
-              adminRemarks: remarks,
-              progressPercentage: progressPct,
-              milestonesCompleted: milestonesDone
-            }
-          }
+          { $set: projectUpdate }
         );
 
         await UniversityActivity.create({
           universityCode: (universityCode || 'RU001').toUpperCase(),
-          text: `R&D Proposal for "${res.project}" review decision: ${status.toUpperCase()} by University Authority.${remarks ? ` Remarks: "${remarks}"` : ''}`,
-          type: status === 'Approved' ? 'PROPOSAL_APPROVED' : 'PROPOSAL_REVIEWED',
+          text: `${isPrototype ? 'Prototype Blueprint' : 'R&D Proposal'} for "${res.project}" review decision: ${status.toUpperCase()} by University Authority.${remarks ? ` Remarks: "${remarks}"` : ''}${status === 'Approved' ? ' Forwarded to Government (DHTE) for state evaluation.' : ''}`,
+          type: status === 'Approved' ? 'PROTOTYPE_APPROVED' : 'PROPOSAL_REVIEWED',
           timestamp: new Date()
         });
       }
 
       if (res) return res;
-    } catch (err) { }
+    } catch (err) {
+      console.error('updateApprovalStatus error:', err);
+    }
     return { approvalId, status };
+  }
+
+  async forwardPrototypeToGovernment(projectId, universityCode, remarks = '') {
+    try {
+      const proj = await UniversityProject.findOneAndUpdate(
+        { $or: [{ projectId }, { challengeId: projectId }] },
+        {
+          $set: {
+            sentToGovernment: true,
+            governmentStatus: 'Under State Evaluation',
+            prototypeStatus: 'Approved',
+            forwardedToGovAt: new Date(),
+            adminRemarks: remarks || 'Forwarded to Government for State TRL certification.',
+            progressPercentage: 85,
+            milestonesCompleted: 6
+          }
+        },
+        { new: true }
+      );
+
+      await UniversityApproval.updateMany(
+        { $or: [{ projectId }, { challengeId: projectId }], type: 'Prototype Approval' },
+        {
+          $set: {
+            sentToGovernment: true,
+            governmentStatus: 'Under State Evaluation',
+            status: 'Approved'
+          }
+        }
+      );
+
+      await UniversityActivity.create({
+        universityCode: (universityCode || 'RU001').toUpperCase(),
+        text: `Prototype Blueprint for "${proj?.title || projectId}" officially shipped & forwarded to Department of Higher & Technical Education (Government) for State TRL Evaluation.`,
+        type: 'PROTOTYPE_SHIPPED_TO_GOV',
+        timestamp: new Date()
+      });
+
+      return { success: true, project: proj };
+    } catch (err) {
+      console.error('forwardPrototypeToGovernment error:', err);
+      return { success: false, error: err.message };
+    }
+  }
+
+  async updateGovernmentPrototypeStatus(projectId, status, trlLevel, remarks = '') {
+    try {
+      const nextTrl = trlLevel || (status === 'Approved' ? 'TRL-6' : 'TRL-4');
+      const proj = await UniversityProject.findOneAndUpdate(
+        { $or: [{ projectId }, { challengeId: projectId }] },
+        {
+          $set: {
+            governmentStatus: status,
+            governmentRemarks: remarks,
+            trlLevel: nextTrl,
+            stateCertifiedAt: status === 'Approved' ? new Date() : null,
+            progressPercentage: status === 'Approved' ? 95 : 75
+          }
+        },
+        { new: true }
+      );
+      return { success: true, project: proj };
+    } catch (err) {
+      return { success: false, error: err.message };
+    }
   }
 
   async submitPrototype(projectId, universityCode, prototypeData) {

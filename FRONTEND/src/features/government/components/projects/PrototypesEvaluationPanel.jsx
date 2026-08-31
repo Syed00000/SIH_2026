@@ -30,6 +30,7 @@ import {
 
 import { projectCsrSyncService } from '../../services/projectCsrSyncService.js';
 import { InspectPrototypeModal } from './InspectPrototypeModal.jsx';
+import { universityApiService } from '../../../university/services/universityApiService.js';
 
 // Prototype Stage Data Generator for all 4 distinct stages
 const getStageDetails = (project, stageIndex) => {
@@ -473,18 +474,37 @@ export const PrototypesEvaluationPanel = () => {
     return unsubscribe;
   }, []);
 
+  const prototypeProjects = React.useMemo(() => {
+    return projects.filter((p) => {
+      const hasPhases = p.prototypeData?.phases && Object.values(p.prototypeData.phases).some(v => v && v.replace(/<[^>]*>/g, '').trim().length > 0);
+      const isProtoApproved = p.prototypeStatus === 'Approved' || p.sentToGovernment || p.budgetStatus === 'Prototype Approved & Shipped to Government' || p.governmentStatus;
+      return isProtoApproved || hasPhases || p.prototypeStatus === 'In Review';
+    });
+  }, [projects]);
+
   const showToast = (msg, type = 'success') => {
     setNotification({ msg, type });
     setTimeout(() => setNotification(null), 3500);
   };
 
-  const handleAdvanceTrl = (projectId) => {
+  const handleAdvanceTrl = async (projectId) => {
+    const proj = projects.find(p => p.id === projectId);
+    const curNum = parseInt(String(proj?.trlLevel || '4').replace('TRL-', ''), 10) || 4;
+    const nextNum = Math.min(9, curNum + 1);
+    const nextTrl = `TRL-${nextNum}`;
+
+    try {
+      await universityApiService.updateGovernmentPrototypeStatus(projectId, 'Approved', nextTrl, 'Prototype approved & advanced by State Innovation Committee.');
+    } catch (e) {
+      console.warn('Backend prototype update sync error:', e);
+    }
+
     const updated = projectCsrSyncService.advancePrototypeTrl(projectId);
     setProjects(updated);
-    showToast(`Prototype readiness advanced to next level successfully!`);
+    showToast(`Prototype verified & advanced to ${nextTrl} successfully!`);
   };
 
-  const filteredProjects = projects.filter((p) => {
+  const filteredProjects = prototypeProjects.filter((p) => {
     const matchesSearch =
       searchQuery.trim() === '' ||
       p.title.toLowerCase().includes(searchQuery.toLowerCase()) ||

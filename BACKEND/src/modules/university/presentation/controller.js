@@ -193,7 +193,7 @@ export class UniversityController {
     try {
       const code = req.query.universityCode || req.user?.profile?.aisheCode || 'RU001';
       const data = await universityService.createIndustryRequest(code, req.body);
-      res.status(200).json({ status: 'SUCCESS', message: 'Industry Request Sent', data });
+      res.status(201).json({ status: 'SUCCESS', message: 'Industry collaboration request dispatched', data });
     } catch (error) { next(error); }
   }
 
@@ -202,6 +202,25 @@ export class UniversityController {
       const code = req.query.universityCode || req.user?.profile?.aisheCode || 'RU001';
       const data = await universityService.getIndustryRequests(code);
       res.status(200).json({ status: 'SUCCESS', data });
+    } catch (error) { next(error); }
+  }
+
+  async forwardPrototypeToGovernment(req, res, next) {
+    try {
+      const { id } = req.params;
+      const code = req.query.universityCode || req.user?.profile?.aisheCode || 'RU001';
+      const { remarks } = req.body;
+      const data = await universityService.forwardPrototypeToGovernment(id, code, remarks);
+      res.status(200).json({ status: 'SUCCESS', message: 'Prototype forwarded to Government successfully', data });
+    } catch (error) { next(error); }
+  }
+
+  async updateGovernmentPrototypeStatus(req, res, next) {
+    try {
+      const { id } = req.params;
+      const { status, trlLevel, remarks } = req.body;
+      const data = await universityService.updateGovernmentPrototypeStatus(id, status, trlLevel, remarks);
+      res.status(200).json({ status: 'SUCCESS', message: 'Government prototype evaluation updated', data });
     } catch (error) { next(error); }
   }
 

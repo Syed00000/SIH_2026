@@ -162,6 +162,8 @@ export class UniversityService {
   async createIndustryRequest(universityCode, payload) { return await universityDashboardRepository.createIndustryRequest(universityCode, payload); }
   async getIndustryRequests(universityCode) { return await universityDashboardRepository.getIndustryRequests(universityCode); }
   async submitPrototype(projectId, universityCode, prototypeData) { return await universityDashboardRepository.submitPrototype(projectId, universityCode, prototypeData); }
+  async forwardPrototypeToGovernment(projectId, universityCode, remarks) { return await universityDashboardRepository.forwardPrototypeToGovernment(projectId, universityCode, remarks); }
+  async updateGovernmentPrototypeStatus(projectId, status, trlLevel, remarks) { return await universityDashboardRepository.updateGovernmentPrototypeStatus(projectId, status, trlLevel, remarks); }
 
   async getProfile(universityCode) {
     return await universityDashboardRepository.getUniversityProfile(universityCode);
