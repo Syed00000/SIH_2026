@@ -147,7 +147,7 @@ export const PrototypesEvaluationView = ({ projects = [], onManageProject, onAdv
                 </div>
               </div>
             );
-          })}
+          }))}
         </div>
       </div>
 
