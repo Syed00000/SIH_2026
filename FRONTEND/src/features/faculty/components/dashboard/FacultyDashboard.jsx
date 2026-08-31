@@ -9,19 +9,20 @@ import {
   TrendingUp,
   AlertCircle,
   FileText,
-  Clock
+  Clock,
+  ChevronRight,
+  IndianRupee
 } from 'lucide-react';
 import { projectCsrSyncService } from '../../../government/services/projectCsrSyncService.js';
 
 export const FacultyDashboard = ({
-  data = {},
   faculty,
+  challenges = [],
+  projects = [],
   onNavigateTab,
   onSelectProject,
   onSelectChallenge
 }) => {
-  const challenges = data?.challenges || [];
-  const projects = data?.projects || [];
   const activeProjects = projects.filter(
     (p) => p.status === 'In Progress' || p.status === 'Active' || (p.disbursedAmount && p.disbursedAmount !== '0')
   );
@@ -250,9 +251,25 @@ export const FacultyDashboard = ({
                           </div>
                           
                           {(() => {
-                            const linkedPayments = paymentLedger.filter(
+                            // Merge tranches from database and local storage
+                            const dbTranches = Array.isArray(p.tranches) ? p.tranches : [];
+                            let linkedPayments = paymentLedger.filter(
                               (pay) => pay.projectRef === p.projectId || pay.projectRef === p.id || pay.projectRef === `PROP-${p.projectId}`
                             ).filter(pay => (Number(pay.rawAmount) > 0) || (pay.amount && pay.amount !== '₹ 0'));
+                            
+                            // Combine and deduplicate by ID
+                            const allPayments = [...dbTranches, ...linkedPayments];
+                            const uniquePayments = Array.from(new Map(allPayments.map(item => [item.id, item])).values());
+                            linkedPayments = uniquePayments.filter(pay => (Number(pay.rawAmount) > 0) || (pay.amount && pay.amount !== '₹ 0'));
+
+                            const backendDisbursedAmt = parseInt(String(p.disbursedAmount || '0').replace(/[^0-9]/g, ''), 10) || 0;
+                            const ledgerSum = linkedPayments.reduce((acc, pay) => acc + (Number(pay.rawAmount) || parseInt((pay.amount || '').replace(/[^0-9]/g, ''), 10) || 0), 0);
+
+                            if (linkedPayments.length === 0 && backendDisbursedAmt > 0) {
+                              linkedPayments = [{ id: 'LEGACY-1', rawAmount: backendDisbursedAmt }];
+                            } else if (backendDisbursedAmt > ledgerSum) {
+                              linkedPayments.unshift({ id: 'LEGACY-DIFF', rawAmount: backendDisbursedAmt - ledgerSum });
+                            }
 
                             if (linkedPayments.length === 0) {
                               return (

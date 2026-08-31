@@ -270,7 +270,16 @@ export const MilestonesMonitoringPanel = () => {
           {filteredProjects.map((project) => {
             const isCompleted = project.status === 'Completed' || (project.progress || 0) >= 100;
             const isExpanded = expandedProjectId === project.id;
-            const milestonesList = project.milestones || [];
+            const milestonesList = (project.milestones || []).map((m, idx) => {
+              let mStatus = m.status;
+              const hasFunds = project.disbursedAmount && project.disbursedAmount !== '₹ 0' && project.disbursedAmount !== '0';
+              if ((m.title?.toLowerCase().includes('disbursal') || m.title?.toLowerCase().includes('budget') || idx === 4) && hasFunds) {
+                if (mStatus !== 'Completed' && mStatus !== 'COMPLETED') {
+                  mStatus = 'Completed';
+                }
+              }
+              return { ...m, status: mStatus };
+            });
             
             return (
               <div key={project.id} className={`bg-white border rounded-2xl transition-all duration-200 shadow-2xs overflow-hidden ${isExpanded ? 'border-slate-400 ring-4 ring-slate-100' : 'border-slate-200 hover:border-slate-300 hover:shadow-xs'}`}>

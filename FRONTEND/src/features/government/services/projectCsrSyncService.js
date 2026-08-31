@@ -367,10 +367,12 @@ class ProjectCsrSyncService {
     // Sync directly to backend MongoDB
     if (pId) {
       try {
+        const projectTranches = this.csrLedger.filter(t => t.projectRef === pId || t.projectRef === payment.projectRef || t.projectRef === `PROP-${pId}`);
         await apiClient.put(`university/projects/${pId}`, {
           disbursedAmount: cumulativeDisbursedStr,
           budgetStatus: 'Grant Sanctioned by Government',
-          status: 'Active'
+          status: 'Active',
+          tranches: projectTranches
         });
       } catch (err) {
         console.warn('Failed to sync disbursal to MongoDB:', err);

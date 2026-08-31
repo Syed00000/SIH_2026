@@ -12,6 +12,7 @@ import {
   AlertCircle
 } from 'lucide-react';
 import { universityApiService } from '../../../university/services/universityApiService.js';
+import { projectCsrSyncService } from '../../../government/services/projectCsrSyncService.js';
 
 export const FacultyProjectsPanel = ({
   projects = [],
@@ -178,6 +179,76 @@ export const FacultyProjectsPanel = ({
                     </span>
                   </div>
                 </div>
+
+                {/* Detailed Financial Breakdown */}
+                {selectedProject.disbursedAmount && selectedProject.disbursedAmount !== '₹ 0' && selectedProject.disbursedAmount !== '0' && (
+                  <div className="space-y-2 pt-2 border-t border-slate-100">
+                    <h3 className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">
+                      Funding & Disbursal Breakdown
+                    </h3>
+                    
+                    {(() => {
+                      const paymentLedger = projectCsrSyncService.getCsrLedger();
+                      const p = selectedProject;
+                      // Merge tranches from database and local storage
+                      const dbTranches = Array.isArray(p.tranches) ? p.tranches : [];
+                      let linkedPayments = paymentLedger.filter(
+                        (pay) => pay.projectRef === p.projectId || pay.projectRef === p.id || pay.projectRef === `PROP-${p.projectId}`
+                      ).filter(pay => (Number(pay.rawAmount) > 0) || (pay.amount && pay.amount !== '₹ 0'));
+                      
+                      // Combine and deduplicate by ID
+                      const allPayments = [...dbTranches, ...linkedPayments];
+                      const uniquePayments = Array.from(new Map(allPayments.map(item => [item.id, item])).values());
+                      linkedPayments = uniquePayments.filter(pay => (Number(pay.rawAmount) > 0) || (pay.amount && pay.amount !== '₹ 0'));
+
+                      const backendDisbursedAmt = parseInt(String(p.disbursedAmount || '0').replace(/[^0-9]/g, ''), 10) || 0;
+                      const ledgerSum = linkedPayments.reduce((acc, pay) => acc + (Number(pay.rawAmount) || parseInt((pay.amount || '').replace(/[^0-9]/g, ''), 10) || 0), 0);
+
+                      if (linkedPayments.length === 0 && backendDisbursedAmt > 0) {
+                        linkedPayments = [{ id: 'LEGACY-1', rawAmount: backendDisbursedAmt }];
+                      } else if (backendDisbursedAmt > ledgerSum) {
+                        linkedPayments.unshift({ id: 'LEGACY-DIFF', rawAmount: backendDisbursedAmt - ledgerSum });
+                      }
+
+                      if (linkedPayments.length === 0) {
+                        return <div className="text-[10.5px] text-slate-500 italic">No transaction ledger records found.</div>;
+                      }
+
+                      const totalBudgetVal = parseInt((p.sanctionedBudget || p.budget || p.proposedBudget || '73000').toString().replace(/[^0-9]/g, ''), 10) || 73000;
+                      const totalDisbursedVal = linkedPayments.reduce((acc, pay) => acc + (Number(pay.rawAmount) || parseInt((pay.amount || '').replace(/[^0-9]/g, ''), 10) || 0), 0);
+                      const pendingVal = Math.max(0, totalBudgetVal - totalDisbursedVal);
+
+                      return (
+                        <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 space-y-2.5 shadow-2xs">
+                          <div className="flex items-center justify-between text-[10.5px] text-slate-600 font-medium px-1">
+                            <span>Total Sanctioned Grant</span>
+                            <span className="font-bold text-slate-800">₹ {totalBudgetVal.toLocaleString('en-IN')}</span>
+                          </div>
+                          
+                          {linkedPayments.map((pay, idx) => (
+                            <div key={pay.id || idx} className="flex items-center justify-between text-[10.5px] text-emerald-800 font-medium bg-emerald-50/80 p-2 rounded-lg border border-emerald-200/60 shadow-2xs">
+                              <div className="flex items-center space-x-1.5">
+                                <CheckCircle2 className="w-3.5 h-3.5 text-[#007A61]" />
+                                <span>Tranche {idx + 1} (Received)</span>
+                              </div>
+                              <span className="font-bold">₹ {(Number(pay.rawAmount) || parseInt((pay.amount || '').replace(/[^0-9]/g, ''), 10) || 0).toLocaleString('en-IN')}</span>
+                            </div>
+                          ))}
+
+                          {pendingVal > 0 && (
+                            <div className="flex items-center justify-between text-[10.5px] text-amber-800 font-medium bg-amber-50/80 p-2 rounded-lg border border-amber-200/60 shadow-2xs">
+                              <div className="flex items-center space-x-1.5">
+                                <Clock className="w-3.5 h-3.5 text-amber-600" />
+                                <span>Pending Balance</span>
+                              </div>
+                              <span className="font-bold">₹ {pendingVal.toLocaleString('en-IN')}</span>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })()}
+                  </div>
+                )}
 
                 {/* 7-Step Milestones */}
                 <div className="space-y-2.5 pt-2">
