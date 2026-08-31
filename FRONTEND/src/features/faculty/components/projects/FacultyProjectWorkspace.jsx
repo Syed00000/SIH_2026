@@ -1,10 +1,9 @@
 import React, { useState } from 'react';
-import { ArrowLeft, Users, FileText, Target } from 'lucide-react';
+import { ArrowLeft, Users, FileText, Target, CheckCircle2, FlaskConical } from 'lucide-react';
 import { FacultyProjectsPanel } from './FacultyProjectsPanel.jsx';
 import { FacultyTeamsPanel } from '../teams/FacultyTeamsPanel.jsx';
 import { FacultyProposalsPanel } from '../proposals/FacultyProposalsPanel.jsx';
 import { FacultyPrototypePanel } from '../prototypes/FacultyPrototypePanel.jsx';
-import { FlaskConical } from 'lucide-react';
 
 export const FacultyProjectWorkspace = ({
   project,
