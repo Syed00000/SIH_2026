@@ -53,10 +53,11 @@ export const HeiHubPanel = ({ selectedDistrict = 'All', onSelectDistrict }) => {
     const loadHeisData = async () => {
       try {
         const res = await universityService.fetchHeis({ page: 1, limit: 50 });
-        if (res && res.data) {
-          const heisList = res.data.heis || [];
+        const heisList = res?.records || res?.data?.heis || res?.data || [];
+        const total = res?.total || heisList.length;
+        if (Array.isArray(heisList)) {
           setStats({
-            totalHeis: res.data.total || heisList.length,
+            totalHeis: total,
             activeTeams: 0,
             problemsAssigned: 0,
             solutionsSubmitted: 0,
@@ -64,7 +65,7 @@ export const HeiHubPanel = ({ selectedDistrict = 'All', onSelectDistrict }) => {
           });
           const leaderboard = heisList.map((h, idx) => ({
             rank: idx + 1,
-            name: h.name,
+            name: h.name || h.universityName,
             assigned: 0,
             submitted: 0,
             active: 0,

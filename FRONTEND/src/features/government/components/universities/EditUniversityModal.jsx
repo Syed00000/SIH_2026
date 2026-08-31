@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { X, Building2, KeyRound, Save, AlertCircle } from 'lucide-react';
-import { JHARKHAND_DISTRICTS_DATA } from '../../data/jharkhandGisData.js';
+import { JHARKHAND_DISTRICTS_LIST } from '../../data/governmentConstants.js';
 import { EditUniversityBasicSection } from './EditUniversityBasicSection.jsx';
 import { EditUniversityNodalSection } from './EditUniversityNodalSection.jsx';
 export { DeleteUniversityModal } from './DeleteUniversityModal.jsx';
@@ -35,7 +35,7 @@ export const EditUniversityModal = ({ university, isOpen, onClose, onSave }) => 
 
   if (!isOpen || !formData) return null;
 
-  const DISTRICT_OPTIONS = Object.values(JHARKHAND_DISTRICTS_DATA).map((d) => d.name).sort();
+  const DISTRICT_OPTIONS = JHARKHAND_DISTRICTS_LIST;
 
   const handleInputChange = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));

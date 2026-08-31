@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Save, ArrowLeft, ChevronRight, AlertCircle } from 'lucide-react';
-import { JHARKHAND_DISTRICTS_DATA } from '../../data/jharkhandGisData.js';
+import { JHARKHAND_DISTRICTS_LIST } from '../../data/governmentConstants.js';
 import { EditUniversityBasicSection } from './EditUniversityBasicSection.jsx';
 import { EditUniversityNodalSection } from './EditUniversityNodalSection.jsx';
 import { EditUniversityAccreditationFocus } from './EditUniversityAccreditationFocus.jsx';
@@ -49,7 +49,7 @@ export const EditUniversityView = ({ university, onCancel, onSuccess, onUpdateUn
     loginPassword: university?.credentials?.generatedPassword || 'HEI@Jharkhand2026!'
   });
 
-  const DISTRICT_OPTIONS = Object.values(JHARKHAND_DISTRICTS_DATA).map((d) => d.name).sort();
+  const DISTRICT_OPTIONS = JHARKHAND_DISTRICTS_LIST;
 
   const FOCUS_AREA_OPTIONS = [
     'Water Management',

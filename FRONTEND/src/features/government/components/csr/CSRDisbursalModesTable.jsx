@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Check, Activity } from 'lucide-react';
-import { MOCK_DISBURSAL_MODES } from '../../data/mockCsrLifecycleData.js';
+import { DISBURSAL_GATEWAY_MODES } from '../../data/csrConstants.js';
 import { GatewayConfigModal } from './GatewayConfigModal.jsx';
 
 export const CSRDisbursalModesTable = () => {
@@ -20,7 +20,6 @@ export const CSRDisbursalModesTable = () => {
             </p>
           </div>
 
-          {/* Clean Inline Text - No Background Box */}
           <span className="inline-flex items-center space-x-1.5 text-xs font-semibold text-slate-900 self-start sm:self-auto">
             <Activity className="w-3.5 h-3.5 text-slate-900" />
             <span>Gateways Operational</span>
@@ -40,7 +39,7 @@ export const CSRDisbursalModesTable = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 text-xs">
-              {MOCK_DISBURSAL_MODES.map((row) => (
+              {DISBURSAL_GATEWAY_MODES.map((row) => (
                 <tr
                   key={row.id}
                   onClick={() => setSelectedGatewayMode(row)}

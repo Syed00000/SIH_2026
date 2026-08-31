@@ -15,7 +15,7 @@ import {
   Layers,
   ArrowUpRight
 } from 'lucide-react';
-import { PROBLEM_CATEGORIES, getSeverityByScore } from '../../data/jharkhandGisData.js';
+import { PROBLEM_CATEGORIES, getSeverityByScore } from '../../data/gisConstants.js';
 
 export const GisDetailedReportModal = ({
   isOpen,

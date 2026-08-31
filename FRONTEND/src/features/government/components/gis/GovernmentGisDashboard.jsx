@@ -3,7 +3,7 @@ import { RefreshCw, Info, Database } from 'lucide-react';
 import { GisFilterBar } from './GisFilterBar.jsx';
 import { GisMapCanvas } from './GisMapCanvas.jsx';
 import { GisDetailedReportModal } from './GisDetailedReportModal.jsx';
-import { JHARKHAND_DISTRICTS_DATA } from '../../data/jharkhandGisData.js';
+import { JHARKHAND_DISTRICTS_DICT } from '../../data/jharkhandDistrictsMeta.js';
 
 export const GovernmentGisDashboard = () => {
   // Filter States
@@ -64,10 +64,10 @@ export const GovernmentGisDashboard = () => {
   // Find active district data for modal
   const activeDistrictData =
     selectedDistrict && selectedDistrict !== 'All Districts'
-      ? Object.values(JHARKHAND_DISTRICTS_DATA).find(
+      ? Object.values(JHARKHAND_DISTRICTS_DICT).find(
           (d) => d.name.toLowerCase() === selectedDistrict.toLowerCase()
-        ) || JHARKHAND_DISTRICTS_DATA.ranchi
-      : JHARKHAND_DISTRICTS_DATA.ranchi;
+        ) || JHARKHAND_DISTRICTS_DICT.ranchi
+      : JHARKHAND_DISTRICTS_DICT.ranchi;
 
   return (
     <div className="w-full space-y-3 pb-4">

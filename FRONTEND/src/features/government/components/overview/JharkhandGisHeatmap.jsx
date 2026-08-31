@@ -1,10 +1,8 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import {
-  JHARKHAND_STATE_GEOJSON,
-  JHARKHAND_DISTRICTS_DATA
-} from '../../data/jharkhandGisData.js';
+import { JHARKHAND_GEOJSON as JHARKHAND_STATE_GEOJSON } from '../../data/jharkhandGeoJson.js';
+import { JHARKHAND_DISTRICTS_DICT as JHARKHAND_DISTRICTS_DATA } from '../../data/jharkhandDistrictsMeta.js';
 import {
   Plus,
   Minus,

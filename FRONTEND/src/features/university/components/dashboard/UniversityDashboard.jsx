@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { UniversityStatCards } from './UniversityStatCards.jsx';
 import { UniversityPendingActions } from './UniversityPendingActions.jsx';
 import { UniversityRecentActivity } from './UniversityRecentActivity.jsx';
@@ -6,7 +6,7 @@ import { UniversityAssignedChallenges } from './UniversityAssignedChallenges.jsx
 import { UniversityProjectProgress } from './UniversityProjectProgress.jsx';
 import { UniversityActionModal } from './UniversityActionModal.jsx';
 import { ProblemEvidenceDossierModal } from '../../../nodal/components/ProblemEvidenceDossierModal.jsx';
-import { universityApiService } from '../../services/universityApiService.js';
+import { useUniversityDashboard } from './hooks/useUniversityDashboard.js';
 
 export const UniversityDashboard = ({
   data: initialData,
@@ -16,57 +16,20 @@ export const UniversityDashboard = ({
   onNavigateTab,
   onUpdateChallenge
 }) => {
-  const [dashboardData, setDashboardData] = useState(initialData);
-  const [selectedChallenge, setSelectedChallenge] = useState(null);
-  const [dossierChallenge, setDossierChallenge] = useState(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [loading, setLoading] = useState(!initialData);
-
-  const loadLiveDashboard = async () => {
-    setLoading(true);
-    const summary = await universityApiService.getDashboardSummary(universityCode);
-    if (summary) {
-      setDashboardData(summary);
-    }
-    setLoading(false);
-  };
-
-  useEffect(() => {
-    if (initialData) {
-      setDashboardData(initialData);
-      setLoading(false);
-    } else {
-      loadLiveDashboard();
-    }
-  }, [initialData, universityCode]);
-
-  const handleChallengeAction = (challenge) => {
-    setDossierChallenge(challenge);
-  };
-
-  const handleAcceptChallenge = async (challenge) => {
-    const cid = challenge.id || challenge.challengeId;
-    await universityApiService.updateChallengeStatus(cid, universityCode, 'Accepted', 'View');
-    await loadLiveDashboard();
-  };
-
-  const handleDeclineChallenge = async (challenge, reason) => {
-    const cid = challenge.id || challenge.challengeId;
-    await universityApiService.updateChallengeStatus(cid, universityCode, 'Declined', 'Declined', { declineReason: reason });
-    await loadLiveDashboard();
-  };
-
-  const handleAssignFaculty = async (payload) => {
-    if (onUpdateChallenge) {
-      await onUpdateChallenge(payload);
-    } else {
-      await universityApiService.assignFaculty(payload.challengeId, universityCode, {
-        name: payload.facultyName,
-        department: payload.department
-      });
-    }
-    await loadLiveDashboard();
-  };
+  const {
+    dashboardData,
+    selectedChallenge,
+    setSelectedChallenge,
+    dossierChallenge,
+    setDossierChallenge,
+    isModalOpen,
+    setIsModalOpen,
+    loading,
+    handleAcceptChallenge,
+    handleDeclineChallenge,
+    handleAssignFaculty,
+    handleClearActivities
+  } = useUniversityDashboard({ initialData, universityCode, onUpdateChallenge });
 
   const liveData = dashboardData || initialData;
   const liveChallenges = liveData?.challenges || [];
@@ -102,15 +65,10 @@ export const UniversityDashboard = ({
         <UniversityPendingActions
           actions={liveData?.pendingActions || []}
           onTriggerAction={(act) => {
-            if (act.actionType === 'review_challenges') {
-              onNavigateTab && onNavigateTab('challenges');
-            } else if (act.actionType === 'assign_faculty') {
-              onNavigateTab && onNavigateTab('faculty');
-            } else if (act.actionType === 'pending_approvals') {
-              onNavigateTab && onNavigateTab('approvals');
-            } else {
-              onNavigateTab && onNavigateTab('challenges');
-            }
+            if (act.actionType === 'review_challenges') onNavigateTab && onNavigateTab('challenges');
+            else if (act.actionType === 'assign_faculty') onNavigateTab && onNavigateTab('faculty');
+            else if (act.actionType === 'pending_approvals') onNavigateTab && onNavigateTab('approvals');
+            else onNavigateTab && onNavigateTab('challenges');
           }}
           onViewAll={() => onNavigateTab && onNavigateTab('challenges')}
         />
@@ -118,10 +76,7 @@ export const UniversityDashboard = ({
         <UniversityRecentActivity
           activities={liveData?.recentActivity || liveData?.recentActivities || []}
           onViewAll={() => onNavigateTab && onNavigateTab('projects')}
-          onClear={async () => {
-            await universityApiService.clearActivities(universityCode);
-            setLiveData((prev) => ({ ...prev, recentActivity: [], recentActivities: [] }));
-          }}
+          onClear={handleClearActivities}
         />
       </div>
 
@@ -130,7 +85,7 @@ export const UniversityDashboard = ({
           <UniversityAssignedChallenges
             challenges={liveChallenges}
             totalCount={liveCount}
-            onActionClick={handleChallengeAction}
+            onActionClick={(c) => setDossierChallenge(c)}
             onViewAll={() => onNavigateTab && onNavigateTab('challenges')}
           />
         </div>
@@ -144,7 +99,6 @@ export const UniversityDashboard = ({
         </div>
       </div>
 
-      {/* Action Dialog for Decision and Mentor Allocation */}
       <UniversityActionModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
@@ -158,29 +112,16 @@ export const UniversityDashboard = ({
         }}
       />
 
-      {/* Official Problem Evidence Dossier Modal & Vector PDF (Exact Admin/Nodal layout) */}
       {dossierChallenge && (
         <ProblemEvidenceDossierModal
           challenge={dossierChallenge}
           isOpen={Boolean(dossierChallenge)}
           onClose={() => setDossierChallenge(null)}
           isUniversityView={true}
-          onAccept={(c) => {
-            setSelectedChallenge(c);
-            setIsModalOpen(true);
-          }}
-          onRequestClarification={(c) => {
-            setSelectedChallenge(c);
-            setIsModalOpen(true);
-          }}
-          onDecline={(c) => {
-            setSelectedChallenge(c);
-            setIsModalOpen(true);
-          }}
-          onAssignFaculty={(c) => {
-            setSelectedChallenge(c);
-            setIsModalOpen(true);
-          }}
+          onAccept={(c) => { setSelectedChallenge(c); setIsModalOpen(true); }}
+          onRequestClarification={(c) => { setSelectedChallenge(c); setIsModalOpen(true); }}
+          onDecline={(c) => { setSelectedChallenge(c); setIsModalOpen(true); }}
+          onAssignFaculty={(c) => { setSelectedChallenge(c); setIsModalOpen(true); }}
         />
       )}
     </div>

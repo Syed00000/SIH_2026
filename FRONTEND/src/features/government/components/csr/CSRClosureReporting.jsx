@@ -1,71 +1,81 @@
 import React, { useState } from 'react';
-import { CheckCircle2, ChevronRight } from 'lucide-react';
-import { MOCK_CLOSURE_STEPS } from '../../data/mockCsrLifecycleData.js';
+import { ArrowRight, CheckCircle2 } from 'lucide-react';
+import { CLOSURE_REPORTING_STEPS } from '../../data/csrConstants.js';
 import { Gfr12AModal } from './Gfr12AModal.jsx';
 import { CaAuditReportModal } from './CaAuditReportModal.jsx';
 import { UnspentSweepModal } from './UnspentSweepModal.jsx';
 
 export const CSRClosureReporting = () => {
-  const [selectedStepModal, setSelectedStepModal] = useState(null);
+  const [activeModal, setActiveModal] = useState(null);
+
+  const handleStepAction = (idx) => {
+    if (idx === 0) setActiveModal('gfr12a');
+    else if (idx === 1) setActiveModal('caAudit');
+    else if (idx === 2) setActiveModal('unspentSweep');
+  };
 
   return (
     <>
       <div className="bg-white rounded-lg p-5 border border-slate-200 shadow-xs space-y-4">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <div>
             <h3 className="text-xs sm:text-sm font-bold text-slate-900 tracking-wider uppercase">
-              Statutory Project Closure & Reporting
+              Financial Closure & Statutory Reporting
             </h3>
             <p className="text-xs text-slate-500 font-normal mt-0.5">
-              End-of-cycle compliance and utilization certification checklist. Click any step to view certificates.
+              Statutory verification pipeline for grant completion, final UC audit, and unspent fund sweeps.
             </p>
           </div>
-
-          {/* Clean Inline Text - No Background Box */}
-          <span className="inline-flex items-center space-x-1.5 text-xs font-semibold text-slate-900 self-start sm:self-auto">
-            <CheckCircle2 className="w-3.5 h-3.5 text-slate-900" />
-            <span>Audit Cleared</span>
-          </span>
         </div>
 
-        {/* 4 Step Cards - Screenshot 3 Match */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {MOCK_CLOSURE_STEPS.map((item) => (
+        {/* 3 Step Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5">
+          {CLOSURE_REPORTING_STEPS.map((item, idx) => (
             <div
-              key={item.step}
-              onClick={() => setSelectedStepModal(String(item.step))}
-              className="p-4 bg-white border border-slate-200/90 rounded-lg flex flex-col justify-between h-24 hover:border-slate-300 hover:shadow-xs shadow-3xs transition-all cursor-pointer group relative"
+              key={item.id}
+              onClick={() => handleStepAction(idx)}
+              className="p-4 rounded-lg border border-slate-200 hover:border-slate-300 bg-white hover:bg-slate-50/50 transition-all flex flex-col justify-between space-y-3 cursor-pointer shadow-3xs group"
             >
-              <div className="flex items-start justify-between gap-1">
-                <h4 className="text-xs font-bold text-slate-900 leading-snug group-hover:underline">
-                  {item.step}. {item.title}
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                    Step 0{idx + 1}
+                  </span>
+                  <span className="text-[10.5px] font-bold text-slate-900 bg-slate-100 px-2 py-0.5 rounded-md">
+                    {item.status}
+                  </span>
+                </div>
+
+                <h4 className="text-xs font-bold text-slate-900 leading-snug group-hover:text-slate-800">
+                  {item.title}
                 </h4>
-                <ChevronRight className="w-3.5 h-3.5 text-slate-800 group-hover:translate-x-0.5 transition-transform shrink-0" />
+
+                <p className="text-[11px] text-slate-500 leading-relaxed font-normal">
+                  {item.desc}
+                </p>
               </div>
 
-              <div className="text-[11px] font-semibold text-slate-500">
-                View Sweep Ledger
+              <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-xs font-semibold text-slate-900">
+                <span>Inspect Certificate & Logs</span>
+                <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
               </div>
             </div>
           ))}
         </div>
       </div>
 
-      {/* Modals for each step */}
       <Gfr12AModal
-        isOpen={selectedStepModal === '1'}
-        onClose={() => setSelectedStepModal(null)}
+        isOpen={activeModal === 'gfr12a'}
+        onClose={() => setActiveModal(null)}
       />
-
       <CaAuditReportModal
-        isOpen={selectedStepModal === '2'}
-        onClose={() => setSelectedStepModal(null)}
+        isOpen={activeModal === 'caAudit'}
+        onClose={() => setActiveModal(null)}
       />
-
       <UnspentSweepModal
-        isOpen={selectedStepModal === '3'}
-        onClose={() => setSelectedStepModal(null)}
+        isOpen={activeModal === 'unspentSweep'}
+        onClose={() => setActiveModal(null)}
       />
     </>
   );

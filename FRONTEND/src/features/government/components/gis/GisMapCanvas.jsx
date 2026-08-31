@@ -7,11 +7,9 @@ import {
   Crosshair,
   Layers
 } from 'lucide-react';
-import {
-  JHARKHAND_STATE_GEOJSON,
-  JHARKHAND_DISTRICTS_DATA,
-  PROBLEM_CATEGORIES
-} from '../../data/jharkhandGisData.js';
+import { JHARKHAND_GEOJSON as JHARKHAND_STATE_GEOJSON } from '../../data/jharkhandGeoJson.js';
+import { JHARKHAND_DISTRICTS_DICT as JHARKHAND_DISTRICTS_DATA } from '../../data/jharkhandDistrictsMeta.js';
+import { PROBLEM_CATEGORIES } from '../../data/gisConstants.js';
 import {
   MapLayersCard,
   HeatmapIntensityCard,

@@ -9,11 +9,8 @@ import {
   FileDown,
   ArrowRight
 } from 'lucide-react';
-import {
-  JHARKHAND_DISTRICTS_LIST,
-  PROBLEM_CATEGORIES,
-  SEVERITY_LEVELS
-} from '../../data/jharkhandGisData.js';
+import { JHARKHAND_DISTRICTS_LIST } from '../../data/governmentConstants.js';
+import { PROBLEM_CATEGORIES, SEVERITY_LEVELS } from '../../data/gisConstants.js';
 
 export const GisFilterBar = ({
   viewType,

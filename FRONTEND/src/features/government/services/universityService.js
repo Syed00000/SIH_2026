@@ -77,6 +77,10 @@ export const universityService = {
   async deleteUniversity(id) {
     const res = await apiClient.delete(`admin/heis/${id}`);
     return res?.data?.data || res?.data;
+  },
+
+  async fetchHeis(params = {}) {
+    return this.getUniversities(params);
   }
 };
 

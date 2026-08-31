@@ -19,7 +19,7 @@ import {
 import {
   PROBLEM_CATEGORIES,
   getSeverityByScore
-} from '../../data/jharkhandGisData.js';
+} from '../../data/gisConstants.js';
 
 /* ─────────────────────────────────────────────────
    Shared pill toggle button (header for each card)

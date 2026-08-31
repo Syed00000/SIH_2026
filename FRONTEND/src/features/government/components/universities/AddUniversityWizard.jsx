@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { ChevronRight, ChevronLeft, AlertCircle, ArrowRight, ArrowLeft } from 'lucide-react';
-import { JHARKHAND_DISTRICTS_DATA } from '../../data/jharkhandGisData.js';
+import { JHARKHAND_DISTRICTS_LIST } from '../../data/governmentConstants.js';
 import { UNIVERSITY_STEPS, UNIVERSITY_FOCUS_AREAS } from './universityConstants.js';
 import { AddUniversityStepperBar } from './AddUniversityStepperBar.jsx';
 import { AddUniversityStepBasic } from './AddUniversityStepBasic.jsx';
@@ -44,7 +44,7 @@ export const AddUniversityWizard = ({ onCancel, onSuccess, onCreateUniversity })
     initialPassword: 'HEI@Jharkhand2026!'
   });
 
-  const DISTRICT_OPTIONS = Object.values(JHARKHAND_DISTRICTS_DATA).map((d) => d.name).sort();
+  const DISTRICT_OPTIONS = JHARKHAND_DISTRICTS_LIST;
 
   const handleInputChange = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));

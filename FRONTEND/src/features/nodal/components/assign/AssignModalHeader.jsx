@@ -1,0 +1,37 @@
+import React from 'react';
+import { X, Layers } from 'lucide-react';
+
+export const AssignModalHeader = ({
+  isUniversityTargetMode,
+  targetUniversity,
+  activeChallenge,
+  onClose
+}) => {
+  return (
+    <div className="flex items-center justify-between p-4 border-b border-slate-100 bg-slate-50/50">
+      <div className="flex items-center space-x-2">
+        <Layers className="w-4 h-4 text-slate-900" />
+        <h3 className="text-sm font-bold text-slate-900">
+          {isUniversityTargetMode
+            ? `Allocate Problem to ${targetUniversity?.name || 'University'}`
+            : 'Triage & Institutional Allocation'}
+        </h3>
+        {activeChallenge && (
+          <span className="font-mono text-[10.5px] font-bold text-slate-700 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">
+            {activeChallenge.challengeId || activeChallenge.id}
+          </span>
+        )}
+      </div>
+
+      <button
+        type="button"
+        onClick={onClose}
+        className="p-1 rounded-md text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
+      >
+        <X className="w-4 h-4" />
+      </button>
+    </div>
+  );
+};
+
+export default AssignModalHeader;

@@ -15,13 +15,19 @@ import {
   Cpu,
   Layers
 } from 'lucide-react';
-import { JHARKHAND_24_DISTRICTS } from '../../data/jharkhand24DistrictsData.js';
+import { JHARKHAND_DISTRICTS_META as JHARKHAND_24_DISTRICTS } from '../../data/jharkhandDistrictsMeta.js';
 
 export const AreaProblemProfile = ({ project }) => {
-  const [activeTab, setActiveTab] = useState('problems'); // 'problems' | 'demographics' | 'solution_impact'
+  const [activeTab, setActiveTab] = useState('problems');
 
   // Look up district data
-  const distData = JHARKHAND_24_DISTRICTS.find((d) => d.name === project?.district) || JHARKHAND_24_DISTRICTS[0];
+  const distData = JHARKHAND_24_DISTRICTS.find((d) => d.name === project?.district) || {
+    name: project?.district || 'Ranchi',
+    headquarters: project?.district || 'Ranchi',
+    areaSqKm: '3,500 km²',
+    population: '15+ Lakhs',
+    blocksCount: 12
+  };
 
   const problemTitle = project?.problemOrigin || distData?.primaryProblem || project?.title || 'Civic Problem Statement';
 

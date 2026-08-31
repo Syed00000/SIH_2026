@@ -8,7 +8,7 @@ import { AddUniversityWizard } from './AddUniversityWizard.jsx';
 import { ViewUniversityDetails } from './ViewUniversityDetails.jsx';
 import { EditUniversityView } from './EditUniversityView.jsx';
 import { DeleteUniversityModal } from './DeleteUniversityModal.jsx';
-import { JHARKHAND_DISTRICTS_DATA } from '../../data/jharkhandGisData.js';
+import { JHARKHAND_DISTRICTS_LIST } from '../../data/governmentConstants.js';
 
 export const ManageUniversitiesDashboard = ({ initialMode = 'list' }) => {
   const [viewMode, setViewMode] = useState(initialMode); // 'list' | 'add' | 'view' | 'edit'
@@ -116,7 +116,7 @@ export const ManageUniversitiesDashboard = ({ initialMode = 'list' }) => {
     }
   };
 
-  const DISTRICT_OPTIONS = ['All Districts', ...Object.values(JHARKHAND_DISTRICTS_DATA).map((d) => d.name).sort()];
+  const DISTRICT_OPTIONS = ['All Districts', ...JHARKHAND_DISTRICTS_LIST];
 
   if (viewMode === 'add') {
     return (

@@ -13,7 +13,7 @@ import {
   Users,
   Compass
 } from 'lucide-react';
-import { JHARKHAND_24_DISTRICTS } from '../../data/jharkhand24DistrictsData.js';
+import { JHARKHAND_DISTRICTS_META as JHARKHAND_24_DISTRICTS } from '../../data/jharkhandDistrictsMeta.js';
 
 export const ProjectLeafletMap = ({
   selectedDistrict = 'All Districts',
