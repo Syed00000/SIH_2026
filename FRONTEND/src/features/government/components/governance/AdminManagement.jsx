@@ -135,6 +135,7 @@ export const AdminManagement = () => {
         isOpen={Boolean(viewingAdmin)}
         onClose={() => setViewingAdmin(null)}
         admin={viewingAdmin}
+        onAdminUpdated={fetchAdmins}
       />
     </div>
   );

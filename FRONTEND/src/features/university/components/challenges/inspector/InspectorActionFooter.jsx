@@ -5,6 +5,9 @@ export const InspectorActionFooter = ({
   norm,
   isMentorAssigned,
   onOpenChat,
+  hasUnread = false,
+  unreadCount = 0,
+  hasMessages = false,
   onAccept,
   onAssignFaculty,
   onRequestClarification,
@@ -14,10 +17,23 @@ export const InspectorActionFooter = ({
     <div className="p-3.5 border-t border-slate-100 bg-white flex flex-wrap items-center justify-between gap-2 flex-shrink-0">
       <button
         onClick={onOpenChat}
-        className="flex items-center space-x-1.5 px-3.5 py-2 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-[#007A61] border border-emerald-200 text-xs font-extrabold transition-colors cursor-pointer shadow-2xs"
+        className="relative flex items-center space-x-2 px-3.5 py-2 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-[#007A61] border border-emerald-200 text-xs font-extrabold transition-colors cursor-pointer shadow-2xs group"
       >
-        <MessageSquare className="w-4 h-4" />
+        <div className="relative flex items-center justify-center">
+          <MessageSquare className="w-4 h-4 text-[#007A61]" />
+          {(hasUnread || hasMessages) && (
+            <span className="absolute -top-1.5 -right-1.5 flex h-2.5 w-2.5">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-rose-600 border-2 border-white shadow-xs"></span>
+            </span>
+          )}
+        </div>
         <span>Clarification Room</span>
+        {hasUnread && unreadCount > 0 && (
+          <span className="ml-1 px-1.5 py-0.5 text-[9.5px] font-black bg-rose-600 text-white rounded-full leading-none shadow-2xs animate-pulse">
+            {unreadCount}
+          </span>
+        )}
       </button>
 
       <div className="flex items-center space-x-2">

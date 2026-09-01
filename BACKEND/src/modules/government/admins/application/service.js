@@ -98,26 +98,38 @@ export class AdminService {
     const existing = await Admin.findById(id);
     if (!existing) throw new NotFoundError('Administrator not found');
 
+    const oldEmail = existing.email;
     const { email, username, password, ...rest } = updateData;
+
     if (email && email.toLowerCase().trim() !== existing.email) {
       const duplicateEmail = await Admin.findOne({ email: email.toLowerCase().trim(), _id: { $ne: id } });
       if (duplicateEmail) throw new ValidationError('Email already in use by another admin');
       existing.email = email.toLowerCase().trim();
+      if (!username) {
+        existing.username = email.split('@')[0].toLowerCase().trim();
+      }
     }
+
     if (username && username.toLowerCase().trim() !== existing.username) {
       const duplicateUsername = await Admin.findOne({ username: username.toLowerCase().trim(), _id: { $ne: id } });
       if (duplicateUsername) throw new ValidationError('Username already in use');
       existing.username = username.toLowerCase().trim();
     }
+
+    let newPasswordHash = null;
     if (password && password.trim()) {
-      existing.passwordHash = await bcrypt.hash(password.trim(), 10);
+      existing.password = password.trim();
+      newPasswordHash = await bcrypt.hash(password.trim(), 10);
+      existing.passwordHash = newPasswordHash;
     }
 
     Object.assign(existing, rest);
     await existing.save();
+
     try {
-      await syncAdminUserAuth(existing, existing.passwordHash);
+      await syncAdminUserAuth(existing, newPasswordHash, oldEmail);
     } catch (_) {}
+
     return existing.toJSON();
   }
 

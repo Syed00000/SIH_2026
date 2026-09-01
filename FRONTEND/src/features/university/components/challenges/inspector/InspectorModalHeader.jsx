@@ -55,17 +55,17 @@ export const InspectorModalHeader = ({
       </div>
 
       {/* Sub Tabs */}
-      <div className="flex border-b border-slate-200/80 pt-1 text-xs gap-1.5">
+      <div className="flex border-b border-slate-200/80 pt-1 text-xs gap-1.5 overflow-x-auto">
         {[
           { id: 'overview', label: 'Ground Overview' },
+          { id: 'evidence', label: 'Problem Evidence' },
           { id: 'location', label: 'Full Location & GPS' },
-          { id: 'evidence', label: 'Citizen Testimony' },
           { id: 'similar', label: 'Milestones & Allocation' }
         ].map((tab) => (
           <button
             key={tab.id}
             onClick={() => setActiveSubTab(tab.id)}
-            className={`pb-1.5 px-3 font-bold transition-all cursor-pointer border-b-2 rounded-t-lg ${
+            className={`pb-1.5 px-3 font-bold transition-all cursor-pointer border-b-2 rounded-t-lg shrink-0 ${
               activeSubTab === tab.id
                 ? 'border-b-[#007A61] text-[#007A61] bg-emerald-50/60'
                 : 'border-b-transparent text-slate-500 hover:text-slate-900'

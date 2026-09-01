@@ -28,6 +28,7 @@ export const getNormalizedStatus = (challenge) => {
 export const ChallengesTable = ({
   challenges = [],
   selectedChallengeId,
+  chatStatsMap = {},
   onSelectChallenge,
   onActionClick,
   onAcceptChallenge,
@@ -65,18 +66,24 @@ export const ChallengesTable = ({
                 </td>
               </tr>
             ) : (
-              paginatedItems.map((c, index) => (
-                <ChallengesTableRow
-                  key={c.id || c.challengeId || index}
-                  c={c}
-                  globalIndex={startIndex + index + 1}
-                  isSelected={selectedChallengeId === (c.id || c.challengeId)}
-                  normStatus={getNormalizedStatus(c)}
-                  onSelectChallenge={onSelectChallenge}
-                  onActionClick={onActionClick}
-                  onOpenChat={onOpenChat}
-                />
-              ))
+              paginatedItems.map((c, index) => {
+                const cid = c.id || c.challengeId;
+                const chatInfo = chatStatsMap[cid];
+                const hasUnreadChat = Boolean(chatInfo && (chatInfo.unreadForUniversity > 0 || chatInfo.totalMessages > 0));
+                return (
+                  <ChallengesTableRow
+                    key={cid || index}
+                    c={c}
+                    globalIndex={startIndex + index + 1}
+                    isSelected={selectedChallengeId === cid}
+                    normStatus={getNormalizedStatus(c)}
+                    hasUnreadChat={hasUnreadChat}
+                    onSelectChallenge={onSelectChallenge}
+                    onActionClick={onActionClick}
+                    onOpenChat={onOpenChat}
+                  />
+                );
+              })
             )}
           </tbody>
         </table>

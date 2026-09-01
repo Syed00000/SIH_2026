@@ -23,17 +23,25 @@ export async function computeUnreadCount(ClarificationMessage, universityCode = 
  * Aggregates per-challenge unread stats for Nodal and University dashboards
  */
 export async function computeChallengeStats(ClarificationMessage) {
-  const unreadNodal = await ClarificationMessage.aggregate([
-    { $match: { senderRole: 'UNIVERSITY', isReadByNodal: false } },
-    { $group: { _id: '$challengeId', unreadCount: { $sum: 1 } } }
-  ]);
-
-  const unreadUniversity = await ClarificationMessage.aggregate([
-    { $match: { senderRole: { $in: ['NODAL', 'ADMIN'] }, isReadByUniversity: false } },
-    { $group: { _id: '$challengeId', unreadCount: { $sum: 1 } } }
+  const [unreadNodal, unreadUniversity, totalCounts] = await Promise.all([
+    ClarificationMessage.aggregate([
+      { $match: { senderRole: 'UNIVERSITY', isReadByNodal: false, isDeletedForEveryone: { $ne: true } } },
+      { $group: { _id: '$challengeId', unreadCount: { $sum: 1 } } }
+    ]),
+    ClarificationMessage.aggregate([
+      { $match: { senderRole: { $in: ['NODAL', 'ADMIN'] }, isReadByUniversity: false, isDeletedForEveryone: { $ne: true } } },
+      { $group: { _id: '$challengeId', unreadCount: { $sum: 1 } } }
+    ]),
+    ClarificationMessage.aggregate([
+      { $match: { isDeletedForEveryone: { $ne: true } } },
+      { $group: { _id: '$challengeId', totalCount: { $sum: 1 } } }
+    ])
   ]);
 
   const statsMap = {};
+  totalCounts.forEach((item) => {
+    statsMap[item._id] = { totalMessages: item.totalCount, unreadForNodal: 0, unreadForUniversity: 0 };
+  });
   unreadNodal.forEach((item) => {
     statsMap[item._id] = { ...(statsMap[item._id] || {}), unreadForNodal: item.unreadCount };
   });
