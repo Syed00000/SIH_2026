@@ -3,7 +3,6 @@ import { CitizenHeroBanner } from './CitizenHeroBanner.jsx';
 import { PopularChallengeAreas } from './PopularChallengeAreas.jsx';
 import { MyActivitiesTracker } from './MyActivitiesTracker.jsx';
 import { RecentChallengesCard } from './RecentChallengesCard.jsx';
-import { ImpactStatsBanner } from './ImpactStatsBanner.jsx';
 import { StayUpdatedSection } from './StayUpdatedSection.jsx';
 
 export const CitizenHome = ({
@@ -38,10 +37,7 @@ export const CitizenHome = ({
         onViewAllClick={onViewAllChallenges}
       />
 
-      {/* 5. Together for Impact Banner */}
-      <ImpactStatsBanner stats={stats?.overallImpact} />
-
-      {/* 6. Stay Updated Section */}
+      {/* 5. Stay Updated Section */}
       <StayUpdatedSection onSelectTile={onSelectStayUpdatedTile} />
     </div>
   );
