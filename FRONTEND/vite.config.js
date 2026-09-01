@@ -17,6 +17,10 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
+  optimizeDeps: {
+    include: ['react-quill-new', 'lucide-react', 'axios', 'recharts', 'leaflet', 'jspdf'],
+    force: true,
+  },
   server: {
     port: 5173,
     open: true,
