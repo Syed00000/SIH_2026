@@ -191,7 +191,7 @@ export const SubmitChallengeModal = ({
         </div>
         <button
           onClick={onClose}
-          className="w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors flex items-center justify-center cursor-pointer"
+          className="w-9 h-9 rounded-full bg-white/10 hover:bg-rose-600/90 text-white transition-colors flex items-center justify-center cursor-pointer"
           title="Close form"
         >
           <X className="w-5 h-5" />

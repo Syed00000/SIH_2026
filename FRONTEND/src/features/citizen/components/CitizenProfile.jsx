@@ -17,21 +17,25 @@ import {
   Check
 } from 'lucide-react';
 
-export const CitizenProfile = ({ user, onChangeTab }) => {
-  const [profilePhoto, setProfilePhoto] = useState(
-    user?.profilePhoto || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&auto=format&fit=crop&q=80'
-  );
+export const CitizenProfile = ({ user, stats, onChangeTab }) => {
+  const [profilePhoto, setProfilePhoto] = useState(user?.profilePhoto || null);
   const [tempSelectedPhoto, setTempSelectedPhoto] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [showPhotoModal, setShowPhotoModal] = useState(false);
 
   const [formData, setFormData] = useState({
-    fullName: user?.fullName || 'Tauqueer Wasi',
-    mobileNumber: user?.mobileNumber || '7061838495',
-    email: user?.email || 'tauqueerwasi@gmail.com',
-    district: user?.district || 'Ranchi',
-    block: user?.block || 'Kanke Block'
+    fullName: user?.fullName || user?.name || 'Citizen User',
+    mobileNumber: user?.mobileNumber || user?.phone || 'Not Provided',
+    email: user?.email || 'Not Provided',
+    district: user?.district || 'Not Provided',
+    block: user?.block || ''
   });
+
+  const initials = formData.fullName.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() || 'U';
+
+  const submittedCount = stats?.activities?.total || stats?.activities?.submitted || 0;
+  const activeCount = (stats?.activities?.inProgress || 0) + (stats?.activities?.underReview || 0);
+  const resolvedCount = stats?.activities?.resolved || 0;
 
   // Handle local file selection
   const handleFileSelect = (e) => {
@@ -59,18 +63,24 @@ export const CitizenProfile = ({ user, onChangeTab }) => {
           <div className="flex items-center space-x-4">
             {/* Profile Avatar with Camera Trigger */}
             <div
-              className="relative group cursor-pointer"
+              className="relative group cursor-pointer shrink-0"
               onClick={() => {
                 setTempSelectedPhoto(null);
                 setShowPhotoModal(true);
               }}
               title="Click to change profile picture"
             >
-              <img
-                src={profilePhoto}
-                alt={formData.fullName}
-                className="w-16 h-16 rounded-full object-cover border-2 border-slate-200 shadow-2xs group-hover:opacity-90 transition-opacity"
-              />
+              {profilePhoto ? (
+                <img
+                  src={profilePhoto}
+                  alt={formData.fullName}
+                  className="w-16 h-16 rounded-full object-cover border-2 border-slate-200 shadow-2xs group-hover:opacity-90 transition-opacity"
+                />
+              ) : (
+                <div className="w-16 h-16 rounded-full bg-emerald-100 border-2 border-emerald-200 shadow-2xs flex items-center justify-center text-emerald-800 font-bold text-2xl group-hover:opacity-90 transition-opacity">
+                  {initials}
+                </div>
+              )}
               <div className="absolute inset-0 bg-slate-900/40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                 <Camera className="w-5 h-5 text-white" />
               </div>
@@ -80,8 +90,8 @@ export const CitizenProfile = ({ user, onChangeTab }) => {
             <div className="space-y-1">
               <div className="flex items-center space-x-2">
                 <h2 className="text-lg font-black text-slate-900 tracking-tight">{formData.fullName}</h2>
-                <span className="inline-flex items-center space-x-1 text-[11px] font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200/80">
-                  <ShieldCheck className="w-3.5 h-3.5" />
+                <span className="inline-flex items-center space-x-1 text-[11px] font-bold text-emerald-700">
+                  <ShieldCheck className="w-4 h-4" />
                   <span>Verified Citizen</span>
                 </span>
               </div>
@@ -112,18 +122,20 @@ export const CitizenProfile = ({ user, onChangeTab }) => {
         </div>
 
         {/* Real Activity Stats Row */}
-        <div className="mt-5 pt-4 border-t border-slate-100 grid grid-cols-3 gap-3 text-center">
-          <div className="bg-slate-50 p-2.5 rounded-lg border border-slate-200/70">
-            <span className="block text-xs font-semibold text-slate-500">Submissions</span>
-            <span className="text-base font-extrabold text-slate-900 mt-0.5 block">1 Challenge</span>
+        <div className="mt-6 pt-5 border-t border-slate-100 flex items-center justify-around">
+          <div className="text-center">
+            <span className="text-xl sm:text-2xl font-black text-slate-800">{submittedCount}</span>
+            <span className="block text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wide mt-1">Submitted</span>
           </div>
-          <div className="bg-slate-50 p-2.5 rounded-lg border border-slate-200/70">
-            <span className="block text-xs font-semibold text-slate-500">Under Review</span>
-            <span className="text-base font-extrabold text-amber-700 mt-0.5 block">1 Active</span>
+          <div className="w-px h-10 bg-slate-200"></div>
+          <div className="text-center">
+            <span className="text-xl sm:text-2xl font-black text-amber-600">{activeCount}</span>
+            <span className="block text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wide mt-1">Active</span>
           </div>
-          <div className="bg-slate-50 p-2.5 rounded-lg border border-slate-200/70">
-            <span className="block text-xs font-semibold text-slate-500">Resolved</span>
-            <span className="text-base font-extrabold text-emerald-800 mt-0.5 block">0 Completed</span>
+          <div className="w-px h-10 bg-slate-200"></div>
+          <div className="text-center">
+            <span className="text-xl sm:text-2xl font-black text-emerald-600">{resolvedCount}</span>
+            <span className="block text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wide mt-1">Resolved</span>
           </div>
         </div>
       </div>
@@ -242,7 +254,7 @@ export const CitizenProfile = ({ user, onChangeTab }) => {
               <h4 className="text-sm font-bold text-slate-900">Upload Profile Photo</h4>
               <button
                 onClick={() => setShowPhotoModal(false)}
-                className="p-1 text-slate-400 hover:text-slate-600 rounded cursor-pointer"
+                className="p-1 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded cursor-pointer transition-colors"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -289,7 +301,7 @@ export const CitizenProfile = ({ user, onChangeTab }) => {
             <div className="pt-2 flex items-center space-x-2">
               <button
                 onClick={() => setShowPhotoModal(false)}
-                className="flex-1 py-2 rounded-lg border border-slate-200 text-xs font-bold text-slate-700 hover:bg-slate-50 cursor-pointer"
+                className="flex-1 py-2 rounded-lg border border-slate-200 text-xs font-bold text-slate-700 hover:text-rose-600 hover:bg-rose-50 hover:border-rose-200 cursor-pointer transition-colors"
               >
                 Cancel
               </button>

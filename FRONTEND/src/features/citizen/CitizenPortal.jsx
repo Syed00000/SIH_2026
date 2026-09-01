@@ -4,7 +4,6 @@ import { CitizenHeader } from './components/CitizenHeader.jsx';
 import { CitizenSidebar } from './components/CitizenSidebar.jsx';
 import { CitizenHome } from './components/CitizenHome.jsx';
 import { CitizenMyChallenges } from './components/CitizenMyChallenges.jsx';
-import { CitizenUpdates } from './components/CitizenUpdates.jsx';
 import { CitizenProfile } from './components/CitizenProfile.jsx';
 import { SubmitChallengeModal } from './components/SubmitChallengeModal.jsx';
 import { CitizenChallengeDetailModal } from './components/CitizenChallengeDetailModal.jsx';
@@ -21,7 +20,8 @@ import {
   FileText,
   MessageSquare,
   User,
-  ChevronDown
+  ChevronDown,
+  HelpCircle
 } from 'lucide-react';
 
 export const CitizenPortal = ({ user: propUser, onLogout }) => {
@@ -40,8 +40,8 @@ export const CitizenPortal = ({ user: propUser, onLogout }) => {
   const [activeDomainFilter, setActiveDomainFilter] = useState('All');
   const [stats, setStats] = useState(null);
   const [recentChallenge, setRecentChallenge] = useState(null);
-  const [unreadNotificationsCount, setUnreadNotificationsCount] = useState(2);
   const [isLoading, setIsLoading] = useState(true);
+  const [expandedGuideline, setExpandedGuideline] = useState(1);
 
   const loadData = async () => {
     setIsLoading(true);
@@ -121,9 +121,7 @@ export const CitizenPortal = ({ user: propUser, onLogout }) => {
   };
 
   const handleSelectStayUpdatedTile = (tileId) => {
-    if (tileId === 'notifications' || tileId === 'messages') {
-      setActiveTab('updates');
-    } else if (tileId === 'guidelines') {
+    if (tileId === 'guidelines') {
       alert('Official Guidelines: Citizen problem statements are triaged by the State Innovation Cell and matched with HEI faculty labs within 7 business days.');
     } else if (tileId === 'help') {
       alert('Jharkhand Societal Innovation Citizen Helpline: 1800-345-6789 (Toll Free)');
@@ -135,13 +133,9 @@ export const CitizenPortal = ({ user: propUser, onLogout }) => {
       
       {/* 1. Desktop & Mobile Shared Header */}
       <CitizenHeader
-        unreadCount={unreadNotificationsCount}
-        onNotificationsClick={() => {
-          setActiveTab('updates');
-          setUnreadNotificationsCount(0);
-        }}
         user={user}
         onLogout={onLogout}
+        onSelectNotification={handleSelectChallenge}
         onMenuClick={() => setIsMobileDrawerOpen(true)}
       />
 
@@ -202,16 +196,10 @@ export const CitizenPortal = ({ user: propUser, onLogout }) => {
                   />
                 )}
 
-                {activeTab === 'updates' && (
-                  <CitizenUpdates
-                    user={user}
-                    onSelectChallenge={handleSelectChallenge}
-                    onUnreadCountChange={setUnreadNotificationsCount}
-                  />
-                )}
+
 
                 {activeTab === 'profile' && (
-                  <CitizenProfile user={user} onChangeTab={setActiveTab} />
+                  <CitizenProfile user={user} stats={stats} onChangeTab={setActiveTab} />
                 )}
 
                 {activeTab === 'guidelines' && (
@@ -225,25 +213,30 @@ export const CitizenPortal = ({ user: propUser, onLogout }) => {
                       </p>
                     </div>
 
-                    <div className="bg-white border border-slate-200/90 rounded-lg p-5 shadow-2xs space-y-4">
-                      <div className="space-y-1">
-                        <h4 className="text-xs font-bold text-emerald-800">1. Problem Submission Scope</h4>
-                        <p className="text-xs text-slate-600">
-                          File challenges related to public infrastructure, water sanitation, rural electrification, healthcare, education, or urban governance.
-                        </p>
-                      </div>
-                      <div className="space-y-1 border-t border-slate-100 pt-3">
-                        <h4 className="text-xs font-bold text-emerald-800">2. Review & Triage Process</h4>
-                        <p className="text-xs text-slate-600">
-                          Each submission is screened within 48 hours and assigned a unique Reference Code (e.g., CHL-JH-2026-XXXX).
-                        </p>
-                      </div>
-                      <div className="space-y-1 border-t border-slate-100 pt-3">
-                        <h4 className="text-xs font-bold text-emerald-800">3. Resolution & Tracking</h4>
-                        <p className="text-xs text-slate-600">
-                          Track faculty mentors and student teams working on solutions in real-time under 'My Challenges'.
-                        </p>
-                      </div>
+                    <div className="bg-white border border-slate-200/90 rounded-lg p-5 shadow-2xs flex flex-col">
+                      <GuidelineAccordionItem
+                        title="1. Problem Submission Scope"
+                        isOpen={expandedGuideline === 1}
+                        onClick={() => setExpandedGuideline(expandedGuideline === 1 ? null : 1)}
+                      >
+                        File challenges related to public infrastructure, water sanitation, rural electrification, healthcare, education, or urban governance.
+                      </GuidelineAccordionItem>
+
+                      <GuidelineAccordionItem
+                        title="2. Review & Triage Process"
+                        isOpen={expandedGuideline === 2}
+                        onClick={() => setExpandedGuideline(expandedGuideline === 2 ? null : 2)}
+                      >
+                        Each submission is screened within 48 hours and assigned a unique Reference Code (e.g., CHL-JH-2026-XXXX).
+                      </GuidelineAccordionItem>
+
+                      <GuidelineAccordionItem
+                        title="3. Resolution & Tracking"
+                        isOpen={expandedGuideline === 3}
+                        onClick={() => setExpandedGuideline(expandedGuideline === 3 ? null : 3)}
+                      >
+                        Track faculty mentors and student teams working on solutions in real-time under 'My Challenges'.
+                      </GuidelineAccordionItem>
                     </div>
                   </div>
                 )}
@@ -259,62 +252,66 @@ export const CitizenPortal = ({ user: propUser, onLogout }) => {
       </div>
 
       {/* 3. Bottom Navigation Bar for Mobile Screens ONLY (< 768px) */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 px-4 py-2 flex items-center justify-between z-40 shadow-lg">
-        {/* Home Tab */}
-        <button
-          onClick={() => setActiveTab('home')}
-          className={`flex flex-col items-center justify-center space-y-0.5 cursor-pointer ${
-            activeTab === 'home' ? 'text-[#047857] font-bold' : 'text-slate-500 hover:text-slate-800'
-          }`}
-        >
-          <Home className="w-5 h-5" />
-          <span className="text-[10px]">Home</span>
-        </button>
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 py-1.5 flex z-40 shadow-[0_-4px_12px_rgba(0,0,0,0.06)]">
+        <div className="grid grid-cols-5 items-center justify-items-center w-full relative">
+          {/* 1. Home Tab */}
+          <button
+            onClick={() => setActiveTab('home')}
+            className={`flex flex-col items-center justify-center space-y-0.5 cursor-pointer w-full py-1 ${
+              activeTab === 'home' ? 'text-[#047857]' : 'text-slate-400 hover:text-slate-600'
+            }`}
+          >
+            <Home className={`w-5 h-5 ${activeTab === 'home' ? 'stroke-[2.5]' : 'stroke-[1.8]'}`} />
+            <span className={`text-[10px] ${activeTab === 'home' ? 'font-bold' : 'font-medium'}`}>Home</span>
+          </button>
 
-        {/* My Challenges Tab */}
-        <button
-          onClick={() => {
-            setActiveTab('challenges');
-            setActiveStatusFilter('All');
-          }}
-          className={`flex flex-col items-center justify-center space-y-0.5 cursor-pointer ${
-            activeTab === 'challenges' ? 'text-[#047857] font-bold' : 'text-slate-500 hover:text-slate-800'
-          }`}
-        >
-          <FileText className="w-5 h-5" />
-          <span className="text-[10px]">My Challenges</span>
-        </button>
+          {/* 2. My Challenges Tab */}
+          <button
+            onClick={() => {
+              setActiveTab('challenges');
+              setActiveStatusFilter('All');
+            }}
+            className={`flex flex-col items-center justify-center space-y-0.5 cursor-pointer w-full py-1 ${
+              activeTab === 'challenges' ? 'text-[#047857]' : 'text-slate-400 hover:text-slate-600'
+            }`}
+          >
+            <FileText className={`w-5 h-5 ${activeTab === 'challenges' ? 'stroke-[2.5]' : 'stroke-[1.8]'}`} />
+            <span className={`text-[10px] ${activeTab === 'challenges' ? 'font-bold' : 'font-medium'}`}>Challenges</span>
+          </button>
 
-        {/* Floating Center Green Submit Button */}
-        <button
-          onClick={handleOpenSubmit}
-          className="w-12 h-12 rounded-full bg-[#047857] hover:bg-[#064e3b] text-white flex items-center justify-center shadow-lg transform -translate-y-3 border-4 border-white cursor-pointer active:scale-95 transition-transform"
-          title="Submit a Challenge"
-        >
-          <Plus className="w-6 h-6 stroke-[3]" />
-        </button>
+          {/* 3. Floating Center Green Submit Button */}
+          <div className="flex flex-col items-center justify-center w-full h-full relative">
+            <button
+              onClick={handleOpenSubmit}
+              className="absolute -top-7 w-12 h-12 rounded-full bg-gradient-to-tr from-[#064e3b] to-[#047857] hover:from-[#047857] hover:to-[#059669] text-white flex items-center justify-center shadow-lg border-3 border-white cursor-pointer active:scale-95 transition-transform"
+              title="Submit a Challenge"
+            >
+              <Plus className="w-6 h-6 stroke-[3]" />
+            </button>
+          </div>
 
-        {/* Portal Updates Tab */}
-        <button
-          onClick={() => setActiveTab('updates')}
-          className={`flex flex-col items-center justify-center space-y-0.5 cursor-pointer ${
-            activeTab === 'updates' ? 'text-[#047857] font-bold' : 'text-slate-500 hover:text-slate-800'
-          }`}
-        >
-          <MessageSquare className="w-5 h-5" />
-          <span className="text-[10px]">Updates</span>
-        </button>
+          {/* 4. Help Tab */}
+          <button
+            onClick={() => setActiveTab('guidelines')}
+            className={`flex flex-col items-center justify-center space-y-0.5 cursor-pointer w-full py-1 ${
+              activeTab === 'guidelines' ? 'text-[#047857]' : 'text-slate-400 hover:text-slate-600'
+            }`}
+          >
+            <HelpCircle className={`w-5 h-5 ${activeTab === 'guidelines' ? 'stroke-[2.5]' : 'stroke-[1.8]'}`} />
+            <span className={`text-[10px] ${activeTab === 'guidelines' ? 'font-bold' : 'font-medium'}`}>Help</span>
+          </button>
 
-        {/* Profile Tab */}
-        <button
-          onClick={() => setActiveTab('profile')}
-          className={`flex flex-col items-center justify-center space-y-0.5 cursor-pointer ${
-            activeTab === 'profile' ? 'text-[#047857] font-bold' : 'text-slate-500 hover:text-slate-800'
-          }`}
-        >
-          <User className="w-5 h-5" />
-          <span className="text-[10px]">Profile</span>
-        </button>
+          {/* 5. Profile Tab */}
+          <button
+            onClick={() => setActiveTab('profile')}
+            className={`flex flex-col items-center justify-center space-y-0.5 cursor-pointer w-full py-1 ${
+              activeTab === 'profile' ? 'text-[#047857]' : 'text-slate-400 hover:text-slate-600'
+            }`}
+          >
+            <User className={`w-5 h-5 ${activeTab === 'profile' ? 'stroke-[2.5]' : 'stroke-[1.8]'}`} />
+            <span className={`text-[10px] ${activeTab === 'profile' ? 'font-bold' : 'font-medium'}`}>Profile</span>
+          </button>
+        </div>
       </nav>
 
       {/* 4. Modals */}
@@ -324,6 +321,29 @@ export const CitizenPortal = ({ user: propUser, onLogout }) => {
         onClose={() => setIsDetailModalOpen(false)}
         onChallengeUpdated={loadData}
       />
+    </div>
+  );
+};
+
+const GuidelineAccordionItem = ({ title, children, isOpen, onClick }) => {
+  return (
+    <div className="border-t border-slate-100 first:border-0">
+      <button
+        onClick={onClick}
+        className="w-full flex items-center justify-between text-left space-x-2 py-3.5 outline-none cursor-pointer group"
+      >
+        <h4 className="text-xs font-bold text-emerald-800 group-hover:text-emerald-600 transition-colors">{title}</h4>
+        <ChevronDown className={`w-4 h-4 text-emerald-700 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
+      </button>
+      <div
+        className={`overflow-hidden transition-all duration-300 ease-in-out ${
+          isOpen ? 'max-h-40 opacity-100 pb-3' : 'max-h-0 opacity-0'
+        }`}
+      >
+        <p className="text-xs text-slate-600 leading-relaxed">
+          {children}
+        </p>
+      </div>
     </div>
   );
 };
