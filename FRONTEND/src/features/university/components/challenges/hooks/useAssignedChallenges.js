@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { universityApiService } from '../../../services/universityApiService.js';
-import { clarificationChatService } from '../../../clarification/services/clarificationChatService.js';
+import { clarificationChatService } from '../../../../clarification/services/clarificationChatService.js';
 
 export const getNormalizedStatus = (challenge) => {
   if (!challenge) return 'Pending';
