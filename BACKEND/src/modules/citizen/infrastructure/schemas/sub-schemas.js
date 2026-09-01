@@ -2,7 +2,7 @@ import mongoose from 'mongoose';
 
 export const locationSchema = new mongoose.Schema(
   {
-    district: { type: String, required: true, default: 'Ranchi', index: true },
+    district: { type: String, required: true, default: '', index: true },
     block: { type: String, default: '' },
     panchayatOrWard: { type: String, default: '' },
     landmark: { type: String, default: '' },
@@ -70,8 +70,8 @@ export const allocatedBySchema = new mongoose.Schema(
 
 export const impactMetricsSchema = new mongoose.Schema(
   {
-    affectedPopulation: { type: String, default: '~ 5,000 People' },
-    estimatedBudget: { type: String, default: 'Under Assessment' }
+    affectedPopulation: { type: String, default: '' },
+    estimatedBudget: { type: String, default: '' }
   },
   { _id: false }
 );

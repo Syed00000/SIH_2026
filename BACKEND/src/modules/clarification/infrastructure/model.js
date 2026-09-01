@@ -34,7 +34,7 @@ const clarificationMessageSchema = new mongoose.Schema(
     },
     nodalName: {
       type: String,
-      default: 'State Nodal Officer'
+      default: ''
     },
     message: {
       type: String,
