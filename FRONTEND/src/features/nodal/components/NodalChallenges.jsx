@@ -7,7 +7,7 @@ import { useNodalChallenges } from './challenges/hooks/useNodalChallenges.js';
 import { NodalChallengesHeader } from './challenges/NodalChallengesHeader.jsx';
 import { NodalChallengesGrid } from './challenges/NodalChallengesGrid.jsx';
 
-export const NodalChallenges = ({ initialStatusFilter = 'All Status' }) => {
+export const NodalChallenges = ({ initialStatusFilter = 'All Status', nodalDistrict = '' }) => {
   const {
     searchTerm,
     setSearchTerm,
@@ -35,7 +35,7 @@ export const NodalChallenges = ({ initialStatusFilter = 'All Status' }) => {
     handleQuickDelete,
     handleTriageSuccess,
     filteredChallenges
-  } = useNodalChallenges({ initialStatusFilter });
+  } = useNodalChallenges({ initialStatusFilter, nodalDistrict });
 
   return (
     <div className="space-y-4 select-none text-left animate-in fade-in duration-150">
@@ -58,6 +58,7 @@ export const NodalChallenges = ({ initialStatusFilter = 'All Status' }) => {
         setDistrictFilter={setDistrictFilter}
         priorityFilter={priorityFilter}
         setPriorityFilter={setPriorityFilter}
+        totalCount={filteredChallenges.length}
       />
 
       {/* 3. Problem Cards Grid */}

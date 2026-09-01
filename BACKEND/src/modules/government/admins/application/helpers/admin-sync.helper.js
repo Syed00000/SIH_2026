@@ -15,6 +15,7 @@ export async function syncAdminUserAuth(newAdmin, passwordHash) {
       profile: {
         institutionName: newAdmin.assignedDepartment,
         nodalOfficerDesignation: newAdmin.role,
+        district: newAdmin.district,
         preferredLanguage: 'HINDI'
       }
     },

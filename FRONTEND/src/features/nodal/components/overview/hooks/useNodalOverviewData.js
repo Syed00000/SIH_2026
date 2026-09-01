@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { citizenService } from '../../../../citizen/services/citizenService.js';
 import { universityService } from '../../../../government/services/universityService.js';
 
-export const useNodalOverviewData = () => {
+export const useNodalOverviewData = (nodalDistrict = '') => {
   const [stats, setStats] = useState({
     submitted: 0,
     underReview: 0,
@@ -20,15 +20,28 @@ export const useNodalOverviewData = () => {
   const loadData = async () => {
     try {
       setLoading(true);
+      const queryParams = { limit: 150 };
+      if (nodalDistrict && nodalDistrict !== 'All' && nodalDistrict !== 'All Districts') {
+        queryParams.district = nodalDistrict;
+      }
+
       const [statsRes, challengesRes, unisRes] = await Promise.all([
-        citizenService.fetchStats(),
-        citizenService.fetchChallenges({ limit: 100 }),
+        citizenService.fetchStats(nodalDistrict && nodalDistrict !== 'All' ? { district: nodalDistrict } : {}),
+        citizenService.fetchChallenges(queryParams),
         universityService.getUniversities({ limit: 100 })
       ]);
 
-      const challengesList =
+      let challengesList =
         challengesRes?.challenges || (Array.isArray(challengesRes) ? challengesRes : []) || [];
-      const unisList = unisRes?.records || [];
+
+      const unisList = unisRes?.universities || (Array.isArray(unisRes) ? unisRes : []) || [];
+
+      if (nodalDistrict && nodalDistrict !== 'All' && nodalDistrict !== 'All Districts') {
+        challengesList = challengesList.filter((c) => {
+          const dist = c.location?.district || c.district || c.assignedNodalOfficer?.district;
+          return dist && dist.toLowerCase() === nodalDistrict.toLowerCase();
+        });
+      }
 
       setAllChallenges(challengesList);
       setUniversities(unisList);
@@ -75,11 +88,11 @@ export const useNodalOverviewData = () => {
       const resolved = challengesList.filter((c) => c.status === 'Resolved').length;
 
       setStats({
-        total: total || statsRes?.activities?.total || 0,
-        underReview: underReview || statsRes?.activities?.underReview || statsRes?.activities?.submitted || 0,
-        clarificationRequested: clarificationRequested || statsRes?.activities?.clarificationRequested || 0,
-        inProgress: inProgress || statsRes?.activities?.inProgress || 0,
-        resolved: resolved || statsRes?.activities?.resolved || 0
+        total,
+        underReview,
+        clarificationRequested,
+        inProgress,
+        resolved
       });
     } catch (err) {
       console.warn('Error loading nodal dashboard data:', err);
@@ -90,7 +103,7 @@ export const useNodalOverviewData = () => {
 
   useEffect(() => {
     loadData();
-  }, []);
+  }, [nodalDistrict]);
 
   const handleOpenAssignModal = (chl) => {
     setSelectedChallenge(chl);

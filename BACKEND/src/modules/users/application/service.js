@@ -29,30 +29,8 @@ export class UserService {
     return this.userRepository.findByMobile(mobileNumber);
   }
 
-  async createUser({
-    fullName,
-    mobileNumber,
-    email,
-    passwordHash,
-    role = 'CITIZEN',
-    profile = {},
-    accountStatus = 'PENDING_VERIFICATION',
-    emailVerification = { verified: false, verifiedAt: null },
-    emailVerificationCode = null,
-    emailVerificationExpires = null
-  }) {
-    const user = new User({
-      fullName,
-      mobileNumber,
-      email,
-      passwordHash,
-      role,
-      profile,
-      accountStatus,
-      emailVerification,
-      emailVerificationCode,
-      emailVerificationExpires
-    });
+  async createUser(userData) {
+    const user = new User(userData);
     return this.userRepository.save(user);
   }
 

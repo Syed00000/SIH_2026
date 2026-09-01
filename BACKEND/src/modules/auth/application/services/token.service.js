@@ -13,7 +13,12 @@ export class TokenService {
 
   generateAccessToken(user) {
     return jwt.sign(
-      { sub: user.id, role: user.role },
+      {
+        sub: user.id,
+        role: user.role,
+        email: user.email,
+        district: user.profile?.district || user.district || ''
+      },
       config.JWT_ACCESS_SECRET,
       {
         expiresIn: config.JWT_ACCESS_EXPIRY

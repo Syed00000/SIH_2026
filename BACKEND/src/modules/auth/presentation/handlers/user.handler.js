@@ -11,6 +11,7 @@ export const createUserHandler = (userService) => {
           email: user.email,
           mobileNumber: user.mobileNumber,
           role: user.role,
+          district: user.profile?.district || user.district || '',
           profile: user.profile,
           emailVerified: user.isEmailVerified,
           accountStatus: user.accountStatus

@@ -6,12 +6,19 @@ export class ChallengeQueryService {
   async getChallenges({ domain, status, district, search, page = 1, limit = 20, isPublic = true }) {
     const filter = {};
     if (isPublic) filter.isPublic = true;
-    if (domain && domain !== 'All') filter.domain = domain;
-    if (status && status !== 'All') filter.status = status;
-    if (district && district !== 'All') filter['location.district'] = district;
+    if (domain && domain !== 'All' && domain !== 'All Domains') filter.domain = domain;
+    if (status && status !== 'All' && status !== 'All Status') filter.status = status;
+    if (district && district !== 'All' && district !== 'All Districts') {
+      const distRegex = new RegExp(`^${district.trim()}$`, 'i');
+      filter.$or = [
+        { 'location.district': distRegex },
+        { district: distRegex },
+        { 'assignedNodalOfficer.district': distRegex }
+      ];
+    }
     if (search) {
       const regex = new RegExp(search, 'i');
-      filter.$or = [
+      const searchConditions = [
         { title: regex },
         { description: regex },
         { 'location.district': regex },
@@ -19,6 +26,12 @@ export class ChallengeQueryService {
         { domain: regex },
         { challengeId: regex }
       ];
+      if (filter.$or) {
+        filter.$and = [{ $or: filter.$or }, { $or: searchConditions }];
+        delete filter.$or;
+      } else {
+        filter.$or = searchConditions;
+      }
     }
 
     const skip = (Math.max(1, Number(page)) - 1) * Number(limit);

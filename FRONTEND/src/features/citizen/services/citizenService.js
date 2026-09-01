@@ -28,9 +28,10 @@ export const citizenService = {
     }
   },
 
-  async fetchStats() {
+  async fetchStats(params = {}) {
     try {
-      const response = await apiClient.get('citizen/stats');
+      const query = new URLSearchParams(params).toString();
+      const response = await apiClient.get(`citizen/stats${query ? `?${query}` : ''}`);
       const data = response.data?.data || response.data || {};
       return data;
     } catch {

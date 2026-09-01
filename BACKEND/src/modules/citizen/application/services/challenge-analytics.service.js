@@ -1,11 +1,24 @@
+import MongooseUniversity from '../../../government/heis/infrastructure/model.js';
+import MongooseIndustry from '../../../government/industries/infrastructure/model.js';
+import GovernmentGrantFund from '../../../government/grants/model.js';
+
 export class ChallengeAnalyticsService {
   constructor(repository) {
     this.repository = repository;
   }
 
-  async getStats(user = null) {
+  async getStats(user = null, district = null) {
     let filter = {};
-    if (user?.id) {
+    const effectiveDistrict = district || (user?.role === 'NODAL' ? (user?.district || user?.profile?.district) : null);
+
+    if (effectiveDistrict && effectiveDistrict !== 'All' && effectiveDistrict !== 'All Districts') {
+      const distRegex = new RegExp(`^${effectiveDistrict.trim()}$`, 'i');
+      filter.$or = [
+        { 'location.district': distRegex },
+        { district: distRegex },
+        { 'assignedNodalOfficer.district': distRegex }
+      ];
+    } else if (user?.role === 'CITIZEN' && user?.id) {
       filter = {
         $or: [
           { citizenId: user.id },
@@ -15,8 +28,12 @@ export class ChallengeAnalyticsService {
       };
     }
 
-    const activityStats = await this.repository.getActivitiesStats(filter);
-    const totalAll = await this.repository.countAll();
+    const [activityStats, totalAll, universitiesCount, industryCount] = await Promise.all([
+      this.repository.getActivitiesStats(filter),
+      this.repository.countAll(),
+      MongooseUniversity.countDocuments({ status: { $ne: 'Rejected' } }).catch(() => 0),
+      MongooseIndustry.countDocuments({ status: { $ne: 'Rejected' } }).catch(() => 0)
+    ]);
 
     return {
       activities: {
@@ -30,27 +47,36 @@ export class ChallengeAnalyticsService {
       },
       overallImpact: {
         challengesSubmitted: totalAll,
-        universitiesEngaged: 86,
-        industryPartners: 124,
+        universitiesEngaged: universitiesCount,
+        industryPartners: industryCount,
         solutionsDeployed: activityStats.resolved || 0
       }
     };
   }
 
   async getUpdates() {
-    return [
-      {
-        id: 'UPD-1',
-        title: 'New Innovation Funding Window Opened',
-        category: 'Grant Announcement',
-        description:
-          'Department of Higher & Technical Education released funding window for grassroots problem statements submitted by citizens.',
-        timestamp: 'Today, 11:30 AM',
-        date: new Date(),
-        isUnread: true,
-        type: 'announcement'
+    try {
+      const grants = await GovernmentGrantFund.find({ status: 'Active' })
+        .sort({ createdAt: -1 })
+        .limit(5)
+        .lean();
+
+      if (grants && grants.length > 0) {
+        return grants.map((g) => ({
+          id: g.fundId || String(g._id),
+          title: g.title,
+          category: g.scheme || 'Grant Announcement',
+          description: g.description || `Funding allocation for financial year ${g.financialYear || ''}.`,
+          timestamp: new Date(g.allocationDate || g.createdAt).toLocaleDateString(),
+          date: g.allocationDate || g.createdAt,
+          isUnread: true,
+          type: 'announcement'
+        }));
       }
-    ];
+      return [];
+    } catch {
+      return [];
+    }
   }
 
   async getPopularAreas() {

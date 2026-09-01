@@ -64,6 +64,7 @@ const userSchema = new mongoose.Schema(
       registrationNumber: { type: String, default: null, trim: true },
       institutionType: { type: String, default: null },
       nodalOfficerDesignation: { type: String, default: null, trim: true },
+      district: { type: String, default: null, trim: true },
       academicFocusDomains: { type: [String], default: [] },
       organizationName: { type: String, default: null, trim: true },
       entityType: { type: String, default: null },

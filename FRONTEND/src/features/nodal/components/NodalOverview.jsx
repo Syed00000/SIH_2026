@@ -7,7 +7,7 @@ import { NodalUnassignedQueueCard } from './overview/NodalUnassignedQueueCard.js
 import { NodalInstitutionalAllocationCard } from './overview/NodalInstitutionalAllocationCard.jsx';
 import { NodalProcessWorkflowCard } from './overview/NodalProcessWorkflowCard.jsx';
 
-export const NodalOverview = ({ onNavigateChallenges, onNavigateUniversities }) => {
+export const NodalOverview = ({ onNavigateChallenges, onNavigateUniversities, nodalDistrict = '' }) => {
   const {
     stats,
     allChallenges,
@@ -18,7 +18,7 @@ export const NodalOverview = ({ onNavigateChallenges, onNavigateUniversities }) 
     loadData,
     handleOpenAssignModal,
     handleCloseAssignModal
-  } = useNodalOverviewData();
+  } = useNodalOverviewData(nodalDistrict);
 
   return (
     <div className="space-y-5 select-none text-left animate-in fade-in duration-150">
@@ -28,6 +28,7 @@ export const NodalOverview = ({ onNavigateChallenges, onNavigateUniversities }) 
         onNavigateUniversities={onNavigateUniversities}
         onReload={loadData}
         loading={loading}
+        nodalDistrict={nodalDistrict}
       />
 
       {/* 2. Top Metric KPI Grid */}

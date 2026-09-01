@@ -23,16 +23,16 @@ export const AdminDirectoryTable = ({
     if (searchTerm.trim()) {
       const q = searchTerm.toLowerCase().trim();
       const match =
-        admin.fullName.toLowerCase().includes(q) ||
-        admin.email.toLowerCase().includes(q) ||
-        admin.role.toLowerCase().includes(q) ||
-        admin.district.toLowerCase().includes(q) ||
-        admin.mobileNumber.includes(q);
+        admin.fullName?.toLowerCase().includes(q) ||
+        admin.email?.toLowerCase().includes(q) ||
+        admin.role?.toLowerCase().includes(q) ||
+        admin.district?.toLowerCase().includes(q) ||
+        admin.mobileNumber?.includes(q);
       if (!match) return false;
     }
-    if (selectedRole !== 'All Roles' && admin.role.toLowerCase() !== selectedRole.toLowerCase()) return false;
-    if (selectedStatus !== 'All Status' && admin.status.toLowerCase() !== selectedStatus.toLowerCase()) return false;
-    if (selectedDistrict !== 'All' && admin.district.toLowerCase() !== selectedDistrict.toLowerCase()) return false;
+    if (selectedRole !== 'All Roles' && admin.role?.toLowerCase() !== selectedRole.toLowerCase()) return false;
+    if (selectedStatus !== 'All Status' && admin.status?.toLowerCase() !== selectedStatus.toLowerCase()) return false;
+    if (selectedDistrict !== 'All' && admin.district?.toLowerCase() !== selectedDistrict.toLowerCase()) return false;
     return true;
   });
 

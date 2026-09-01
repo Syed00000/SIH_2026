@@ -15,7 +15,8 @@ const optionalAuth = (req, res, next) => {
       req.user = {
         id: decoded.sub,
         role: decoded.role,
-        email: decoded.email
+        email: decoded.email,
+        district: decoded.district || ''
       };
     } catch {
       // ignore invalid optional token

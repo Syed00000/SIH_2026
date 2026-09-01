@@ -16,7 +16,9 @@ export const authenticate = (req, res, next) => {
     const decoded = jwt.verify(token, config.JWT_ACCESS_SECRET);
     req.user = {
       id: decoded.sub,
-      role: decoded.role
+      role: decoded.role,
+      email: decoded.email,
+      district: decoded.district || ''
     };
     next();
   } catch (error) {

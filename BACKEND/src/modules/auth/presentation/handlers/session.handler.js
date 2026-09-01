@@ -19,7 +19,11 @@ export const createSessionHandler = (authService) => {
             fullName: result.user.fullName,
             email: result.user.email,
             mobileNumber: result.user.mobileNumber,
-            role: result.user.role
+            role: result.user.role,
+            district: result.user.profile?.district || result.user.district || '',
+            profile: result.user.profile || {},
+            emailVerified: result.user.emailVerified,
+            accountStatus: result.user.accountStatus
           }
         }
       });
