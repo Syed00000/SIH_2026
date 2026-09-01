@@ -106,6 +106,7 @@ export const NodalChallenges = ({ initialStatusFilter = 'All Status' }) => {
           isOpen={Boolean(chatChallenge)}
           onClose={() => setChatChallenge(null)}
           challenge={chatChallenge}
+          isUniversityView={false}
         />
       )}
     </div>

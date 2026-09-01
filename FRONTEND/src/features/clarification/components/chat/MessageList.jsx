@@ -6,6 +6,7 @@ export const MessageList = ({
   messages,
   loading,
   uniName,
+  hasAssignedUni,
   userRole,
   isTypingRemote,
   messagesEndRef,
@@ -33,7 +34,7 @@ export const MessageList = ({
           <div>
             <h4 className="font-bold text-slate-800 text-sm">Direct Clarification Channel</h4>
             <p className="text-xs text-slate-500 max-w-sm mt-0.5">
-              End-to-end synchronized communications between <strong>{uniName}</strong> and <strong>State Nodal Officer</strong>.
+              End-to-end synchronized communications between <strong>{hasAssignedUni ? uniName : 'University (Not Assigned)'}</strong> and <strong>State Nodal Officer</strong>.
             </p>
           </div>
         </div>

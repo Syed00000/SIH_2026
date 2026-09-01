@@ -70,7 +70,8 @@ export const citizenChallengeSchema = new mongoose.Schema(
         'Clarification Requested',
         'Clarified',
         'Accepted',
-        'Declined'
+        'Declined',
+        'Withdrawn'
       ],
       default: 'Under Review',
       index: true

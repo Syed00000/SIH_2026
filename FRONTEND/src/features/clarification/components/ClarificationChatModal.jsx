@@ -6,7 +6,6 @@ import { ChatHeader } from './chat/ChatHeader.jsx';
 import { ProblemBriefBanner } from './chat/ProblemBriefBanner.jsx';
 import { ClearChatPrompt } from './chat/ClearChatPrompt.jsx';
 import { MessageList } from './chat/MessageList.jsx';
-import { ChallengeActionBar } from './chat/ChallengeActionBar.jsx';
 import { ReplyingToBanner } from './chat/ReplyingToBanner.jsx';
 import { ChatInputFooter } from './chat/ChatInputFooter.jsx';
 import { DeleteMessageModal } from './chat/DeleteMessageModal.jsx';
@@ -16,16 +15,14 @@ export const ClarificationChatModal = ({
   onClose,
   challenge,
   currentUser,
-  isUniversityView = true,
-  onAcceptChallenge,
-  onDeclineChallenge
+  isUniversityView = true
 }) => {
   const [showStatement, setShowStatement] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(true);
   const messagesEndRef = useRef(null);
 
   const {
-    challengeId, uniCode, uniName, uniLeadDesignation,
+    challengeId, uniCode, uniName, hasAssignedUni, uniLeadDesignation,
     nodalAdminName, nodalDesignation, nodalDepartment, nodalPhone,
     userRole, userName, isAccepted, isDeclined
   } = resolveChatParticipants(challenge, currentUser, isUniversityView);
@@ -78,6 +75,7 @@ export const ClarificationChatModal = ({
           isUniversityView={isUniversityView}
           challengeId={challengeId}
           uniName={uniName}
+          hasAssignedUni={hasAssignedUni}
           nodalDepartment={nodalDepartment}
           nodalPhone={nodalPhone}
           isTypingRemote={isTypingRemote}
@@ -97,6 +95,7 @@ export const ClarificationChatModal = ({
           messages={messages}
           loading={loading}
           uniName={uniName}
+          hasAssignedUni={hasAssignedUni}
           userRole={userRole}
           isTypingRemote={isTypingRemote}
           messagesEndRef={messagesEndRef}
@@ -110,15 +109,6 @@ export const ClarificationChatModal = ({
           onScrollToMessage={scrollToMessage}
         />
 
-        <ChallengeActionBar
-          isUniversityView={isUniversityView}
-          isAccepted={isAccepted}
-          isDeclined={isDeclined}
-          challenge={challenge}
-          onAcceptChallenge={onAcceptChallenge}
-          onDeclineChallenge={onDeclineChallenge}
-        />
-
         <ReplyingToBanner replyingTo={replyingTo} onCancelReply={() => setReplyingTo(null)} />
 
         <ChatInputFooter
@@ -130,6 +120,7 @@ export const ClarificationChatModal = ({
           replyingTo={replyingTo}
           isUniversityView={isUniversityView}
           uniName={uniName}
+          hasAssignedUni={hasAssignedUni}
         />
 
         <DeleteMessageModal

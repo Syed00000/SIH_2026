@@ -63,6 +63,11 @@ export const useNodalAssignForm = ({
       return;
     }
 
+    if (activeChallenge.status === 'Withdrawn') {
+      setErrorMsg('This problem statement has been withdrawn by the citizen and cannot be allocated or assigned.');
+      return;
+    }
+
     const chlId = activeChallenge.challengeId || activeChallenge.id;
     const targetUni = universities.find((u) => u.code === selectedUniCode || u.aisheCode === selectedUniCode);
 

@@ -123,6 +123,7 @@ export const UniversityProblemsDetailView = ({
           isOpen={Boolean(chatChallenge)}
           onClose={() => setChatChallenge(null)}
           challenge={chatChallenge}
+          isUniversityView={false}
         />
       )}
     </div>

@@ -133,5 +133,12 @@ export function updateMilestonesForStatus(challenge, newStatus, remarks = '') {
     if (challenge.milestones[4]) {
       challenge.milestones[4].remarks = remarks || 'Successfully resolved and verified';
     }
+  } else if (newStatus === 'Withdrawn') {
+    challenge.milestones[0].status = 'COMPLETED';
+    if (challenge.milestones[1]) {
+      challenge.milestones[1].status = 'CANCELLED';
+      challenge.milestones[1].remarks = remarks || 'Problem statement withdrawn by citizen submitter';
+      challenge.milestones[1].completedAt = new Date();
+    }
   }
 }

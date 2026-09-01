@@ -307,6 +307,7 @@ export const CitizenPortal = ({ user: propUser, onLogout }) => {
         challenge={selectedChallenge}
         isOpen={isDetailModalOpen}
         onClose={() => setIsDetailModalOpen(false)}
+        onChallengeUpdated={loadData}
       />
     </div>
   );

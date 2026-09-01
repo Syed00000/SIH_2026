@@ -31,6 +31,8 @@ router.get('/challenges/my', optionalAuth, (req, res, next) => citizenController
 router.get('/challenges/:id', optionalAuth, (req, res, next) => citizenController.getChallengeById(req, res, next));
 router.patch('/challenges/:id/triage', optionalAuth, (req, res, next) => citizenController.triageChallenge(req, res, next));
 router.patch('/challenges/:id/assign', optionalAuth, (req, res, next) => citizenController.triageChallenge(req, res, next));
+router.patch('/challenges/:id/withdraw', optionalAuth, (req, res, next) => citizenController.withdrawChallenge(req, res, next));
+router.post('/challenges/:id/withdraw', optionalAuth, (req, res, next) => citizenController.withdrawChallenge(req, res, next));
 router.delete('/challenges/:id', optionalAuth, (req, res, next) => citizenController.deleteChallenge(req, res, next));
 
 router.get('/stats', optionalAuth, (req, res, next) => citizenController.getStats(req, res, next));

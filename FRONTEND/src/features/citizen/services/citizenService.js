@@ -59,6 +59,11 @@ export const citizenService = {
     }
   },
 
+  async withdrawChallenge(challengeId, reason = '') {
+    const response = await apiClient.patch(`citizen/challenges/${challengeId}/withdraw`, { reason });
+    return response.data || response;
+  },
+
   async deleteChallenge(challengeId) {
     const response = await apiClient.delete(`citizen/challenges/${challengeId}`);
     return response.data || response;

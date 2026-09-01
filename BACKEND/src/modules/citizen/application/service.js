@@ -50,6 +50,10 @@ export class CitizenService {
     return this.triageService.triageChallenge(challengeId, triageData, user);
   }
 
+  async withdrawChallenge(challengeId, reason, user = null) {
+    return this.triageService.withdrawChallenge(challengeId, reason, user);
+  }
+
   async deleteChallenge(challengeId) {
     return this.triageService.deleteChallenge(challengeId);
   }

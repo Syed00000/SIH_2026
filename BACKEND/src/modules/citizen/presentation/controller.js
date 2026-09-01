@@ -45,6 +45,10 @@ export class CitizenController {
     return this.triageHandler.triageChallenge(req, res, next);
   }
 
+  withdrawChallenge(req, res, next) {
+    return this.triageHandler.withdrawChallenge(req, res, next);
+  }
+
   deleteChallenge(req, res, next) {
     return this.triageHandler.deleteChallenge(req, res, next);
   }

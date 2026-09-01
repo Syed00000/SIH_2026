@@ -174,7 +174,7 @@ export const ProjectSpecificLocationMap = ({ project, height = '360px' }) => {
         <div className="p-3 bg-white rounded-lg border border-slate-200 space-y-1">
           <span className="text-[10px] font-bold text-rose-700 uppercase tracking-wider flex items-center space-x-1">
             <AlertCircle className="w-3.5 h-3.5" />
-            <span>Problem Origin (Yeh Samasya Kahan Ki Hai):</span>
+            <span>Problem Origin Location:</span>
           </span>
           <p className="text-xs font-bold text-slate-900 leading-snug">
             {problemLoc.name}
@@ -185,7 +185,7 @@ export const ProjectSpecificLocationMap = ({ project, height = '360px' }) => {
         <div className="p-3 bg-white rounded-lg border border-slate-200 space-y-1">
           <span className="text-[10px] font-bold text-emerald-800 uppercase tracking-wider flex items-center space-x-1">
             <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-            <span>Active Work Site (Kaam Kahan Ho Rha Hai):</span>
+            <span>Active Work Site Location:</span>
           </span>
           <p className="text-xs font-bold text-slate-900 leading-snug">
             {workSiteLoc.name}

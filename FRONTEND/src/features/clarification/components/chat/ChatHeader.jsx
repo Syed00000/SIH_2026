@@ -13,6 +13,7 @@ export const ChatHeader = ({
   isUniversityView,
   challengeId,
   uniName,
+  hasAssignedUni,
   nodalDepartment,
   nodalPhone,
   isTypingRemote,
@@ -40,7 +41,7 @@ export const ChatHeader = ({
               {isUniversityView ? (
                 <span className="text-slate-900 font-bold">State Nodal Officer</span>
               ) : (
-                <span className="text-slate-900 font-bold">{uniName}</span>
+                <span className="text-slate-900 font-bold">{hasAssignedUni ? uniName : 'University (Not Assigned)'}</span>
               )}
             </div>
           </div>
@@ -58,7 +59,7 @@ export const ChatHeader = ({
             )}
             <span className="text-slate-300">&bull;</span>
             <span className="text-slate-500 truncate max-w-[260px]">
-              {isUniversityView ? nodalDepartment : `${uniName} Innovation Desk`}
+              {isUniversityView ? nodalDepartment : (hasAssignedUni ? `${uniName} Innovation Desk` : 'Institutional Desk (Not Assigned)')}
             </span>
           </div>
         </div>

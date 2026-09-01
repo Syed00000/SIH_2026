@@ -1,5 +1,5 @@
 import React from 'react';
-import { MapPin, User, Image as ImageIcon, Loader2, ShieldCheck } from 'lucide-react';
+import { MapPin, User, Image as ImageIcon, Loader2, ShieldCheck, Users, AlertCircle } from 'lucide-react';
 import { CitizenThemedSelect } from './CitizenThemedSelect.jsx';
 
 const JHARKHAND_DISTRICTS = [
@@ -20,6 +20,15 @@ const SUBMITTER_ROLES = [
   'Local Resident', 'Other'
 ];
 
+const AFFECTED_POPULATION_OPTIONS = [
+  'Less than 100 people (< 100)',
+  '100 - 500 people (Street / Neighborhood)',
+  '500 - 2,000 people (Village / Ward)',
+  '2,000 - 10,000 people (Panchayat / Community)',
+  '10,000 - 50,000 people (Block / Town)',
+  '50,000+ people (Large Region / Widespread)'
+];
+
 export const SubmitChallengeFormFields = ({
   formData,
   setFormData,
@@ -30,7 +39,8 @@ export const SubmitChallengeFormFields = ({
   isCustomMode,
   setIsCustomMode,
   loading,
-  onClose
+  onClose,
+  error
 }) => {
   return (
     <>
@@ -103,6 +113,21 @@ export const SubmitChallengeFormFields = ({
         </div>
 
         <div>
+          <label className="block text-xs font-bold text-slate-800 mb-1.5 flex items-center justify-between">
+            <span className="flex items-center space-x-1.5">
+              <Users className="w-3.5 h-3.5 text-emerald-700 inline" />
+              <span>Estimated People Affected <span className="text-rose-500">*</span></span>
+            </span>
+            <span className="text-[10.5px] font-medium text-slate-400">Scale of impact</span>
+          </label>
+          <CitizenThemedSelect
+            value={formData.affectedPopulation || '500 - 2,000 people (Village / Ward)'}
+            onChange={(val) => setFormData((prev) => ({ ...prev, affectedPopulation: val }))}
+            options={AFFECTED_POPULATION_OPTIONS}
+          />
+        </div>
+
+        <div>
           <label className="block text-xs font-bold text-slate-800 mb-1.5">Detailed Problem Statement (Paragraph) <span className="text-rose-500">*</span></label>
           <textarea
             name="description"
@@ -112,16 +137,14 @@ export const SubmitChallengeFormFields = ({
             placeholder="Describe the issue in detail: what is happening, where exactly is the problem, how long has it persisted, and how it impacts people..."
             className="w-full text-xs font-normal p-3 rounded-xl bg-white border border-slate-200/90 text-slate-900 focus:outline-none focus:border-emerald-600 shadow-2xs"
             required
+            minLength={5}
           />
         </div>
       </div>
 
       {/* 2. Location Details */}
       <div className="space-y-4 pb-5 border-b border-slate-100">
-        <span className="text-xs font-extrabold text-emerald-800 uppercase tracking-wider block flex items-center">
-          <MapPin className="w-3.5 h-3.5 mr-1.5 text-emerald-700" />
-          2. Location Details (Where is the problem?)
-        </span>
+        <span className="text-xs font-extrabold text-emerald-800 uppercase tracking-wider block">2. Location Details</span>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className="block text-xs font-bold text-slate-800 mb-1.5">District <span className="text-rose-500">*</span></label>
@@ -131,28 +154,33 @@ export const SubmitChallengeFormFields = ({
               options={JHARKHAND_DISTRICTS}
             />
           </div>
+
           <div>
-            <label className="block text-xs font-bold text-slate-800 mb-1.5">Block / Sub-District</label>
+            <label className="block text-xs font-bold text-slate-800 mb-1.5">Block / Tehsil</label>
             <input
               type="text"
               name="block"
               value={formData.block}
               onChange={handleChange}
-              placeholder="e.g., Kanke, Torpa, Chas"
+              placeholder="e.g., Kanke / Namkum / Sadar"
               className="w-full text-xs font-medium px-3.5 py-2.5 rounded-xl bg-white border border-slate-200/90 text-slate-900 focus:outline-none focus:border-emerald-600 shadow-2xs"
             />
           </div>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label className="block text-xs font-bold text-slate-800 mb-1.5">Landmark / Area</label>
+            <label className="block text-xs font-bold text-slate-800 mb-1.5">Panchayat / Ward / Colony</label>
             <input
               type="text"
-              name="landmark"
-              value={formData.landmark}
+              name="panchayatOrWard"
+              value={formData.panchayatOrWard}
               onChange={handleChange}
-              placeholder="e.g., Near Morabadi Ground"
+              placeholder="e.g., Ward No. 12 / Mesra Panchayat"
               className="w-full text-xs font-medium px-3.5 py-2.5 rounded-xl bg-white border border-slate-200/90 text-slate-900 focus:outline-none focus:border-emerald-600 shadow-2xs"
             />
           </div>
+
           <div>
             <label className="block text-xs font-bold text-slate-800 mb-1.5">Pincode</label>
             <input
@@ -160,19 +188,29 @@ export const SubmitChallengeFormFields = ({
               name="pincode"
               value={formData.pincode}
               onChange={handleChange}
-              placeholder="e.g., 834008"
+              placeholder="e.g., 834001"
+              maxLength={6}
               className="w-full text-xs font-medium px-3.5 py-2.5 rounded-xl bg-white border border-slate-200/90 text-slate-900 focus:outline-none focus:border-emerald-600 shadow-2xs"
             />
           </div>
+        </div>
+
+        <div>
+          <label className="block text-xs font-bold text-slate-800 mb-1.5">Landmark / Specific Spot</label>
+          <input
+            type="text"
+            name="landmark"
+            value={formData.landmark}
+            onChange={handleChange}
+            placeholder="e.g., Near Primary Health Centre / Main Chowk"
+            className="w-full text-xs font-medium px-3.5 py-2.5 rounded-xl bg-white border border-slate-200/90 text-slate-900 focus:outline-none focus:border-emerald-600 shadow-2xs"
+          />
         </div>
       </div>
 
       {/* 3. Submitter Information */}
       <div className="space-y-4 pb-5 border-b border-slate-100">
-        <span className="text-xs font-extrabold text-emerald-800 uppercase tracking-wider block flex items-center">
-          <User className="w-3.5 h-3.5 mr-1.5 text-emerald-700" />
-          3. Submitter Information (Who are you?)
-        </span>
+        <span className="text-xs font-extrabold text-emerald-800 uppercase tracking-wider block">3. Submitter Information (Who Are You?)</span>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className="block text-xs font-bold text-slate-800 mb-1.5">Your Role / Designation <span className="text-rose-500">*</span></label>
@@ -182,6 +220,7 @@ export const SubmitChallengeFormFields = ({
               options={SUBMITTER_ROLES}
             />
           </div>
+
           <div>
             <label className="block text-xs font-bold text-slate-800 mb-1.5">Full Name <span className="text-rose-500">*</span></label>
             <input
@@ -189,11 +228,14 @@ export const SubmitChallengeFormFields = ({
               name="submitterName"
               value={formData.submitterName}
               onChange={handleChange}
-              placeholder="Your full name"
+              placeholder="e.g., Ramesh Kumar"
               className="w-full text-xs font-medium px-3.5 py-2.5 rounded-xl bg-white border border-slate-200/90 text-slate-900 focus:outline-none focus:border-emerald-600 shadow-2xs"
               required
             />
           </div>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className="block text-xs font-bold text-slate-800 mb-1.5">Mobile Number</label>
             <input
@@ -205,6 +247,7 @@ export const SubmitChallengeFormFields = ({
               className="w-full text-xs font-medium px-3.5 py-2.5 rounded-xl bg-white border border-slate-200/90 text-slate-900 focus:outline-none focus:border-emerald-600 shadow-2xs"
             />
           </div>
+
           <div>
             <label className="block text-xs font-bold text-slate-800 mb-1.5">Email Address</label>
             <input
@@ -212,17 +255,16 @@ export const SubmitChallengeFormFields = ({
               name="submitterEmail"
               value={formData.submitterEmail}
               onChange={handleChange}
-              placeholder="your.email@example.com"
+              placeholder="name@domain.com"
               className="w-full text-xs font-medium px-3.5 py-2.5 rounded-xl bg-white border border-slate-200/90 text-slate-900 focus:outline-none focus:border-emerald-600 shadow-2xs"
             />
           </div>
         </div>
       </div>
 
-      {/* 4. Photo Proof */}
-      <div className="space-y-3">
-        <span className="text-xs font-extrabold text-emerald-800 uppercase tracking-wider block flex items-center">
-          <ImageIcon className="w-3.5 h-3.5 mr-1.5 text-emerald-700" />
+      {/* 4. Media & Photos */}
+      <div className="space-y-4 pb-2">
+        <span className="text-xs font-extrabold text-emerald-800 uppercase tracking-wider block">
           4. Image / Photo Proof (Optional)
         </span>
         <input
@@ -256,6 +298,14 @@ export const SubmitChallengeFormFields = ({
           </div>
         )}
       </div>
+
+      {/* Bottom Error Notification if present */}
+      {error && (
+        <div className="p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-semibold flex items-center space-x-2 shadow-2xs">
+          <AlertCircle className="w-4 h-4 flex-shrink-0" />
+          <span>{error}</span>
+        </div>
+      )}
 
       {/* CTA Buttons */}
       <div className="pt-4 flex items-center justify-end space-x-3">

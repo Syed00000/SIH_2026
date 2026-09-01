@@ -9,7 +9,8 @@ export const ChatInputFooter = ({
   sending,
   replyingTo,
   isUniversityView,
-  uniName
+  uniName,
+  hasAssignedUni
 }) => {
   return (
     <form
@@ -26,7 +27,9 @@ export const ChatInputFooter = ({
             ? 'Replying to message...'
             : isUniversityView
               ? 'Message State Nodal Officer...'
-              : `Message ${uniName}...`
+              : hasAssignedUni
+                ? `Message ${uniName}...`
+                : 'Message University (Not Assigned)...'
         }
         className="flex-1 bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-[#007A61] transition-all shadow-xs"
       />
