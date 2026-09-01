@@ -1,7 +1,23 @@
 export const resolveChatParticipants = (challenge, currentUser, isUniversityView = true) => {
   const challengeId = challenge?.challengeId || challenge?.id || 'NA';
-  const uniCode = challenge?.assignedUniversity?.id || challenge?.universityCode || currentUser?.profile?.code || 'RU001';
-  const uniName = challenge?.assignedUniversity?.name || challenge?.universityName || currentUser?.profile?.institutionName || currentUser?.profile?.universityName || 'Ranchi University';
+  const assignedUni = challenge?.assignedUniversity || {};
+  const hasAssignedUni = Boolean(
+    assignedUni?.name?.trim() ||
+    challenge?.universityName?.trim()
+  );
+
+  const rawUniName =
+    assignedUni?.name?.trim() ||
+    challenge?.universityName?.trim() ||
+    (isUniversityView ? (currentUser?.profile?.institutionName || currentUser?.profile?.universityName) : '');
+
+  const uniName = rawUniName || (isUniversityView ? 'University' : 'University (Not Assigned)');
+  const uniCode =
+    assignedUni?.id ||
+    challenge?.universityCode ||
+    (isUniversityView ? currentUser?.profile?.code : '') ||
+    'HEI';
+
   const uniLeadDesignation = 'University Administration';
 
   const nodalAdminName = 'State Nodal Officer';
@@ -13,7 +29,7 @@ export const resolveChatParticipants = (challenge, currentUser, isUniversityView
   const userName = isUniversityView ? uniName : 'State Nodal Officer';
 
   const s = String(challenge?.status || '').toLowerCase();
-  const acc = String(challenge?.assignedUniversity?.acceptanceStatus || challenge?.acceptanceStatus || '').toLowerCase();
+  const acc = String(assignedUni?.acceptanceStatus || challenge?.acceptanceStatus || '').toLowerCase();
   const isAccepted = s.includes('accept') || acc === 'accepted' || s === 'in progress' || s === 'active' || s === 'completed';
   const isDeclined = s.includes('reject') || s.includes('decline') || acc === 'declined';
 
@@ -21,6 +37,7 @@ export const resolveChatParticipants = (challenge, currentUser, isUniversityView
     challengeId,
     uniCode,
     uniName,
+    hasAssignedUni,
     uniLeadDesignation,
     nodalAdminName,
     nodalDesignation,

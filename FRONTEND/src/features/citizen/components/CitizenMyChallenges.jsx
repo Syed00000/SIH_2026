@@ -8,12 +8,13 @@ import {
   AlertCircle,
   Loader2,
   X,
-  Layers
+  Layers,
+  Trash2
 } from 'lucide-react';
 import { citizenService } from '../services/citizenService.js';
 import { CitizenThemedSelect } from './CitizenThemedSelect.jsx';
 
-const STATUS_FILTERS = ['All', 'Submitted', 'Under Review', 'In Progress', 'Resolved'];
+const STATUS_FILTERS = ['All', 'Submitted', 'Under Review', 'In Progress', 'Resolved', 'Withdrawn'];
 const DOMAIN_OPTIONS = [
   'All', 'Education', 'Healthcare', 'Agriculture', 'Water Resources',
   'Environment', 'Energy', 'Urban Development', 'Accessibility',
@@ -54,6 +55,20 @@ export const CitizenMyChallenges = ({
   };
 
   useEffect(() => { loadChallenges(); }, [statusFilter, searchTerm]);
+
+  const handleDeleteChallenge = async (e, ch) => {
+    e.stopPropagation();
+    const chlId = ch.challengeId || ch.id || ch._id;
+    if (!window.confirm(`Are you sure you want to permanently delete withdrawn problem statement ${chlId}?`)) {
+      return;
+    }
+    try {
+      await citizenService.deleteChallenge(chlId);
+      loadChallenges();
+    } catch (err) {
+      alert('Failed to delete challenge: ' + err.message);
+    }
+  };
 
   const displayedChallenges = challenges.filter((ch) => {
     if (!domainFilter || domainFilter === 'All') return true;
@@ -161,19 +176,30 @@ export const CitizenMyChallenges = ({
             const formattedDate = ch.submittedAt
               ? new Date(ch.submittedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
               : '29 Aug 2026';
+            const isWithdrawn = (ch.status || '').toLowerCase() === 'withdrawn';
 
             return (
               <div
                 key={ch.challengeId || ch._id}
                 onClick={() => onSelectChallenge(ch)}
-                className="group bg-white border border-slate-200/90 hover:border-emerald-400 rounded-xl p-4.5 shadow-2xs hover:shadow-xs transition-all duration-200 cursor-pointer space-y-3 text-left"
+                className={`group bg-white border ${
+                  isWithdrawn ? 'border-slate-200/60 opacity-85' : 'border-slate-200/90 hover:border-emerald-400'
+                } rounded-xl p-4.5 shadow-2xs hover:shadow-xs transition-all duration-200 cursor-pointer space-y-3 text-left`}
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-3">
                     <span className="font-bold text-xs text-slate-800 tracking-tight">{ch.challengeId}</span>
                     {ch.priority && <span className="text-xs font-semibold text-rose-700">Priority: {ch.priority}</span>}
                   </div>
-                  <span className="text-xs font-extrabold text-emerald-700">{ch.status || 'Under Review'}</span>
+                  <span className={`text-xs font-extrabold ${
+                    isWithdrawn
+                      ? 'text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md border border-slate-200'
+                      : ch.status === 'Resolved'
+                      ? 'text-emerald-700'
+                      : 'text-[#064e3b]'
+                  }`}>
+                    {ch.status || 'Under Review'}
+                  </span>
                 </div>
 
                 <div className="space-y-1.5">
@@ -192,10 +218,23 @@ export const CitizenMyChallenges = ({
 
                 <div className="pt-2 border-t border-slate-100 flex items-center justify-between">
                   <span className="text-xs font-bold text-slate-700">{ch.domain || 'Energy'}</span>
-                  <button className="text-xs text-emerald-800 font-bold flex items-center space-x-1 cursor-pointer">
-                    <span>Track Progress</span>
-                    <ChevronRight className="w-4 h-4" />
-                  </button>
+                  <div className="flex items-center space-x-2">
+                    {isWithdrawn && (
+                      <button
+                        type="button"
+                        onClick={(e) => handleDeleteChallenge(e, ch)}
+                        className="px-2.5 py-1 rounded-lg border border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100 font-bold text-xs flex items-center space-x-1 cursor-pointer transition-colors shadow-3xs"
+                        title="Permanently delete this withdrawn challenge"
+                      >
+                        <Trash2 className="w-3.5 h-3.5 text-rose-600" />
+                        <span>Delete</span>
+                      </button>
+                    )}
+                    <button className="text-xs text-emerald-800 font-bold flex items-center space-x-1 cursor-pointer">
+                      <span>Track Progress</span>
+                      <ChevronRight className="w-4 h-4" />
+                    </button>
+                  </div>
                 </div>
               </div>
             );

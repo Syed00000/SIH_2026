@@ -29,7 +29,7 @@ export const SubmitChallengeModal = ({
     designation: '',
     organization: '',
     priority: 'Medium',
-    affectedPopulation: '',
+    affectedPopulation: '500 - 2,000 people (Village / Ward)',
     mediaUrl: ''
   });
 
@@ -69,15 +69,15 @@ export const SubmitChallengeModal = ({
         : formData.domain;
 
     if (!formData.title.trim()) {
-      setError('Please enter a challenge heading / title');
+      setError('Please enter a problem title / heading');
       return;
     }
     if (!finalDomain) {
-      setError('Please select or specify a challenge area / domain');
+      setError('Please select or specify a challenge domain');
       return;
     }
-    if (!formData.description.trim() || formData.description.length < 15) {
-      setError('Please provide a detailed problem statement of at least 15 characters');
+    if (!formData.description.trim() || formData.description.trim().length < 5) {
+      setError('Please provide a problem statement description (at least 5 characters)');
       return;
     }
     if (!formData.district) {
@@ -89,27 +89,27 @@ export const SubmitChallengeModal = ({
 
     try {
       const payload = {
-        title: formData.title,
+        title: formData.title.trim(),
         domain: finalDomain,
-        description: formData.description,
+        description: formData.description.trim(),
         district: formData.district,
-        block: formData.block,
-        panchayatOrWard: formData.panchayatOrWard,
-        landmark: formData.landmark,
-        pincode: formData.pincode,
+        block: formData.block || '',
+        panchayatOrWard: formData.panchayatOrWard || '',
+        landmark: formData.landmark || '',
+        pincode: formData.pincode || '',
         fullAddress:
           formData.fullAddress ||
           `${formData.landmark ? formData.landmark + ', ' : ''}${
             formData.block ? formData.block + ', ' : ''
           }${formData.district}, Jharkhand`,
-        submitterName: formData.submitterName,
-        submitterPhone: formData.submitterPhone || '9876543210',
-        submitterEmail: formData.submitterEmail,
-        submitterRole: formData.submitterRole,
-        designation: formData.designation,
-        organization: formData.organization,
-        priority: formData.priority,
-        affectedPopulation: formData.affectedPopulation || '~ 1,000+ residents',
+        submitterName: formData.submitterName || user?.fullName || 'Citizen Contributor',
+        submitterPhone: formData.submitterPhone || user?.mobileNumber || '9876543210',
+        submitterEmail: formData.submitterEmail || user?.email || '',
+        submitterRole: formData.submitterRole || 'Citizen',
+        designation: formData.designation || '',
+        organization: formData.organization || '',
+        priority: formData.priority || 'Medium',
+        affectedPopulation: formData.affectedPopulation || '500 - 2,000 people (Village / Ward)',
         mediaUrls: formData.mediaUrl
           ? [{ url: formData.mediaUrl, caption: 'Submitted issue photo' }]
           : []
@@ -137,7 +137,7 @@ export const SubmitChallengeModal = ({
   ) : (
     <form onSubmit={handleSubmit} className="space-y-6 text-left">
       {error && (
-        <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-center space-x-2">
+        <div className="p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-semibold flex items-center space-x-2 shadow-2xs">
           <AlertCircle className="w-4 h-4 flex-shrink-0" />
           <span>{error}</span>
         </div>
@@ -154,6 +154,7 @@ export const SubmitChallengeModal = ({
         setIsCustomMode={setIsCustomMode}
         loading={loading}
         onClose={onClose}
+        error={error}
       />
     </form>
   );

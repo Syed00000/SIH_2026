@@ -21,6 +21,24 @@ export const createTriageHandler = (service) => {
     }
   };
 
+  const withdrawChallenge = async (req, res, next) => {
+    try {
+      const { id } = req.params;
+      const { reason } = req.body || {};
+      const user = req.user || null;
+      logger.info({ msg: 'Citizen withdrawing challenge', id, reason });
+      const updated = await service.withdrawChallenge(id, reason, user);
+      res.status(200).json({
+        success: true,
+        message: 'Problem statement withdrawn successfully',
+        data: updated
+      });
+    } catch (error) {
+      logger.error({ msg: 'Failed to withdraw citizen challenge', error: error.message });
+      next(error);
+    }
+  };
+
   const deleteChallenge = async (req, res, next) => {
     try {
       const { id } = req.params;
@@ -35,6 +53,7 @@ export const createTriageHandler = (service) => {
 
   return {
     triageChallenge,
+    withdrawChallenge,
     deleteChallenge
   };
 };

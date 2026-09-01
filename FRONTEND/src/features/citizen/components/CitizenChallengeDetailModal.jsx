@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   X,
   MapPin,
@@ -6,20 +6,68 @@ import {
   Building,
   CheckCircle2,
   Loader2,
-  Download
+  Download,
+  Users,
+  AlertTriangle,
+  RotateCcw,
+  Trash2
 } from 'lucide-react';
+import { citizenService } from '../services/citizenService.js';
 import { exportChallengeDossierPdf } from '../../../shared/utils/pdfExport.js';
 import defaultRoadImg from '../assets/road_challenge.jpg';
 
-export const CitizenChallengeDetailModal = ({ challenge, isOpen, onClose }) => {
+export const CitizenChallengeDetailModal = ({ challenge, isOpen, onClose, onChallengeUpdated }) => {
   if (!isOpen || !challenge) return null;
 
   const chlId = challenge.challengeId || challenge.id || 'CHL-JH-2026-1048';
   const assignedUni = challenge.assignedUniversity || {};
-  const acceptanceStatus =
-    assignedUni.acceptanceStatus || challenge.acceptanceStatus || (assignedUni.name ? 'Pending Review' : 'Not Assigned');
-  const isAccepted = acceptanceStatus === 'Accepted';
-  const isDeclined = acceptanceStatus === 'Declined';
+  const [localStatus, setLocalStatus] = useState(challenge.status || 'Under Review');
+  const [showWithdrawConfirm, setShowWithdrawConfirm] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [withdrawReason, setWithdrawReason] = useState('');
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [actionError, setActionError] = useState('');
+
+  const isResolved = localStatus === 'Resolved';
+  const isWithdrawn = localStatus === 'Withdrawn';
+  const isAssigned =
+    Boolean(assignedUni.name || assignedUni.id) ||
+    challenge.status === 'In Progress' ||
+    challenge.status === 'Accepted' ||
+    challenge.acceptanceStatus === 'Accepted';
+  const isAccepted = (assignedUni.acceptanceStatus || challenge.acceptanceStatus) === 'Accepted';
+  const isDeclined = (assignedUni.acceptanceStatus || challenge.acceptanceStatus) === 'Declined';
+  const canWithdraw = !isResolved && !isWithdrawn && !isAssigned && !showWithdrawConfirm && !showDeleteConfirm;
+
+  const handleWithdraw = async () => {
+    setIsProcessing(true);
+    setActionError('');
+    try {
+      await citizenService.withdrawChallenge(chlId, withdrawReason || 'Withdrawn by citizen submitter');
+      setLocalStatus('Withdrawn');
+      setShowWithdrawConfirm(false);
+      if (onChallengeUpdated) onChallengeUpdated();
+    } catch (err) {
+      setActionError(err.message || 'Failed to withdraw problem statement.');
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    setIsProcessing(true);
+    setActionError('');
+    try {
+      await citizenService.deleteChallenge(chlId);
+      setShowDeleteConfirm(false);
+      if (onChallengeUpdated) onChallengeUpdated();
+      onClose();
+    } catch (err) {
+      setActionError(err.message || 'Failed to delete problem statement.');
+    } finally {
+      setIsProcessing(false);
+    }
+  };
 
   const milestones = challenge.milestones || [
     {
@@ -71,7 +119,7 @@ export const CitizenChallengeDetailModal = ({ challenge, isOpen, onClose }) => {
 
   const handleDownloadDossier = () => {
     try {
-      exportChallengeDossierPdf(challenge);
+      exportChallengeDossierPdf({ ...challenge, status: localStatus });
     } catch {
       window.print();
     }
@@ -85,6 +133,8 @@ export const CitizenChallengeDetailModal = ({ challenge, isOpen, onClose }) => {
       })
     : '29 Aug 2026';
 
+  const affectedPop = challenge.impactMetrics?.affectedPopulation || challenge.affectedPopulation;
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-150">
       <div className="bg-white w-full max-w-2xl rounded-2xl shadow-2xl border border-slate-200 flex flex-col max-h-[92vh] overflow-hidden text-left">
@@ -96,6 +146,15 @@ export const CitizenChallengeDetailModal = ({ challenge, isOpen, onClose }) => {
             </span>
             <span className="text-xs font-bold text-slate-500 truncate">
               {challenge.domain || 'Urban Development'}
+            </span>
+            <span className={`text-[11px] font-extrabold px-2.5 py-0.5 rounded-full border ${
+              isWithdrawn
+                ? 'bg-slate-100 text-slate-700 border-slate-300'
+                : isResolved
+                ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
+                : 'bg-amber-50 text-amber-800 border-amber-200'
+            }`}>
+              {localStatus}
             </span>
           </div>
 
@@ -109,6 +168,112 @@ export const CitizenChallengeDetailModal = ({ challenge, isOpen, onClose }) => {
 
         {/* Modal Scrollable Body */}
         <div className="p-5 sm:p-6 overflow-y-auto flex-1 space-y-4">
+          {/* Delete confirmation card */}
+          {showDeleteConfirm && (
+            <div className="bg-rose-50 border border-rose-200 rounded-xl p-4 space-y-3 animate-fadeIn">
+              <div className="flex items-start space-x-2.5 text-rose-800">
+                <AlertTriangle className="w-5 h-5 text-rose-600 shrink-0 mt-0.5" />
+                <div className="space-y-1 text-xs">
+                  <h4 className="font-extrabold text-slate-900">Permanently Delete This Problem?</h4>
+                  <p className="text-slate-600 font-medium leading-relaxed">
+                    This will permanently remove <strong>{chlId}</strong> from your records and the system. This action cannot be undone.
+                  </p>
+                </div>
+              </div>
+
+              {actionError && (
+                <p className="text-xs text-rose-600 font-bold">{actionError}</p>
+              )}
+
+              <div className="flex items-center justify-end space-x-2 pt-1">
+                <button
+                  type="button"
+                  disabled={isProcessing}
+                  onClick={() => setShowDeleteConfirm(false)}
+                  className="px-3 py-1.5 rounded-lg bg-white border border-slate-200 text-slate-700 font-bold text-xs hover:bg-slate-50 cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  disabled={isProcessing}
+                  onClick={handleDelete}
+                  className="px-3.5 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs shadow-2xs transition-colors cursor-pointer flex items-center space-x-1.5"
+                >
+                  {isProcessing ? (
+                    <>
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      <span>Deleting...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Trash2 className="w-3.5 h-3.5" />
+                      <span>Yes, Delete Permanently</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Withdrawal confirmation box if triggered */}
+          {showWithdrawConfirm && (
+            <div className="bg-rose-50 border border-rose-200 rounded-xl p-4 space-y-3 animate-fadeIn">
+              <div className="flex items-start space-x-2.5 text-rose-800">
+                <AlertTriangle className="w-5 h-5 text-rose-600 shrink-0 mt-0.5" />
+                <div className="space-y-1 text-xs">
+                  <h4 className="font-extrabold text-slate-900">Withdraw this Problem Statement?</h4>
+                  <p className="text-slate-600 font-medium leading-relaxed">
+                    Withdrawing will cancel review and mark this problem as withdrawn. You will also be able to delete it.
+                  </p>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                  Reason for withdrawal (Optional):
+                </label>
+                <input
+                  type="text"
+                  value={withdrawReason}
+                  onChange={(e) => setWithdrawReason(e.target.value)}
+                  placeholder="e.g., Resolved locally, duplicate report, no longer relevant..."
+                  className="w-full text-xs p-2.5 bg-white rounded-lg border border-rose-200 text-slate-800 focus:outline-none focus:border-rose-500"
+                />
+              </div>
+
+              {actionError && (
+                <p className="text-xs text-rose-600 font-bold">{actionError}</p>
+              )}
+
+              <div className="flex items-center justify-end space-x-2 pt-1">
+                <button
+                  type="button"
+                  disabled={isProcessing}
+                  onClick={() => setShowWithdrawConfirm(false)}
+                  className="px-3 py-1.5 rounded-lg bg-white border border-slate-200 text-slate-700 font-bold text-xs hover:bg-slate-50 cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  disabled={isProcessing}
+                  onClick={handleWithdraw}
+                  className="px-3.5 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs shadow-2xs transition-colors cursor-pointer flex items-center space-x-1.5"
+                >
+                  {isProcessing ? (
+                    <>
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      <span>Withdrawing...</span>
+                    </>
+                  ) : (
+                    <span>Yes, Withdraw Problem</span>
+                  )}
+                </button>
+              </div>
+            </div>
+          )}
+
           <div className="space-y-2">
             <h3 className="text-base sm:text-lg font-black text-slate-900 leading-snug">
               {challenge.title}
@@ -127,6 +292,13 @@ export const CitizenChallengeDetailModal = ({ challenge, isOpen, onClose }) => {
                 <Calendar className="w-4 h-4 text-emerald-700 shrink-0" />
                 <span>{formattedDate}</span>
               </span>
+
+              {affectedPop && (
+                <span className="flex items-center space-x-1.5 bg-emerald-50 text-emerald-900 px-2 py-0.5 rounded-md border border-emerald-200/60 font-semibold text-[11px]">
+                  <Users className="w-3.5 h-3.5 text-emerald-700 shrink-0" />
+                  <span>{affectedPop}</span>
+                </span>
+              )}
             </div>
           </div>
 
@@ -156,7 +328,7 @@ export const CitizenChallengeDetailModal = ({ challenge, isOpen, onClose }) => {
           </div>
 
           {/* Assigned University */}
-          {assignedUni.name && (
+          {assignedUni.name && !isWithdrawn && (
             <div className="p-3.5 bg-emerald-50/70 border border-emerald-200 rounded-xl space-y-2 text-xs">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-1.5 font-bold text-emerald-950">
@@ -255,14 +427,49 @@ export const CitizenChallengeDetailModal = ({ challenge, isOpen, onClose }) => {
         </div>
 
         {/* Footer */}
-        <div className="p-3.5 bg-slate-50 border-t border-slate-200/90 flex items-center justify-between gap-2 text-xs">
-          <button
-            onClick={handleDownloadDossier}
-            className="px-3.5 py-2 border border-slate-200 hover:bg-slate-100 text-slate-800 font-bold rounded-xl transition-colors cursor-pointer flex items-center space-x-1.5 shadow-2xs"
-          >
-            <Download className="w-3.5 h-3.5 text-[#047857]" />
-            <span>Download Receipt</span>
-          </button>
+        <div className="p-3.5 bg-slate-50 border-t border-slate-200/90 flex flex-wrap items-center justify-between gap-2 text-xs">
+          <div className="flex items-center space-x-2">
+            <button
+              onClick={handleDownloadDossier}
+              className="px-3.5 py-2 border border-slate-200 hover:bg-slate-100 text-slate-800 font-bold rounded-xl transition-colors cursor-pointer flex items-center space-x-1.5 shadow-2xs"
+            >
+              <Download className="w-3.5 h-3.5 text-[#047857]" />
+              <span>Download Receipt</span>
+            </button>
+
+            {/* Withdraw Button for unassigned active challenges only */}
+            {canWithdraw && (
+              <button
+                type="button"
+                onClick={() => setShowWithdrawConfirm(true)}
+                className="px-3 py-2 border border-amber-200 text-amber-800 hover:bg-amber-50 font-bold rounded-xl transition-colors cursor-pointer flex items-center space-x-1.5 shadow-2xs"
+                title="Withdraw this problem statement"
+              >
+                <RotateCcw className="w-3.5 h-3.5 text-amber-700" />
+                <span>Withdraw Problem</span>
+              </button>
+            )}
+
+            {/* Note if problem is already assigned to an institution */}
+            {isAssigned && !isResolved && !isWithdrawn && (
+              <span className="text-[11px] font-semibold text-emerald-800 bg-emerald-50 px-2.5 py-1.5 rounded-lg border border-emerald-200/80" title="Assigned problems cannot be withdrawn">
+                Assigned to HEI (Cannot Withdraw)
+              </span>
+            )}
+
+            {/* Delete Button for withdrawn challenges */}
+            {isWithdrawn && !showDeleteConfirm && (
+              <button
+                type="button"
+                onClick={() => setShowDeleteConfirm(true)}
+                className="px-3 py-2 border border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100 font-bold rounded-xl transition-colors cursor-pointer flex items-center space-x-1.5 shadow-2xs"
+                title="Permanently delete this withdrawn problem"
+              >
+                <Trash2 className="w-3.5 h-3.5 text-rose-600" />
+                <span>Delete Problem</span>
+              </button>
+            )}
+          </div>
 
           <button
             onClick={onClose}

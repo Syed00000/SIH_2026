@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import { CitizenChallenge } from './model.js';
 import { calculateActivityStats } from './helpers/stat-calculator.helper.js';
 import { applyTriageChanges, updateMilestonesForStatus } from './helpers/triage-updater.helper.js';
@@ -9,7 +10,10 @@ export class CitizenRepository {
   }
 
   async findById(challengeId) {
-    return await CitizenChallenge.findOne({ challengeId }).lean();
+    const isObjId = mongoose.isValidObjectId(challengeId);
+    return await CitizenChallenge.findOne(
+      isObjId ? { $or: [{ challengeId }, { _id: challengeId }] } : { challengeId }
+    ).lean();
   }
 
   async findWithFilter({ filter = {}, sort = { submittedAt: -1 }, skip = 0, limit = 20 }) {
@@ -52,7 +56,10 @@ export class CitizenRepository {
   }
 
   async updateStatus(challengeId, newStatus, remarks = '', updatedBy = 'Admin') {
-    const challenge = await CitizenChallenge.findOne({ challengeId });
+    const isObjId = mongoose.isValidObjectId(challengeId);
+    const challenge = await CitizenChallenge.findOne(
+      isObjId ? { $or: [{ challengeId }, { _id: challengeId }] } : { challengeId }
+    );
     if (!challenge) return null;
 
     challenge.status = newStatus;
@@ -63,11 +70,25 @@ export class CitizenRepository {
     updateMilestonesForStatus(challenge, newStatus, remarks);
 
     await challenge.save();
+
+    // If withdrawn, remove or update in UniversityChallenge queue
+    if (newStatus === 'Withdrawn') {
+      try {
+        const { UniversityChallenge } = await import('../../university/infrastructure/model.js');
+        await UniversityChallenge.findOneAndDelete({ challengeId: challenge.challengeId });
+      } catch {
+        // ignore
+      }
+    }
+
     return challenge.toObject();
   }
 
   async triageChallenge(challengeId, triageData, user = null) {
-    const challenge = await CitizenChallenge.findOne({ challengeId });
+    const isObjId = mongoose.isValidObjectId(challengeId);
+    const challenge = await CitizenChallenge.findOne(
+      isObjId ? { $or: [{ challengeId }, { _id: challengeId }] } : { challengeId }
+    );
     if (!challenge) return null;
 
     applyTriageChanges(challenge, triageData, user);
@@ -77,10 +98,15 @@ export class CitizenRepository {
   }
 
   async deleteById(challengeId) {
-    const deleted = await CitizenChallenge.findOneAndDelete({ challengeId });
+    const isObjId = mongoose.isValidObjectId(challengeId);
+    const deleted = await CitizenChallenge.findOneAndDelete(
+      isObjId ? { $or: [{ challengeId }, { _id: challengeId }] } : { challengeId }
+    );
     try {
       const { UniversityChallenge } = await import('../../university/infrastructure/model.js');
-      await UniversityChallenge.findOneAndDelete({ challengeId });
+      await UniversityChallenge.findOneAndDelete({
+        challengeId: deleted?.challengeId || challengeId
+      });
     } catch {
       // ignore
     }

@@ -67,14 +67,20 @@ export const DossierActionFooter = ({
           </>
         ) : (
           onOpenTriage && (
-            <button
-              type="button"
-              onClick={onOpenTriage}
-              className="flex items-center space-x-1.5 px-4 py-2 rounded-lg bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold cursor-pointer shadow-2xs"
-            >
-              <Send className="w-3.5 h-3.5" />
-              <span>{challenge.assignedUniversity?.id ? 'Reassign Problem' : 'Allocate to University'}</span>
-            </button>
+            challenge.status === 'Withdrawn' ? (
+              <span className="text-xs font-bold text-slate-400 bg-slate-100 px-3 py-2 rounded-lg border border-slate-200 cursor-not-allowed">
+                Withdrawn (Cannot Allocate)
+              </span>
+            ) : (
+              <button
+                type="button"
+                onClick={onOpenTriage}
+                className="flex items-center space-x-1.5 px-4 py-2 rounded-lg bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold cursor-pointer shadow-2xs"
+              >
+                <Send className="w-3.5 h-3.5" />
+                <span>{challenge.assignedUniversity?.id ? 'Reassign Problem' : 'Allocate to University'}</span>
+              </button>
+            )
           )
         )}
       </div>

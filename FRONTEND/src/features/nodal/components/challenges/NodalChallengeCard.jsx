@@ -37,6 +37,8 @@ export const NodalChallengeCard = ({
               ? 'bg-blue-50 text-blue-800 border-blue-200'
               : chl.status === 'Clarification Requested'
               ? 'bg-purple-50 text-purple-800 border-purple-200'
+              : chl.status === 'Withdrawn'
+              ? 'bg-slate-100 text-slate-700 border-slate-300'
               : chl.status === 'Rejected'
               ? 'bg-rose-50 text-rose-800 border-rose-200'
               : 'bg-amber-50 text-amber-800 border-amber-200'
@@ -113,16 +115,27 @@ export const NodalChallengeCard = ({
           </button>
         </div>
 
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            onOpenTriage(chl);
-          }}
-          className="flex items-center space-x-1.5 bg-white hover:bg-slate-900 text-slate-900 hover:text-white border border-slate-200/90 text-xs font-bold px-3 py-1.5 rounded-md shadow-3xs transition-all"
-        >
-          <Send className="w-3 h-3" />
-          <span>{chl.assignedUniversity?.id ? 'Reassign' : 'Allocate HEI'}</span>
-        </button>
+        {chl.status === 'Withdrawn' ? (
+          <button
+            type="button"
+            disabled
+            className="flex items-center space-x-1.5 bg-slate-100 text-slate-400 border border-slate-200 text-xs font-bold px-3 py-1.5 rounded-md cursor-not-allowed shadow-3xs"
+            title="Withdrawn problem statements cannot be allocated to universities"
+          >
+            <span>Withdrawn (Cannot Allocate)</span>
+          </button>
+        ) : (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onOpenTriage(chl);
+            }}
+            className="flex items-center space-x-1.5 bg-white hover:bg-slate-900 text-slate-900 hover:text-white border border-slate-200/90 text-xs font-bold px-3 py-1.5 rounded-md shadow-3xs transition-all"
+          >
+            <Send className="w-3 h-3" />
+            <span>{chl.assignedUniversity?.id ? 'Reassign' : 'Allocate HEI'}</span>
+          </button>
+        )}
       </div>
     </div>
   );
