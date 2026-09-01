@@ -17,6 +17,7 @@ export const NodalPortal = ({ user: propUser, onLogout }) => {
   const [selectedDistrict, setSelectedDistrict] = useState('All');
   const [selectedSector, setSelectedSector] = useState('All');
 
+  const nodalDistrict = user?.district || user?.profile?.district || user?.profile?.location?.district || '';
   const institutionName = user?.profile?.institutionName || 'Jharkhand State Innovation Cell';
   const nodalName = user?.fullName || 'State Nodal Officer';
 
@@ -35,6 +36,7 @@ export const NodalPortal = ({ user: propUser, onLogout }) => {
           <NodalOverview
             onNavigateChallenges={handleNavigateChallenges}
             onNavigateUniversities={() => setActiveTab('universities')}
+            nodalDistrict={nodalDistrict}
           />
         );
       case 'universities':
@@ -46,12 +48,13 @@ export const NodalPortal = ({ user: propUser, onLogout }) => {
       case 'challenges':
       case 'assigned':
       case 'approvals':
-        return <NodalChallenges initialStatusFilter={challengeFilter} />;
+        return <NodalChallenges initialStatusFilter={challengeFilter} nodalDistrict={nodalDistrict} />;
       default:
         return (
           <NodalOverview
             onNavigateChallenges={handleNavigateChallenges}
             onNavigateUniversities={() => setActiveTab('universities')}
+            nodalDistrict={nodalDistrict}
           />
         );
     }
@@ -77,6 +80,7 @@ export const NodalPortal = ({ user: propUser, onLogout }) => {
         <NodalHeader
           institutionName={institutionName}
           nodalName={nodalName}
+          nodalDistrict={nodalDistrict}
           notificationCount={4}
           onToggleSidebar={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
         />

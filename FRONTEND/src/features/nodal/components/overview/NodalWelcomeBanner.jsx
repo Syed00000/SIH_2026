@@ -5,16 +5,26 @@ export const NodalWelcomeBanner = ({
   onNavigateChallenges,
   onNavigateUniversities,
   onReload,
-  loading
+  loading,
+  nodalDistrict = ''
 }) => {
   return (
     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white border border-slate-200/90 rounded-lg p-5 shadow-2xs">
       <div>
-        <h2 className="text-base font-black text-slate-900 tracking-tight">
-          State Innovation & Problem Triage Center
-        </h2>
+        <div className="flex items-center space-x-2">
+          <h2 className="text-base font-black text-slate-900 tracking-tight">
+            {nodalDistrict ? `${nodalDistrict} District Innovation & Triage Center` : 'State Innovation & Problem Triage Center'}
+          </h2>
+          {nodalDistrict && (
+            <span className="px-2 py-0.5 rounded bg-emerald-50 text-emerald-800 border border-emerald-200 text-[10px] font-extrabold">
+              📍 {nodalDistrict}
+            </span>
+          )}
+        </div>
         <p className="text-xs text-slate-500 font-medium mt-0.5">
-          Review grassroots civic problems, allocate challenges to Higher Education Institutes, and monitor R&D progress.
+          {nodalDistrict
+            ? `Review and triage grassroots civic problems registered in ${nodalDistrict} District and assign to Higher Education Institutes.`
+            : 'Review grassroots civic problems, allocate challenges to Higher Education Institutes, and monitor R&D progress.'}
         </p>
       </div>
 

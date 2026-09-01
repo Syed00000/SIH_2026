@@ -34,8 +34,8 @@ export class CitizenService {
     return this.queryService.getChallengeById(challengeId);
   }
 
-  async getStats(user = null) {
-    return this.analyticsService.getStats(user);
+  async getStats(user = null, district = null) {
+    return this.analyticsService.getStats(user, district);
   }
 
   async getUpdates() {

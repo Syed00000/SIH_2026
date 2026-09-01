@@ -3,11 +3,11 @@ import { citizenService } from '../../../../citizen/services/citizenService.js';
 import apiClient from '../../../../../infrastructure/api/client.js';
 import { filterChallengesList } from '../filterChallenges.helper.js';
 
-export const useNodalChallenges = ({ initialStatusFilter = 'All Status' }) => {
+export const useNodalChallenges = ({ initialStatusFilter = 'All Status', nodalDistrict = '' }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState(initialStatusFilter);
   const [domainFilter, setDomainFilter] = useState('All Domains');
-  const [districtFilter, setDistrictFilter] = useState('All Districts');
+  const [districtFilter, setDistrictFilter] = useState(nodalDistrict || 'All Districts');
   const [priorityFilter, setPriorityFilter] = useState('All Priority');
   const [chatChallenge, setChatChallenge] = useState(null);
 
@@ -25,11 +25,27 @@ export const useNodalChallenges = ({ initialStatusFilter = 'All Status' }) => {
     }
   }, [initialStatusFilter]);
 
+  useEffect(() => {
+    if (nodalDistrict && nodalDistrict !== 'All' && nodalDistrict !== 'All Districts') {
+      setDistrictFilter(nodalDistrict);
+    }
+  }, [nodalDistrict]);
+
   const loadChallenges = async () => {
     try {
       setLoading(true);
-      const res = await citizenService.fetchChallenges({ limit: 150 });
-      const list = res?.challenges || (Array.isArray(res) ? res : []) || (res?.data?.challenges || []);
+      const queryParams = { limit: 150 };
+      if (nodalDistrict && nodalDistrict !== 'All' && nodalDistrict !== 'All Districts') {
+        queryParams.district = nodalDistrict;
+      }
+      const res = await citizenService.fetchChallenges(queryParams);
+      let list = res?.challenges || (Array.isArray(res) ? res : []) || (res?.data?.challenges || []);
+      if (nodalDistrict && nodalDistrict !== 'All' && nodalDistrict !== 'All Districts') {
+        list = list.filter((c) => {
+          const dist = c.location?.district || c.district || c.assignedNodalOfficer?.district;
+          return dist && dist.toLowerCase() === nodalDistrict.toLowerCase();
+        });
+      }
       setChallenges(list);
     } catch (err) {
       console.warn('Error loading live citizen challenges:', err);
@@ -40,7 +56,7 @@ export const useNodalChallenges = ({ initialStatusFilter = 'All Status' }) => {
 
   useEffect(() => {
     loadChallenges();
-  }, []);
+  }, [nodalDistrict]);
 
   const handleOpenTriage = (chl) => {
     setSelectedChallenge(chl);

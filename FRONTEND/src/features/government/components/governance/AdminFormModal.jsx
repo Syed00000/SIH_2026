@@ -12,11 +12,11 @@ export const AdminFormModal = ({ isOpen, onClose, onSubmit, initialData = null }
     password: '',
     confirmPassword: '',
     mobileNumber: '',
-    role: 'Select role',
-    primaryRole: 'Select primary role',
-    accessLevel: 'Select access level',
+    role: 'Nodal Officer',
+    primaryRole: 'District Nodal Lead',
+    accessLevel: 'District Level Access',
     district: 'Select district',
-    assignedDepartment: 'Select department',
+    assignedDepartment: 'Higher & Technical Education',
     employeeId: '',
     dateOfJoining: '2026-05-24',
     address: '',
@@ -32,9 +32,9 @@ export const AdminFormModal = ({ isOpen, onClose, onSubmit, initialData = null }
         password: '',
         confirmPassword: '',
         mobileNumber: initialData.mobileNumber || '',
-        role: initialData.role || 'Select role',
-        primaryRole: initialData.primaryRole || 'Administrator',
-        accessLevel: initialData.accessLevel || 'Full System Access',
+        role: initialData.role || 'Nodal Officer',
+        primaryRole: initialData.primaryRole || 'District Nodal Lead',
+        accessLevel: initialData.accessLevel || 'District Level Access',
         district: initialData.district || 'Select district',
         assignedDepartment: initialData.assignedDepartment || 'Higher & Technical Education',
         employeeId: initialData.employeeId || '',
@@ -50,11 +50,11 @@ export const AdminFormModal = ({ isOpen, onClose, onSubmit, initialData = null }
         password: '',
         confirmPassword: '',
         mobileNumber: '',
-        role: 'Select role',
-        primaryRole: 'Select primary role',
-        accessLevel: 'Select access level',
+        role: 'Nodal Officer',
+        primaryRole: 'District Nodal Lead',
+        accessLevel: 'District Level Access',
         district: 'Select district',
-        assignedDepartment: 'Select department',
+        assignedDepartment: 'Higher & Technical Education',
         employeeId: '',
         dateOfJoining: '2026-05-24',
         address: '',
@@ -78,10 +78,9 @@ export const AdminFormModal = ({ isOpen, onClose, onSubmit, initialData = null }
     if (!initialData && form.password && form.password !== form.confirmPassword) {
       return setError('Passwords do not match');
     }
-    if (form.role === 'Select role') return setError('Please select a role');
     if (form.district === 'Select district') return setError('Please select a district');
 
-    onSubmit({ ...form, id: initialData?.id });
+    onSubmit({ ...form, role: 'Nodal Officer', primaryRole: 'District Nodal Lead', id: initialData?.id });
     onClose();
   };
 

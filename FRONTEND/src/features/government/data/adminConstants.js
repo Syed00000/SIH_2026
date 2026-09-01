@@ -7,10 +7,7 @@ export const JHARKHAND_DISTRICTS_LIST = [
 
 export const ADMIN_ROLES_LIST = [
   'All Roles',
-  'Super Admin',
-  'Nodal Officer',
-  'District Admin',
-  'HEI Admin'
+  'Nodal Officer'
 ];
 
 export const ADMIN_STATUS_LIST = [

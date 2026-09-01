@@ -4,6 +4,7 @@ import { Bell, Menu, Shield } from 'lucide-react';
 export const NodalHeader = ({
   institutionName = 'Jharkhand State Innovation Cell',
   nodalName = 'State Nodal Officer',
+  nodalDistrict = '',
   notificationCount = 4,
   onToggleSidebar
 }) => {
@@ -51,6 +52,14 @@ export const NodalHeader = ({
         <span className="font-extrabold text-[#064e3b] text-xs tracking-wider uppercase">
           JoharSetu Nodal Authority
         </span>
+        {nodalDistrict && (
+          <>
+            <span className="text-emerald-400">&bull;</span>
+            <span className="text-[11px] font-bold text-emerald-900 bg-emerald-100/90 px-2 py-0.5 rounded">
+              📍 {nodalDistrict} District
+            </span>
+          </>
+        )}
         <span className="text-emerald-400">&bull;</span>
         <span className="text-[11px] font-semibold text-emerald-800">
           Grassroots Triage Console
@@ -84,7 +93,7 @@ export const NodalHeader = ({
               {nodalName}
             </span>
             <span className="text-[10px] text-slate-500 font-medium leading-tight mt-0.5">
-              {institutionName}
+              {nodalDistrict ? `${nodalDistrict} District • ${institutionName}` : institutionName}
             </span>
           </div>
         </div>

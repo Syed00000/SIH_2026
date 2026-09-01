@@ -47,7 +47,7 @@ export class AdminService {
   async createAdmin(data) {
     const {
       fullName, username, email, password, mobileNumber,
-      role = 'District Admin', primaryRole = 'Administrator',
+      role = 'Nodal Officer', primaryRole = 'District Nodal Lead',
       accessLevel = 'District Level Access', district = 'Ranchi',
       assignedDepartment = 'Higher & Technical Education',
       employeeId, dateOfJoining, address, status = 'Active'
@@ -115,6 +115,9 @@ export class AdminService {
 
     Object.assign(existing, rest);
     await existing.save();
+    try {
+      await syncAdminUserAuth(existing, existing.passwordHash);
+    } catch (_) {}
     return existing.toJSON();
   }
 

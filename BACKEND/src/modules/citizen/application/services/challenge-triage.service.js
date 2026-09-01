@@ -30,14 +30,14 @@ export class ChallengeTriageService {
               universityCode: uniCode,
               title: updated.title,
               domain: updated.domain,
-              district: updated.location?.district || 'Ranchi',
+              district: updated.location?.district || '',
               priority: updated.priority || 'Medium',
               status: 'Review',
               problemStatement: updated.description,
-              affectedPopulation: updated.impactMetrics?.affectedPopulation || '~ 5,000 People',
+              affectedPopulation: updated.impactMetrics?.affectedPopulation || '',
               aiCategory: updated.domain,
-              requiredSkills: triageData.requiredSkills || ['Field Engineering', 'Data Analytics'],
-              governmentRemarks: triageData.remarks || 'Priority challenge assigned via State Nodal Officer Triage.',
+              requiredSkills: triageData.requiredSkills || [],
+              governmentRemarks: triageData.remarks || '',
               locationDetails: {
                 block: updated.location?.block || '',
                 panchayatOrWard: updated.location?.panchayatOrWard || '',
@@ -45,7 +45,7 @@ export class ChallengeTriageService {
                 coordinates: updated.location?.coordinates || ''
               },
               assignedOn: new Date(),
-              deadline: '30 Days Review Phase'
+              deadline: triageData.deadline || ''
             }
           },
           { upsert: true, new: true }

@@ -80,6 +80,20 @@ export class LoginService {
       throw new AuthenticationError('INVALID_CREDENTIALS');
     }
 
+    if (['NODAL', 'GOVERNMENT'].includes(user.role) && !user.profile?.district) {
+      try {
+        const { Admin } = await import('../../../government/admins/infrastructure/model.js');
+        const adminDoc = await Admin.findOne({ email: user.email?.toLowerCase() });
+        if (adminDoc?.district) {
+          if (!user.profile) user.profile = {};
+          user.profile.district = adminDoc.district;
+          await this.userService.updateResetCredentials(user.id, {
+            'profile.district': adminDoc.district
+          });
+        }
+      } catch (_) {}
+    }
+
     await this.userService.updateResetCredentials(user.id, {
       lastLoginAt: new Date()
     });

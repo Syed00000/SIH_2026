@@ -9,13 +9,13 @@ export const filterChallengesList = ({
   return challenges.filter((chl) => {
     const status = chl.status || 'Under Review';
     const domain = chl.domain || 'Other';
-    const district = chl.location?.district || chl.district || 'Jharkhand';
+    const district = chl.location?.district || chl.district || chl.assignedNodalOfficer?.district || 'Jharkhand';
     const priority = chl.priority || 'Medium';
 
-    if (statusFilter !== 'All Status' && status !== statusFilter) return false;
-    if (domainFilter !== 'All Domains' && domain !== domainFilter) return false;
-    if (districtFilter !== 'All Districts' && district !== districtFilter) return false;
-    if (priorityFilter !== 'All Priority' && priority !== priorityFilter) return false;
+    if (statusFilter !== 'All Status' && status.toLowerCase() !== statusFilter.toLowerCase()) return false;
+    if (domainFilter !== 'All Domains' && domain.toLowerCase() !== domainFilter.toLowerCase()) return false;
+    if (districtFilter !== 'All Districts' && district.toLowerCase() !== districtFilter.toLowerCase()) return false;
+    if (priorityFilter !== 'All Priority' && priority.toLowerCase() !== priorityFilter.toLowerCase()) return false;
 
     if (searchTerm?.trim()) {
       const q = searchTerm.toLowerCase();

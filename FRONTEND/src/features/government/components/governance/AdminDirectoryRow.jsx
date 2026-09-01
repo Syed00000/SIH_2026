@@ -58,7 +58,7 @@ export const AdminDirectoryRow = ({
       </td>
 
       {/* 3. District */}
-      <td className="py-2.5 px-2.5 font-semibold text-slate-700 text-[11px]">{admin.district}</td>
+      <td className="py-2.5 px-2.5 font-semibold text-slate-700 text-[11px]">{admin.district || 'All Districts'}</td>
 
       {/* 4. Phone Number */}
       <td className="py-2.5 px-2.5 font-mono text-[11px] text-slate-600">{admin.mobileNumber}</td>

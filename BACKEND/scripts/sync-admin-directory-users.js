@@ -40,6 +40,7 @@ const syncAdmins = async () => {
           profile: {
             institutionName: a.assignedDepartment || 'State Innovation Cell',
             nodalOfficerDesignation: a.role,
+            district: a.district || '',
             preferredLanguage: 'HINDI'
           }
         });
@@ -53,6 +54,7 @@ const syncAdmins = async () => {
         user.profile = {
           institutionName: a.assignedDepartment || 'State Innovation Cell',
           nodalOfficerDesignation: a.role,
+          district: a.district || '',
           preferredLanguage: 'HINDI'
         };
         await user.save();

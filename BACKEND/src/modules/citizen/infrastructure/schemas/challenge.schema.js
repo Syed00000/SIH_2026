@@ -76,9 +76,21 @@ export const citizenChallengeSchema = new mongoose.Schema(
       default: 'Under Review',
       index: true
     },
+    district: {
+      type: String,
+      trim: true,
+      index: true
+    },
     location: {
       type: locationSchema,
       default: () => ({})
+    },
+    assignedNodalOfficer: {
+      id: { type: String, default: '' },
+      name: { type: String, default: '' },
+      email: { type: String, default: '' },
+      district: { type: String, default: '' },
+      department: { type: String, default: '' }
     },
     submitter: {
       type: submitterSchema,

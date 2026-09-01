@@ -4,7 +4,18 @@ export const createAnalyticsHandler = (service) => {
   const getStats = async (req, res, next) => {
     try {
       const user = req.user || null;
-      const stats = await service.getStats(user);
+      let nodalDistrict = user?.district || user?.profile?.district;
+      if (user?.role === 'NODAL' && !nodalDistrict && user?.email) {
+        try {
+          const { Admin } = await import('../../../government/admins/infrastructure/model.js');
+          const adminDoc = await Admin.findOne({ email: user.email.toLowerCase().trim() }).lean();
+          if (adminDoc?.district) {
+            nodalDistrict = adminDoc.district;
+          }
+        } catch (_) {}
+      }
+      const district = req.query?.district || (user?.role === 'NODAL' ? nodalDistrict : null);
+      const stats = await service.getStats(user, district);
 
       res.status(200).json({
         success: true,
