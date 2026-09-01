@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, ShieldCheck } from 'lucide-react';
+import { X, ShieldCheck, Loader2 } from 'lucide-react';
 import { AddIndustryBasicFields } from './AddIndustryBasicFields.jsx';
 import { AddIndustrySpocFields } from './AddIndustrySpocFields.jsx';
 import { AddIndustryAddressFields } from './AddIndustryAddressFields.jsx';
@@ -178,9 +178,16 @@ export const AddIndustryDrawer = ({ isOpen, onClose, onSubmit, isLoading = false
               type="button"
               onClick={handleSubmit}
               disabled={isLoading}
-              className="px-5 py-2 text-xs font-semibold text-white bg-slate-900 hover:bg-black rounded-md shadow-xs transition-colors cursor-pointer disabled:opacity-50"
+              className="px-5 py-2 text-xs font-semibold text-white bg-slate-900 hover:bg-black rounded-md shadow-xs transition-colors cursor-pointer disabled:opacity-50 flex items-center justify-center space-x-2"
             >
-              {isLoading ? 'Creating Partner...' : 'Create & Generate Credentials'}
+              {isLoading ? (
+                <>
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  <span>Creating Partner...</span>
+                </>
+              ) : (
+                <span>Create & Generate Credentials</span>
+              )}
             </button>
           </div>
         </div>

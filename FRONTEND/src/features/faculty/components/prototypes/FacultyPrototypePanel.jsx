@@ -4,8 +4,8 @@ import {
   FlaskConical, TestTube2, ShieldCheck, Rocket, ChevronRight, Sparkles,
   Trash2
 } from 'lucide-react';
-import ReactQuill from 'react-quill';
-import 'react-quill/dist/quill.snow.css';
+import ReactQuill from 'react-quill-new';
+import 'react-quill-new/dist/quill.snow.css';
 import { facultyApiService } from '../../services/facultyApiService.js';
 
 const PHASES = [

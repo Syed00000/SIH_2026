@@ -180,7 +180,7 @@ export const ManageIndustriesDashboard = () => {
       </div>
 
       {/* Summary KPI Cards */}
-      <IndustrySummaryCards kpis={kpis} />
+      <IndustrySummaryCards kpis={kpis} isLoading={isLoading} />
 
       {/* Main Directory Table Card */}
       <div className="bg-white rounded-lg border border-slate-200/90 shadow-2xs p-4 sm:p-5 space-y-3.5">

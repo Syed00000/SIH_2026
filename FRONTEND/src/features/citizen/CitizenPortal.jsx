@@ -10,6 +10,7 @@ import { SubmitChallengeModal } from './components/SubmitChallengeModal.jsx';
 import { CitizenChallengeDetailModal } from './components/CitizenChallengeDetailModal.jsx';
 import { citizenService } from './services/citizenService.js';
 import { GovernmentFooter } from '../government/components/layout/GovernmentFooter.jsx';
+import { PortalSkeleton } from '../../shared/components/ui/PortalSkeleton.jsx';
 import {
   Bell,
   LogOut,
@@ -40,8 +41,10 @@ export const CitizenPortal = ({ user: propUser, onLogout }) => {
   const [stats, setStats] = useState(null);
   const [recentChallenge, setRecentChallenge] = useState(null);
   const [unreadNotificationsCount, setUnreadNotificationsCount] = useState(2);
+  const [isLoading, setIsLoading] = useState(true);
 
   const loadData = async () => {
+    setIsLoading(true);
     try {
       const [statsData, myChallRes, publicChallRes] = await Promise.all([
         citizenService.fetchStats(),
@@ -74,6 +77,8 @@ export const CitizenPortal = ({ user: propUser, onLogout }) => {
       }
     } catch (err) {
       console.warn('Citizen data fetch error:', err);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -126,7 +131,7 @@ export const CitizenPortal = ({ user: propUser, onLogout }) => {
   };
 
   return (
-    <div className="h-screen w-full flex flex-col bg-[#f4f8f5] text-slate-800 font-sans select-none overflow-hidden">
+    <div className="h-screen w-full flex flex-col bg-white text-slate-800 font-sans select-none overflow-hidden">
       
       {/* 1. Desktop & Mobile Shared Header */}
       <CitizenHeader
@@ -156,88 +161,94 @@ export const CitizenPortal = ({ user: propUser, onLogout }) => {
         />
 
         {/* Right Scrollable Main Viewport */}
-        <main className="flex-1 overflow-y-auto p-4 sm:p-6 bg-[#f4f8f5] flex flex-col justify-between pb-20 md:pb-6">
-          <div className="max-w-6xl mx-auto w-full space-y-6">
-            {activeTab === 'home' && (
-              <CitizenHome
-                stats={stats}
-                recentChallenge={recentChallenge}
-                onSubmitClick={handleOpenSubmit}
-                onSelectArea={handleSelectArea}
-                onSelectStatus={handleSelectStatus}
-                onViewAllChallenges={handleViewAllChallenges}
-                onSelectChallenge={handleSelectChallenge}
-                onSelectStayUpdatedTile={handleSelectStayUpdatedTile}
-              />
-            )}
+        <main className="flex-1 overflow-y-auto p-4 sm:p-6 bg-white flex flex-col justify-between pb-20 md:pb-6">
+          <div className="w-full max-w-[1600px] space-y-6">
+            {isLoading ? (
+              <PortalSkeleton />
+            ) : (
+              <>
+                {activeTab === 'home' && (
+                  <CitizenHome
+                    stats={stats}
+                    recentChallenge={recentChallenge}
+                    onSubmitClick={handleOpenSubmit}
+                    onSelectArea={handleSelectArea}
+                    onSelectStatus={handleSelectStatus}
+                    onViewAllChallenges={handleViewAllChallenges}
+                    onSelectChallenge={handleSelectChallenge}
+                    onSelectStayUpdatedTile={handleSelectStayUpdatedTile}
+                  />
+                )}
 
-            {(activeTab === 'challenges' || activeTab === 'challenges_all' || activeTab === 'challenges_review' || activeTab === 'challenges_progress') && (
-              <CitizenMyChallenges
-                activeStatusFilter={activeStatusFilter}
-                setActiveStatusFilter={setActiveStatusFilter}
-                activeDomainFilter={activeDomainFilter}
-                setActiveDomainFilter={setActiveDomainFilter}
-                onSelectChallenge={handleSelectChallenge}
-                onSubmitClick={handleOpenSubmit}
-              />
-            )}
+                {(activeTab === 'challenges' || activeTab === 'challenges_all' || activeTab === 'challenges_review' || activeTab === 'challenges_progress') && (
+                  <CitizenMyChallenges
+                    activeStatusFilter={activeStatusFilter}
+                    setActiveStatusFilter={setActiveStatusFilter}
+                    activeDomainFilter={activeDomainFilter}
+                    setActiveDomainFilter={setActiveDomainFilter}
+                    onSelectChallenge={handleSelectChallenge}
+                    onSubmitClick={handleOpenSubmit}
+                  />
+                )}
 
-            {activeTab === 'submit' && (
-              <SubmitChallengeModal
-                isOpen={true}
-                isInline={true}
-                user={user}
-                defaultDomain={activeDomainFilter !== 'All' ? activeDomainFilter : 'Urban Development'}
-                onClose={() => setActiveTab('home')}
-                onSuccess={handleChallengeSubmitted}
-              />
-            )}
+                {activeTab === 'submit' && (
+                  <SubmitChallengeModal
+                    isOpen={true}
+                    isInline={true}
+                    user={user}
+                    defaultDomain={activeDomainFilter !== 'All' ? activeDomainFilter : 'Urban Development'}
+                    onClose={() => setActiveTab('home')}
+                    onSuccess={handleChallengeSubmitted}
+                  />
+                )}
 
-            {activeTab === 'updates' && (
-              <CitizenUpdates onSelectChallenge={handleSelectChallenge} />
-            )}
+                {activeTab === 'updates' && (
+                  <CitizenUpdates onSelectChallenge={handleSelectChallenge} />
+                )}
 
-            {activeTab === 'profile' && (
-              <CitizenProfile user={user} onChangeTab={setActiveTab} />
-            )}
+                {activeTab === 'profile' && (
+                  <CitizenProfile user={user} onChangeTab={setActiveTab} />
+                )}
 
-            {activeTab === 'guidelines' && (
-              <div className="space-y-4 text-left animate-fadeIn">
-                <div className="bg-white border border-slate-200/90 rounded-lg p-5 shadow-2xs space-y-2">
-                  <h3 className="text-base font-extrabold text-slate-900">
-                    Citizen Guidelines & Innovation Directives
-                  </h3>
-                  <p className="text-xs text-slate-600 leading-relaxed">
-                    The Jharkhand Societal Innovation Hub directly connects citizen problem statements with university R&D nodes and government nodal officers.
-                  </p>
-                </div>
+                {activeTab === 'guidelines' && (
+                  <div className="space-y-4 text-left animate-fadeIn">
+                    <div className="bg-white border border-slate-200/90 rounded-lg p-5 shadow-2xs space-y-2">
+                      <h3 className="text-base font-extrabold text-slate-900">
+                        Citizen Guidelines & Innovation Directives
+                      </h3>
+                      <p className="text-xs text-slate-600 leading-relaxed">
+                        The Jharkhand Societal Innovation Hub directly connects citizen problem statements with university R&D nodes and government nodal officers.
+                      </p>
+                    </div>
 
-                <div className="bg-white border border-slate-200/90 rounded-lg p-5 shadow-2xs space-y-4">
-                  <div className="space-y-1">
-                    <h4 className="text-xs font-bold text-emerald-800">1. Problem Submission Scope</h4>
-                    <p className="text-xs text-slate-600">
-                      File challenges related to public infrastructure, water sanitation, rural electrification, healthcare, education, or urban governance.
-                    </p>
+                    <div className="bg-white border border-slate-200/90 rounded-lg p-5 shadow-2xs space-y-4">
+                      <div className="space-y-1">
+                        <h4 className="text-xs font-bold text-emerald-800">1. Problem Submission Scope</h4>
+                        <p className="text-xs text-slate-600">
+                          File challenges related to public infrastructure, water sanitation, rural electrification, healthcare, education, or urban governance.
+                        </p>
+                      </div>
+                      <div className="space-y-1 border-t border-slate-100 pt-3">
+                        <h4 className="text-xs font-bold text-emerald-800">2. Review & Triage Process</h4>
+                        <p className="text-xs text-slate-600">
+                          Each submission is screened within 48 hours and assigned a unique Reference Code (e.g., CHL-JH-2026-XXXX).
+                        </p>
+                      </div>
+                      <div className="space-y-1 border-t border-slate-100 pt-3">
+                        <h4 className="text-xs font-bold text-emerald-800">3. Resolution & Tracking</h4>
+                        <p className="text-xs text-slate-600">
+                          Track faculty mentors and student teams working on solutions in real-time under 'My Challenges'.
+                        </p>
+                      </div>
+                    </div>
                   </div>
-                  <div className="space-y-1 border-t border-slate-100 pt-3">
-                    <h4 className="text-xs font-bold text-emerald-800">2. Review & Triage Process</h4>
-                    <p className="text-xs text-slate-600">
-                      Each submission is screened within 48 hours and assigned a unique Reference Code (e.g., CHL-JH-2026-XXXX).
-                    </p>
-                  </div>
-                  <div className="space-y-1 border-t border-slate-100 pt-3">
-                    <h4 className="text-xs font-bold text-emerald-800">3. Resolution & Tracking</h4>
-                    <p className="text-xs text-slate-600">
-                      Track faculty mentors and student teams working on solutions in real-time under 'My Challenges'.
-                    </p>
-                  </div>
-                </div>
-              </div>
+                )}
+              </>
             )}
           </div>
 
           {/* Web Desktop Footer */}
-          <div className="mt-8 hidden md:block">
+          <div className="mt-8 hidden md:block sticky bottom-0 -mx-4 sm:-mx-6 -mb-6 z-50">
             <GovernmentFooter />
           </div>
         </main>

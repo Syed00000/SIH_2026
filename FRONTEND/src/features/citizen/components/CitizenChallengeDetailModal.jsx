@@ -137,22 +137,18 @@ export const CitizenChallengeDetailModal = ({ challenge, isOpen, onClose, onChal
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-150">
-      <div className="bg-white w-full max-w-2xl rounded-2xl shadow-2xl border border-slate-200 flex flex-col max-h-[92vh] overflow-hidden text-left">
+      <div className="bg-white w-full max-w-3xl rounded-2xl shadow-2xl border border-slate-200 flex flex-col max-h-[92vh] overflow-hidden text-left">
         {/* Header */}
         <div className="px-5 py-4 bg-white border-b border-slate-200/90 flex items-center justify-between flex-shrink-0">
-          <div className="flex items-center space-x-2.5 min-w-0">
-            <span className="text-xs font-bold text-emerald-950 bg-emerald-900/5 px-2.5 py-1 rounded-md border border-emerald-900/10">
+          <div className="flex items-center space-x-3 min-w-0">
+            <span className="text-xs font-bold text-emerald-950">
               {chlId}
             </span>
-            <span className="text-xs font-bold text-slate-500 truncate">
+            <span className="text-xs font-bold text-slate-500 truncate border-l border-slate-300 pl-3">
               {challenge.domain || 'Urban Development'}
             </span>
-            <span className={`text-[11px] font-extrabold px-2.5 py-0.5 rounded-full border ${
-              isWithdrawn
-                ? 'bg-slate-100 text-slate-700 border-slate-300'
-                : isResolved
-                ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
-                : 'bg-amber-50 text-amber-800 border-amber-200'
+            <span className={`text-[11px] font-extrabold border-l border-slate-300 pl-3 ${
+              isWithdrawn ? 'text-slate-700' : isResolved ? 'text-emerald-800' : 'text-amber-800'
             }`}>
               {localStatus}
             </span>
@@ -160,7 +156,7 @@ export const CitizenChallengeDetailModal = ({ challenge, isOpen, onClose, onChal
 
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
+            className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
@@ -294,7 +290,7 @@ export const CitizenChallengeDetailModal = ({ challenge, isOpen, onClose, onChal
               </span>
 
               {affectedPop && (
-                <span className="flex items-center space-x-1.5 bg-emerald-50 text-emerald-900 px-2 py-0.5 rounded-md border border-emerald-200/60 font-semibold text-[11px]">
+                <span className="flex items-center space-x-1.5 text-emerald-900 font-semibold text-[11px]">
                   <Users className="w-3.5 h-3.5 text-emerald-700 shrink-0" />
                   <span>{affectedPop}</span>
                 </span>
@@ -329,23 +325,23 @@ export const CitizenChallengeDetailModal = ({ challenge, isOpen, onClose, onChal
 
           {/* Assigned University */}
           {assignedUni.name && !isWithdrawn && (
-            <div className="p-3.5 bg-emerald-50/70 border border-emerald-200 rounded-xl space-y-2 text-xs">
+            <div className="space-y-2 text-xs mt-2">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-1.5 font-bold text-emerald-950">
                   <Building className="w-4 h-4 text-[#047857]" />
                   <span>Assigned University (HEI)</span>
                 </div>
-                <span className={`px-2 py-0.5 rounded-full text-[10.5px] font-extrabold border ${
+                <span className={`text-[10.5px] font-extrabold ${
                   isAccepted
-                    ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
+                    ? 'text-emerald-800'
                     : isDeclined
-                    ? 'bg-rose-100 text-rose-800 border-rose-300'
-                    : 'bg-amber-100 text-amber-800 border-amber-300'
+                    ? 'text-rose-800'
+                    : 'text-amber-800'
                 }`}>
                   {isAccepted ? 'Accepted' : isDeclined ? 'Declined' : 'Pending Review'}
                 </span>
               </div>
-              <div className="grid grid-cols-2 gap-2 pt-1 border-t border-emerald-200/60 text-slate-700">
+              <div className="grid grid-cols-2 gap-2 text-slate-700">
                 <div>
                   <span className="text-slate-400 text-[10.5px] block font-medium">Institution</span>
                   <span className="font-bold text-slate-900">{assignedUni.name}</span>
@@ -373,7 +369,11 @@ export const CitizenChallengeDetailModal = ({ challenge, isOpen, onClose, onChal
                 const isCurrent = ms.status === 'CURRENT';
 
                 return (
-                  <div key={idx} className="flex items-start space-x-3 relative">
+                  <div 
+                    key={idx} 
+                    className="flex items-start space-x-3 relative animate-in fade-in slide-in-from-bottom-4 duration-700"
+                    style={{ animationDelay: `${idx * 200}ms`, animationFillMode: 'both' }}
+                  >
                     {idx < milestones.length - 1 && (
                       <div
                         className={`absolute left-[13px] top-[26px] bottom-[-16px] w-[2px] ${
@@ -406,12 +406,12 @@ export const CitizenChallengeDetailModal = ({ challenge, isOpen, onClose, onChal
                           {ms.title}
                         </h4>
                         {isCompleted && (
-                          <span className="text-[10px] text-emerald-700 font-bold bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+                          <span className="text-[10px] text-emerald-700 font-bold">
                             Done
                           </span>
                         )}
                         {isCurrent && (
-                          <span className="inline-flex items-center space-x-1 text-[10px] text-emerald-800 font-bold bg-emerald-100/90 px-2.5 py-0.5 rounded-full border border-emerald-300 shadow-2xs">
+                          <span className="inline-flex items-center space-x-1 text-[10px] text-emerald-800 font-bold">
                             <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse"></span>
                             <span>In Progress</span>
                           </span>
@@ -452,7 +452,7 @@ export const CitizenChallengeDetailModal = ({ challenge, isOpen, onClose, onChal
 
             {/* Note if problem is already assigned to an institution */}
             {isAssigned && !isResolved && !isWithdrawn && (
-              <span className="text-[11px] font-semibold text-emerald-800 bg-emerald-50 px-2.5 py-1.5 rounded-lg border border-emerald-200/80" title="Assigned problems cannot be withdrawn">
+              <span className="text-[11px] font-semibold text-emerald-800" title="Assigned problems cannot be withdrawn">
                 Assigned to HEI (Cannot Withdraw)
               </span>
             )}
@@ -473,7 +473,7 @@ export const CitizenChallengeDetailModal = ({ challenge, isOpen, onClose, onChal
 
           <button
             onClick={onClose}
-            className="px-4 py-2 bg-emerald-800 hover:bg-emerald-900 text-white font-bold rounded-xl shadow-2xs transition-colors cursor-pointer"
+            className="px-4 py-2 bg-white text-black border border-slate-200 hover:bg-rose-600 hover:text-white hover:border-rose-600 font-bold rounded-xl shadow-2xs transition-colors cursor-pointer"
           >
             Close
           </button>

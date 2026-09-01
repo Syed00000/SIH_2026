@@ -77,8 +77,8 @@ export const MyActivitiesTracker = ({ activities = {}, onStatusClick, onViewAllC
             >
               <div className="flex items-center space-x-3 min-w-0">
                 {/* Icon Container */}
-                <div className={`w-9 h-9 rounded-xl flex items-center justify-center border ${item.badgeColor} shrink-0 transition-transform group-hover:scale-105`}>
-                  <Icon className={`w-4.5 h-4.5 ${item.iconColor}`} />
+                <div className="flex items-center justify-center shrink-0 transition-transform group-hover:scale-110">
+                  <Icon className={`w-6 h-6 ${item.iconColor}`} />
                 </div>
 
                 {/* Number & Label */}

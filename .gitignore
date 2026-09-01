@@ -17,19 +17,12 @@ lerna-debug.log*
 
 # Dependency directories
 node_modules/
-jspm_packages/
 
-# Production build outputs
-dist/
-build/
-
-# Editor directories and files
-.vscode/*
-!.vscode/extensions.json
-.idea
+# OS generated files
 .DS_Store
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db

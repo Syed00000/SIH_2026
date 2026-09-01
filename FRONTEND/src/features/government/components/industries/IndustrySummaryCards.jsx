@@ -1,7 +1,8 @@
 import React from 'react';
 import { Building2, CheckCircle2, Clock } from 'lucide-react';
+import { Skeleton } from '../../../../shared/components/ui/skeleton.jsx';
 
-export const IndustrySummaryCards = ({ stats, kpis }) => {
+export const IndustrySummaryCards = ({ stats, kpis, isLoading }) => {
   const data = kpis || stats || {};
   const totalCount = data.totalIndustries ?? 0;
   const activeCount = data.activeIndustries ?? 0;
@@ -36,7 +37,12 @@ export const IndustrySummaryCards = ({ stats, kpis }) => {
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 select-none">
-      {cards.map((card) => {
+      {isLoading ? (
+        [...Array(3)].map((_, i) => (
+          <Skeleton key={i} className="h-[104px] w-full rounded-lg" />
+        ))
+      ) : (
+        cards.map((card) => {
         const IconComponent = card.icon;
         return (
           <div
@@ -64,7 +70,8 @@ export const IndustrySummaryCards = ({ stats, kpis }) => {
             </div>
           </div>
         );
-      })}
+      })
+      )}
     </div>
   );
 };
