@@ -6,6 +6,7 @@ export const ChallengesTableRow = ({
   globalIndex,
   isSelected,
   normStatus,
+  hasUnreadChat = false,
   onSelectChallenge,
   onActionClick,
   onOpenChat
@@ -61,42 +62,39 @@ export const ChallengesTableRow = ({
 
       <td className="py-3 px-3">
         {c.assignedFaculty?.name ? (
-          <div>
-            <div className="font-extrabold text-slate-900 text-xs leading-tight truncate max-w-[150px]">
-              {c.assignedFaculty.name}
-            </div>
-            <div className="text-[10px] text-emerald-800 font-semibold mt-0.5 truncate max-w-[150px]">
-              {c.assignedFaculty.department || 'Lead Faculty Mentor'}
-            </div>
+          <div className="text-xs">
+            <div className="font-bold text-slate-900 truncate max-w-[130px]">{c.assignedFaculty.name}</div>
+            <div className="text-[10px] text-slate-400 truncate max-w-[130px]">{c.assignedFaculty.department || 'Faculty Mentor'}</div>
           </div>
         ) : (
-          <div>
-            <div className="font-semibold text-amber-800 text-xs italic">Not Assigned Yet</div>
-            <div className="text-[10px] text-slate-400 mt-0.5">Ready for Mentor</div>
+          <div className="text-xs">
+            <span className="text-amber-800 font-bold text-[11px] italic">Not Assigned Yet</span>
+            <span className="text-[10px] text-slate-400 block">Ready for Mentor</span>
           </div>
         )}
       </td>
 
       <td className="py-3 px-3">
-        <div className="flex flex-wrap gap-1 max-w-[140px]">
-          {skills.slice(0, 2).map((s, idx) => (
+        <div className="flex flex-wrap gap-1 max-w-[170px]">
+          {skills.slice(0, 2).map((skill, idx) => (
             <span
               key={idx}
-              className="text-[9.5px] font-bold px-1.5 py-0.5 rounded bg-slate-100 text-slate-700 truncate max-w-[65px]"
-              title={s}
+              className="text-[9.5px] font-bold px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 border border-slate-200 truncate max-w-[110px]"
             >
-              {s}
+              {skill}
             </span>
           ))}
           {skills.length > 2 && (
-            <span className="text-[9.5px] font-bold text-slate-400">+{skills.length - 2}</span>
+            <span className="text-[9.5px] font-bold px-1.5 py-0.5 rounded-md bg-slate-50 text-slate-400 border border-slate-100">
+              +{skills.length - 2}
+            </span>
           )}
         </div>
       </td>
 
       <td className="py-3 px-3 whitespace-nowrap">
         <span
-          className={`inline-flex items-center space-x-1.5 text-[11px] font-bold ${
+          className={`inline-flex items-center space-x-1.5 text-[11px] font-extrabold ${
             c.priority === 'High' || c.priority === 'Critical'
               ? 'text-rose-600'
               : c.priority === 'Low'
@@ -154,10 +152,16 @@ export const ChallengesTableRow = ({
             <button
               type="button"
               onClick={() => onOpenChat(c)}
-              className="p-1.5 text-slate-400 hover:text-[#007A61] hover:bg-emerald-50 rounded-lg transition-colors cursor-pointer"
+              className="relative p-1.5 text-slate-400 hover:text-[#007A61] hover:bg-emerald-50 rounded-lg transition-colors cursor-pointer"
               title="Open Clarification Intercom"
             >
               <MessageSquare className="w-3.5 h-3.5" />
+              {hasUnreadChat && (
+                <span className="absolute top-0.5 right-0.5 flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-rose-600 border border-white"></span>
+                </span>
+              )}
             </button>
           )}
           <button

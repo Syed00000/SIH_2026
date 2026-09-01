@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { universityApiService } from '../../../services/universityApiService.js';
+import { clarificationChatService } from '../../../clarification/services/clarificationChatService.js';
 
 export const getNormalizedStatus = (challenge) => {
   if (!challenge) return 'Pending';
@@ -33,6 +34,24 @@ export const useAssignedChallenges = ({
   const [chatChallenge, setChatChallenge] = useState(null);
   const [loading, setLoading] = useState(false);
   const [modalConfig, setModalConfig] = useState({ isOpen: false, type: 'accept', challenge: null });
+  const [chatStatsMap, setChatStatsMap] = useState({});
+
+  const fetchChatStats = async () => {
+    try {
+      const stats = await clarificationChatService.getChallengeStats();
+      if (stats && typeof stats === 'object') {
+        setChatStatsMap(stats);
+      }
+    } catch (err) {
+      console.warn('Error fetching challenge chat stats:', err);
+    }
+  };
+
+  useEffect(() => {
+    fetchChatStats();
+    const interval = setInterval(fetchChatStats, 5000);
+    return () => clearInterval(interval);
+  }, []);
 
   const fetchChallenges = async () => {
     setLoading(true);
@@ -93,6 +112,7 @@ export const useAssignedChallenges = ({
     dossierChallenge, setDossierChallenge,
     chatChallenge, setChatChallenge,
     loading, modalConfig, setModalConfig,
+    chatStatsMap, fetchChatStats,
     handleModalSubmit
   };
 };

@@ -75,12 +75,29 @@ export const AdminFormModal = ({ isOpen, onClose, onSubmit, initialData = null }
     e.preventDefault();
     if (!form.fullName.trim()) return setError('Please enter full name');
     if (!form.email.trim() || !form.email.includes('@')) return setError('Please enter a valid email address');
-    if (!initialData && form.password && form.password !== form.confirmPassword) {
+    if (form.password && form.password !== form.confirmPassword) {
       return setError('Passwords do not match');
+    }
+    if (!initialData && !form.password) {
+      return setError('Password is required for new administrator');
     }
     if (form.district === 'Select district') return setError('Please select a district');
 
-    onSubmit({ ...form, role: 'Nodal Officer', primaryRole: 'District Nodal Lead', id: initialData?.id });
+    const targetId = initialData?.id || initialData?._id;
+    const payload = {
+      ...form,
+      role: form.role || 'Nodal Officer',
+      primaryRole: form.primaryRole || 'District Nodal Lead',
+      id: targetId,
+      _id: targetId
+    };
+
+    if (initialData && !form.password) {
+      delete payload.password;
+      delete payload.confirmPassword;
+    }
+
+    onSubmit(payload);
     onClose();
   };
 
