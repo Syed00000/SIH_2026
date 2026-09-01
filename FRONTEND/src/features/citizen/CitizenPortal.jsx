@@ -161,7 +161,7 @@ export const CitizenPortal = ({ user: propUser, onLogout }) => {
         />
 
         {/* Right Scrollable Main Viewport */}
-        <main className="flex-1 overflow-y-auto p-4 sm:p-6 bg-white flex flex-col justify-between pb-20 md:pb-6">
+        <main className="flex-1 overflow-y-auto p-4 sm:p-6 bg-white flex flex-col justify-between pb-20 md:pb-0">
           <div className="w-full max-w-[1600px] space-y-6">
             {isLoading ? (
               <PortalSkeleton />
@@ -203,7 +203,11 @@ export const CitizenPortal = ({ user: propUser, onLogout }) => {
                 )}
 
                 {activeTab === 'updates' && (
-                  <CitizenUpdates onSelectChallenge={handleSelectChallenge} />
+                  <CitizenUpdates
+                    user={user}
+                    onSelectChallenge={handleSelectChallenge}
+                    onUnreadCountChange={setUnreadNotificationsCount}
+                  />
                 )}
 
                 {activeTab === 'profile' && (
@@ -247,8 +251,8 @@ export const CitizenPortal = ({ user: propUser, onLogout }) => {
             )}
           </div>
 
-          {/* Web Desktop Footer */}
-          <div className="mt-8 hidden md:block sticky bottom-0 -mx-4 sm:-mx-6 -mb-6 z-50">
+          {/* Web Desktop Footer - naturally at bottom of document flow */}
+          <div className="mt-12 hidden md:block -mx-4 sm:-mx-6">
             <GovernmentFooter />
           </div>
         </main>

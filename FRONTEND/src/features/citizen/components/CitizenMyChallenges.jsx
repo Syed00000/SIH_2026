@@ -6,7 +6,6 @@ import { Card, CardTitle, CardDescription } from '../../../shared/components/ui/
 import { Button } from '../../../shared/components/ui/button.jsx';
 import { Input } from '../../../shared/components/ui/input.jsx';
 import { Badge } from '../../../shared/components/ui/badge.jsx';
-import { Tabs, TabsList, TabsTrigger } from '../../../shared/components/ui/tabs.jsx';
 
 const STATUS_FILTERS = ['All', 'Submitted', 'Under Review', 'In Progress', 'Resolved', 'Withdrawn'];
 const DOMAIN_OPTIONS = [
@@ -99,51 +98,63 @@ export const CitizenMyChallenges = ({
         </div>
       </Card>
 
-      {/* 2. Filters & Search (Toolbar) */}
-      <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4">
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full xl:w-auto">
-          <div className="relative w-full sm:w-[320px]">
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-            <Input
-              type="text"
-              placeholder="Search by challenge ID, problem..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 pr-8 py-2.5 bg-white border-slate-200 rounded-xl font-medium text-sm shadow-sm"
-            />
-            {searchTerm && (
-              <button 
-                onClick={() => setSearchTerm('')} 
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 cursor-pointer"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            )}
+      {/* 2. Unified Single-Row Filters & Search Toolbar */}
+      <div className="bg-white border border-slate-200/90 rounded-2xl p-3 sm:p-3.5 shadow-2xs">
+        <div className="flex flex-col xl:flex-row items-stretch xl:items-center justify-between gap-3 w-full">
+          {/* Left Side: Search + Domain Dropdown */}
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
+            {/* Search Input (Compact) */}
+            <div className="relative w-full sm:w-[220px] md:w-[240px]">
+              <Input
+                leftIcon={Search}
+                type="text"
+                placeholder="Search problem, ID..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pr-8 py-2 bg-slate-50/70 hover:bg-white focus:bg-white border-slate-200 rounded-xl font-medium text-xs shadow-2xs w-full transition-all"
+              />
+              {searchTerm && (
+                <button 
+                  type="button"
+                  onClick={() => setSearchTerm('')} 
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 cursor-pointer z-10 p-0.5 rounded-full hover:bg-slate-100 transition-colors"
+                  title="Clear search"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              )}
+            </div>
+            
+            {/* Domain Dropdown (Compact) */}
+            <div className="w-full sm:w-[155px] shrink-0">
+              <CitizenThemedSelect
+                value={domainFilter === 'All' ? 'All Domains' : domainFilter}
+                onChange={(val) => handleDomainChange(val === 'All Domains' ? 'All' : val)}
+                options={DOMAIN_OPTIONS.map((dom) => (dom === 'All' ? 'All Domains' : dom))}
+              />
+            </div>
           </div>
-          
-          <div className="w-full sm:w-[200px]">
-            <CitizenThemedSelect
-              value={domainFilter === 'All' ? 'All Domains' : domainFilter}
-              onChange={(val) => handleDomainChange(val === 'All Domains' ? 'All' : val)}
-              options={DOMAIN_OPTIONS.map((dom) => (dom === 'All' ? 'All Domains' : dom))}
-            />
-          </div>
-        </div>
 
-        <div className="w-full overflow-x-auto pb-1 hide-scrollbar border-b border-slate-200">
-          <Tabs value={statusFilter} onValueChange={setStatusFilter} className="w-full">
-            <TabsList className="bg-transparent p-0 border-none rounded-none h-auto flex flex-nowrap w-full justify-start">
-              {STATUS_FILTERS.map((st) => (
-                <TabsTrigger 
-                  key={st} 
-                  value={st} 
-                  className="px-5 py-2.5 text-sm font-semibold rounded-none border-b-2 border-transparent data-[state=active]:border-[#007A61] data-[state=active]:text-[#007A61] data-[state=active]:bg-transparent data-[state=active]:shadow-none cursor-pointer whitespace-nowrap text-slate-500 hover:text-slate-800 transition-colors"
+          {/* Right Side: Clean Text Status Tabs (No boxes) */}
+          <div className="flex items-center gap-3 sm:gap-4.5 flex-wrap">
+            {STATUS_FILTERS.map((st) => {
+              const isActive = (statusFilter || 'All').toLowerCase() === st.toLowerCase();
+              return (
+                <button
+                  key={st}
+                  type="button"
+                  onClick={() => setStatusFilter(st)}
+                  className={`text-xs sm:text-sm py-1 font-bold transition-all cursor-pointer whitespace-nowrap border-b-2 ${
+                    isActive
+                      ? 'text-[#007A61] border-[#007A61]'
+                      : 'text-slate-500 hover:text-slate-800 border-transparent'
+                  }`}
                 >
                   {st}
-                </TabsTrigger>
-              ))}
-            </TabsList>
-          </Tabs>
+                </button>
+              );
+            })}
+          </div>
         </div>
       </div>
 
