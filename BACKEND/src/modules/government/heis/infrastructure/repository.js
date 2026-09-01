@@ -122,7 +122,7 @@ export class UniversityRepository {
         $push: {
           auditLogs: {
             action: logEntry.action,
-            performedBy: logEntry.performedBy || 'Government Admin',
+            performedBy: logEntry.performedBy || '',
             timestamp: new Date(),
             details: logEntry.details || ''
           }

@@ -4,8 +4,8 @@ export const getDefaultMilestones = () => [
     title: 'Problem Submitted',
     description: 'Problem statement filed with location & citizen verification.',
     status: 'COMPLETED',
-    updatedBy: 'Citizen Submission Portal',
-    remarks: 'Citizen submission acknowledged.',
+    updatedBy: 'Citizen',
+    remarks: '',
     completedAt: new Date()
   },
   {
@@ -13,8 +13,8 @@ export const getDefaultMilestones = () => [
     title: 'Under Review',
     description: 'Government nodal team evaluating problem scope and severity.',
     status: 'CURRENT',
-    updatedBy: 'Jharkhand State Innovation Cell',
-    remarks: 'Initial screening underway.',
+    updatedBy: '',
+    remarks: '',
     completedAt: null
   },
   {
@@ -22,7 +22,7 @@ export const getDefaultMilestones = () => [
     title: 'University / HEI Assigned',
     description: 'Assigned to relevant university research lab & mentor.',
     status: 'PENDING',
-    updatedBy: 'Department of Higher & Technical Education',
+    updatedBy: '',
     remarks: '',
     completedAt: null
   },
@@ -31,7 +31,7 @@ export const getDefaultMilestones = () => [
     title: 'Solution in Progress',
     description: 'Faculty mentor and student innovation team implementing pilot.',
     status: 'PENDING',
-    updatedBy: 'University Faculty Lead',
+    updatedBy: '',
     remarks: '',
     completedAt: null
   },
@@ -40,7 +40,7 @@ export const getDefaultMilestones = () => [
     title: 'Resolved & Deployed',
     description: 'Action completed and verified on ground with citizen feedback.',
     status: 'PENDING',
-    updatedBy: 'District Administration',
+    updatedBy: '',
     remarks: '',
     completedAt: null
   }

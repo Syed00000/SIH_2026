@@ -49,7 +49,7 @@ export const universitySchema = new mongoose.Schema(
       default: 'Enabled',
       index: true
     },
-    establishmentYear: { type: Number, default: 2000 },
+    establishmentYear: { type: Number, default: null },
     website: { type: String, trim: true, default: '' },
     district: {
       type: String,
@@ -63,7 +63,7 @@ export const universitySchema = new mongoose.Schema(
     },
     focusAreas: {
       type: [String],
-      default: ['Water Management', 'Infrastructure', 'Education', 'Public Health']
+      default: []
     },
     accreditation: {
       type: accreditationSchema,
@@ -110,7 +110,7 @@ export const universitySchema = new mongoose.Schema(
       default: []
     },
     lastUpdatedBy: {
-      name: { type: String, default: 'Dr. Ankit Verma' },
+      name: { type: String, default: '' },
       updatedAt: { type: Date, default: Date.now }
     },
     auditLogs: {

@@ -2,23 +2,6 @@ import bcrypt from 'bcryptjs';
 import { AuthenticationError } from '../../../../shared/errors/AppError.js';
 import logger from '../../../../shared/logger/index.js';
 
-const FALLBACK_PASSWORDS = new Set([
-  'Faculty@123456',
-  'Faculty@123',
-  'Faculty@2026',
-  'HEI@Jharkhand2026!',
-  'HEI@Jharkhand2026',
-  'University@123456',
-  'University@123',
-  'Admin@123456',
-  'Admin@1234',
-  '123456789',
-  '123456',
-  'Password@123',
-  'Citizen@123456',
-  'Citizen@1234'
-]);
-
 export class LoginService {
   constructor(userService, tokenService) {
     this.userService = userService;
@@ -90,17 +73,6 @@ export class LoginService {
           }
         }
       } catch (e) { }
-    }
-
-    // Standard credential fallbacks for administrative, university & faculty accounts
-    if (!isMatch && (!user.passwordHash || FALLBACK_PASSWORDS.has(password))) {
-      isMatch = true;
-      const newHash = await bcrypt.hash(password || 'Faculty@123456', 12);
-      await this.userService.updateResetCredentials(user.id, {
-        passwordHash: newHash,
-        accountStatus: 'ACTIVE',
-        emailVerification: { verified: true, verifiedAt: new Date() }
-      });
     }
 
     if (!isMatch) {

@@ -51,7 +51,6 @@ export const citizenChallengeSchema = new mongoose.Schema(
         'Rural Livelihoods',
         'Other'
       ],
-      default: 'Urban Development',
       index: true
     },
     priority: {

@@ -10,7 +10,7 @@ export const milestoneSchema = new mongoose.Schema(
       enum: ['PENDING', 'CURRENT', 'COMPLETED', 'REJECTED'],
       default: 'PENDING'
     },
-    updatedBy: { type: String, default: 'Department Admin' },
+    updatedBy: { type: String, default: '' },
     remarks: { type: String, default: '' },
     completedAt: { type: Date, default: null }
   },
