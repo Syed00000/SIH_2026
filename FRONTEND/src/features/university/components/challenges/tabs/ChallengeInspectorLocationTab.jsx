@@ -4,14 +4,17 @@ import { MapPin, Compass } from 'lucide-react';
 export const ChallengeInspectorLocationTab = ({ challenge }) => {
   const loc = challenge.location || challenge.locationDetails || {};
   const state = loc.state || 'Jharkhand';
-  const district = loc.district || challenge.district || 'Ranchi';
-  const block = loc.block || 'Sadar Block';
-  const subDivision = loc.subDivision || loc.block || `${district} Sub-Division`;
-  const panchayat = loc.panchayatOrWard || loc.gramPanchayat || loc.ward || 'Gram Panchayat Ward 4';
-  const landmark = loc.landmark || 'Near Primary Health Centre / High School';
-  const fullAddress = loc.fullAddress || `${panchayat}, ${landmark}, ${subDivision}, ${district}, ${state} - ${loc.pincode || '834001'}`;
-  const coordinates = loc.coordinates || '23.3441° N, 85.3096° E';
-  const pincode = loc.pincode || '834001';
+  const district = loc.district || challenge.district || 'Jharkhand';
+  const block = loc.block && loc.block !== 'Not specified' ? loc.block : (loc.subDivision || 'Not specified');
+  const subDivision = loc.subDivision && loc.subDivision !== 'Not specified' ? loc.subDivision : (loc.block || 'Not specified');
+  const panchayat = loc.panchayatOrWard && loc.panchayatOrWard !== 'Not specified' ? loc.panchayatOrWard : (loc.gramPanchayat || loc.ward || 'Not specified');
+  const landmark = loc.landmark || challenge.landmark || 'Ground Location';
+  const pincode = loc.pincode || 'N/A';
+  const coordinates = loc.coordinates || 'Coordinates not provided';
+  const fullAddress =
+    loc.fullAddress ||
+    [landmark !== 'Ground Location' ? landmark : '', panchayat !== 'Not specified' ? panchayat : '', block !== 'Not specified' ? block : '', district, state].filter(Boolean).join(', ') ||
+    `${district}, ${state}`;
 
   return (
     <div className="space-y-3 text-xs text-slate-700 text-left">
@@ -28,8 +31,8 @@ export const ChallengeInspectorLocationTab = ({ challenge }) => {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs pt-1">
           <div className="bg-slate-50/70 p-2.5 rounded-xl border border-slate-100">
-            <span className="text-slate-400 font-bold block text-[10px] uppercase tracking-wider">Sub-Division / Block</span>
-            <span className="font-bold text-slate-800 text-xs mt-0.5 block">{subDivision} • {block}</span>
+            <span className="text-slate-400 font-bold block text-[10px] uppercase tracking-wider">Block / Tehsil</span>
+            <span className="font-bold text-slate-800 text-xs mt-0.5 block">{block}</span>
           </div>
 
           <div className="bg-slate-50/70 p-2.5 rounded-xl border border-slate-100">
@@ -38,7 +41,7 @@ export const ChallengeInspectorLocationTab = ({ challenge }) => {
           </div>
 
           <div className="bg-slate-50/70 p-2.5 rounded-xl border border-slate-100">
-            <span className="text-slate-400 font-bold block text-[10px] uppercase tracking-wider">Ground Landmark</span>
+            <span className="text-slate-400 font-bold block text-[10px] uppercase tracking-wider">Local Landmark</span>
             <span className="font-bold text-slate-800 text-xs mt-0.5 block">{landmark}</span>
           </div>
 

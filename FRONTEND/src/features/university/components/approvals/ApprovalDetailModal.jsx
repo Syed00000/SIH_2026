@@ -299,10 +299,10 @@ export const ApprovalDetailModal = ({
                 Lead Faculty Investigator
               </span>
               <p className="font-bold text-xs text-slate-900">
-                {approval.faculty?.name || approval.requestedBy || 'Dr. Binod Kumar'}
+                {approval.faculty?.name || approval.requestedBy || 'Unassigned Faculty'}
               </p>
               <p className="text-[11px] text-[#007A61] font-semibold">
-                {approval.faculty?.department || approval.requestedByDept || 'Engineering'}
+                {approval.faculty?.department || approval.requestedByDept || 'Department Not Specified'}
               </p>
             </div>
 
@@ -312,7 +312,7 @@ export const ApprovalDetailModal = ({
                 Student Research Team
               </span>
               <p className="font-bold text-xs text-slate-900">
-                {approval.teamName || approval.team?.name || 'Research Team'}
+                {approval.teamName || approval.team?.name || 'Unassigned Team'}
               </p>
               <p className="text-[11px] text-slate-500 font-medium">
                 {approval.teamMembersCount || approval.team?.members?.length || approval.team?.membersCount || '—'} Student Researchers

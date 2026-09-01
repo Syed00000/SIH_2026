@@ -34,20 +34,15 @@ export const UniversityActionModal = ({
           if (Array.isArray(list) && list.length > 0) {
             setFacultyList(list);
             setSelectedFaculty(list[0].name);
-            setDepartment(list[0].department || 'Civil & Environmental Engineering');
+            setDepartment(list[0].department || '');
           } else {
-            const fallback = [{
-              name: 'Prof. Rajesh Chandra',
-              department: 'Civil & Environmental Engineering',
-              designation: 'Professor & HOD',
-              email: 'rajesh.chandra@university.ac.in'
-            }];
-            setFacultyList(fallback);
-            setSelectedFaculty(fallback[0].name);
-            setDepartment(fallback[0].department);
+            setFacultyList([]);
+            setSelectedFaculty('');
+            setDepartment('');
           }
         } catch (err) {
           console.warn('Error loading faculty for modal:', err);
+          setFacultyList([]);
         }
         setLoadingFaculty(false);
       };

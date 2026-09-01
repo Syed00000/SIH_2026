@@ -161,8 +161,8 @@ export const InspectPrototypeModal = ({
       <tr><td class="lbl">Project Identifier</td><td><strong>${project.id || project.projectId}</strong></td></tr>
       <tr><td class="lbl">Problem Statement / Title</td><td><strong>${project.title}</strong></td></tr>
       <tr><td class="lbl">Host Institution</td><td>${project.hei || 'Ranchi University (RU001)'} (${project.district || 'Ranchi'} District)</td></tr>
-      <tr><td class="lbl">Lead Faculty Mentor</td><td>${project.teamLead || 'Dr. Binod Kumar'}</td></tr>
-      <tr><td class="lbl">Student Innovation Team</td><td>${project.studentTeam || project.teamName || 'Binod GANG'}</td></tr>
+      <tr><td class="lbl">Lead Faculty Mentor</td><td>${project.teamLead || project.leadMentor || 'Unassigned Faculty Mentor'}</td></tr>
+      <tr><td class="lbl">Student Innovation Team</td><td>${project.studentTeam || project.teamName || 'Unassigned Student Team'}</td></tr>
       <tr><td class="lbl">Technology Readiness Cleared</td><td><strong>${project.trlLevel || 'TRL-8'}</strong> (State Certified)</td></tr>
       <tr><td class="lbl">State Resolution Status</td><td><strong>RESOLVED & DEPLOYED FOR PUBLIC BENEFIT</strong></td></tr>
     </table>
@@ -300,7 +300,7 @@ export const InspectPrototypeModal = ({
                 Lead Faculty Investigator
               </span>
               <span className="text-xs font-black text-slate-900 block truncate">
-                {project.teamLead || 'Dr. Binod Kumar'}
+                {project.teamLead || project.leadMentor || 'Unassigned Lead'}
               </span>
               <span className="text-[10.5px] text-slate-500 font-medium block">
                 Nodal Faculty Lead
@@ -312,7 +312,7 @@ export const InspectPrototypeModal = ({
                 Student Research Team
               </span>
               <span className="text-xs font-black text-slate-900 block truncate">
-                {project.studentTeam || project.teamName || 'Binod GANG'}
+                {project.studentTeam || project.teamName || 'Unassigned Team'}
               </span>
               <span className="text-[10.5px] text-slate-500 font-medium block">
                 Assigned Student Researchers

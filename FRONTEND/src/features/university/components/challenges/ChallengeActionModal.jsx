@@ -27,15 +27,16 @@ export const ChallengeActionModal = ({
         } else {
           try {
             const list = await universityApiService.getFaculty(universityCode);
-            const resolved = Array.isArray(list) && list.length > 0 ? list : [{
-              name: 'Prof. Rajesh Chandra',
-              department: 'Civil & Environmental Engineering',
-              designation: 'Professor & HOD'
-            }];
+            const resolved = Array.isArray(list) ? list : [];
             setFacultyList(resolved);
-            setSelectedFaculty(resolved[0].name);
+            if (resolved.length > 0) {
+              setSelectedFaculty(resolved[0].name);
+            } else {
+              setSelectedFaculty('');
+            }
           } catch (err) {
             console.warn('Error loading faculty list:', err);
+            setFacultyList([]);
           }
         }
       };

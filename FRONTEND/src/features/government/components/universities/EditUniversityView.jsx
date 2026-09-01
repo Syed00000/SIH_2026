@@ -38,11 +38,11 @@ export const EditUniversityView = ({ university, onCancel, onSuccess, onUpdateUn
     focusAreas: university?.focusAreas || ['Water Management', 'Infrastructure', 'Education', 'Public Health'],
 
     // Capacity
-    departments: university?.quickSummary?.departments || 16,
-    totalFaculty: university?.quickSummary?.totalFaculty || 120,
-    availableFaculty: university?.quickSummary?.availableFaculty || 58,
-    labsAndFacilities: university?.quickSummary?.labsAndFacilities || 28,
-    activeProjects: university?.quickSummary?.activeProjects || 14,
+    departments: university?.quickSummary?.departments ?? '',
+    totalFaculty: university?.quickSummary?.totalFaculty ?? '',
+    availableFaculty: university?.quickSummary?.availableFaculty ?? '',
+    labsAndFacilities: university?.quickSummary?.labsAndFacilities ?? '',
+    activeProjects: university?.quickSummary?.activeProjects ?? '',
     capacityStatus: university?.quickSummary?.capacityStatus || 'Available',
 
     // Password
