@@ -35,11 +35,11 @@ export const AddUniversityWizard = ({ onCancel, onSuccess, onCreateUniversity })
     naacValidity: '2028-12-31',
     nirfRanking: '',
     focusAreas: ['Water Management', 'Infrastructure', 'Education', 'Public Health'],
-    departments: 16,
-    totalFaculty: 120,
-    availableFaculty: 58,
-    labsAndFacilities: 28,
-    activeProjects: 14,
+    departments: '',
+    totalFaculty: '',
+    availableFaculty: '',
+    labsAndFacilities: '',
+    activeProjects: '',
     capacityStatus: 'Available',
     initialPassword: 'HEI@Jharkhand2026!'
   });
@@ -107,11 +107,11 @@ export const AddUniversityWizard = ({ onCancel, onSuccess, onCreateUniversity })
         website: formData.website.trim(),
         district: formData.district,
         quickSummary: {
-          departments: Number(formData.departments) || 16,
-          totalFaculty: Number(formData.totalFaculty) || 120,
-          availableFaculty: Number(formData.availableFaculty) || 58,
-          labsAndFacilities: Number(formData.labsAndFacilities) || 28,
-          activeProjects: Number(formData.activeProjects) || 14,
+          departments: Number(formData.departments) || 0,
+          totalFaculty: Number(formData.totalFaculty) || 0,
+          availableFaculty: Number(formData.availableFaculty) || 0,
+          labsAndFacilities: Number(formData.labsAndFacilities) || 0,
+          activeProjects: Number(formData.activeProjects) || 0,
           capacityStatus: formData.capacityStatus
         },
         focusAreas: formData.focusAreas,

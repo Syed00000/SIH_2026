@@ -17,31 +17,31 @@ export const UniversityCapacityStats = ({ quickSummary = {} }) => {
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2.5">
         <div className="bg-slate-50/60 border border-slate-200/80 rounded-md p-2.5 text-center">
           <BookOpen className="w-4 h-4 text-blue-600 mx-auto mb-1" />
-          <div className="text-base font-black text-slate-900">{quickSummary?.departments || 16}</div>
+          <div className="text-base font-black text-slate-900">{quickSummary?.departments ?? 0}</div>
           <div className="text-[10px] text-slate-400 font-medium mt-0.5">Departments</div>
         </div>
 
         <div className="bg-slate-50/60 border border-slate-200/80 rounded-md p-2.5 text-center">
           <User className="w-4 h-4 text-emerald-600 mx-auto mb-1" />
-          <div className="text-base font-black text-slate-900">{quickSummary?.totalFaculty || 120}</div>
+          <div className="text-base font-black text-slate-900">{quickSummary?.totalFaculty ?? 0}</div>
           <div className="text-[10px] text-slate-400 font-medium mt-0.5">Total Faculty</div>
         </div>
 
         <div className="bg-slate-50/60 border border-slate-200/80 rounded-md p-2.5 text-center">
           <GraduationCap className="w-4 h-4 text-indigo-600 mx-auto mb-1" />
-          <div className="text-base font-black text-slate-900">{quickSummary?.availableFaculty || 58}</div>
+          <div className="text-base font-black text-slate-900">{quickSummary?.availableFaculty ?? 0}</div>
           <div className="text-[10px] text-slate-400 font-medium mt-0.5">Available Faculty</div>
         </div>
 
         <div className="bg-slate-50/60 border border-slate-200/80 rounded-md p-2.5 text-center">
           <FlaskConical className="w-4 h-4 text-amber-600 mx-auto mb-1" />
-          <div className="text-base font-black text-slate-900">{quickSummary?.labsAndFacilities || 28}</div>
+          <div className="text-base font-black text-slate-900">{quickSummary?.labsAndFacilities ?? 0}</div>
           <div className="text-[10px] text-slate-400 font-medium mt-0.5">Labs & Facilities</div>
         </div>
 
         <div className="bg-slate-50/60 border border-slate-200/80 rounded-md p-2.5 text-center">
           <Layers className="w-4 h-4 text-purple-600 mx-auto mb-1" />
-          <div className="text-base font-black text-slate-900">{quickSummary?.activeProjects || 14}</div>
+          <div className="text-base font-black text-slate-900">{quickSummary?.activeProjects ?? 0}</div>
           <div className="text-[10px] text-slate-400 font-medium mt-0.5">Active Projects</div>
         </div>
       </div>

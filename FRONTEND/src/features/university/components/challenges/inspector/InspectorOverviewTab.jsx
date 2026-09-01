@@ -1,5 +1,5 @@
 import React from 'react';
-import { GraduationCap, CheckCircle2, AlertCircle } from 'lucide-react';
+import { GraduationCap } from 'lucide-react';
 
 export const InspectorOverviewTab = ({
   displayedStatement,
@@ -8,8 +8,6 @@ export const InspectorOverviewTab = ({
   setShowFullStatement,
   assignedUni,
   assignedDept,
-  mentorName,
-  isMentorAssigned,
   challenge
 }) => {
   return (
@@ -40,18 +38,8 @@ export const InspectorOverviewTab = ({
         <div className="flex items-center justify-between pb-1.5 border-b border-slate-100">
           <div className="flex items-center space-x-1.5 text-slate-900 font-bold">
             <GraduationCap className="w-4 h-4 text-[#007A61]" />
-            <span>Faculty Mentorship & Lab Node</span>
+            <span>Institutional Allocation Node</span>
           </div>
-          {isMentorAssigned ? (
-            <span className="text-[10px] text-emerald-800 font-bold bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200 flex items-center space-x-1">
-              <CheckCircle2 className="w-3 h-3" />
-              <span>Mentor Assigned</span>
-            </span>
-          ) : (
-            <span className="text-[10px] text-amber-800 font-bold bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200">
-              Mentor Required
-            </span>
-          )}
         </div>
 
         <div className="grid grid-cols-2 gap-2 text-xs">
@@ -64,16 +52,6 @@ export const InspectorOverviewTab = ({
             <span className="font-extrabold text-slate-900 text-xs block mt-0.5 truncate">{assignedDept}</span>
           </div>
         </div>
-
-        {isMentorAssigned && (
-          <div className="p-2.5 bg-emerald-50/50 border border-emerald-200/80 rounded-xl text-xs flex items-center justify-between">
-            <div>
-              <span className="text-[10px] font-bold text-emerald-800 uppercase block">Lead Faculty Mentor</span>
-              <span className="font-extrabold text-[#007A61] text-xs">{mentorName}</span>
-            </div>
-            <span className="text-[10px] font-bold text-slate-600">Active Guidance</span>
-          </div>
-        )}
       </div>
     </div>
   );

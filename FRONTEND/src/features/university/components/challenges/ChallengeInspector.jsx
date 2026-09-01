@@ -28,10 +28,10 @@ export const ChallengeInspector = ({
 
   const loc = challenge.location || challenge.locationDetails || {};
   const district = loc.district || challenge.district || 'Ranchi';
-  const assignedUni = challenge.assignedUniversity?.name || challenge.universityName || 'Ranchi University';
-  const assignedDept = challenge.assignedUniversity?.department || challenge.assignedFaculty?.department || 'Department of Applied Sciences & Engineering';
-  const mentorName = challenge.assignedFaculty?.name || challenge.assignedUniversity?.mentorName;
-  const isMentorAssigned = Boolean(mentorName);
+  const assignedUni = challenge.assignedUniversity?.name || challenge.universityName || challenge.assignedUniversity?.id || 'Unassigned';
+  const assignedDept = challenge.assignedUniversity?.department || challenge.assignedFaculty?.department || 'Unassigned';
+  const mentorName = challenge.assignedFaculty?.name || challenge.assignedUniversity?.mentorName || '';
+  const isMentorAssigned = Boolean(mentorName && mentorName !== 'Unassigned' && mentorName !== 'Not Assigned');
 
   const norm = (() => {
     if (!challenge.status && !challenge.acceptanceStatus) return 'Pending';
@@ -64,8 +64,6 @@ export const ChallengeInspector = ({
             setShowFullStatement={setShowFullStatement}
             assignedUni={assignedUni}
             assignedDept={assignedDept}
-            mentorName={mentorName}
-            isMentorAssigned={isMentorAssigned}
             challenge={challenge}
           />
         )}
