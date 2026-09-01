@@ -24,6 +24,7 @@ export const AssignedChallengesPanel = ({
     selectedChallenge, setSelectedChallenge,
     dossierChallenge, setDossierChallenge,
     chatChallenge, setChatChallenge,
+    chatStatsMap, fetchChatStats,
     loading, modalConfig, setModalConfig,
     handleModalSubmit
   } = useAssignedChallenges({ initialChallenges, universityCode, onUpdateChallengeStatus, onAssignFaculty });
@@ -59,31 +60,28 @@ export const AssignedChallengesPanel = ({
         totalCount={challengeList.length} activeCount={activeCount}
       />
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-3.5 items-start">
-        <div className={selectedChallenge ? 'lg:col-span-7' : 'lg:col-span-12'}>
-          <ChallengesTable
-            challenges={filtered}
-            loading={loading}
-            selectedChallengeId={selectedChallenge?.id || selectedChallenge?.challengeId}
-            onSelectChallenge={(c) => setSelectedChallenge(c)}
-            onActionClick={(c) => setSelectedChallenge(c)}
-            onOpenChat={(c) => setChatChallenge(c)}
-          />
-        </div>
-
-        {selectedChallenge && (
-          <div className="lg:col-span-5 h-full">
-            <ChallengeInspector
-              challenge={selectedChallenge}
-              onClose={() => setSelectedChallenge(null)}
-              onAccept={(c) => setModalConfig({ isOpen: true, type: 'accept', challenge: c })}
-              onDecline={(c) => setModalConfig({ isOpen: true, type: 'decline', challenge: c })}
-              onRequestClarification={(c) => setModalConfig({ isOpen: true, type: 'clarify', challenge: c })}
-              onAssignFaculty={(c) => setModalConfig({ isOpen: true, type: 'assign', challenge: c })}
-            />
-          </div>
-        )}
+      <div className="w-full">
+        <ChallengesTable
+          challenges={filtered}
+          loading={loading}
+          chatStatsMap={chatStatsMap}
+          selectedChallengeId={selectedChallenge?.id || selectedChallenge?.challengeId}
+          onSelectChallenge={(c) => setSelectedChallenge(c)}
+          onActionClick={(c) => setSelectedChallenge(c)}
+          onOpenChat={(c) => setChatChallenge(c)}
+        />
       </div>
+
+      {selectedChallenge && (
+        <ChallengeInspector
+          challenge={selectedChallenge}
+          onClose={() => setSelectedChallenge(null)}
+          onAccept={(c) => setModalConfig({ isOpen: true, type: 'accept', challenge: c })}
+          onDecline={(c) => setModalConfig({ isOpen: true, type: 'decline', challenge: c })}
+          onRequestClarification={(c) => setModalConfig({ isOpen: true, type: 'clarify', challenge: c })}
+          onAssignFaculty={(c) => setModalConfig({ isOpen: true, type: 'assign', challenge: c })}
+        />
+      )}
 
       {modalConfig.isOpen && (
         <ChallengeActionModal
