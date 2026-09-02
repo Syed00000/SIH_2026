@@ -21,8 +21,9 @@ export const createPartnerApprovalHandler = (service) => {
     try {
       const { id } = req.params;
       const code = extractUniversityCode(req, 'RUNI-JH');
-      const { status } = req.body;
-      const data = await service.updateApproval(id, code, status);
+      const { status, adminRemarks, remarks } = req.body;
+      const finalRemarks = adminRemarks || remarks || '';
+      const data = await service.updateApproval(id, code, status, finalRemarks);
       res.status(200).json({ status: 'SUCCESS', message: 'Approval status updated', data });
     } catch (error) { next(error); }
   };
