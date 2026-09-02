@@ -56,24 +56,7 @@ export const RecentChallengesCard = ({ challenge, onClick, onViewAllClick, onSub
         onClick={() => onClick && onClick(challenge)}
         className="group relative bg-white border border-slate-200/80 hover:border-slate-300 rounded-lg p-3 shadow-2xs hover:shadow-xs transition-all duration-200 cursor-pointer flex items-center space-x-3.5"
       >
-        {/* Image Thumbnail */}
-        <div className="relative w-24 h-24 sm:w-28 sm:h-28 rounded-md overflow-hidden flex-shrink-0 bg-slate-100">
-          <img
-            src={challenge.mediaUrls?.[0]?.url || challenge.image || defaultRoadImg}
-            alt={challenge.title}
-            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-            onError={(e) => {
-              e.target.onerror = null;
-              e.target.src = defaultRoadImg;
-            }}
-          />
-          {/* Status Badge Tag */}
-          <div className="absolute bottom-1.5 left-1.5 right-1.5">
-            <span className="block text-center text-[9px] font-extrabold px-1.5 py-0.5 rounded bg-white/95 text-slate-800 backdrop-blur-xs shadow-2xs border border-slate-200">
-              {challenge.status || 'Under Review'}
-            </span>
-          </div>
-        </div>
+
 
         {/* Challenge Information */}
         <div className="flex-1 min-w-0 flex flex-col justify-between space-y-1.5 text-left">
@@ -97,10 +80,13 @@ export const RecentChallengesCard = ({ challenge, onClick, onViewAllClick, onSub
             )}
           </div>
 
-          {/* Domain Tag */}
-          <div className="pt-0.5">
+          {/* Tags */}
+          <div className="pt-0.5 flex flex-wrap items-center gap-1.5">
             <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-800 border border-slate-200">
               {challenge.domain || 'Urban Development'}
+            </span>
+            <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-amber-50 text-amber-800 border border-amber-200">
+              {challenge.status || 'Under Review'}
             </span>
           </div>
         </div>

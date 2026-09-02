@@ -8,7 +8,7 @@ export const getSocket = () => {
     const apiOrigin = config?.api?.baseUrl
       ? config.api.baseUrl.replace(/\/api\/v1\/?$/, '')
       : 'http://127.0.0.1:3000';
-    const serverUrl = import.meta.env.VITE_BACKEND_URL || import.meta.env.VITE_SOCKET_URL || apiOrigin || 'http://localhost:3000';
+    const serverUrl = import.meta.env.VITE_BACKEND_URL || import.meta.env.VITE_SOCKET_URL || apiOrigin || 'http://127.0.0.1:3000';
 
     console.log('🔌 Connecting Socket.IO to:', serverUrl);
 

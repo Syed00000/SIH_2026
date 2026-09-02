@@ -298,20 +298,7 @@ export const CitizenChallengeDetailModal = ({ challenge, isOpen, onClose, onChal
             </div>
           </div>
 
-          {/* Issue Photo */}
-          {(challenge.mediaUrls?.[0]?.url || challenge.image) && (
-            <div className="rounded-xl overflow-hidden border border-slate-200 shadow-2xs max-h-48">
-              <img
-                src={challenge.mediaUrls?.[0]?.url || challenge.image || defaultRoadImg}
-                alt="Problem snapshot"
-                className="w-full h-48 object-cover"
-                onError={(e) => {
-                  e.target.onerror = null;
-                  e.target.src = defaultRoadImg;
-                }}
-              />
-            </div>
-          )}
+
 
           {/* Description */}
           <div className="bg-slate-50/80 p-4 rounded-xl border border-slate-200/70 space-y-1">
