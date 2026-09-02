@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ArrowLeft, Users, FileText, Target, CheckCircle2, FlaskConical } from 'lucide-react';
+import { ArrowLeft, Users, FileText, Target, CheckCircle2, FlaskConical, AlertTriangle, RotateCcw } from 'lucide-react';
 import { FacultyProjectsPanel } from './FacultyProjectsPanel.jsx';
 import { FacultyTeamsPanel } from '../teams/FacultyTeamsPanel.jsx';
 import { FacultyProposalsPanel } from '../proposals/FacultyProposalsPanel.jsx';
@@ -16,8 +16,13 @@ export const FacultyProjectWorkspace = ({
 
   if (!project) return null;
 
+  const hasRevisionDirective =
+    Boolean(project.adminRemarks) ||
+    String(project.budgetStatus || '').toLowerCase().includes('changes required') ||
+    String(project.prototypeStatus || '').toLowerCase().includes('changes required');
+
   return (
-    <div className="space-y-4 max-w-7xl mx-auto select-none pb-12">
+    <div className="space-y-4 max-w-7xl mx-auto select-none pb-12 text-left">
       {/* Top Breadcrumb & Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-200">
         <div>
@@ -47,6 +52,10 @@ export const FacultyProjectWorkspace = ({
               <span className="text-[10.5px] font-extrabold text-amber-900 bg-amber-100 px-2.5 py-0.5 rounded-full border border-amber-300 flex items-center space-x-1 shadow-2xs">
                 <span>⚠️ Government Directives (Revisions Required)</span>
               </span>
+            ) : hasRevisionDirective ? (
+              <span className="text-[10.5px] font-extrabold text-amber-900 bg-amber-100 px-2.5 py-0.5 rounded-full border border-amber-300 flex items-center space-x-1 shadow-2xs">
+                <span>⚠️ University Revision Required</span>
+              </span>
             ) : project.prototypeStatus === 'Approved' ? (
               <span className="text-[10.5px] font-extrabold text-emerald-800 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-300 flex items-center space-x-1 shadow-2xs">
                 <span>✓ University Approved (In State Review)</span>
@@ -62,6 +71,24 @@ export const FacultyProjectWorkspace = ({
           </h1>
         </div>
       </div>
+
+      {/* University Authority Revision Remarks Callout */}
+      {hasRevisionDirective && (
+        <div className="bg-amber-50/90 border border-amber-300 rounded-2xl p-4 space-y-2 shadow-2xs text-left">
+          <div className="flex items-center justify-between border-b border-amber-200/80 pb-2">
+            <div className="flex items-center space-x-2 text-amber-900 font-bold text-xs">
+              <RotateCcw className="w-4 h-4 text-amber-600" />
+              <span>University Authority Revision Directives & Feedback:</span>
+            </div>
+            <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-amber-500 text-white">
+              Action Required
+            </span>
+          </div>
+          <p className="text-xs text-amber-950 font-medium leading-relaxed italic bg-white/70 p-3 rounded-xl border border-amber-200">
+            "{project.adminRemarks || 'University review committee requested technical and financial revisions before state forwarding.'}"
+          </p>
+        </div>
+      )}
 
       {/* Tabs */}
       <div className="flex space-x-1 border-b border-slate-200">

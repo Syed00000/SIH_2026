@@ -65,7 +65,7 @@ export class UniversityService {
   clearActivities(universityCode) { return this.partnerApprovalService.clearActivities(universityCode); }
   getPartners(universityCode) { return this.partnerApprovalService.getPartners(universityCode); }
   getApprovals(universityCode) { return this.partnerApprovalService.getApprovals(universityCode); }
-  updateApproval(approvalId, universityCode, status) { return this.partnerApprovalService.updateApproval(approvalId, universityCode, status); }
+  updateApproval(approvalId, universityCode, status, remarks = '') { return this.partnerApprovalService.updateApproval(approvalId, universityCode, status, remarks); }
   deleteApproval(approvalId, universityCode) { return this.partnerApprovalService.deleteApproval(approvalId, universityCode); }
   createIndustryRequest(universityCode, payload) { return this.partnerApprovalService.createIndustryRequest(universityCode, payload); }
   getIndustryRequests(universityCode) { return this.partnerApprovalService.getIndustryRequests(universityCode); }

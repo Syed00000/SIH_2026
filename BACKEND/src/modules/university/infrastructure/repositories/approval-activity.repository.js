@@ -13,7 +13,14 @@ export class ApprovalActivityRepository {
   async updateApprovalStatus(approvalId, universityCode, status, remarks = '') {
     try {
       const res = await UniversityApproval.findOneAndUpdate(
-        { approvalId },
+        {
+          $or: [
+            { approvalId },
+            { projectId: approvalId },
+            { challengeId: approvalId },
+            ...(mongoose.Types.ObjectId.isValid(approvalId) ? [{ _id: approvalId }] : [])
+          ]
+        },
         {
           $set: {
             status,
@@ -68,7 +75,16 @@ export class ApprovalActivityRepository {
         }
 
         await UniversityProject.findOneAndUpdate(
-          { $or: [{ projectId: projId }, { challengeId: projId }] },
+          {
+            $or: [
+              { projectId: projId },
+              { challengeId: projId },
+              { projectId: res.projectId },
+              { challengeId: res.challengeId },
+              { challengeId: res.approvalId?.replace('APP-PRJ-', 'CHL-JH-2026-') },
+              { projectId: res.approvalId?.replace('APP-', '') }
+            ].filter(Boolean)
+          },
           { $set: projectUpdate }
         );
 
