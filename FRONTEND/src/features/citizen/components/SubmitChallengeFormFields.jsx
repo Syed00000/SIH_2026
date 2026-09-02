@@ -1,5 +1,5 @@
-import React from 'react';
-import { MapPin, User, Image as ImageIcon, Loader2, ShieldCheck, Users, AlertCircle } from 'lucide-react';
+import React, { useState, useRef } from 'react';
+import { MapPin, User, Image as ImageIcon, Loader2, ShieldCheck, Users, AlertCircle, X, Camera, UploadCloud } from 'lucide-react';
 import { CitizenThemedSelect } from './CitizenThemedSelect.jsx';
 
 const JHARKHAND_DISTRICTS = [
@@ -42,6 +42,49 @@ export const SubmitChallengeFormFields = ({
   onClose,
   error
 }) => {
+  const [isCameraOpen, setIsCameraOpen] = useState(false);
+  const videoRef = useRef(null);
+
+  const openCamera = async () => {
+    setIsCameraOpen(true);
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ 
+        video: { facingMode: 'environment' } 
+      });
+      // Small timeout to ensure video element is rendered
+      setTimeout(() => {
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+        }
+      }, 50);
+    } catch (err) {
+      console.error("Camera access denied or unavailable", err);
+      alert("Unable to access camera. Please check permissions or use the Upload option instead.");
+      setIsCameraOpen(false);
+    }
+  };
+
+  const capturePhoto = () => {
+    if (videoRef.current) {
+      const canvas = document.createElement('canvas');
+      canvas.width = videoRef.current.videoWidth || 640;
+      canvas.height = videoRef.current.videoHeight || 480;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
+      const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
+      setFormData(prev => ({ ...prev, mediaUrl: dataUrl }));
+      closeCamera();
+    }
+  };
+
+  const closeCamera = () => {
+    if (videoRef.current && videoRef.current.srcObject) {
+      const tracks = videoRef.current.srcObject.getTracks();
+      tracks.forEach(track => track.stop());
+    }
+    setIsCameraOpen(false);
+  };
+
   return (
     <>
       {/* 1. Problem Overview */}
@@ -267,34 +310,59 @@ export const SubmitChallengeFormFields = ({
         <span className="text-xs font-extrabold text-emerald-800 uppercase tracking-wider block">
           4. Image / Photo Proof (Optional)
         </span>
-        <input
-          type="url"
-          name="mediaUrl"
-          value={formData.mediaUrl}
-          onChange={handleChange}
-          placeholder="Paste image URL (or select sample photo below)"
-          className="w-full text-xs font-medium px-3.5 py-2.5 rounded-xl bg-white border border-slate-200/90 text-slate-900 focus:outline-none focus:border-emerald-600 shadow-2xs"
-        />
-        <div className="flex items-center space-x-2 pt-0.5">
-          <span className="text-xs text-slate-500 font-semibold">Quick Photo:</span>
-          <button
-            type="button"
-            onClick={() => handlePresetPhoto('https://images.unsplash.com/photo-1515694346937-94d85e41e6f0?w=800&auto=format&fit=crop&q=60')}
-            className="text-xs px-2.5 py-1 bg-white border border-slate-200 hover:border-slate-300 rounded-lg font-medium text-slate-700 cursor-pointer shadow-2xs"
-          >
-            🛣️ Damaged Road
-          </button>
-          <button
-            type="button"
-            onClick={() => handlePresetPhoto('https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=800&auto=format&fit=crop&q=60')}
-            className="text-xs px-2.5 py-1 bg-white border border-slate-200 hover:border-slate-300 rounded-lg font-medium text-slate-700 cursor-pointer shadow-2xs"
-          >
-            💧 Water Issue
-          </button>
+        
+        <div className="grid grid-cols-2 gap-3 sm:max-w-md">
+          {/* Camera Capture using WebRTC */}
+          <div className="relative">
+            <button
+              type="button"
+              onClick={openCamera}
+              className="w-full inline-flex flex-col items-center justify-center space-y-1.5 p-3 bg-white border border-slate-200 hover:border-emerald-500 hover:bg-emerald-50 text-slate-700 hover:text-emerald-800 text-xs font-bold rounded-xl cursor-pointer shadow-2xs transition-all text-center"
+            >
+              <Camera className="w-5 h-5 text-emerald-600" />
+              <span>Camera</span>
+            </button>
+          </div>
+
+          {/* Gallery / File Upload */}
+          <div className="relative">
+            <input
+              type="file"
+              accept="image/*"
+              id="gallery-upload-input"
+              className="hidden"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) {
+                  const reader = new FileReader();
+                  reader.onloadend = () => {
+                    setFormData((prev) => ({ ...prev, mediaUrl: reader.result }));
+                  };
+                  reader.readAsDataURL(file);
+                }
+              }}
+            />
+            <label 
+              htmlFor="gallery-upload-input" 
+              className="w-full inline-flex flex-col items-center justify-center space-y-1.5 p-3 bg-white border border-slate-200 hover:border-emerald-500 hover:bg-emerald-50 text-slate-700 hover:text-emerald-800 text-xs font-bold rounded-xl cursor-pointer shadow-2xs transition-all text-center"
+            >
+              <UploadCloud className="w-5 h-5 text-emerald-600" />
+              <span>Upload Photo</span>
+            </label>
+          </div>
         </div>
+        
         {formData.mediaUrl && (
-          <div className="w-28 h-20 rounded-xl overflow-hidden border border-slate-200 mt-2">
+          <div className="relative w-40 h-28 rounded-xl overflow-hidden border-2 border-emerald-200 mt-2 shadow-2xs group">
             <img src={formData.mediaUrl} alt="Preview" className="w-full h-full object-cover" />
+            <button 
+              type="button"
+              onClick={() => setFormData(prev => ({...prev, mediaUrl: ''}))}
+              className="absolute top-1.5 right-1.5 bg-rose-600/90 text-white rounded-full p-1.5 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer shadow-md"
+              title="Remove photo"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
           </div>
         )}
       </div>
@@ -313,7 +381,7 @@ export const SubmitChallengeFormFields = ({
           <button
             type="button"
             onClick={onClose}
-            className="py-2.5 px-5 rounded-xl border border-slate-200 text-xs font-bold text-slate-700 hover:bg-slate-50 transition-colors cursor-pointer"
+            className="py-2.5 px-5 rounded-xl border border-slate-200 text-xs font-bold text-slate-700 hover:text-rose-600 hover:bg-rose-50 hover:border-rose-200 transition-colors cursor-pointer"
           >
             Cancel
           </button>
@@ -321,7 +389,7 @@ export const SubmitChallengeFormFields = ({
         <button
           type="submit"
           disabled={loading}
-          className="py-2.5 px-6 rounded-xl bg-[#064e3b] hover:bg-[#047857] text-white text-xs font-bold shadow-2xs transition-all flex items-center justify-center space-x-2 cursor-pointer disabled:opacity-70 active:scale-95"
+          className="py-2.5 px-6 rounded-xl bg-white text-slate-900 border-2 border-slate-200 hover:bg-[#064e3b] hover:border-[#064e3b] hover:text-white text-xs font-bold shadow-2xs transition-all flex items-center justify-center space-x-2 cursor-pointer disabled:opacity-70 active:scale-95 group"
         >
           {loading ? (
             <>
@@ -336,6 +404,40 @@ export const SubmitChallengeFormFields = ({
           )}
         </button>
       </div>
+      {/* Fullscreen Camera Overlay */}
+      {isCameraOpen && (
+        <div className="fixed inset-0 z-[100] bg-black flex flex-col items-center justify-center animate-in fade-in">
+          <video 
+            ref={videoRef} 
+            autoPlay 
+            playsInline 
+            className="w-full h-full object-cover" 
+          />
+          
+          <div className="absolute top-4 left-0 right-0 text-center">
+            <span className="bg-black/50 text-white text-xs font-bold px-4 py-1.5 rounded-full backdrop-blur-sm">
+              Position issue in frame
+            </span>
+          </div>
+
+          <div className="absolute bottom-10 left-0 right-0 flex items-center justify-center space-x-8">
+            <button 
+              type="button" 
+              onClick={closeCamera} 
+              className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center text-white border-2 border-white/50 cursor-pointer hover:bg-white/30 transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+            <button 
+              type="button" 
+              onClick={capturePhoto} 
+              className="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-2xl border-4 border-slate-300 cursor-pointer active:scale-95 transition-transform"
+            >
+              <div className="w-12 h-12 rounded-full border-2 border-black/10"></div>
+            </button>
+          </div>
+        </div>
+      )}
     </>
   );
 };

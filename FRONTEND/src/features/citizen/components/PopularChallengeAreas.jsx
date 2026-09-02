@@ -110,8 +110,8 @@ export const PopularChallengeAreas = ({ onSelectArea, selectedArea }) => {
         </button>
       </div>
 
-      {/* Clean 5-column grid without outer box */}
-      <div className="grid grid-cols-5 gap-2 sm:gap-3">
+      {/* Grid adjusting based on screen size */}
+      <div className="grid grid-cols-3 min-[400px]:grid-cols-4 sm:grid-cols-5 gap-2 sm:gap-3">
         {displayedAreas.map((area) => {
           const isSelected = selectedArea === area.id;
           const FallbackIcon = area.fallbackIcon;
