@@ -10,13 +10,15 @@ import {
   LogOut,
   X,
   Menu,
-  Sparkles
+  Sparkles,
+  RotateCcw
 } from 'lucide-react';
 
 const NAV_ITEMS = [
   { id: 'dashboard', label: 'Dashboard', icon: Home },
   { id: 'challenges', label: 'Assigned Challenges', icon: Layers },
   { id: 'projects', label: 'Projects Portfolio', icon: Briefcase },
+  { id: 'revisions', label: 'Revision Requests', icon: RotateCcw, isAlert: true },
   { id: 'teams', label: 'Student Teams', icon: Users },
   { id: 'profile', label: 'Faculty Profile', icon: User }
 ];
@@ -30,7 +32,8 @@ export const FacultySidebar = ({
   setIsMobileMenuOpen,
   onLogout,
   universityName = 'Ranchi University',
-  facultyName = 'Dr. Binod Kumar'
+  facultyName = 'Dr. Binod Kumar',
+  revisionCount = 0
 }) => {
   return (
     <aside
@@ -77,6 +80,7 @@ export const FacultySidebar = ({
           {NAV_ITEMS.map((item) => {
             const Icon = item.icon;
             const isActive = activeTab === item.id;
+            const hasAlert = item.id === 'revisions' && revisionCount > 0;
 
             return (
               <button
@@ -91,16 +95,31 @@ export const FacultySidebar = ({
                 } ${
                   isActive
                     ? 'bg-[#007A61] text-white shadow-xs'
+                    : hasAlert
+                    ? 'bg-amber-50/80 text-amber-900 hover:bg-amber-100/80 border border-amber-200/60'
                     : 'text-slate-700 hover:bg-emerald-50/60 hover:text-[#007A61]'
                 }`}
                 title={item.label}
               >
                 <div className="flex items-center space-x-3 min-w-0">
-                  <Icon className={`w-4 h-4 shrink-0 ${isActive ? 'text-white' : 'text-slate-500'}`} />
+                  <div className="relative">
+                    <Icon className={`w-4 h-4 shrink-0 ${isActive ? 'text-white' : hasAlert ? 'text-amber-600' : 'text-slate-500'}`} />
+                    {!isSidebarExpanded && hasAlert && (
+                      <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-amber-500 border-2 border-white animate-pulse" />
+                    )}
+                  </div>
                   {isSidebarExpanded && (
                     <span className="truncate tracking-tight font-sans">{item.label}</span>
                   )}
                 </div>
+
+                {isSidebarExpanded && hasAlert && (
+                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-black ${
+                    isActive ? 'bg-white text-emerald-900' : 'bg-amber-500 text-white shadow-2xs'
+                  }`}>
+                    {revisionCount}
+                  </span>
+                )}
               </button>
             );
           })}

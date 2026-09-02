@@ -5,15 +5,17 @@ export const facultyApiService = {
   // Fetch all data for this faculty
   async getFacultyData(facultyEmail, universityCode = 'RU001') {
     const cleanEmail = (facultyEmail || '').toLowerCase().trim();
-    const [allChallenges, allProjects, allFaculty] = await Promise.all([
+    const [allChallenges, allProjects, allFaculty, allApprovals] = await Promise.all([
       universityApiService.getAssignedChallenges(universityCode),
       universityApiService.getProjects(universityCode),
-      universityApiService.getFaculty(universityCode)
+      universityApiService.getFaculty(universityCode),
+      universityApiService.getApprovals(universityCode)
     ]);
 
     const challengesList = allChallenges?.challenges || (Array.isArray(allChallenges) ? allChallenges : []);
     const projectsList = Array.isArray(allProjects) ? allProjects : [];
     const facultyList = Array.isArray(allFaculty) ? allFaculty : [];
+    const approvalsList = Array.isArray(allApprovals) ? allApprovals : [];
 
     // Find current faculty profile
     const currentFaculty = facultyList.find(
@@ -48,11 +50,33 @@ export const facultyApiService = {
       );
     });
 
+    // Revisions requested by University Authority
+    const revisionsList = approvalsList.filter(
+      (a) => a.status === 'Changes Required' || a.status === 'Changes Requested'
+    );
+
     return {
       faculty: currentFaculty,
       challenges: myChallenges.length > 0 ? myChallenges : challengesList,
-      projects: myProjects.length > 0 ? myProjects : projectsList
+      projects: myProjects.length > 0 ? myProjects : projectsList,
+      approvals: approvalsList,
+      revisions: revisionsList
     };
+  },
+
+  async resubmitRevision(approvalId, universityCode = 'RU001', notes = '') {
+    try {
+      const res = await universityApiService.updateApprovalStatus(
+        approvalId,
+        universityCode,
+        'Pending',
+        notes ? `Faculty Revision: ${notes}` : 'Revised proposal resubmitted by Faculty'
+      );
+      return res;
+    } catch (err) {
+      console.error('API resubmitRevision error:', err.message);
+      throw err;
+    }
   },
 
   async updateProject(projectId, updateData) {

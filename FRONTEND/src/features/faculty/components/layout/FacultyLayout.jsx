@@ -8,6 +8,7 @@ import { FacultyTeamsPanel } from '../teams/FacultyTeamsPanel.jsx';
 import { FacultyProjectsPanel } from '../projects/FacultyProjectsPanel.jsx';
 import { FacultyProjectWorkspace } from '../projects/FacultyProjectWorkspace.jsx';
 import { FacultyProfilePanel } from '../profile/FacultyProfilePanel.jsx';
+import { FacultyRevisionsPanel } from '../revisions/FacultyRevisionsPanel.jsx';
 import { facultyApiService } from '../../services/facultyApiService.js';
 
 export const FacultyLayout = ({ user, onLogout }) => {
@@ -21,7 +22,9 @@ export const FacultyLayout = ({ user, onLogout }) => {
   const [data, setData] = useState({
     faculty: null,
     challenges: [],
-    projects: []
+    projects: [],
+    approvals: [],
+    revisions: []
   });
 
   const facultyEmail = user?.email || 'binod@ru.ac.in';
@@ -64,6 +67,24 @@ export const FacultyLayout = ({ user, onLogout }) => {
   const facultyDept = data.faculty?.department || user?.profile?.department || 'Electrical & Electronics';
   const uniName = data.faculty?.universityName || 'Ranchi University';
 
+  // Calculate pending revision requests count
+  const projectRevisionsCount = (data.projects || []).filter((p) => {
+    const bStatus = String(p.budgetStatus || '').toLowerCase();
+    const pStatus = String(p.prototypeStatus || '').toLowerCase();
+    const gStatus = String(p.governmentStatus || '').toLowerCase();
+    const status = String(p.status || '').toLowerCase();
+    return (
+      bStatus.includes('changes required') ||
+      pStatus.includes('changes required') ||
+      gStatus.includes('changes required') ||
+      status.includes('changes required') ||
+      Boolean(p.adminRemarks && (bStatus.includes('changes') || pStatus.includes('changes')))
+    );
+  }).length;
+
+  const approvalRevisionsCount = (data.revisions || []).length;
+  const totalRevisionCount = Math.max(projectRevisionsCount, approvalRevisionsCount);
+
   return (
     <div className="min-h-screen bg-[#f8fafc] flex flex-col h-screen overflow-hidden text-slate-900 font-sans select-none">
       {/* Top Header */}
@@ -77,7 +98,7 @@ export const FacultyLayout = ({ user, onLogout }) => {
         selectedSector={selectedSector}
         setSelectedSector={setSelectedSector}
         onExportPdf={() => window.print()}
-        notificationCount={3}
+        notificationCount={totalRevisionCount}
       />
 
       {/* Main Workspace Layout with Sidebar and Content Container */}
@@ -92,6 +113,7 @@ export const FacultyLayout = ({ user, onLogout }) => {
           onLogout={onLogout}
           universityName={uniName}
           facultyName={facultyName}
+          revisionCount={totalRevisionCount}
         />
 
         <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden bg-[#f8fafc]">
@@ -114,7 +136,18 @@ export const FacultyLayout = ({ user, onLogout }) => {
               <FacultyAssignedChallenges
                 challenges={data.challenges}
                 faculty={data.faculty}
-                onDraftProposal={() => setActiveTab('dashboard')} // redirect since global proposal tab is removed
+                onDraftProposal={() => setActiveTab('dashboard')}
+              />
+            ) : activeTab === 'revisions' ? (
+              <FacultyRevisionsPanel
+                revisions={data.revisions || []}
+                projects={data.projects || []}
+                faculty={data.faculty}
+                onRefresh={loadData}
+                onNavigateTab={(tab, id = null) => {
+                  if (id) setSelectedProjectId(id);
+                  setActiveTab(tab);
+                }}
               />
             ) : activeTab === 'project-workspace' ? (
               <FacultyProjectWorkspace
