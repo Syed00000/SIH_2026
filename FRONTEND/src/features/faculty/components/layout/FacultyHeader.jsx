@@ -3,12 +3,12 @@ import { Bell, X, CheckCheck, BookOpen, FlaskConical, Trophy, AlertCircle, Chevr
 import { facultyApiService } from '../../services/facultyApiService.js';
 
 const TYPE_META = {
-  submission:  { icon: BookOpen,     color: '#007A61', bg: '#e6f4f1', label: 'New Submission' },
-  achievement: { icon: Trophy,       color: '#7c3aed', bg: '#ede9fe', label: 'Achievement' },
-  alert:       { icon: AlertCircle,  color: '#d97706', bg: '#fef3c7', label: 'Alert' },
-  lab:         { icon: FlaskConical, color: '#0284c7', bg: '#e0f2fe', label: 'Lab Update' },
-  directive:   { icon: MessageSquare, color: '#d97706', bg: '#fffbeb', label: 'University Directive' },
-  info:        { icon: Bell,         color: '#64748b', bg: '#f1f5f9', label: 'Notification' }
+  submission: { icon: BookOpen, color: '#007A61', bg: '#e6f4f1' },
+  achievement: { icon: Trophy, color: '#7c3aed', bg: '#ede9fe' },
+  alert: { icon: AlertCircle, color: '#d97706', bg: '#fef3c7' },
+  lab: { icon: FlaskConical, color: '#0284c7', bg: '#e0f2fe' },
+  directive: { icon: MessageSquare, color: '#d97706', bg: '#fffbeb' },
+  info: { icon: Bell, color: '#64748b', bg: '#f1f5f9' }
 };
 
 const relTime = (ts) => {
@@ -36,14 +36,10 @@ export const FacultyHeader = ({
   const [loading, setLoading] = useState(false);
   const panelRef = useRef(null);
   const bellRef = useRef(null);
-
   const initials = (facultyName || 'FM').split(' ').map((w) => w[0]).join('').slice(0, 2).toUpperCase();
 
   useEffect(() => {
-    const fn = (e) => {
-      if (panelRef.current?.contains(e.target) || bellRef.current?.contains(e.target)) return;
-      setOpen(false);
-    };
+    const fn = (e) => { if (!panelRef.current?.contains(e.target) && !bellRef.current?.contains(e.target)) setOpen(false); };
     document.addEventListener('mousedown', fn);
     return () => document.removeEventListener('mousedown', fn);
   }, []);
@@ -51,41 +47,18 @@ export const FacultyHeader = ({
   useEffect(() => {
     if (!open) return;
     setLoading(true);
+    const directiveItems = (notifications || []).map((d) => ({
+      id: d.id, title: d.title, description: d.message, type: 'directive', time: d.date, projectId: d.projectId, read: false
+    }));
     facultyApiService.getNotifications(universityCode)
-      .then((data) => {
-        const backendItems = (data || []).map((n) => ({ ...n, read: false }));
-        const directiveItems = (notifications || []).map((d) => ({
-          id: d.id,
-          title: d.title,
-          description: d.message,
-          type: 'directive',
-          time: d.date,
-          projectId: d.projectId,
-          read: false
-        }));
-        setNotifs([...directiveItems, ...backendItems]);
-      })
-      .catch(() => {
-        setNotifs((notifications || []).map(d => ({
-          id: d.id,
-          title: d.title,
-          description: d.message,
-          type: 'directive',
-          time: d.date,
-          projectId: d.projectId,
-          read: false
-        })));
-      })
+      .then((data) => setNotifs([...directiveItems, ...(data || []).map((n) => ({ ...n, read: false }))]))
+      .catch(() => setNotifs(directiveItems))
       .finally(() => setLoading(false));
   }, [open, universityCode, notifications]);
 
   const unread = notifs.filter((n) => !n.read).length || notificationCount || (notifications || []).length;
-
   const markAllRead = () => setNotifs((p) => p.map((n) => ({ ...n, read: true })));
-  const clearAll = async () => {
-    setNotifs([]);
-    await facultyApiService.clearNotifications(universityCode).catch(() => {});
-  };
+  const clearAll = async () => { setNotifs([]); await facultyApiService.clearNotifications(universityCode).catch(() => {}); };
 
   return (
     <>
