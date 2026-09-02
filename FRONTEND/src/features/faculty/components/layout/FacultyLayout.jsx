@@ -9,6 +9,7 @@ import { FacultyProjectsPanel } from '../projects/FacultyProjectsPanel.jsx';
 import { FacultyProjectWorkspace } from '../projects/FacultyProjectWorkspace.jsx';
 import { FacultyProfilePanel } from '../profile/FacultyProfilePanel.jsx';
 import { FacultyRevisionsPanel } from '../revisions/FacultyRevisionsPanel.jsx';
+import { FacultyNotificationsPanel } from './FacultyNotificationsPanel.jsx';
 import { facultyApiService } from '../../services/facultyApiService.js';
 
 export const FacultyLayout = ({ user, onLogout }) => {
@@ -109,8 +110,15 @@ export const FacultyLayout = ({ user, onLogout }) => {
         facultyName={facultyName}
         facultyRole={facultyRole}
         department={facultyDept}
+        universityCode={universityCode}
+        selectedDistrict={selectedDistrict}
+        setSelectedDistrict={setSelectedDistrict}
+        selectedSector={selectedSector}
+        setSelectedSector={setSelectedSector}
+        onExportPdf={() => window.print()}
         notificationCount={totalNotificationCount}
         notifications={notificationsList}
+        onViewAllNotifications={() => setActiveTab('notifications')}
         onSelectNotification={(n) => {
           if (n.projectId) {
             setSelectedProjectId(n.projectId);
@@ -139,6 +147,8 @@ export const FacultyLayout = ({ user, onLogout }) => {
               <div className="flex items-center justify-center h-64 text-xs font-bold text-slate-600">
                 Loading Faculty Mentorship Workspace...
               </div>
+            ) : activeTab === 'notifications' ? (
+              <FacultyNotificationsPanel onBack={() => setActiveTab('dashboard')} />
             ) : activeTab === 'challenges' ? (
               <FacultyAssignedChallenges challenges={data.challenges} faculty={data.faculty} onDraftProposal={() => setActiveTab('dashboard')} />
             ) : activeTab === 'revisions' ? (

@@ -41,5 +41,7 @@ router.get('/reports', (req, res, next) => universityController.getReports(req, 
 router.get('/profile', (req, res, next) => universityController.getProfile(req, res, next));
 router.put('/profile', (req, res, next) => universityController.updateProfile(req, res, next));
 router.patch('/profile', (req, res, next) => universityController.updateProfile(req, res, next));
+router.get('/notifications', (req, res, next) => universityController.getNotifications(req, res, next));
+router.delete('/notifications', (req, res, next) => universityController.clearNotifications(req, res, next));
 
 export default router;

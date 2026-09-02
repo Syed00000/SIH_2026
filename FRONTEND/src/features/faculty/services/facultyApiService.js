@@ -144,6 +144,26 @@ export const facultyApiService = {
       console.error('API deletePrototypeDraft error:', err.message);
       return { success: false };
     }
+  },
+
+  async getNotifications(universityCode = 'RU001') {
+    try {
+      const res = await apiClient.get(`university/notifications?universityCode=${encodeURIComponent(universityCode)}`);
+      return res?.data?.data || [];
+    } catch (err) {
+      console.error('API getNotifications error:', err.message);
+      return [];
+    }
+  },
+
+  async clearNotifications(universityCode = 'RU001') {
+    try {
+      await apiClient.delete(`university/notifications?universityCode=${encodeURIComponent(universityCode)}`);
+      return { success: true };
+    } catch (err) {
+      console.error('API clearNotifications error:', err.message);
+      return { success: false };
+    }
   }
 };
 
