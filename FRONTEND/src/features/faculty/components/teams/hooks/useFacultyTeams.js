@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { universityApiService } from '../../../../university/services/universityApiService.js';
 
-export const useFacultyTeams = ({ projects = [], faculty, onRefresh, initialProjectId = null }) => {
+export const useFacultyTeams = ({ projects = [], faculty, onRefresh, initialProjectId = null, viewMode = 'list' }) => {
   const [selectedProjectId, setSelectedProjectId] = useState(
     initialProjectId || projects[0]?.projectId || projects[0]?.challengeId || ''
   );
@@ -33,11 +33,14 @@ export const useFacultyTeams = ({ projects = [], faculty, onRefresh, initialProj
   const [savedSuccess, setSavedSuccess] = useState(false);
 
   useEffect(() => {
-    if (currentProject) {
+    if (viewMode === 'create') {
+      setTeamName('');
+      setTeamMembers([]);
+    } else if (currentProject) {
       setTeamName(currentProject.studentTeam || currentProject.teamName || 'Smart Aqua Innovators');
       setTeamMembers(Array.isArray(currentProject.teamMembers) ? currentProject.teamMembers : []);
     }
-  }, [currentProject?.projectId]);
+  }, [currentProject?.projectId, viewMode]);
 
   const handleAddMember = (e) => {
     e.preventDefault();

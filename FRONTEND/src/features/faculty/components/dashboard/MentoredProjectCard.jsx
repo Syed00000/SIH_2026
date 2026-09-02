@@ -1,5 +1,5 @@
 import React from 'react';
-import { ProjectFundingBreakdown } from './ProjectFundingBreakdown.jsx';
+import { ChevronRight } from 'lucide-react';
 
 export const MentoredProjectCard = ({ project: p, index: i, onNavigateTab }) => {
   const milestonesDone = p.milestonesCompleted || 1;
@@ -10,50 +10,53 @@ export const MentoredProjectCard = ({ project: p, index: i, onNavigateTab }) => 
     <div
       key={p.projectId || i}
       onClick={() => onNavigateTab('project-workspace', p.projectId || p.challengeId)}
-      className="p-3.5 bg-slate-50/70 hover:bg-emerald-50/40 border border-slate-200/80 hover:border-emerald-200 rounded-xl transition-all cursor-pointer shadow-2xs space-y-2"
+      className="group flex items-center justify-between p-3.5 bg-white hover:bg-emerald-50/50 border-b border-slate-200/80 last:border-0 transition-all cursor-pointer"
     >
-      <div className="flex items-start justify-between gap-2">
-        <div>
-          <div className="flex items-center space-x-2">
-            <span className="text-[10px] font-mono font-bold bg-white border border-slate-200 px-1.5 py-0.5 rounded text-slate-600">
+      <div className="flex items-center space-x-4 min-w-0 flex-1">
+        {/* Index/Number Indicator */}
+        <div className="w-8 h-8 rounded-full bg-slate-100 group-hover:bg-[#007A61] group-hover:text-white text-slate-500 flex items-center justify-center font-extrabold text-xs transition-colors shrink-0">
+          {i + 1}
+        </div>
+
+        {/* Project Core Info */}
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center space-x-2 mb-0.5">
+            <span className="text-[10px] font-mono font-bold bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded">
               {p.projectId || 'PRJ-1001'}
             </span>
-            <span className="text-[10.5px] font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+            <span className="text-[10px] font-bold text-emerald-800 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">
               {p.domain || 'Innovation'}
             </span>
-            {p.disbursedAmount && p.disbursedAmount !== '₹ 0' && p.disbursedAmount !== '0' && (
-              <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded border border-emerald-200 flex items-center space-x-1">
-                <span>{p.disbursedAmount} Sanctioned</span>
-              </span>
-            )}
+            <span className="text-[10px] font-extrabold px-1.5 py-0.5 rounded-full bg-amber-50 text-amber-800 border border-amber-200">
+              {p.status || 'Proposal Stage'}
+            </span>
           </div>
-          <h3 className="text-xs font-extrabold text-slate-900 mt-1 line-clamp-1">
+          <h3 className="text-sm font-extrabold text-slate-900 truncate group-hover:text-[#007A61] transition-colors">
             {p.title}
           </h3>
         </div>
-        <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-amber-50 text-amber-800 border border-amber-200 shrink-0">
-          {p.status || 'Proposal Stage'}
-        </span>
       </div>
 
-      {/* Progress bar */}
-      <div className="space-y-1 pt-1">
-        <div className="flex justify-between items-center text-[10.5px]">
-          <span className="font-semibold text-slate-600">R&D Lifecycle</span>
-          <span className="font-extrabold font-mono text-[#007A61]">
-            {progressPct}% ({milestonesDone}/{totalM} Milestones)
+      {/* Progress & Metrics */}
+      <div className="flex items-center space-x-6 shrink-0 ml-4 hidden md:flex">
+        <div className="flex flex-col items-end">
+          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">
+            Lifecycle Progress
           </span>
+          <div className="flex items-center space-x-2">
+            <div className="w-24 bg-slate-200 rounded-full h-1.5 overflow-hidden">
+              <div
+                className="bg-[#007A61] h-1.5 rounded-full transition-all duration-300"
+                style={{ width: `${progressPct}%` }}
+              />
+            </div>
+            <span className="text-[11px] font-extrabold font-mono text-[#007A61] min-w-[32px] text-right">
+              {progressPct}%
+            </span>
+          </div>
         </div>
-        <div className="w-full bg-slate-200/80 rounded-full h-1.5 overflow-hidden">
-          <div
-            className="bg-[#007A61] h-1.5 rounded-full transition-all duration-300"
-            style={{ width: `${progressPct}%` }}
-          />
-        </div>
+        <ChevronRight className="w-4 h-4 text-slate-300 group-hover:text-[#007A61] transition-colors" />
       </div>
-
-      {/* Financial Breakdown */}
-      <ProjectFundingBreakdown project={p} />
     </div>
   );
 };
