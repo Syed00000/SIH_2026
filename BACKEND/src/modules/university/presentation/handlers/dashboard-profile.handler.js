@@ -49,10 +49,37 @@ export const createDashboardProfileHandler = (service) => {
     } catch (error) { next(error); }
   };
 
+  const getNotifications = async (req, res, next) => {
+    try {
+      const code = extractUniversityCode(req, 'RU001');
+      const data = await service.getActivities(code);
+      // Map activities to notification shape
+      const notifications = (data || []).map((a) => ({
+        id: a._id,
+        title: a.type === 'submission' ? 'New Submission' : a.type === 'achievement' ? 'Achievement' : a.type === 'alert' ? 'Alert' : 'Notification',
+        description: a.text,
+        type: a.type || 'info',
+        time: a.timestamp,
+        read: false,
+      }));
+      res.status(200).json({ status: 'SUCCESS', data: notifications });
+    } catch (error) { next(error); }
+  };
+
+  const clearNotifications = async (req, res, next) => {
+    try {
+      const code = extractUniversityCode(req, 'RU001');
+      await service.clearActivities(code);
+      res.status(200).json({ status: 'SUCCESS', message: 'All notifications cleared' });
+    } catch (error) { next(error); }
+  };
+
   return {
     getDashboard,
     getActivities,
     clearActivities,
+    getNotifications,
+    clearNotifications,
     getReports,
     getProfile,
     updateProfile
