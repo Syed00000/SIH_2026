@@ -37,7 +37,7 @@ export function formatChallengeItem(c, { code, uniName, defaultNodalUser } = {})
   const assignedFac = (c.assignedFaculty?.name || c.assignedUniversity?.mentorName) ? {
     name: c.assignedFaculty?.name || c.assignedUniversity?.mentorName || '',
     department: c.assignedFaculty?.department || assignedUni.department || '',
-    email: c.assignedFaculty?.email || '',
+    email: c.assignedFaculty?.email || c.assignedUniversity?.mentorEmail || '',
     designation: c.assignedFaculty?.designation || ''
   } : null;
 

@@ -36,8 +36,9 @@ export const UniversityLayout = ({ user, onLogout }) => {
 
   const handleUpdateChallenge = async (payload) => {
     await universityApiService.assignFaculty(payload.challengeId, universityCode, {
-      name: payload.facultyName,
-      department: payload.department
+      name: payload.name || payload.facultyName,
+      department: payload.department,
+      email: payload.email || payload.facultyEmail || ''
     });
     const data = await universityApiService.getDashboardSummary(universityCode);
     setDashboardData(data);

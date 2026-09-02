@@ -3,26 +3,61 @@ import {
   ClipboardList,
   Search,
   MapPin,
-  Calendar,
-  ChevronRight,
   FileText,
-  ShieldCheck,
-  Building2,
   CheckCircle2,
-  ArrowUpRight
+  ArrowUpRight,
+  UserCheck,
+  UserX,
+  Layers
 } from 'lucide-react';
 import { ProblemEvidenceDossierModal } from '../../../nodal/components/ProblemEvidenceDossierModal.jsx';
 
 export const FacultyAssignedChallenges = ({
   challenges = [],
+  allChallenges = [],
   faculty,
   onDraftProposal
 }) => {
   const [search, setSearch] = useState('');
   const [domainFilter, setDomainFilter] = useState('All');
+  const [allocationFilter, setAllocationFilter] = useState('my'); // 'my' | 'all' | 'reassigned'
   const [selectedDossier, setSelectedDossier] = useState(null);
 
-  const filtered = challenges.filter((c) => {
+  const getAssignmentStatus = (c) => {
+    const cleanEmail = (faculty?.email || '').toLowerCase().trim();
+    const facultyNameLower = (faculty?.name || '').toLowerCase().trim();
+    
+    const mentorEmail = (c.assignedFaculty?.email || c.assignedUniversity?.mentorEmail || '').toLowerCase().trim();
+    const mentorName = (c.assignedFaculty?.name || c.assignedUniversity?.mentorName || '').trim();
+    const mentorNameLower = mentorName.toLowerCase();
+    const mentorDept = c.assignedFaculty?.department || c.assignedUniversity?.department || 'Engineering & Technology';
+
+    const isAssignedToMe = Boolean(
+      (cleanEmail && mentorEmail === cleanEmail) ||
+      (facultyNameLower && mentorNameLower && (mentorNameLower.includes(facultyNameLower) || facultyNameLower.includes(mentorNameLower)))
+    );
+
+    return {
+      isAssignedToMe,
+      mentorName: mentorName || 'Assigned Faculty',
+      mentorDept,
+      hasMentor: Boolean(mentorName || mentorEmail)
+    };
+  };
+
+  const pool = (allChallenges && allChallenges.length > 0) ? allChallenges : challenges;
+
+  const myCount = pool.filter((c) => getAssignmentStatus(c).isAssignedToMe).length;
+  const reassignedCount = pool.filter((c) => {
+    const st = getAssignmentStatus(c);
+    return !st.isAssignedToMe && st.hasMentor;
+  }).length;
+
+  const filtered = pool.filter((c) => {
+    const st = getAssignmentStatus(c);
+    if (allocationFilter === 'my' && !st.isAssignedToMe) return false;
+    if (allocationFilter === 'reassigned' && (st.isAssignedToMe || !st.hasMentor)) return false;
+
     if (domainFilter !== 'All' && c.domain !== domainFilter && c.category !== domainFilter) return false;
     if (search.trim()) {
       const q = search.toLowerCase();
@@ -30,7 +65,8 @@ export const FacultyAssignedChallenges = ({
         (c.title || '').toLowerCase().includes(q) ||
         (c.challengeId || '').toLowerCase().includes(q) ||
         (c.domain || '').toLowerCase().includes(q) ||
-        (c.description || '').toLowerCase().includes(q)
+        (c.description || '').toLowerCase().includes(q) ||
+        st.mentorName.toLowerCase().includes(q)
       );
     }
     return true;
@@ -51,19 +87,68 @@ export const FacultyAssignedChallenges = ({
             <span>Official Grassroots Problem Statements</span>
           </h1>
           <p className="text-xs text-slate-500 mt-0.5">
-            Verified ground problems allocated to you by Ranchi University for solution scoping and prototype formulation.
+            Verified ground problems allocated by Ranchi University for solution scoping and prototype formulation.
           </p>
+        </div>
+
+        {/* Allocation Filter Pills */}
+        <div className="flex items-center space-x-1.5 bg-slate-100 p-1 rounded-xl border border-slate-200 text-xs self-start sm:self-auto">
+          <button
+            type="button"
+            onClick={() => setAllocationFilter('my')}
+            className={`px-3 py-1.5 rounded-lg font-bold transition-all cursor-pointer flex items-center space-x-1.5 ${
+              allocationFilter === 'my'
+                ? 'bg-white text-[#007A61] shadow-2xs'
+                : 'text-slate-600 hover:text-slate-900'
+            }`}
+          >
+            <span>Assigned to You</span>
+            <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-black ${
+              allocationFilter === 'my' ? 'bg-emerald-100 text-emerald-900' : 'bg-slate-200 text-slate-700'
+            }`}>
+              {myCount}
+            </span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setAllocationFilter('reassigned')}
+            className={`px-3 py-1.5 rounded-lg font-bold transition-all cursor-pointer flex items-center space-x-1.5 ${
+              allocationFilter === 'reassigned'
+                ? 'bg-white text-blue-700 shadow-2xs'
+                : 'text-slate-600 hover:text-slate-900'
+            }`}
+          >
+            <span>Reassigned / Allocated</span>
+            <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-black ${
+              allocationFilter === 'reassigned' ? 'bg-blue-100 text-blue-900' : 'bg-slate-200 text-slate-700'
+            }`}>
+              {reassignedCount}
+            </span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setAllocationFilter('all')}
+            className={`px-3 py-1.5 rounded-lg font-bold transition-all cursor-pointer flex items-center space-x-1.5 ${
+              allocationFilter === 'all'
+                ? 'bg-white text-slate-900 shadow-2xs'
+                : 'text-slate-600 hover:text-slate-900'
+            }`}
+          >
+            <span>All ({pool.length})</span>
+          </button>
         </div>
       </div>
 
-      {/* Filter Bar */}
+      {/* Search & Domain Filter Bar */}
       <div className="bg-white border border-slate-200/90 p-3 rounded-2xl shadow-2xs grid grid-cols-1 sm:grid-cols-3 gap-2.5 items-center">
         <div className="relative sm:col-span-2">
           <input
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search problems by keyword, district, ID..."
+            placeholder="Search problems by keyword, district, ID, mentor..."
             className="w-full pl-8 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:ring-1 focus:ring-[#007A61] focus:bg-white transition-all shadow-2xs"
           />
           <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2" />
@@ -90,9 +175,17 @@ export const FacultyAssignedChallenges = ({
       {filtered.length === 0 ? (
         <div className="bg-white border border-slate-200/90 rounded-2xl p-10 text-center text-slate-400 space-y-2">
           <ClipboardList className="w-10 h-10 mx-auto text-slate-300" />
-          <h3 className="font-bold text-slate-700 text-sm">No Assigned Problem Statements Found</h3>
+          <h3 className="font-bold text-slate-700 text-sm">
+            {allocationFilter === 'my'
+              ? 'No Problem Statements Currently Assigned to You'
+              : allocationFilter === 'reassigned'
+              ? 'No Reassigned Problems Found'
+              : 'No Problem Statements Found'}
+          </h3>
           <p className="text-xs max-w-md mx-auto">
-            When the University assigns a problem to your department, it will appear here for research scoping.
+            {allocationFilter === 'my'
+              ? 'Problems assigned to other faculties or reassigned will appear under the "Reassigned / Allocated" tab.'
+              : 'When the University allocates problems to faculty mentors, they will be listed here.'}
           </p>
         </div>
       ) : (
@@ -100,14 +193,19 @@ export const FacultyAssignedChallenges = ({
           {filtered.map((c, idx) => {
             const domain = c.domain || c.category || 'Innovation';
             const loc = c.location?.district || c.district || 'Jharkhand';
+            const status = getAssignmentStatus(c);
 
             return (
               <div
                 key={c.challengeId || idx}
-                className="bg-white border border-slate-200/90 rounded-2xl p-4 shadow-2xs hover:border-emerald-300 transition-all flex flex-col justify-between space-y-3"
+                className={`bg-white border rounded-2xl p-4 shadow-2xs transition-all flex flex-col justify-between space-y-3 ${
+                  status.isAssignedToMe
+                    ? 'border-emerald-200 hover:border-emerald-400'
+                    : 'border-slate-200/90 hover:border-blue-300'
+                }`}
               >
                 <div className="space-y-2">
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between gap-2">
                     <div className="flex items-center space-x-2">
                       <span className="text-[10px] font-mono font-bold bg-slate-100 border border-slate-200 px-1.5 py-0.5 rounded text-slate-600">
                         {c.challengeId}
@@ -116,9 +214,17 @@ export const FacultyAssignedChallenges = ({
                         {domain}
                       </span>
                     </div>
-                    <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-emerald-50 text-[#007A61] border border-emerald-200">
-                      Assigned to You
-                    </span>
+
+                    {status.isAssignedToMe ? (
+                      <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-emerald-50 text-[#007A61] border border-emerald-200 whitespace-nowrap shadow-2xs">
+                        ✓ Assigned to You
+                      </span>
+                    ) : (
+                      <span className="text-[10px] font-extrabold px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-800 border border-blue-200 whitespace-nowrap shadow-2xs flex items-center space-x-1">
+                        <UserCheck className="w-3 h-3 text-blue-600" />
+                        <span>Allocated to: {status.mentorName}</span>
+                      </span>
+                    )}
                   </div>
 
                   <h3 className="text-sm font-extrabold text-slate-900 leading-snug">
@@ -128,6 +234,18 @@ export const FacultyAssignedChallenges = ({
                   <p className="text-xs text-slate-600 line-clamp-3 leading-relaxed">
                     {c.problemStatement || c.description || 'No detailed problem statement provided.'}
                   </p>
+
+                  {!status.isAssignedToMe && (
+                    <div className="p-2.5 bg-blue-50/60 border border-blue-100 rounded-xl space-y-0.5">
+                      <div className="text-[11px] font-bold text-blue-900 flex items-center space-x-1">
+                        <UserCheck className="w-3.5 h-3.5 text-blue-600" />
+                        <span>Lead Mentor: {status.mentorName}</span>
+                      </div>
+                      <div className="text-[10px] text-blue-700">
+                        {status.mentorDept} &bull; Reassigned by University Nodal Cell
+                      </div>
+                    </div>
+                  )}
 
                   <div className="flex items-center space-x-3 text-[11px] text-slate-500 pt-1">
                     <span className="flex items-center space-x-1">
@@ -148,14 +266,20 @@ export const FacultyAssignedChallenges = ({
                     <span>Evidence Dossier</span>
                   </button>
 
-                  <button
-                    type="button"
-                    onClick={() => onDraftProposal ? onDraftProposal(c) : null}
-                    className="px-3.5 py-1.5 bg-[#007A61] hover:bg-[#006650] text-white rounded-xl text-[11px] font-bold transition-all shadow-2xs flex items-center space-x-1 cursor-pointer"
-                  >
-                    <span>Draft Proposal & Budget</span>
-                    <ArrowUpRight className="w-3.5 h-3.5" />
-                  </button>
+                  {status.isAssignedToMe ? (
+                    <button
+                      type="button"
+                      onClick={() => onDraftProposal ? onDraftProposal(c) : null}
+                      className="px-3.5 py-1.5 bg-[#007A61] hover:bg-[#006650] text-white rounded-xl text-[11px] font-bold transition-all shadow-2xs flex items-center space-x-1 cursor-pointer"
+                    >
+                      <span>Draft Proposal & Budget</span>
+                      <ArrowUpRight className="w-3.5 h-3.5" />
+                    </button>
+                  ) : (
+                    <span className="px-3 py-1.5 bg-slate-100 border border-slate-200/80 text-slate-500 rounded-xl text-[10.5px] font-bold">
+                      Reassigned to {status.mentorName}
+                    </span>
+                  )}
                 </div>
               </div>
             );

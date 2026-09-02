@@ -90,8 +90,13 @@ export const useAssignedChallenges = ({
     const actionText = type === 'clarify' ? 'Clarification Active' : 'View';
 
     if (type === 'assign') {
-      if (onAssignFaculty) await onAssignFaculty({ challengeId, facultyName: payload.facultyName, department: payload.department });
-      else await universityApiService.assignFaculty(challengeId, universityCode, { name: payload.facultyName, department: payload.department });
+      const facObj = {
+        name: payload.facultyName || payload.name,
+        department: payload.department,
+        email: payload.facultyEmail || payload.email || ''
+      };
+      if (onAssignFaculty) await onAssignFaculty({ challengeId, ...facObj, facultyName: facObj.name });
+      else await universityApiService.assignFaculty(challengeId, universityCode, facObj);
     } else {
       const metadata = { declineReason: reason, remarks, query: query || remarks };
       if (onUpdateChallengeStatus) await onUpdateChallengeStatus(challengeId, newStatus, actionText, metadata);

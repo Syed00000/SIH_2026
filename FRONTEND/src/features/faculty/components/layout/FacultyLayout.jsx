@@ -134,7 +134,8 @@ export const FacultyLayout = ({ user, onLogout }) => {
               />
             ) : activeTab === 'challenges' ? (
               <FacultyAssignedChallenges
-                challenges={data.challenges}
+                challenges={data.challenges || []}
+                allChallenges={data.allChallenges || []}
                 faculty={data.faculty}
                 onDraftProposal={() => setActiveTab('dashboard')}
               />
