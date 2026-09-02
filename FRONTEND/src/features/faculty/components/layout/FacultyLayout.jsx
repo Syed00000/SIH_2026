@@ -9,6 +9,7 @@ import { FacultyProjectsPanel } from '../projects/FacultyProjectsPanel.jsx';
 import { FacultyProjectWorkspace } from '../projects/FacultyProjectWorkspace.jsx';
 import { FacultyProfilePanel } from '../profile/FacultyProfilePanel.jsx';
 import { FacultyRevisionsPanel } from '../revisions/FacultyRevisionsPanel.jsx';
+import { FacultyNotificationsPanel } from './FacultyNotificationsPanel.jsx';
 import { facultyApiService } from '../../services/facultyApiService.js';
 
 export const FacultyLayout = ({ user, onLogout }) => {
@@ -99,6 +100,7 @@ export const FacultyLayout = ({ user, onLogout }) => {
         setSelectedSector={setSelectedSector}
         onExportPdf={() => window.print()}
         notificationCount={totalRevisionCount}
+        onViewAllNotifications={() => setActiveTab('notifications')}
       />
 
       {/* Main Workspace Layout with Sidebar and Content Container */}
@@ -122,6 +124,8 @@ export const FacultyLayout = ({ user, onLogout }) => {
               <div className="flex items-center justify-center h-64 text-xs font-bold text-slate-600">
                 Loading Faculty Mentorship Workspace...
               </div>
+            ) : activeTab === 'notifications' ? (
+              <FacultyNotificationsPanel onBack={() => setActiveTab('dashboard')} />
             ) : activeTab === 'dashboard' ? (
               <FacultyDashboard
                 faculty={data.faculty}

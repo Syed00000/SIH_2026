@@ -46,6 +46,8 @@ export class UniversityController {
   getReports(req, res, next) { return this.dashboardProfileHandler.getReports(req, res, next); }
   getProfile(req, res, next) { return this.dashboardProfileHandler.getProfile(req, res, next); }
   updateProfile(req, res, next) { return this.dashboardProfileHandler.updateProfile(req, res, next); }
+  getNotifications(req, res, next) { return this.dashboardProfileHandler.getNotifications(req, res, next); }
+  clearNotifications(req, res, next) { return this.dashboardProfileHandler.clearNotifications(req, res, next); }
 }
 
 export const universityController = new UniversityController();
