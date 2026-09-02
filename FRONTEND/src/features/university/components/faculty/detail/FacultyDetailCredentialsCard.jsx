@@ -38,26 +38,11 @@ export const FacultyDetailCredentialsCard = ({
 
         <div className="p-3 bg-slate-50 border border-slate-200/80 rounded-xl space-y-1">
           <div className="flex items-center justify-between text-slate-500">
-            <span className="font-bold text-[10.5px] uppercase">Initial / Reset Password</span>
-            <div className="flex items-center space-x-1.5">
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="text-slate-400 hover:text-slate-900 cursor-pointer"
-              >
-                {showPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
-              </button>
-              <button
-                type="button"
-                onClick={() => handleCopy(faculty.password || 'Faculty@123456', 'pass')}
-                className="text-slate-400 hover:text-slate-900 cursor-pointer"
-              >
-                {copiedField === 'pass' ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
-              </button>
-            </div>
+            <span className="font-bold text-[10.5px] uppercase">Password Status</span>
+            <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
           </div>
-          <span className="font-mono font-bold text-slate-900 text-xs block">
-            {showPassword ? faculty.password || 'Faculty@123456' : '••••••••••••'}
+          <span className="font-mono font-bold text-slate-500 text-[11px] block mt-1">
+            Encrypted (Can only be reset)
           </span>
         </div>
       </div>
