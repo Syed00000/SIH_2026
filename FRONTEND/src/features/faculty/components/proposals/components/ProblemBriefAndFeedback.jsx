@@ -64,19 +64,30 @@ export const ProblemBriefAndFeedback = ({
       )}
 
       {/* University Authority Review Feedback Banner */}
-      {currentProject?.budgetStatus === 'Changes Required by University' && (
-        <div className="p-3.5 bg-amber-50 border border-amber-300 rounded-xl space-y-1">
-          <div className="flex items-center space-x-2 text-amber-900 font-bold text-xs">
-            <AlertCircle className="w-4 h-4 text-amber-700 shrink-0" />
-            <span>University Authority Requested Revisions</span>
+      {(currentProject?.budgetStatus?.includes('Changes Required') ||
+        currentProject?.status?.includes('Changes Required') ||
+        currentProject?.prototypeStatus?.includes('Changes Required') ||
+        Boolean(currentProject?.adminRemarks)) && (
+        <div className="p-4 bg-amber-50/90 border border-amber-300 rounded-xl space-y-2 shadow-2xs">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-2 text-amber-950 font-bold text-xs">
+              <AlertCircle className="w-4 h-4 text-amber-600 shrink-0" />
+              <span>University Authority Requested Revisions</span>
+            </div>
+            <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-amber-500 text-white shadow-2xs">
+              Action Required
+            </span>
           </div>
-          {currentProject.adminRemarks && (
-            <p className="text-xs text-amber-800 font-medium pl-6">
-              Authority Note: "{currentProject.adminRemarks}"
+          <div className="bg-white/80 border border-amber-200 rounded-lg p-2.5 space-y-0.5">
+            <span className="text-[10px] font-bold text-amber-800 uppercase tracking-wider block">
+              Authority Review Directive / Feedback:
+            </span>
+            <p className="text-xs text-amber-950 font-medium italic">
+              "{currentProject.adminRemarks || 'Please adjust the technical methodology, milestone stages, or itemized line-item budget allocations below and resubmit for evaluation.'}"
             </p>
-          )}
-          <p className="text-[10.5px] text-amber-700 font-semibold pl-6">
-            Please adjust the technical methodology or budget allocations below and resubmit.
+          </div>
+          <p className="text-[10.5px] text-amber-800 font-semibold">
+            Please make required adjustments in the Technical Methodology or Line-Item Budget sections below, then click <strong>"Resubmit Revised Proposal"</strong> at the bottom to send back to the University Authority.
           </p>
         </div>
       )}

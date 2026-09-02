@@ -1,12 +1,21 @@
 import { UniversityApproval, UniversityActivity } from '../model.js';
 
 export async function syncProjectApprovalRequest({ res, updateData, projectId, uniCode }) {
-  const approvalId = `APP-${res?.projectId || projectId || Date.now().toString().slice(-4)}`;
+  const projId = res?.projectId || projectId;
+  const approvalId = `APP-${projId}`;
   const isRevision = updateData.isRevised || updateData.revisionCount > 0;
   const approvalType = isRevision ? `Re-Proposal (Revised v${updateData.revisionCount || 2})` : 'R&D Grant Proposal';
 
+  const approvalQuery = {
+    $or: [
+      { approvalId },
+      { projectId: projId },
+      ...(res?.challengeId ? [{ challengeId: res.challengeId }] : [])
+    ]
+  };
+
   await UniversityApproval.findOneAndUpdate(
-    { approvalId },
+    approvalQuery,
     {
       $set: {
         approvalId,
