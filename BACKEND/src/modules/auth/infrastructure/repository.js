@@ -113,6 +113,49 @@ export class MongoTokenRepository extends TokenRepository {
       }
     }
   }
+
+  async deleteAllForUser(userId) {
+    if (!userId) return;
+    if (mongoose.connection.readyState === 1) {
+      const q = ObjectId.isValid(userId) ? { userId: new ObjectId(userId) } : { userId };
+      await MongooseRefreshToken.deleteMany(q);
+    }
+    for (const [key, t] of inMemoryTokens.entries()) {
+      if (String(t.userId) === String(userId)) {
+        inMemoryTokens.delete(key);
+      }
+    }
+  }
+
+  async revokeTokensByUserId(userId) {
+    return this.revokeAllForUser(userId);
+  }
+
+  async deleteTokensByUserId(userId) {
+    return this.deleteAllForUser(userId);
+  }
+
+  async deleteTokensByUserIds(userIds) {
+    if (!Array.isArray(userIds) || userIds.length === 0) return;
+    if (mongoose.connection.readyState === 1) {
+      const validIds = userIds.map((id) => (ObjectId.isValid(id) ? new ObjectId(id) : id));
+      await MongooseRefreshToken.deleteMany({ userId: { $in: validIds } });
+    }
+    const idSet = new Set(userIds.map(String));
+    for (const [key, t] of inMemoryTokens.entries()) {
+      if (idSet.has(String(t.userId))) {
+        inMemoryTokens.delete(key);
+      }
+    }
+  }
+
+  async purgeExpiredAndRevoked() {
+    if (mongoose.connection.readyState === 1) {
+      await MongooseRefreshToken.deleteMany({
+        $or: [{ expiresAt: { $lt: new Date() } }, { revoked: true }]
+      });
+    }
+  }
 }
 
 export default MongoTokenRepository;

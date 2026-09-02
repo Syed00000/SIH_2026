@@ -1,53 +1,82 @@
-import { UniversityChallenge, UniversityFaculty, UniversityProject, UniversityApproval } from '../model.js';
+import { UniversityFaculty, UniversityProject, UniversityApproval } from '../model.js';
 import { CitizenChallenge } from '../../../citizen/infrastructure/model.js';
 import User from '../../../users/infrastructure/model.js';
-import MongooseUniversity from '../../../government/heis/infrastructure/model.js';
-import { findUniversityByCodeOrId } from '../helpers/lookup.helper.js';
+import { findUniversityIdentity } from '../helpers/lookup.helper.js';
 import { formatChallengeItem } from '../helpers/challenge-formatter.helper.js';
 import { buildChallengeStatusUpdatePayload } from '../helpers/challenge-status-builder.helper.js';
 
 export class ChallengeRepository {
   async getChallengesByUniversity(universityCode, { status, domain, district, search, page = 1, limit = 100 } = {}) {
-    const rawCode = (universityCode || '').trim();
-    const uniDoc = await findUniversityByCodeOrId(rawCode);
-    const code = (uniDoc?.code || rawCode).toUpperCase();
-    const aishe = (uniDoc?.aisheCode || '').toUpperCase();
-    const uniName = uniDoc?.name || uniDoc?.legalName || '';
+    const identity = await findUniversityIdentity(universityCode);
+    if (!identity) {
+      // Fail closed
+      return { challenges: [], total: 0, page: 1, totalPages: 1 };
+    }
 
-    const validUniIdentifiers = Array.from(new Set([code, rawCode.toUpperCase(), aishe, uniDoc?.shortName].filter(Boolean)));
-    const citizenOrConditions = [{ 'assignedUniversity.id': { $in: validUniIdentifiers } }];
-    if (uniName) citizenOrConditions.push({ 'assignedUniversity.name': { $regex: new RegExp(uniName, 'i') } });
+    const code = identity.code;
+    const uniName = identity.name;
+    const validUniIdentifiers = identity.validIdentifiers;
 
-    const query = { universityCode: { $in: validUniIdentifiers }, isDeleted: { $ne: true } };
-    if (status && status !== 'All Status' && status !== 'All') query.status = status;
+    const citizenOrConditions = [
+      { 'assignedUniversity.id': { $in: validUniIdentifiers } }
+    ];
+    if (uniName) {
+      const escapedName = uniName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      citizenOrConditions.push({ 'assignedUniversity.name': { $regex: new RegExp(`^${escapedName}$`, 'i') } });
+    }
+
+    const query = {
+      $or: citizenOrConditions,
+      isDeleted: { $ne: true }
+    };
+    if (status && status !== 'All Status' && status !== 'All') {
+      if (status === 'Accepted') {
+        query.$and = [{
+          $or: [
+            { 'assignedUniversity.acceptanceStatus': 'Accepted' },
+            { acceptanceStatus: 'Accepted' },
+            { status: 'In Progress' }
+          ]
+        }];
+      } else {
+        query.status = status;
+      }
+    }
     if (domain && domain !== 'All Domains' && domain !== 'All') query.domain = domain;
-    if (district && district !== 'All Districts' && district !== 'All') query.district = district;
+    if (district && district !== 'All Districts' && district !== 'All') {
+      query.$or = [
+        { 'location.district': district },
+        { 'locationDetails.district': district }
+      ];
+    }
     if (search?.trim()) {
       const regex = new RegExp(search.trim(), 'i');
-      query.$and = [{ $or: [{ challengeId: regex }, { title: regex }, { domain: regex }, { district: regex }] }];
+      const searchOr = [
+        { challengeId: regex },
+        { title: regex },
+        { domain: regex },
+        { 'location.district': regex }
+      ];
+      query.$and = query.$and ? [...query.$and, { $or: searchOr }] : [{ $or: searchOr }];
     }
     const skip = (Number(page) - 1) * Number(limit);
 
     try {
-      const [uniChallenges, total, citizenChallenges, defaultNodalUser] = await Promise.all([
-        UniversityChallenge.find(query).sort({ assignedOn: -1 }).skip(skip).limit(Number(limit)).lean(),
-        UniversityChallenge.countDocuments(query),
-        CitizenChallenge.find({ $or: citizenOrConditions }).sort({ submittedAt: -1 }).limit(Number(limit)).lean(),
+      const [citizenChallenges, total, defaultNodalUser] = await Promise.all([
+        CitizenChallenge.find(query).sort({ submittedAt: -1 }).skip(skip).limit(Number(limit)).lean(),
+        CitizenChallenge.countDocuments(query),
         User.findOne({ role: { $in: ['NODAL', 'GOVERNMENT'] } }).lean()
       ]);
 
       const format = (c) => formatChallengeItem(c, { code, uniName, defaultNodalUser });
-      const seenIds = new Set((uniChallenges || []).map((c) => c.challengeId));
-      const mappedCitizen = (citizenChallenges || []).filter((cit) => !seenIds.has(cit.challengeId)).map(format);
-      const mappedUni = (uniChallenges || []).map(format);
-      const combined = [...mappedUni, ...mappedCitizen];
+      const mappedCitizen = (citizenChallenges || []).map(format);
 
       return {
-        challenges: combined,
-        total: (total || 0) + mappedCitizen.length,
+        challenges: mappedCitizen,
+        total: total || 0,
         page: Number(page),
         limit: Number(limit),
-        totalPages: Math.ceil(((total || 0) + mappedCitizen.length) / Number(limit)) || 1
+        totalPages: Math.ceil((total || 0) / Number(limit)) || 1
       };
     } catch {
       return { challenges: [], total: 0, page: Number(page), limit: Number(limit), totalPages: 1 };
@@ -57,19 +86,13 @@ export class ChallengeRepository {
   async updateChallengeStatus(challengeId, universityCode, status, actionLabel, metadata = {}) {
     try {
       const rawCode = (universityCode || '').trim();
-      const uniDoc = await findUniversityByCodeOrId(rawCode);
-      const resolvedUniName = uniDoc?.name || uniDoc?.legalName || rawCode || 'Assigned University';
-
-      const res = await UniversityChallenge.findOneAndUpdate(
-        { challengeId },
-        { $set: { status, actionLabel: actionLabel || status, ...metadata } },
-        { new: true }
-      );
+      const identity = await findUniversityIdentity(rawCode);
+      const resolvedUniName = identity?.name || rawCode || 'Assigned University';
 
       const updatePayload = buildChallengeStatusUpdatePayload(status, resolvedUniName, metadata);
       await CitizenChallenge.findOneAndUpdate({ challengeId }, { $set: updatePayload });
 
-      if (res) return res;
+      return { challengeId, status, actionLabel: actionLabel || status, ...metadata };
     } catch (err) {
       console.warn('Error updating challenge status in DB:', err);
     }
@@ -96,11 +119,9 @@ export class ChallengeRepository {
         }
       }
 
-      const res = await UniversityChallenge.findOneAndUpdate(
-        { challengeId },
-        { $set: { assignedFaculty: resolvedFaculty, status: 'Accepted', actionLabel: 'View' } },
-        { new: true }
-      );
+      // Fetch challenge title from canonical CitizenChallenge
+      const chlDoc = await CitizenChallenge.findOne({ challengeId }).lean();
+      const chlTitle = chlDoc?.title || 'Grassroots Innovation Challenge';
 
       if (resolvedFaculty?.email || resolvedFaculty?.name) {
         await UniversityFaculty.findOneAndUpdate(
@@ -111,7 +132,7 @@ export class ChallengeRepository {
             $addToSet: {
               assignedChallenges: {
                 challengeId,
-                title: res?.title || 'Grassroots Innovation Challenge',
+                title: chlTitle,
                 role: 'Lead Mentor'
               }
             }
@@ -119,8 +140,8 @@ export class ChallengeRepository {
         );
       }
 
-      const uniDoc = await MongooseUniversity.findOne({ code: (universityCode || '').toUpperCase() }).lean();
-      const resolvedUniName = uniDoc?.name || uniDoc?.legalName || universityCode || 'Assigned University';
+      const identity = await findUniversityIdentity(universityCode);
+      const resolvedUniName = identity?.name || universityCode || 'Assigned University';
 
       await CitizenChallenge.findOneAndUpdate(
         { challengeId },
@@ -167,11 +188,11 @@ export class ChallengeRepository {
         }
       );
 
-      if (res) return res;
+      return { challengeId, assignedFaculty: resolvedFaculty, status: 'Accepted', actionLabel: 'View' };
     } catch (err) {
       console.warn('Error assigning faculty in DB:', err);
     }
-    return { challengeId, assignedFaculty: facultyInfo, status: 'Accepted' };
+    return { challengeId, assignedFaculty: facultyInfo, status: 'Accepted', actionLabel: 'View' };
   }
 }
 

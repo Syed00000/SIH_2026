@@ -49,6 +49,18 @@ export class AuthService {
     return this.passwordService.resetPassword(params);
   }
 
+  async revokeTokensByUserId(userId) {
+    return this.tokenService.revokeTokensByUserId(userId);
+  }
+
+  async deleteTokensByUserId(userId) {
+    return this.tokenService.deleteTokensByUserId(userId);
+  }
+
+  async deleteTokensByUserIds(userIds) {
+    return this.tokenService.deleteTokensByUserIds(userIds);
+  }
+
   _generateAccessToken(user) {
     return this.tokenService.generateAccessToken(user);
   }

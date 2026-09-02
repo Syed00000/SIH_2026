@@ -118,7 +118,6 @@ export class AdminService {
 
     let newPasswordHash = null;
     if (password && password.trim()) {
-      existing.password = password.trim();
       newPasswordHash = await bcrypt.hash(password.trim(), 10);
       existing.passwordHash = newPasswordHash;
     }
@@ -144,8 +143,23 @@ export class AdminService {
 
   async deleteAdmin(id) {
     if (!mongoose.Types.ObjectId.isValid(id)) throw new ValidationError('Invalid Admin ID format');
-    const admin = await Admin.findByIdAndDelete(id);
+    const admin = await Admin.findById(id);
     if (!admin) throw new NotFoundError('Administrator not found');
+
+    // Cascade delete associated User account and refresh tokens
+    try {
+      const User = mongoose.model('User');
+      const RefreshToken = mongoose.model('RefreshToken');
+      const userDoc = await User.findOne({ email: admin.email.toLowerCase().trim() });
+      if (userDoc) {
+        await RefreshToken.deleteMany({ userId: userDoc._id }).catch(() => {});
+        await User.findByIdAndDelete(userDoc._id).catch(() => {});
+      }
+    } catch (e) {
+      console.warn('Cascade user deletion error during admin delete:', e.message);
+    }
+
+    await Admin.findByIdAndDelete(id);
     return true;
   }
 }

@@ -73,8 +73,8 @@ export const AdminViewModal = ({ isOpen, onClose, admin, onAdminUpdated }) => {
     setTimeout(() => setCopiedField(null), 2000);
   };
 
-  const loginPassword = currentAdmin.password || 'Admin@123456';
-  const statusStyle = getStatusStyle(currentAdmin.status);
+  const hasPlainPassword = Boolean(currentAdmin.password);
+  const loginPassword = currentAdmin.password || '';
   const adminId = currentAdmin.id || currentAdmin._id;
 
   const handleSaveCredentials = async (e) => {
@@ -348,31 +348,39 @@ export const AdminViewModal = ({ isOpen, onClose, admin, onAdminUpdated }) => {
                     Password
                   </label>
                   <div className="flex items-center justify-between bg-slate-50 border border-slate-200 rounded px-2.5 py-1 text-xs">
-                    <span className="font-mono text-[11px] font-semibold text-slate-800 tracking-wider truncate mr-2 select-all">
-                      {showPassword ? loginPassword : '••••••••••••'}
-                    </span>
-                    <div className="flex items-center space-x-1 shrink-0">
-                      <button
-                        type="button"
-                        onClick={() => setShowPassword(!showPassword)}
-                        className="text-slate-400 hover:text-slate-700 transition-colors p-0.5 cursor-pointer"
-                        title={showPassword ? 'Hide' : 'Show'}
-                      >
-                        {showPassword ? <EyeOff className="w-3 h-3" /> : <Eye className="w-3 h-3" />}
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleCopy(loginPassword, 'password')}
-                        className="text-slate-400 hover:text-slate-900 transition-colors p-0.5 cursor-pointer"
-                        title="Copy Password"
-                      >
-                        {copiedField === 'password' ? (
-                          <Check className="w-3 h-3 text-emerald-600" />
-                        ) : (
-                          <Copy className="w-3 h-3" />
-                        )}
-                      </button>
-                    </div>
+                    {hasPlainPassword ? (
+                      <>
+                        <span className="font-mono text-[11px] font-semibold text-slate-800 tracking-wider truncate mr-2 select-all">
+                          {showPassword ? loginPassword : '••••••••••••'}
+                        </span>
+                        <div className="flex items-center space-x-1 shrink-0">
+                          <button
+                            type="button"
+                            onClick={() => setShowPassword(!showPassword)}
+                            className="text-slate-400 hover:text-slate-700 transition-colors p-0.5 cursor-pointer"
+                            title={showPassword ? 'Hide' : 'Show'}
+                          >
+                            {showPassword ? <EyeOff className="w-3 h-3" /> : <Eye className="w-3 h-3" />}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleCopy(loginPassword, 'password')}
+                            className="text-slate-400 hover:text-slate-900 transition-colors p-0.5 cursor-pointer"
+                            title="Copy Password"
+                          >
+                            {copiedField === 'password' ? (
+                              <Check className="w-3 h-3 text-emerald-600" />
+                            ) : (
+                              <Copy className="w-3 h-3" />
+                            )}
+                          </button>
+                        </div>
+                      </>
+                    ) : (
+                      <span className="text-[11px] font-medium text-slate-500 italic">
+                        Encrypted (Click Edit below to reset)
+                      </span>
+                    )}
                   </div>
                 </div>
               </>

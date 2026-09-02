@@ -21,7 +21,6 @@ const adminSchema = new mongoose.Schema(
       default: 'Active',
       index: true
     },
-    password: { type: String, default: 'Admin@123456' },
     avatarColor: { type: String, default: 'purple' },
     lastLogin: { type: String, default: 'Never logged in' }
   },
@@ -34,7 +33,7 @@ const adminSchema = new mongoose.Schema(
 adminSchema.set('toJSON', {
   transform: (_, ret) => {
     ret.id = ret._id.toString();
-    ret.password = ret.password || 'Admin@123456';
+    delete ret.password;
     delete ret.passwordHash;
     delete ret.__v;
     return ret;

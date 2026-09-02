@@ -3,20 +3,41 @@ import { CitizenChallenge } from '../../../citizen/infrastructure/model.js';
 import { buildProjectStubFromCitizenChallenge } from '../helpers/project-stub.helper.js';
 import { buildAssignedProjectMilestones } from '../helpers/project-assignment.helper.js';
 import { syncProjectFacultyAssignment } from '../helpers/project-faculty-sync.helper.js';
+import { findUniversityIdentity } from '../helpers/lookup.helper.js';
 
 export class ProjectCrudRepository {
   async getProjectsByUniversity(universityCode, includeDeleted = false) {
-    const code = (universityCode || '').toUpperCase();
-    const query = { universityCode: code };
+    const identity = await findUniversityIdentity(universityCode);
+    if (!identity) {
+      // Fail closed
+      return [];
+    }
+
+    const code = identity.code;
+    const uniName = identity.name;
+    const validCodes = identity.validIdentifiers;
+
+    const query = { universityCode: { $in: validCodes } };
     if (!includeDeleted) query.isDeleted = { $ne: true };
 
     try {
       let projects = (await UniversityProject.find(query).sort({ updatedAt: -1 }).lean()) || [];
+
+      const citizenOrConditions = [{ 'assignedUniversity.id': { $in: validCodes } }];
+      if (uniName) {
+        const escapedName = uniName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        citizenOrConditions.push({ 'assignedUniversity.name': new RegExp(`^${escapedName}$`, 'i') });
+      }
+
       const acceptedChallenges = await CitizenChallenge.find({
-        $or: [
-          { 'assignedUniversity.id': { $in: [code, 'RU001', 'RUNI-JH'] } },
-          { 'assignedUniversity.name': new RegExp('Ranchi', 'i') },
-          { status: { $in: ['In Progress', 'Accepted', 'Clarified', 'Under Review'] }, 'assignedUniversity.acceptanceStatus': 'Accepted' }
+        $and: [
+          { $or: citizenOrConditions },
+          {
+            $or: [
+              { 'assignedUniversity.acceptanceStatus': 'Accepted' },
+              { status: { $in: ['In Progress', 'Accepted'] } }
+            ]
+          }
         ]
       }).lean();
 

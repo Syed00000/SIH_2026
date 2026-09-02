@@ -1,14 +1,18 @@
 import { UniversityPartner, UniversityIndustryRequest, UniversityActivity } from '../model.js';
 import MongooseIndustry from '../../../government/industries/infrastructure/model.js';
+import { findUniversityIdentity } from '../helpers/lookup.helper.js';
 
 export class PartnerRequestRepository {
-  async getPartnersByUniversity() {
+  async getPartnersByUniversity(universityCode) {
+    const identity = await findUniversityIdentity(universityCode);
+    if (!identity) return [];
+
     try {
-      const rawIndustries = await MongooseIndustry.find({}).sort({ createdAt: -1 }).lean();
+      const rawIndustries = await MongooseIndustry.find({ status: { $ne: 'Disabled' } }).sort({ createdAt: -1 }).lean();
       if (rawIndustries && rawIndustries.length > 0) {
         return rawIndustries.map((ind) => ({
           _id: ind._id,
-          partnerId: ind.industryId || `IND-${ind._id}`,
+          partnerId: ind.industryId || ind._id.toString(),
           name: ind.legalName || 'Government Registered Partner',
           shortName: ind.shortName || ind.legalName,
           logoText: (ind.shortName || ind.legalName || 'IND').slice(0, 3).toUpperCase(),
@@ -35,15 +39,34 @@ export class PartnerRequestRepository {
           about: ind.legalName ? `${ind.legalName} is an official industry partner registered under Jharkhand State Higher Education.` : ''
         }));
       }
-      return (await UniversityPartner.find({}).lean()) || [];
+      return (await UniversityPartner.find({ universityCode: { $in: identity.validIdentifiers } }).lean()) || [];
     } catch {
       return [];
     }
   }
 
   async createIndustryRequest(universityCode, payload) {
+    const identity = await findUniversityIdentity(universityCode);
+    if (!identity) {
+      return { success: false, error: 'Unauthorized: Invalid university identity' };
+    }
+    const code = identity.code;
+
     try {
-      const code = (universityCode || 'RU001').toUpperCase();
+      let partnerId = payload.partnerId || '';
+      let partnerName = payload.partnerName || 'Industry Partner';
+
+      // Ensure stable ID linkage by resolving against canonical MongooseIndustry
+      if (!partnerId && partnerName) {
+        const ind = await MongooseIndustry.findOne({
+          $or: [{ legalName: partnerName }, { shortName: partnerName }]
+        }).lean();
+        if (ind) {
+          partnerId = ind.industryId || ind._id.toString();
+          partnerName = ind.legalName || partnerName;
+        }
+      }
+
       const requestId = `IND-REQ-${Date.now()}`;
 
       const newReq = await UniversityIndustryRequest.create({
@@ -51,8 +74,8 @@ export class PartnerRequestRepository {
         universityCode: code,
         projectTitle: payload.projectTitle,
         projectId: payload.projectId || '',
-        partnerId: payload.partnerId || '',
-        partnerName: payload.partnerName || 'Industry Partner',
+        partnerId,
+        partnerName,
         partnerEmail: payload.partnerEmail || '',
         fundingRequested: Boolean(payload.fundingRequested),
         labAccessRequested: Boolean(payload.labAccessRequested),
@@ -68,7 +91,7 @@ export class PartnerRequestRepository {
 
       await UniversityActivity.create({
         universityCode: code,
-        text: `Industry Partnership Proposal dispatched to "${payload.partnerName}" for project "${payload.projectTitle}"`,
+        text: `Industry Partnership Proposal dispatched to "${partnerName}" for project "${payload.projectTitle}"`,
         type: 'INDUSTRY_REQUEST',
         user: 'University Nodal Officer',
         time: `${new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}`,
@@ -83,9 +106,13 @@ export class PartnerRequestRepository {
   }
 
   async getIndustryRequests(universityCode) {
+    const identity = await findUniversityIdentity(universityCode);
+    if (!identity) return [];
+
     try {
-      const code = (universityCode || 'RU001').toUpperCase();
-      return await UniversityIndustryRequest.find({ universityCode: code }).sort({ createdAt: -1 }).lean();
+      return await UniversityIndustryRequest.find({
+        universityCode: { $in: identity.validIdentifiers }
+      }).sort({ createdAt: -1 }).lean();
     } catch (err) {
       console.warn('Error fetching industry requests in DB:', err);
       return [];
@@ -93,9 +120,14 @@ export class PartnerRequestRepository {
   }
 
   async deleteIndustryRequest(requestId, universityCode) {
+    const identity = await findUniversityIdentity(universityCode);
+    if (!identity) return { success: false, error: 'Unauthorized university' };
+
     try {
-      const code = (universityCode || 'RU001').toUpperCase();
-      await UniversityIndustryRequest.deleteOne({ requestId, universityCode: code });
+      await UniversityIndustryRequest.deleteOne({
+        requestId,
+        universityCode: { $in: identity.validIdentifiers }
+      });
       return { success: true, requestId };
     } catch (err) {
       console.warn('Error deleting industry request in DB:', err);

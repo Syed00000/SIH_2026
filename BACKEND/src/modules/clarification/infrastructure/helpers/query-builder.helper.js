@@ -1,15 +1,24 @@
 /**
- * Purges messages seen by both parties older than 12 hours
+ * Soft-archives messages seen by both parties older than 12 hours to preserve audit trail
  */
 export async function purgeOldSeenMessages(ClarificationMessage, challengeId) {
   const twelveHoursAgo = new Date(Date.now() - 12 * 60 * 60 * 1000);
   try {
-    await ClarificationMessage.deleteMany({
-      challengeId,
-      isReadByNodal: true,
-      isReadByUniversity: true,
-      seenAt: { $ne: null, $lt: twelveHoursAgo }
-    });
+    await ClarificationMessage.updateMany(
+      {
+        challengeId,
+        isReadByNodal: true,
+        isReadByUniversity: true,
+        seenAt: { $ne: null, $lt: twelveHoursAgo },
+        isArchived: { $ne: true }
+      },
+      {
+        $set: {
+          isArchived: true,
+          archivedAt: new Date()
+        }
+      }
+    );
   } catch (e) {
     // background cleanup error can be ignored safely
   }
@@ -19,15 +28,9 @@ export async function purgeOldSeenMessages(ClarificationMessage, challengeId) {
  * Builds MongoDB query for retrieving messages in a challenge room
  */
 export function buildMessageRoomQuery(challengeId, role = null) {
-  const twelveHoursAgo = new Date(Date.now() - 12 * 60 * 60 * 1000);
   const query = {
     challengeId,
-    $or: [
-      { seenAt: null },
-      { seenAt: { $gte: twelveHoursAgo } },
-      { isReadByNodal: false },
-      { isReadByUniversity: false }
-    ]
+    isCleared: { $ne: true }
   };
 
   if (role) {

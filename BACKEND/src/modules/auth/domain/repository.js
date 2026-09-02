@@ -18,6 +18,18 @@ export class TokenRepository {
   async revokeAllForUser(userId) {
     throw new Error('TokenRepository.revokeAllForUser: Method not implemented');
   }
+
+  async revokeTokensByUserId(userId) {
+    throw new Error('TokenRepository.revokeTokensByUserId: Method not implemented');
+  }
+
+  async deleteTokensByUserId(userId) {
+    throw new Error('TokenRepository.deleteTokensByUserId: Method not implemented');
+  }
+
+  async deleteTokensByUserIds(userIds) {
+    throw new Error('TokenRepository.deleteTokensByUserIds: Method not implemented');
+  }
 }
 
 export default TokenRepository;

@@ -1,4 +1,4 @@
-import { UniversityFaculty, UniversityChallenge, UniversityApproval } from '../model.js';
+import { UniversityFaculty, UniversityApproval } from '../model.js';
 import { CitizenChallenge } from '../../../citizen/infrastructure/model.js';
 import MongooseUniversity from '../../../government/heis/infrastructure/model.js';
 
@@ -45,16 +45,6 @@ export async function syncProjectFacultyAssignment({
   }
 
   if (chlId) {
-    await UniversityChallenge.findOneAndUpdate(
-      { challengeId: chlId },
-      {
-        $set: {
-          assignedFaculty: resolvedFaculty,
-          status: 'Accepted'
-        }
-      }
-    );
-
     const uniDoc = await MongooseUniversity.findOne({ code: (universityCode || '').toUpperCase() }).lean();
     const resolvedUniName = uniDoc?.name || uniDoc?.legalName || universityCode || 'Assigned University';
 

@@ -29,6 +29,7 @@ const refreshTokenSchema = new mongoose.Schema(
 );
 
 refreshTokenSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
+refreshTokenSchema.index({ userId: 1, revoked: 1 });
 
 export const MongooseRefreshToken = mongoose.model('RefreshToken', refreshTokenSchema);
 export default MongooseRefreshToken;

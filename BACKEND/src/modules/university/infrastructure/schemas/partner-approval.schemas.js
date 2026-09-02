@@ -18,6 +18,7 @@ export const universityPartnerSchema = new mongoose.Schema(
 export const universityApprovalSchema = new mongoose.Schema(
   {
     approvalId: { type: String, required: true, index: true },
+    universityId: { type: mongoose.Schema.Types.ObjectId, ref: 'University', default: null, index: true },
     universityCode: { type: String, required: true, index: true },
     title: { type: String, required: true },
     type: { type: String, default: 'R&D Grant Proposal' },

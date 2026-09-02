@@ -47,7 +47,7 @@ export class LoginService {
       }
     }
 
-    // 2. Verify password
+    // 2. Verify password strictly against canonical User identity
     let isMatch = false;
     if (user.passwordHash) {
       try {
@@ -57,41 +57,9 @@ export class LoginService {
       }
     }
 
-    // Check fallback comparison against UniversityFaculty collection if user.passwordHash didn't match
-    if (!isMatch && user.role === 'FACULTY') {
-      try {
-        const { UniversityFaculty } = await import('../../../university/infrastructure/model.js');
-        const facDoc = await UniversityFaculty.findOne({ email: user.email?.toLowerCase() });
-        if (facDoc?.passwordHash) {
-          isMatch = await bcrypt.compare(password, facDoc.passwordHash);
-          if (isMatch) {
-            await this.userService.updateResetCredentials(user.id, {
-              passwordHash: facDoc.passwordHash,
-              accountStatus: 'ACTIVE',
-              emailVerification: { verified: true, verifiedAt: new Date() }
-            });
-          }
-        }
-      } catch (e) { }
-    }
-
     if (!isMatch) {
       logger.warn(`❌ Login failed: Password mismatch for identifier "${rawIdentifier}"`);
       throw new AuthenticationError('INVALID_CREDENTIALS');
-    }
-
-    if (['NODAL', 'GOVERNMENT'].includes(user.role) && !user.profile?.district) {
-      try {
-        const { Admin } = await import('../../../government/admins/infrastructure/model.js');
-        const adminDoc = await Admin.findOne({ email: user.email?.toLowerCase() });
-        if (adminDoc?.district) {
-          if (!user.profile) user.profile = {};
-          user.profile.district = adminDoc.district;
-          await this.userService.updateResetCredentials(user.id, {
-            'profile.district': adminDoc.district
-          });
-        }
-      } catch (_) {}
     }
 
     await this.userService.updateResetCredentials(user.id, {

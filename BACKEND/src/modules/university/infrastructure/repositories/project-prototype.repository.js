@@ -1,4 +1,5 @@
-import { UniversityProject, UniversityApproval, UniversityActivity, UniversityChallenge } from '../model.js';
+import { UniversityProject, UniversityApproval, UniversityActivity } from '../model.js';
+import { CitizenChallenge } from '../../../citizen/infrastructure/model.js';
 import { buildPrototypeApprovalDocument } from '../helpers/prototype-approval-builder.helper.js';
 
 export class ProjectPrototypeRepository {
@@ -102,13 +103,14 @@ export class ProjectPrototypeRepository {
 
       if (proj) {
         if (isApproved) {
-          await UniversityChallenge.updateMany(
+          await CitizenChallenge.updateMany(
             { $or: [{ challengeId: proj.challengeId }, { title: proj.title }] },
             {
               $set: {
                 status: 'Resolved',
-                actionLabel: 'Resolved & Deployed',
-                governmentRemarks: 'State Certified (TRL-9) & Publicly Deployed. Citizen problem resolved.'
+                'milestones.4.status': 'COMPLETED',
+                'milestones.4.completedAt': new Date(),
+                'milestones.4.remarks': 'State Certified (TRL-9) & Publicly Deployed. Citizen problem resolved.'
               }
             }
           );

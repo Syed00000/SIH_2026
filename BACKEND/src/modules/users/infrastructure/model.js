@@ -72,7 +72,18 @@ const userSchema = new mongoose.Schema(
       gstin: { type: String, default: null, trim: true },
       ngoDarpanId: { type: String, default: null, trim: true },
       primaryContactDesignation: { type: String, default: null, trim: true },
-      supportSectors: { type: [String], default: [] }
+      supportSectors: { type: [String], default: [] },
+      adminDetails: {
+        assignedDepartment: { type: String, default: null, trim: true },
+        accessLevel: { type: String, default: null, trim: true },
+        primaryRole: { type: String, default: null, trim: true },
+        avatarColor: { type: String, default: null, trim: true },
+        dateOfJoining: { type: Date, default: null },
+        address: { type: String, default: null, trim: true },
+        employeeId: { type: String, default: null, trim: true },
+        createdBy: { type: String, default: null, trim: true },
+        lastLogin: { type: Date, default: null }
+      }
     },
     emailVerification: {
       verified: { type: Boolean, default: false },
@@ -118,6 +129,28 @@ userSchema.set('toJSON', {
     delete ret.passwordHash;
     delete ret.__v;
     return ret;
+  }
+});
+
+// Cascade cleanup of refresh tokens when user is deleted
+userSchema.pre('findOneAndDelete', async function () {
+  const doc = await this.model.findOne(this.getQuery());
+  if (doc?._id) {
+    await mongoose.model('RefreshToken').deleteMany({ userId: doc._id }).catch(() => {});
+  }
+});
+
+userSchema.pre('deleteOne', { document: true, query: false }, async function () {
+  if (this._id) {
+    await mongoose.model('RefreshToken').deleteMany({ userId: this._id }).catch(() => {});
+  }
+});
+
+userSchema.pre('deleteMany', async function () {
+  const docs = await this.model.find(this.getQuery(), '_id');
+  const ids = docs.map(d => d._id);
+  if (ids.length > 0) {
+    await mongoose.model('RefreshToken').deleteMany({ userId: { $in: ids } }).catch(() => {});
   }
 });
 

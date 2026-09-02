@@ -87,10 +87,19 @@ export class HeiStatusService {
       throw new NotFoundError('University not found');
     }
 
-    if (university.userId) {
-      await MongooseUser.findByIdAndUpdate(university.userId, {
-        accountStatus: 'BLOCKED'
-      });
+    try {
+      if (university.userId) {
+        await MongooseRefreshToken.deleteMany({ userId: university.userId }).catch(() => {});
+        await MongooseUser.findByIdAndDelete(university.userId).catch(() => {});
+      } else if (university.universityEmail) {
+        const userDoc = await MongooseUser.findOne({ email: university.universityEmail.toLowerCase().trim() });
+        if (userDoc) {
+          await MongooseRefreshToken.deleteMany({ userId: userDoc._id }).catch(() => {});
+          await MongooseUser.findByIdAndDelete(userDoc._id).catch(() => {});
+        }
+      }
+    } catch (e) {
+      console.warn('Cascade user deletion error during university delete:', e.message);
     }
 
     await this.repository.delete(id);

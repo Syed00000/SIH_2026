@@ -71,16 +71,6 @@ export class CitizenRepository {
 
     await challenge.save();
 
-    // If withdrawn, remove or update in UniversityChallenge queue
-    if (newStatus === 'Withdrawn') {
-      try {
-        const { UniversityChallenge } = await import('../../university/infrastructure/model.js');
-        await UniversityChallenge.findOneAndDelete({ challengeId: challenge.challengeId });
-      } catch {
-        // ignore
-      }
-    }
-
     return challenge.toObject();
   }
 
@@ -91,9 +81,58 @@ export class CitizenRepository {
     );
     if (!challenge) return null;
 
-    applyTriageChanges(challenge, triageData, user);
+    const oldUniId = challenge.assignedUniversity?.id;
+    const isReassignment =
+      oldUniId &&
+      triageData.assignedUniversity?.id &&
+      oldUniId.toUpperCase() !== triageData.assignedUniversity.id.toUpperCase();
 
+    applyTriageChanges(challenge, triageData, user);
     await challenge.save();
+
+    if (isReassignment) {
+      try {
+        const { UniversityProject, UniversityTeam } = await import('../../university/infrastructure/model.js');
+        const newUniId = triageData.assignedUniversity.id.toUpperCase();
+        const newUniName = triageData.assignedUniversity.name || newUniId;
+
+        // Soft-transfer old university project so it doesn't appear in old university active portfolio
+        await UniversityProject.updateMany(
+          {
+            challengeId: challenge.challengeId,
+            universityCode: oldUniId.toUpperCase(),
+            isDeleted: { $ne: true }
+          },
+          {
+            $set: {
+              status: 'Transferred',
+              isDeleted: true,
+              transferredTo: newUniId,
+              transferredAt: new Date(),
+              adminRemarks: `Challenge reallocated by State Nodal Cell to ${newUniName}`
+            }
+          }
+        );
+
+        // Archive associated old university teams
+        await UniversityTeam.updateMany(
+          {
+            challengeId: challenge.challengeId,
+            universityCode: oldUniId.toUpperCase(),
+            status: 'Active'
+          },
+          {
+            $set: {
+              status: 'Archived',
+              archiveReason: `Challenge reallocated to ${newUniName}`
+            }
+          }
+        );
+      } catch (err) {
+        console.warn('Error archiving old university project on reassignment:', err);
+      }
+    }
+
     return challenge.toObject();
   }
 
@@ -102,14 +141,6 @@ export class CitizenRepository {
     const deleted = await CitizenChallenge.findOneAndDelete(
       isObjId ? { $or: [{ challengeId }, { _id: challengeId }] } : { challengeId }
     );
-    try {
-      const { UniversityChallenge } = await import('../../university/infrastructure/model.js');
-      await UniversityChallenge.findOneAndDelete({
-        challengeId: deleted?.challengeId || challengeId
-      });
-    } catch {
-      // ignore
-    }
     return deleted;
   }
 

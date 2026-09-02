@@ -57,6 +57,12 @@ export class TokenService {
     }
 
     const user = await this.userService.getUserById(storedToken.userId);
+    if (!user || user.accountStatus === 'SUSPENDED' || user.accountStatus === 'BLOCKED') {
+      await this.tokenRepository.revokeTokensByUserId(storedToken.userId);
+      throw new AuthenticationError(
+        user?.accountStatus === 'SUSPENDED' ? 'ACCOUNT_SUSPENDED' : user?.accountStatus === 'BLOCKED' ? 'ACCOUNT_BLOCKED' : 'USER_NOT_FOUND'
+      );
+    }
 
     storedToken.revoke();
     await this.tokenRepository.update(storedToken);
@@ -76,6 +82,18 @@ export class TokenService {
       storedToken.revoke();
       await this.tokenRepository.update(storedToken);
     }
+  }
+
+  async revokeTokensByUserId(userId) {
+    return this.tokenRepository.revokeTokensByUserId(userId);
+  }
+
+  async deleteTokensByUserId(userId) {
+    return this.tokenRepository.deleteTokensByUserId(userId);
+  }
+
+  async deleteTokensByUserIds(userIds) {
+    return this.tokenRepository.deleteTokensByUserIds(userIds);
   }
 }
 

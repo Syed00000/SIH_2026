@@ -67,3 +67,5 @@ export const universityProjectSchema = new mongoose.Schema(
   },
   { timestamps: true, collection: 'university_projects', strict: false }
 );
+
+universityProjectSchema.index({ universityCode: 1, isDeleted: 1, updatedAt: -1 });

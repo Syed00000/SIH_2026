@@ -1,11 +1,23 @@
 import { UniversityProject, UniversityActivity } from '../model.js';
 import { syncProjectApprovalRequest, syncGovernmentDirectives } from '../helpers/project-approval-sync.helper.js';
+import { findUniversityIdentity } from '../helpers/lookup.helper.js';
 
 export class ProjectApprovalRepository {
   async updateProject(universityCode, projectId, updateData) {
-    const query = typeof projectId === 'string' && projectId.match(/^[0-9a-fA-F]{24}$/)
+    const identity = await findUniversityIdentity(universityCode);
+    if (!identity) {
+      throw new Error('Unauthorized: Invalid or unknown university identity');
+    }
+
+    const baseQuery = typeof projectId === 'string' && projectId.match(/^[0-9a-fA-F]{24}$/)
       ? { _id: projectId }
       : { $or: [{ projectId }, { challengeId: projectId }] };
+
+    // Strictly enforce tenant boundary: project MUST belong to the calling university
+    const query = {
+      ...baseQuery,
+      universityCode: { $in: identity.validIdentifiers }
+    };
 
     const cleanUpdate = { ...updateData };
     delete cleanUpdate._id;
@@ -15,12 +27,55 @@ export class ProjectApprovalRepository {
 
     try {
       const res = await UniversityProject.findOneAndUpdate(query, { $set: cleanUpdate }, { new: true });
-      const uniCode = (universityCode || res?.universityCode || 'RU001').toUpperCase();
+      if (!res) {
+        return null;
+      }
+
+      const uniCode = identity.code;
 
       if (cleanUpdate.teamMembers && Array.isArray(cleanUpdate.teamMembers)) {
+        const { UniversityTeam } = await import('../model.js');
+        const teamCode = cleanUpdate.teamCode || res?.teamCode || `TEAM-${(res?.projectId || projectId).replace(/[^a-zA-Z0-9]/g, '')}`;
+        const teamName = cleanUpdate.studentTeam || cleanUpdate.teamName || res?.studentTeam || `${res?.title || 'Innovation'} Research Team`;
+        const leadMember = cleanUpdate.teamMembers.find((m) => m.isLead) || cleanUpdate.teamMembers[0];
+        const leaderName = cleanUpdate.studentLead || leadMember?.name || 'Student Team Lead';
+        const mentorName = res?.leadMentor || res?.facultyMentor?.name || 'Faculty Mentor';
+        const department = leadMember?.department || res?.facultyMentor?.department || 'Engineering';
+
+        // Authoritative write path for UniversityTeam, strictly tenant-scoped
+        await UniversityTeam.findOneAndUpdate(
+          {
+            $or: [
+              { projectId: res.projectId, teamCode },
+              { teamCode, universityCode: { $in: identity.validIdentifiers } },
+              { projectId: res.projectId, universityCode: { $in: identity.validIdentifiers } }
+            ]
+          },
+          {
+            $set: {
+              teamCode,
+              universityCode: uniCode,
+              projectId: res.projectId,
+              challengeId: res.challengeId || '',
+              projectTitle: res.title || '',
+              project: res.title || res.projectId,
+              name: teamName,
+              leader: leaderName,
+              mentor: mentorName,
+              facultyMentorName: mentorName,
+              department,
+              membersCount: cleanUpdate.teamMembers.length,
+              members: cleanUpdate.teamMembers,
+              status: 'Active',
+              nepCredits: '4 Credits'
+            }
+          },
+          { upsert: true, new: true, setDefaultsOnInsert: true }
+        ).catch((err) => console.warn('UniversityTeam upsert error:', err.message));
+
         await UniversityActivity.create({
           universityCode: uniCode,
-          text: `Student Research Team (${cleanUpdate.teamMembers.length} members) organized for project ${res?.projectId || projectId}.`,
+          text: `Student Research Team "${teamName}" (${cleanUpdate.teamMembers.length} members) organized for project ${res.projectId}.`,
           type: 'TEAM_UPDATED',
           timestamp: new Date()
         });
@@ -32,11 +87,20 @@ export class ProjectApprovalRepository {
 
       await syncGovernmentDirectives({ res, updateData: cleanUpdate, projectId, uniCode });
 
-      if (res) return res;
+      return res;
     } catch (err) {
       console.error('ProjectApprovalRepository updateProject error:', err);
+      throw err;
     }
-    return { projectId, ...cleanUpdate };
+  }
+
+  async updateBudgetBreakdown(universityCode, projectId, budgetData) {
+    return this.updateProject(universityCode, projectId, {
+      proposedBudget: budgetData.total || budgetData.proposedBudget,
+      budgetBreakdown: budgetData.items || budgetData.breakdown || budgetData,
+      budgetStatus: 'Submitted to University for Review',
+      budgetSubmittedAt: new Date()
+    });
   }
 }
 

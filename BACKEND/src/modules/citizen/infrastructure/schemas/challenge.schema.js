@@ -147,4 +147,7 @@ export const citizenChallengeSchema = new mongoose.Schema(
   }
 );
 
+citizenChallengeSchema.index({ 'assignedUniversity.id': 1, status: 1 });
+citizenChallengeSchema.index({ 'assignedUniversity.id': 1, acceptanceStatus: 1 });
+
 export default citizenChallengeSchema;

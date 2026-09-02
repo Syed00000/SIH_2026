@@ -100,14 +100,30 @@ export class ClarificationRepository {
   async clearChat(challengeId, role = null) {
     if (!challengeId) return { success: false };
 
+    const auditData = {
+      clearedAt: new Date(),
+      clearedByRole: role || 'ADMIN'
+    };
+
     if (!role) {
-      await ClarificationMessage.deleteMany({ challengeId });
+      await ClarificationMessage.updateMany(
+        { challengeId },
+        {
+          $set: {
+            isCleared: true,
+            ...auditData
+          },
+          $addToSet: { deletedByRoles: { $each: ['UNIVERSITY', 'NODAL', 'ADMIN'] } }
+        }
+      );
     } else {
-      await ClarificationMessage.updateMany({ challengeId }, { $addToSet: { deletedByRoles: role } });
-      await ClarificationMessage.deleteMany({
-        challengeId,
-        deletedByRoles: { $all: ['UNIVERSITY', 'NODAL'] }
-      });
+      await ClarificationMessage.updateMany(
+        { challengeId },
+        {
+          $addToSet: { deletedByRoles: role },
+          $set: auditData
+        }
+      );
     }
 
     return { success: true };

@@ -1,5 +1,6 @@
 import MongooseUniversity from './model.js';
-import { UniversityChallenge, UniversityProject } from '../../../university/infrastructure/model.js';
+import { UniversityProject } from '../../../university/infrastructure/model.js';
+import { CitizenChallenge } from '../../../citizen/infrastructure/model.js';
 
 export class UniversityRepository {
   async create(data) {
@@ -62,12 +63,16 @@ export class UniversityRepository {
       MongooseUniversity.countDocuments(query)
     ]);
 
-    // Live sync active challenges & projects count from university collections
+    // Live sync active challenges & projects count from canonical collections
     const populated = await Promise.all(
       records.map(async (u) => {
+        const validCodes = [u.code, u.aisheCode].filter(Boolean);
         const [activeProjectsCount, activeChallengesCount] = await Promise.all([
-          UniversityProject.countDocuments({ universityCode: u.code, status: { $ne: 'Completed' } }),
-          UniversityChallenge.countDocuments({ universityCode: u.code, status: { $in: ['Review', 'Accepted', 'In Progress'] } })
+          UniversityProject.countDocuments({ universityCode: { $in: validCodes }, status: { $ne: 'Completed' }, isDeleted: { $ne: true } }),
+          CitizenChallenge.countDocuments({
+            'assignedUniversity.id': { $in: validCodes },
+            status: { $in: ['In Progress', 'Under Review', 'Accepted'] }
+          })
         ]);
         return {
           ...u,

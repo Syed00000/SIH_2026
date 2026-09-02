@@ -36,10 +36,47 @@ export const initializeSocketServer = (httpServer) => {
       }
     });
 
-    // Join a specific challenge clarification discussion room
-    socket.on('join_challenge', async (data) => {
-      const { challengeId, user } = data || {};
-      if (!challengeId) return;
+    // Join a specific challenge clarification discussion room with tenant authorization
+    socket.on('join_challenge', async (data, callback) => {
+      const { challengeId, user, universityCode } = data || {};
+      if (!challengeId) {
+        if (typeof callback === 'function') callback({ success: false, error: 'Challenge ID is required' });
+        return;
+      }
+
+      // Validate tenant authorization before joining challenge room
+      try {
+        const { CitizenChallenge } = await import('../../modules/citizen/infrastructure/model.js');
+        const chl = await CitizenChallenge.findOne({ challengeId }).lean();
+        if (chl) {
+          const userRole = (user?.role || '').toUpperCase();
+          const isGov = ['NODAL', 'GOVERNMENT', 'ADMIN', 'SUPER_ADMIN'].includes(userRole);
+          const callingUni = (universityCode || user?.universityCode || user?.code || '').toUpperCase();
+          const assignedUni = (chl.assignedUniversity?.id || '').toUpperCase();
+
+          if (!isGov && assignedUni) {
+            const { findUniversityIdentity } = await import('../../modules/university/infrastructure/helpers/lookup.helper.js');
+            const callingIdentity = await findUniversityIdentity(callingUni);
+            const isAuthorized = callingIdentity && (
+              callingIdentity.validIdentifiers.includes(assignedUni) ||
+              callingIdentity.code === assignedUni ||
+              callingIdentity.aisheCode === assignedUni
+            );
+
+            if (!isAuthorized) {
+              logger.warn(`🚫 Unauthorized socket join attempt for challenge ${challengeId} by university "${callingUni}"`);
+              socket.emit('join_challenge_unauthorized', {
+                challengeId,
+                error: 'Access denied: You are not the assigned institution for this challenge.'
+              });
+              if (typeof callback === 'function') callback({ success: false, error: 'Unauthorized university' });
+              return;
+            }
+          }
+        }
+      } catch (authErr) {
+        logger.warn(`Challenge room auth check warning: ${authErr.message}`);
+      }
 
       const roomName = `challenge_${challengeId}`;
       socket.join(roomName);
@@ -60,6 +97,8 @@ export const initializeSocketServer = (httpServer) => {
         challengeId,
         timestamp: new Date().toISOString()
       });
+
+      if (typeof callback === 'function') callback({ success: true, room: roomName });
     });
 
     // Leave a challenge room

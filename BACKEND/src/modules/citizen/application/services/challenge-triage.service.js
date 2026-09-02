@@ -17,44 +17,6 @@ export class ChallengeTriageService {
     const updated = await this.repository.triageChallenge(challengeId, triageData, user);
     if (!updated) throw new Error(`Challenge with ID ${challengeId} not found`);
 
-    // Sync to university challenge collection if assigned to an HEI
-    if (triageData.assignedUniversity?.id) {
-      try {
-        const { UniversityChallenge } = await import('../../university/infrastructure/model.js');
-        const uniCode = (triageData.assignedUniversity.id || '').toUpperCase();
-        await UniversityChallenge.findOneAndUpdate(
-          { challengeId },
-          {
-            $set: {
-              challengeId,
-              universityCode: uniCode,
-              title: updated.title,
-              domain: updated.domain,
-              district: updated.location?.district || '',
-              priority: updated.priority || 'Medium',
-              status: 'Review',
-              problemStatement: updated.description,
-              affectedPopulation: updated.impactMetrics?.affectedPopulation || '',
-              aiCategory: updated.domain,
-              requiredSkills: triageData.requiredSkills || [],
-              governmentRemarks: triageData.remarks || '',
-              locationDetails: {
-                block: updated.location?.block || '',
-                panchayatOrWard: updated.location?.panchayatOrWard || '',
-                landmark: updated.location?.landmark || '',
-                coordinates: updated.location?.coordinates || ''
-              },
-              assignedOn: new Date(),
-              deadline: triageData.deadline || ''
-            }
-          },
-          { upsert: true, new: true }
-        );
-      } catch (err) {
-        logger.warn({ msg: 'Failed to mirror to UniversityChallenge', error: err.message });
-      }
-    }
-
     return updated;
   }
 

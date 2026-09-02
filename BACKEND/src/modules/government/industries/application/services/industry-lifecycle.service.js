@@ -113,9 +113,20 @@ export class IndustryLifecycleService {
     const industry = await this.repository.findById(id);
     if (!industry) throw new NotFoundError('Industry organization not found');
 
-    if (industry.userId) {
-      await MongooseUser.findByIdAndUpdate(industry.userId, { accountStatus: 'BLOCKED' });
-      await revokeIndustrySessions(industry.userId, industry.legalName);
+    try {
+      const MongooseRefreshToken = (await import('../../../../auth/infrastructure/model.js')).default;
+      if (industry.userId) {
+        await MongooseRefreshToken.deleteMany({ userId: industry.userId }).catch(() => {});
+        await MongooseUser.findByIdAndDelete(industry.userId).catch(() => {});
+      } else if (industry.officialEmail) {
+        const userDoc = await MongooseUser.findOne({ email: industry.officialEmail.toLowerCase().trim() });
+        if (userDoc) {
+          await MongooseRefreshToken.deleteMany({ userId: userDoc._id }).catch(() => {});
+          await MongooseUser.findByIdAndDelete(userDoc._id).catch(() => {});
+        }
+      }
+    } catch (e) {
+      console.warn('Cascade user deletion error during industry delete:', e.message);
     }
 
     await this.repository.delete(id);
