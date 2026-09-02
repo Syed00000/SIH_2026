@@ -42,8 +42,12 @@ export const FacultyTeamsListTable = ({ projects = [], onSelectProject, onAddNew
           <tbody className="divide-y divide-slate-100">
             {projects.map((proj) => {
               const projectId = proj.projectId || proj.challengeId || proj._id;
-              const hasTeam = proj.teamMembers && proj.teamMembers.length > 0;
-              const lead = hasTeam ? proj.teamMembers.find(m => m.isLead) || proj.teamMembers[0] : null;
+              const hasTeam = Array.isArray(proj.teamMembers) && proj.teamMembers.length > 0;
+              const lead = hasTeam
+                ? proj.teamMembers.find((m) => m.isLead) || proj.teamMembers[0]
+                : proj.studentLead && proj.studentLead !== 'Unassigned'
+                ? { name: proj.studentLead, rollNo: 'Lead Innovator' }
+                : null;
 
               return (
                 <tr 
@@ -107,9 +111,10 @@ export const FacultyTeamsListTable = ({ projects = [], onSelectProject, onAddNew
                   </td>
 
                   <td className="px-5 py-4 text-right">
-                    <button className="p-1.5 rounded-lg bg-white border border-slate-200 text-slate-400 group-hover:border-[#007A61] group-hover:text-[#007A61] group-hover:bg-[#007A61]/5 transition-all">
-                      <ArrowRight className="w-4 h-4" />
-                    </button>
+                    <span className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-lg bg-white border border-slate-200 text-slate-600 text-[11px] font-bold group-hover:border-[#007A61] group-hover:text-[#007A61] group-hover:bg-emerald-50 transition-all shadow-2xs">
+                      <span>{hasTeam ? 'Manage Team' : 'Assign Team'}</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </span>
                   </td>
                 </tr>
               );

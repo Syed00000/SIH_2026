@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Bell, ChevronDown, Globe, Menu, FileDown, Download } from 'lucide-react';
+import { Bell, ChevronDown, Globe, Menu } from 'lucide-react';
 
 export const DashboardHeader = ({
   user,
@@ -14,8 +14,6 @@ export const DashboardHeader = ({
   onNavigateTab
 }) => {
   const isAdmin = role === 'ADMIN' || activeTab === 'ai-triage';
-  const [headerDistrict, setHeaderDistrict] = useState('All');
-  const [headerSector, setHeaderSector] = useState('All');
 
   const initials = isAdmin
     ? 'AD'
@@ -59,57 +57,7 @@ export const DashboardHeader = ({
 
       {/* Header Right Utility Controls */}
       <div className="flex items-center space-x-3">
-        {isAdmin ? (
-          /* Admin Filter & Action Tools */
-          <div className="hidden md:flex items-center space-x-2.5">
-            {/* District Filter */}
-            <div className="flex items-center space-x-1 text-xs">
-              <span className="text-slate-500 font-medium">District:</span>
-              <div className="relative">
-                <select
-                  value={headerDistrict}
-                  onChange={(e) => setHeaderDistrict(e.target.value)}
-                  className="appearance-none border border-slate-200 rounded-md pl-2 pr-6 py-1 bg-white text-xs font-bold text-slate-800 outline-none cursor-pointer focus:ring-1 focus:ring-slate-900"
-                >
-                  <option value="All">All</option>
-                  <option value="Ranchi">Ranchi</option>
-                  <option value="Dhanbad">Dhanbad</option>
-                  <option value="Dumka">Dumka</option>
-                  <option value="Jamshedpur">Jamshedpur</option>
-                </select>
-                <ChevronDown className="w-3 h-3 text-slate-400 absolute right-1.5 top-1/2 transform -translate-y-1/2 pointer-events-none" />
-              </div>
-            </div>
-
-            {/* Sector Filter */}
-            <div className="flex items-center space-x-1 text-xs">
-              <span className="text-slate-500 font-medium">Sector:</span>
-              <div className="relative">
-                <select
-                  value={headerSector}
-                  onChange={(e) => setHeaderSector(e.target.value)}
-                  className="appearance-none border border-slate-200 rounded-md pl-2 pr-6 py-1 bg-white text-xs font-bold text-slate-800 outline-none cursor-pointer focus:ring-1 focus:ring-slate-900"
-                >
-                  <option value="All">All</option>
-                  <option value="Water">Water</option>
-                  <option value="Agriculture">Agriculture</option>
-                  <option value="Infrastructure">Infrastructure</option>
-                  <option value="Health">Health</option>
-                </select>
-                <ChevronDown className="w-3 h-3 text-slate-400 absolute right-1.5 top-1/2 transform -translate-y-1/2 pointer-events-none" />
-              </div>
-            </div>
-
-            {/* Export PDF Button */}
-            <button
-              onClick={() => alert('Generating official JoharSetu AI Triage PDF Report...')}
-              className="flex items-center space-x-1.5 border border-slate-200 rounded-md px-2.5 py-1 bg-white hover:bg-slate-50 text-slate-800 text-xs font-bold transition-colors cursor-pointer shadow-2xs"
-            >
-              <FileDown className="w-3.5 h-3.5 text-slate-600" />
-              <span>Export PDF</span>
-            </button>
-          </div>
-        ) : (
+        {!isAdmin && (
           /* Standard Citizen Controls */
           <>
             {/* Language Selection */}
