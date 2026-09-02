@@ -1,4 +1,4 @@
-import { UniversityChallenge, UniversityFaculty } from '../model.js';
+import { UniversityChallenge, UniversityFaculty, UniversityProject, UniversityApproval } from '../model.js';
 import { CitizenChallenge } from '../../../citizen/infrastructure/model.js';
 import User from '../../../users/infrastructure/model.js';
 import MongooseUniversity from '../../../government/heis/infrastructure/model.js';
@@ -78,15 +78,44 @@ export class ChallengeRepository {
 
   async assignFaculty(challengeId, universityCode, facultyInfo) {
     try {
+      let resolvedFaculty = { ...facultyInfo };
+      const searchConditions = [];
+      if (facultyInfo?.email) searchConditions.push({ email: facultyInfo.email.toLowerCase().trim() });
+      if (facultyInfo?.name) searchConditions.push({ name: new RegExp('^' + facultyInfo.name.trim() + '$', 'i') });
+
+      if (searchConditions.length > 0) {
+        const foundFac = await UniversityFaculty.findOne({ $or: searchConditions }).lean();
+        if (foundFac) {
+          resolvedFaculty = {
+            name: foundFac.name,
+            email: foundFac.email,
+            department: foundFac.department || facultyInfo.department || 'Engineering & Technology',
+            designation: foundFac.designation || facultyInfo.designation || 'Lead Faculty Mentor',
+            phone: foundFac.phone || facultyInfo.phone
+          };
+        }
+      }
+
       const res = await UniversityChallenge.findOneAndUpdate(
         { challengeId },
-        { $set: { assignedFaculty: facultyInfo, status: 'Accepted', actionLabel: 'View' } },
+        { $set: { assignedFaculty: resolvedFaculty, status: 'Accepted', actionLabel: 'View' } },
         { new: true }
       );
-      if (facultyInfo?.email || facultyInfo?.name) {
+
+      if (resolvedFaculty?.email || resolvedFaculty?.name) {
         await UniversityFaculty.findOneAndUpdate(
-          { $or: [{ email: facultyInfo.email }, { name: facultyInfo.name }] },
-          { $set: { availabilityStatus: 'In Project' }, $inc: { activeProjects: 1 } }
+          { $or: [{ email: resolvedFaculty.email }, { name: resolvedFaculty.name }] },
+          {
+            $set: { availabilityStatus: 'In Project' },
+            $inc: { activeProjects: 1 },
+            $addToSet: {
+              assignedChallenges: {
+                challengeId,
+                title: res?.title || 'Grassroots Innovation Challenge',
+                role: 'Lead Mentor'
+              }
+            }
+          }
         );
       }
 
@@ -100,16 +129,40 @@ export class ChallengeRepository {
             status: 'In Progress',
             'assignedUniversity.id': universityCode,
             'assignedUniversity.name': resolvedUniName,
-            'assignedUniversity.department': facultyInfo.department || 'Engineering & Technology',
-            'assignedUniversity.mentorName': facultyInfo.name,
+            'assignedUniversity.department': resolvedFaculty.department || 'Engineering & Technology',
+            'assignedUniversity.mentorName': resolvedFaculty.name,
+            'assignedUniversity.mentorEmail': resolvedFaculty.email,
             'assignedUniversity.assignedAt': new Date(),
             'assignedUniversity.acceptanceStatus': 'Accepted',
             acceptanceStatus: 'Accepted',
             'milestones.2.status': 'COMPLETED',
             'milestones.2.completedAt': new Date(),
-            'milestones.2.remarks': `Assigned to Lead Faculty Mentor: ${facultyInfo.name} (${facultyInfo.department || 'Innovation Lab'}) at ${resolvedUniName}`,
+            'milestones.2.remarks': `Assigned to Lead Faculty Mentor: ${resolvedFaculty.name} (${resolvedFaculty.department || 'Innovation Lab'}) at ${resolvedUniName}`,
             'milestones.3.status': 'CURRENT',
-            'milestones.3.remarks': `Faculty Mentor ${facultyInfo.name} leading solution execution.`
+            'milestones.3.remarks': `Faculty Mentor ${resolvedFaculty.name} leading solution execution.`
+          }
+        }
+      );
+
+      // Also update existing UniversityProject and UniversityApproval if created
+      const projId = challengeId.replace('CHL-JH-2026-', 'PRJ-');
+      await UniversityProject.updateMany(
+        { $or: [{ challengeId }, { projectId: challengeId }, { projectId: projId }] },
+        {
+          $set: {
+            leadMentor: resolvedFaculty.name,
+            facultyMentor: resolvedFaculty
+          }
+        }
+      );
+
+      await UniversityApproval.updateMany(
+        { $or: [{ challengeId }, { projectId: challengeId }, { projectId: projId }] },
+        {
+          $set: {
+            requestedBy: resolvedFaculty.name,
+            requestedByEmail: resolvedFaculty.email,
+            faculty: resolvedFaculty
           }
         }
       );

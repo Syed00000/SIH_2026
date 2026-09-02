@@ -288,16 +288,6 @@ export const ProjectDrawerTabs = ({
             <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider block">
               Lead Faculty Mentor
             </span>
-            {onAssignMentor && (
-              <button
-                type="button"
-                onClick={() => onAssignMentor(project)}
-                className="text-[11px] font-bold text-[#007A61] hover:text-[#00604c] hover:underline cursor-pointer flex items-center space-x-1"
-              >
-                <UserPlus className="w-3.5 h-3.5" />
-                <span>{hasMentor ? 'Change Mentor' : 'Assign Mentor'}</span>
-              </button>
-            )}
           </div>
           <div className="flex items-center space-x-3">
             <div

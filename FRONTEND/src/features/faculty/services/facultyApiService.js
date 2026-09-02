@@ -32,33 +32,44 @@ export const facultyApiService = {
 
     // Filter challenges assigned to this faculty mentor
     const myChallenges = challengesList.filter((c) => {
-      const mentorEmail = c.assignedFaculty?.email?.toLowerCase() || '';
-      const mentorName = (c.assignedFaculty?.name || c.assignedUniversity?.mentorName || '').toLowerCase();
+      const mentorEmail = (c.assignedFaculty?.email || '').toLowerCase().trim();
+      const mentorName = (c.assignedFaculty?.name || c.assignedUniversity?.mentorName || '').toLowerCase().trim();
+      if (!mentorEmail && !mentorName) return false;
       return (
-        mentorEmail === cleanEmail ||
+        (cleanEmail && mentorEmail === cleanEmail) ||
         (facultyNameLower && mentorName && (mentorName.includes(facultyNameLower) || facultyNameLower.includes(mentorName)))
       );
     });
 
     // Filter projects mentored by this faculty
     const myProjects = projectsList.filter((p) => {
-      const mentorEmail = p.facultyMentor?.email?.toLowerCase() || '';
-      const mentorName = (p.facultyMentor?.name || p.leadMentor || '').toLowerCase();
+      const mentorEmail = (p.facultyMentor?.email || '').toLowerCase().trim();
+      const mentorName = (p.facultyMentor?.name || p.leadMentor || '').toLowerCase().trim();
+      if (!mentorEmail && !mentorName) return false;
       return (
-        mentorEmail === cleanEmail ||
+        (cleanEmail && mentorEmail === cleanEmail) ||
         (facultyNameLower && mentorName && (mentorName.includes(facultyNameLower) || facultyNameLower.includes(mentorName)))
       );
     });
 
-    // Revisions requested by University Authority
-    const revisionsList = approvalsList.filter(
-      (a) => a.status === 'Changes Required' || a.status === 'Changes Requested'
-    );
+    // Revisions requested by University Authority for this faculty
+    const myProjectIds = new Set(myProjects.map(p => p.projectId));
+    const myChallengeIds = new Set(myChallenges.map(c => c.challengeId || c.id));
+    const revisionsList = approvalsList.filter((a) => {
+      const isRevision = a.status === 'Changes Required' || a.status === 'Changes Requested';
+      if (!isRevision) return false;
+      const matchEmail = a.faculty?.email?.toLowerCase() === cleanEmail || a.requestedByEmail?.toLowerCase() === cleanEmail;
+      const matchName = facultyNameLower && (a.faculty?.name?.toLowerCase().includes(facultyNameLower) || a.requestedBy?.toLowerCase().includes(facultyNameLower));
+      const matchProj = myProjectIds.has(a.projectId) || myChallengeIds.has(a.challengeId);
+      return matchEmail || matchName || matchProj;
+    });
 
     return {
       faculty: currentFaculty,
-      challenges: myChallenges.length > 0 ? myChallenges : challengesList,
-      projects: myProjects.length > 0 ? myProjects : projectsList,
+      challenges: myChallenges,
+      allChallenges: challengesList,
+      projects: myProjects,
+      allProjects: projectsList,
       approvals: approvalsList,
       revisions: revisionsList
     };

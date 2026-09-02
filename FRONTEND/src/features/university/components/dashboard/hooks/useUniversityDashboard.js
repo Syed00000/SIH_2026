@@ -43,13 +43,15 @@ export const useUniversityDashboard = ({
   };
 
   const handleAssignFaculty = async (payload) => {
+    const facObj = {
+      name: payload.name || payload.facultyName,
+      department: payload.department,
+      email: payload.email || payload.facultyEmail || ''
+    };
     if (onUpdateChallenge) {
-      await onUpdateChallenge(payload);
+      await onUpdateChallenge({ ...payload, ...facObj });
     } else {
-      await universityApiService.assignFaculty(payload.challengeId, universityCode, {
-        name: payload.facultyName,
-        department: payload.department
-      });
+      await universityApiService.assignFaculty(payload.challengeId, universityCode, facObj);
     }
     await loadLiveDashboard();
   };
