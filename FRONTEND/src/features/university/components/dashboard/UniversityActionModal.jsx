@@ -80,7 +80,7 @@ export const UniversityActionModal = ({
     if (onAssignFaculty) {
       await onAssignFaculty({
         challengeId: challenge.id || challenge.challengeId,
-        facultyName: chosen.name,
+        name: chosen.name,
         department: chosen.department || department,
         email: chosen.email || ''
       });
