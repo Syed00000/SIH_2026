@@ -93,7 +93,6 @@ export class ChallengeSubmissionService {
         designation: data.designation || '',
         organization: data.organization || ''
       },
-      mediaUrls: data.mediaUrls || [],
       impactMetrics: {
         affectedPopulation: data.affectedPopulation || '',
         estimatedBudget: data.estimatedBudget || ''
