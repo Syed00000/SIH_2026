@@ -81,6 +81,45 @@ export const useFacultyProposal = ({ projects = [], onRefresh, initialProjectId 
     setMilestoneStages(updated);
   };
 
+  const handleAddStage = () => {
+    const nextStageNum = milestoneStages.length + 1;
+    const startDay = (nextStageNum - 1) * 30 + 1;
+    const endDay = nextStageNum * 30;
+    setMilestoneStages([
+      ...milestoneStages,
+      {
+        stage: nextStageNum,
+        title: '',
+        targetDays: `Days ${startDay}-${endDay}`,
+        deliverable: ''
+      }
+    ]);
+  };
+
+  const handleRemoveStage = (idx) => {
+    if (milestoneStages.length <= 1) return;
+    const updated = milestoneStages
+      .filter((_, i) => i !== idx)
+      .map((stage, i) => ({ ...stage, stage: i + 1 }));
+    setMilestoneStages(updated);
+  };
+
+  const handleMoveStage = (idx, direction) => {
+    if (
+      (direction === 'up' && idx === 0) ||
+      (direction === 'down' && idx === milestoneStages.length - 1)
+    ) {
+      return;
+    }
+    const targetIdx = direction === 'up' ? idx - 1 : idx + 1;
+    const updated = [...milestoneStages];
+    const temp = updated[idx];
+    updated[idx] = updated[targetIdx];
+    updated[targetIdx] = temp;
+    const reindexed = updated.map((stage, i) => ({ ...stage, stage: i + 1 }));
+    setMilestoneStages(reindexed);
+  };
+
   const handleSubmitProposal = async (e) => {
     if (e?.preventDefault) e.preventDefault();
     if (!currentProject) return;
@@ -117,6 +156,9 @@ export const useFacultyProposal = ({ projects = [], onRefresh, initialProjectId 
     handleRemoveItem,
     handleUpdateItem,
     handleUpdateStage,
+    handleAddStage,
+    handleRemoveStage,
+    handleMoveStage,
     handleSubmitProposal
   };
 };

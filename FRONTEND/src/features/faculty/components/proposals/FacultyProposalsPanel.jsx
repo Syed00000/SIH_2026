@@ -34,6 +34,8 @@ export const FacultyProposalsPanel = ({
     handleRemoveItem,
     handleUpdateItem,
     handleUpdateStage,
+    handleAddStage,
+    handleRemoveStage,
     handleSubmitProposal
   } = useFacultyProposal({ projects, onRefresh, initialProjectId });
 
@@ -69,6 +71,8 @@ export const FacultyProposalsPanel = ({
             <MilestoneRoadmapBuilder
               milestoneStages={milestoneStages}
               onUpdateStage={handleUpdateStage}
+              onAddStage={handleAddStage}
+              onRemoveStage={handleRemoveStage}
               onApplyPreset={setMilestoneStages}
             />
 
