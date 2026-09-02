@@ -27,8 +27,8 @@ export async function syncProjectApprovalRequest({ res, updateData, projectId, u
         team: { name: res?.studentTeam || 'Student Research Team', membersCount: res?.teamMembers?.length || 4 },
         startDate: res?.startDate || '20 May 2026',
         estimatedBudget: updateData.proposedBudget || updateData.budget || '₹ 80,000',
-        proposedBudget: updateData.proposedBudget || updateData.budget || '₹ 80,000',
         methodology: updateData.methodology || res?.methodology || '',
+        milestoneRoadmap: updateData.milestoneRoadmap || res?.milestoneRoadmap || [],
         budgetBreakdown: updateData.budgetBreakdown || res?.budgetBreakdown || [],
         supportTypes: ['Government Grant Funding', 'Lab Testing Bench'],
         documentsCount: 3

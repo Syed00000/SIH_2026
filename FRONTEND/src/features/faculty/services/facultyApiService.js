@@ -41,7 +41,7 @@ export const facultyApiService = {
     });
 
     // Filter projects mentored by this faculty
-    const myProjects = projectsList.filter((p) => {
+    const filteredProjects = projectsList.filter((p) => {
       const mentorEmail = p.facultyMentor?.email?.toLowerCase() || '';
       const mentorName = (p.facultyMentor?.name || p.leadMentor || '').toLowerCase();
       return (
@@ -50,15 +50,40 @@ export const facultyApiService = {
       );
     });
 
+    const activeProjectList = filteredProjects.length > 0 ? filteredProjects : projectsList;
+
+    // Cross-link latest remarks and feedback from university approvals onto project objects
+    const enrichedProjects = activeProjectList.map((p) => {
+      const matchingApproval = approvalsList.find(
+        (a) =>
+          (a.projectId && (a.projectId === p.projectId || a.projectId === p._id)) ||
+          (a.challengeId && (a.challengeId === p.challengeId || a.challengeId === p.id)) ||
+          (a.approvalId && a.approvalId === `APP-${p.projectId}`)
+      );
+
+      const latestRemarks =
+        p.adminRemarks ||
+        matchingApproval?.adminRemarks ||
+        p.universityRemarks ||
+        '';
+
+      return {
+        ...p,
+        adminRemarks: latestRemarks,
+        universityRemarks: latestRemarks,
+        matchingApproval
+      };
+    });
+
     // Revisions requested by University Authority
     const revisionsList = approvalsList.filter(
-      (a) => a.status === 'Changes Required' || a.status === 'Changes Requested'
+      (a) => a.status === 'Changes Required' || a.status === 'Changes Requested' || Boolean(a.adminRemarks && a.status !== 'Approved')
     );
 
     return {
       faculty: currentFaculty,
       challenges: myChallenges.length > 0 ? myChallenges : challengesList,
-      projects: myProjects.length > 0 ? myProjects : projectsList,
+      projects: enrichedProjects,
       approvals: approvalsList,
       revisions: revisionsList
     };

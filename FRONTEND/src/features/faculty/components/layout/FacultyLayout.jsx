@@ -82,26 +82,43 @@ export const FacultyLayout = ({ user, onLogout }) => {
     );
   }).length;
 
-  const approvalRevisionsCount = (data.revisions || []).length;
-  const totalRevisionCount = Math.max(projectRevisionsCount, approvalRevisionsCount);
+  // Dynamic notifications list from project remarks & revisions
+  const notificationsList = [
+    ...(data.projects || []).filter((p) => p.adminRemarks || p.universityRemarks).map((p) => ({
+      id: `notif-${p.projectId || p.challengeId}`,
+      title: p.title || `Project ${p.projectId}`,
+      message: p.adminRemarks || p.universityRemarks,
+      projectId: p.projectId || p.challengeId,
+      date: p.updatedAt ? new Date(p.updatedAt).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }) : 'Recently'
+    })),
+    ...(data.revisions || []).filter((r) => r.adminRemarks).map((r) => ({
+      id: `notif-rev-${r.approvalId || r.projectId}`,
+      title: r.project || r.title || `Project ${r.projectId}`,
+      message: r.adminRemarks,
+      projectId: r.projectId || r.approvalId?.replace('APP-', ''),
+      date: r.dateTime || 'Recently'
+    }))
+  ];
+
+  const totalNotificationCount = Math.max(notificationsList.length, totalRevisionCount);
 
   return (
     <div className="min-h-screen bg-[#f8fafc] flex flex-col h-screen overflow-hidden text-slate-900 font-sans select-none">
-      {/* Top Header */}
       <FacultyHeader
         universityName={uniName}
         facultyName={facultyName}
         facultyRole={facultyRole}
         department={facultyDept}
-        selectedDistrict={selectedDistrict}
-        setSelectedDistrict={setSelectedDistrict}
-        selectedSector={selectedSector}
-        setSelectedSector={setSelectedSector}
-        onExportPdf={() => window.print()}
-        notificationCount={totalRevisionCount}
+        notificationCount={totalNotificationCount}
+        notifications={notificationsList}
+        onSelectNotification={(n) => {
+          if (n.projectId) {
+            setSelectedProjectId(n.projectId);
+            setActiveTab('project-workspace');
+          }
+        }}
       />
 
-      {/* Main Workspace Layout with Sidebar and Content Container */}
       <div className="flex flex-1 min-h-0 overflow-hidden relative">
         <FacultySidebar
           activeTab={activeTab}
@@ -122,69 +139,20 @@ export const FacultyLayout = ({ user, onLogout }) => {
               <div className="flex items-center justify-center h-64 text-xs font-bold text-slate-600">
                 Loading Faculty Mentorship Workspace...
               </div>
-            ) : activeTab === 'dashboard' ? (
-              <FacultyDashboard
-                faculty={data.faculty}
-                challenges={data.challenges}
-                projects={data.projects}
-                onNavigateTab={(tab, id = null) => {
-                  if (id) setSelectedProjectId(id);
-                  setActiveTab(tab);
-                }}
-              />
             ) : activeTab === 'challenges' ? (
-              <FacultyAssignedChallenges
-                challenges={data.challenges}
-                faculty={data.faculty}
-                onDraftProposal={() => setActiveTab('dashboard')}
-              />
+              <FacultyAssignedChallenges challenges={data.challenges} faculty={data.faculty} onDraftProposal={() => setActiveTab('dashboard')} />
             ) : activeTab === 'revisions' ? (
-              <FacultyRevisionsPanel
-                revisions={data.revisions || []}
-                projects={data.projects || []}
-                faculty={data.faculty}
-                onRefresh={loadData}
-                onNavigateTab={(tab, id = null) => {
-                  if (id) setSelectedProjectId(id);
-                  setActiveTab(tab);
-                }}
-              />
+              <FacultyRevisionsPanel revisions={data.revisions || []} projects={data.projects || []} faculty={data.faculty} onRefresh={loadData} onNavigateTab={(t, id) => { if (id) setSelectedProjectId(id); setActiveTab(t); }} />
             ) : activeTab === 'project-workspace' ? (
-              <FacultyProjectWorkspace
-                project={data.projects.find(p => p.projectId === selectedProjectId || p.challengeId === selectedProjectId)}
-                projects={data.projects}
-                faculty={data.faculty}
-                onRefresh={loadData}
-                onBack={() => setActiveTab('dashboard')}
-              />
+              <FacultyProjectWorkspace project={data.projects.find(p => p.projectId === selectedProjectId || p.challengeId === selectedProjectId)} projects={data.projects} faculty={data.faculty} onRefresh={loadData} onBack={() => setActiveTab('dashboard')} />
             ) : activeTab === 'projects' ? (
-              <FacultyProjectsPanel
-                projects={data.projects}
-                faculty={data.faculty}
-                onRefresh={loadData}
-                onNavigateTab={(tab) => setActiveTab(tab)}
-              />
+              <FacultyProjectsPanel projects={data.projects} faculty={data.faculty} onRefresh={loadData} onNavigateTab={setActiveTab} />
             ) : activeTab === 'teams' ? (
-              <FacultyTeamsPanel
-                projects={data.projects}
-                faculty={data.faculty}
-                onRefresh={loadData}
-              />
+              <FacultyTeamsPanel projects={data.projects} faculty={data.faculty} onRefresh={loadData} />
             ) : activeTab === 'profile' ? (
-              <FacultyProfilePanel
-                faculty={data.faculty}
-                onRefresh={loadData}
-              />
+              <FacultyProfilePanel faculty={data.faculty} onRefresh={loadData} />
             ) : (
-              <FacultyDashboard
-                faculty={data.faculty}
-                challenges={data.challenges}
-                projects={data.projects}
-                onNavigateTab={(tab, id = null) => {
-                  if (id) setSelectedProjectId(id);
-                  setActiveTab(tab);
-                }}
-              />
+              <FacultyDashboard faculty={data.faculty} challenges={data.challenges} projects={data.projects} onNavigateTab={(t, id) => { if (id) setSelectedProjectId(id); setActiveTab(t); }} />
             )}
           </main>
         </div>

@@ -1,18 +1,39 @@
-import React from 'react';
-import { Bell } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import { Bell, CheckCircle2, Layers, Clock, X, ChevronRight, AlertCircle, FileText } from 'lucide-react';
 
 export const UniversityHeader = ({
   universityName = 'Ranchi University',
   adminName = 'Dr. Ankit Verma',
   adminRole = 'University Nodal Officer',
-  notificationCount = 7
+  notificationCount = 0,
+  notifications = [],
+  onNavigateTab
 }) => {
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef(null);
+
   const avatarInitials = adminName
     .split(' ')
     .map((w) => w[0])
     .join('')
     .slice(0, 2)
     .toUpperCase() || 'AV';
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsDropdownOpen(false);
+      }
+    };
+    if (isDropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isDropdownOpen]);
+
+  const count = notificationCount || notifications.length;
 
   return (
     <header className="sticky top-0 z-30 w-full bg-white border-b border-slate-200/90 px-4 md:px-6 py-2.5 flex items-center justify-between flex-shrink-0 shadow-xs select-none">
@@ -36,7 +57,7 @@ export const UniversityHeader = ({
       {/* Center: JoharSetu Admin Title */}
       <div className="hidden lg:flex flex-col items-center">
         <div className="flex items-center space-x-1.5">
-          <span className="w-2 h-2 rounded-full bg-[#007A61] animate-pulse"></span>
+          <span className="w-2 h-2 rounded-full bg-[#007A61] animate-pulse" />
           <span className="font-extrabold text-[#007A61] text-base tracking-wider uppercase">
             JOHARSETU HEI
           </span>
@@ -47,21 +68,104 @@ export const UniversityHeader = ({
       </div>
 
       {/* Right Controls: Notification Bell, University & Admin Avatar */}
-      <div className="flex items-center space-x-3">
-        {/* Notification Bell with Badge */}
-        <div className="relative">
-          <button
-            className="w-8 h-8 rounded-xl border border-slate-200 flex items-center justify-center text-slate-600 hover:text-[#007A61] hover:border-emerald-200 hover:bg-emerald-50/50 transition-colors cursor-pointer shadow-2xs"
-            title="Notifications"
-          >
-            <Bell className="w-4 h-4" />
-            {notificationCount > 0 && (
-              <span className="absolute -top-1 -right-1 bg-emerald-700 text-white font-extrabold text-[9px] rounded-full w-4 h-4 flex items-center justify-center ring-2 ring-white">
-                {notificationCount}
-              </span>
-            )}
-          </button>
-        </div>
+      <div className="flex items-center space-x-3 relative" ref={dropdownRef}>
+        {/* Notification Bell with Dynamic Badge */}
+        <button
+          type="button"
+          onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+          className={`relative w-8 h-8 rounded-xl border flex items-center justify-center transition-colors cursor-pointer shadow-2xs ${
+            isDropdownOpen
+              ? 'bg-emerald-50 border-[#007A61] text-[#007A61]'
+              : 'border-slate-200 text-slate-600 hover:text-[#007A61] hover:border-emerald-200 hover:bg-emerald-50/50'
+          }`}
+          title="Institutional Notifications & Alerts"
+        >
+          <Bell className="w-4 h-4" />
+          {count > 0 && (
+            <span className="absolute -top-1 -right-1 min-w-4 h-4 px-1 bg-amber-500 text-white font-extrabold text-[9px] rounded-full flex items-center justify-center ring-2 ring-white animate-pulse shadow-2xs">
+              {count}
+            </span>
+          )}
+        </button>
+
+        {/* Interactive Notifications Details Dropdown */}
+        {isDropdownOpen && (
+          <div className="absolute right-0 top-11 w-80 sm:w-96 bg-white border border-slate-200 rounded-2xl shadow-2xl z-50 overflow-hidden text-left animate-in fade-in slide-in-from-top-2 duration-150">
+            <div className="px-4 py-3 bg-gradient-to-r from-emerald-50/90 to-amber-50/70 border-b border-slate-100 flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <span className="text-xs font-black text-slate-900 uppercase tracking-wide">
+                  Institutional Notifications
+                </span>
+                {count > 0 && (
+                  <span className="px-2 py-0.5 bg-amber-500 text-white rounded-full text-[10px] font-black">
+                    {count} Active
+                  </span>
+                )}
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsDropdownOpen(false)}
+                className="text-slate-400 hover:text-slate-700 p-1 hover:bg-slate-100 rounded-lg cursor-pointer"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            </div>
+
+            <div className="max-h-80 overflow-y-auto divide-y divide-slate-100 custom-scrollbar">
+              {notifications.length > 0 ? (
+                notifications.map((item, idx) => (
+                  <div
+                    key={item.id || idx}
+                    onClick={() => {
+                      if (item.targetTab && onNavigateTab) {
+                        onNavigateTab(item.targetTab);
+                      }
+                      setIsDropdownOpen(false);
+                    }}
+                    className="p-3.5 hover:bg-emerald-50/30 transition-colors cursor-pointer space-y-1.5 group"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-1.5 min-w-0">
+                        {item.type === 'APPROVAL' ? (
+                          <FileText className="w-3.5 h-3.5 text-amber-600 shrink-0" />
+                        ) : item.type === 'CHALLENGE' ? (
+                          <Layers className="w-3.5 h-3.5 text-[#007A61] shrink-0" />
+                        ) : (
+                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                        )}
+                        <span className="text-[11px] font-black text-slate-900 truncate">
+                          {item.title}
+                        </span>
+                      </div>
+                      <span className="text-[9.5px] font-bold text-slate-400 shrink-0">
+                        {item.time || 'Recent'}
+                      </span>
+                    </div>
+
+                    <p className="text-xs text-slate-700 font-medium leading-snug line-clamp-2">
+                      {item.message}
+                    </p>
+
+                    <div className="flex items-center justify-between pt-0.5">
+                      <span className="text-[9.5px] font-extrabold text-[#007A61] uppercase tracking-wider bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-100">
+                        {item.category || item.type || 'SYSTEM'}
+                      </span>
+                      <span className="text-[10.5px] font-bold text-[#007A61] flex items-center space-x-0.5 group-hover:translate-x-0.5 transition-transform">
+                        <span>{item.actionLabel || 'View Details'}</span>
+                        <ChevronRight className="w-3 h-3" />
+                      </span>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="p-8 text-center text-xs text-slate-400 font-semibold space-y-1">
+                  <Bell className="w-6 h-6 text-slate-300 mx-auto" />
+                  <p>No active institutional notifications at this time.</p>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* University Name & Admin Profile on Header Right */}
         <div className="flex items-center space-x-2 pl-1 pr-2 py-0.5">

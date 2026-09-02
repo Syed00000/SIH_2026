@@ -67,8 +67,8 @@ export const ApprovalsTable = ({
                 ))
               ) : items.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="py-8 text-center text-slate-400 text-xs font-semibold">
-                    No approval requests match the selected filters.
+                  <td colSpan={7} className="py-12 text-center text-slate-400 text-xs font-semibold">
+                    No approval dossiers found. When Lead Faculty Mentors submit research proposals or budget sanction requests for allocated problems, they will appear here in real-time.
                   </td>
                 </tr>
               ) : (

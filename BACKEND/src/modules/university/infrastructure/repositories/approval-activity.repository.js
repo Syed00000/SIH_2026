@@ -1,10 +1,43 @@
+import mongoose from 'mongoose';
 import { UniversityApproval, UniversityProject, UniversityActivity } from '../model.js';
 
 export class ApprovalActivityRepository {
   async getApprovalsByUniversity(universityCode) {
     const code = (universityCode || '').toUpperCase();
     try {
-      return (await UniversityApproval.find({ universityCode: code }).sort({ date: -1 }).lean()) || [];
+      const approvals = (await UniversityApproval.find({ universityCode: code }).sort({ date: -1 }).lean()) || [];
+      if (!approvals.length) return [];
+
+      const pids = approvals.map((a) => a.projectId || a.challengeId).filter(Boolean);
+      if (!pids.length) return approvals;
+
+      const projects = await UniversityProject.find({
+        $or: [{ projectId: { $in: pids } }, { challengeId: { $in: pids } }]
+      })
+        .select('projectId challengeId milestoneRoadmap methodology')
+        .lean();
+
+      const projMap = new Map();
+      projects.forEach((p) => {
+        if (p.projectId) projMap.set(p.projectId, p);
+        if (p.challengeId) projMap.set(p.challengeId, p);
+      });
+
+      return approvals.map((a) => {
+        const proj = projMap.get(a.projectId) || projMap.get(a.challengeId);
+        const roadmap =
+          Array.isArray(a.milestoneRoadmap) && a.milestoneRoadmap.length > 0
+            ? a.milestoneRoadmap
+            : proj && Array.isArray(proj.milestoneRoadmap) && proj.milestoneRoadmap.length > 0
+            ? proj.milestoneRoadmap
+            : a.milestoneRoadmap || [];
+
+        return {
+          ...a,
+          milestoneRoadmap: roadmap,
+          methodology: a.methodology || proj?.methodology || ''
+        };
+      });
     } catch {
       return [];
     }
@@ -60,6 +93,7 @@ export class ApprovalActivityRepository {
         const projectUpdate = {
           budgetStatus: newBudgetStatus,
           adminRemarks: remarks,
+          universityRemarks: remarks,
           progressPercentage: progressPct,
           milestonesCompleted: milestonesDone
         };

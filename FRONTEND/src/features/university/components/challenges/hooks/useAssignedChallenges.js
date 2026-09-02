@@ -97,10 +97,44 @@ export const useAssignedChallenges = ({
       };
       if (onAssignFaculty) await onAssignFaculty({ challengeId, ...facObj, facultyName: facObj.name });
       else await universityApiService.assignFaculty(challengeId, universityCode, facObj);
+
+      setSelectedChallenge((prev) =>
+        prev && (prev.id === challengeId || prev.challengeId === challengeId)
+          ? {
+              ...prev,
+              status: 'Accepted',
+              acceptanceStatus: 'Accepted',
+              assignedFaculty: facObj,
+              assignedUniversity: {
+                ...(prev.assignedUniversity || {}),
+                mentorName: facObj.name,
+                mentorEmail: facObj.email,
+                department: facObj.department,
+                acceptanceStatus: 'Accepted'
+              }
+            }
+          : prev
+      );
     } else {
       const metadata = { declineReason: reason, remarks, query: query || remarks };
       if (onUpdateChallengeStatus) await onUpdateChallengeStatus(challengeId, newStatus, actionText, metadata);
       else await universityApiService.updateChallengeStatus(challengeId, universityCode, newStatus, actionText, metadata);
+
+      if (newStatus === 'Accepted') {
+        setSelectedChallenge((prev) =>
+          prev && (prev.id === challengeId || prev.challengeId === challengeId)
+            ? {
+                ...prev,
+                status: 'Accepted',
+                acceptanceStatus: 'Accepted',
+                assignedUniversity: {
+                  ...(prev.assignedUniversity || {}),
+                  acceptanceStatus: 'Accepted'
+                }
+              }
+            : prev
+        );
+      }
     }
     await fetchChallenges();
   };

@@ -18,6 +18,7 @@ export const FacultyProjectWorkspace = ({
 
   const hasRevisionDirective =
     Boolean(project.adminRemarks) ||
+    Boolean(project.universityRemarks) ||
     String(project.budgetStatus || '').toLowerCase().includes('changes required') ||
     String(project.prototypeStatus || '').toLowerCase().includes('changes required');
 
@@ -85,7 +86,7 @@ export const FacultyProjectWorkspace = ({
             </span>
           </div>
           <p className="text-xs text-amber-950 font-medium leading-relaxed italic bg-white/70 p-3 rounded-xl border border-amber-200">
-            "{project.adminRemarks || 'University review committee requested technical and financial revisions before state forwarding.'}"
+            "{project.adminRemarks || project.universityRemarks || 'University review committee requested technical and financial revisions before state forwarding.'}"
           </p>
         </div>
       )}

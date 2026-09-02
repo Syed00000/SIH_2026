@@ -1,5 +1,5 @@
 import React from 'react';
-import { Send, MessageSquare, Check, X, UserPlus, HelpCircle } from 'lucide-react';
+import { Send, MessageSquare, Check, X, UserPlus, HelpCircle, GraduationCap } from 'lucide-react';
 
 export const DossierActionFooter = ({
   isUniversityView,
@@ -58,10 +58,10 @@ export const DossierActionFooter = ({
               <button
                 type="button"
                 onClick={onAssignFaculty}
-                className="flex items-center space-x-1.5 px-3.5 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold cursor-pointer shadow-2xs"
+                className="flex items-center space-x-1.5 px-3.5 py-1.5 rounded-xl bg-[#007A61] hover:bg-[#00604c] text-white text-xs font-black cursor-pointer shadow-xs border border-emerald-700 animate-in fade-in zoom-in-95 duration-150"
               >
-                <UserPlus className="w-3.5 h-3.5" />
-                <span>Assign Faculty</span>
+                <GraduationCap className="w-4 h-4 text-emerald-200" />
+                <span>Assign to Faculty</span>
               </button>
             )}
           </>

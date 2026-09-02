@@ -18,16 +18,30 @@ export const UniversityLayout = ({ user, onLogout }) => {
   const rawCode = user?.profile?.aisheCode || user?.profile?.code || user?.code || user?.universityCode || user?.email || 'RU001';
   const universityCode = rawCode;
   const [dashboardData, setDashboardData] = useState(null);
+  const [approvalsList, setApprovalsList] = useState([]);
+  const [pendingApprovalsCount, setPendingApprovalsCount] = useState(0);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let isMounted = true;
     async function loadData() {
       setLoading(true);
-      const data = await universityApiService.getDashboardSummary(universityCode);
-      if (isMounted) {
-        setDashboardData(data);
-        setLoading(false);
+      try {
+        const [data, approvalsData] = await Promise.all([
+          universityApiService.getDashboardSummary(universityCode),
+          universityApiService.getApprovals(universityCode)
+        ]);
+        if (isMounted) {
+          setDashboardData(data);
+          const appList = Array.isArray(approvalsData) ? approvalsData : [];
+          setApprovalsList(appList);
+          const pendingCount = appList.filter(a => a.status === 'Pending').length;
+          setPendingApprovalsCount(pendingCount);
+        }
+      } catch (err) {
+        console.error('Failed to load university dashboard layout data:', err);
+      } finally {
+        if (isMounted) setLoading(false);
       }
     }
     loadData();
@@ -53,18 +67,49 @@ export const UniversityLayout = ({ user, onLogout }) => {
   const adminName = user?.fullName || dashboardData?.adminUser?.name || dashboardData?.university?.nodalOfficer?.name || 'Dr. Ankit Verma';
   const uniName = dashboardData?.name || dashboardData?.university?.name || 'Ranchi University';
 
+  // Build real-time institutional notifications from live database records
+  const notificationsList = [
+    ...approvalsList.filter(a => a.status === 'Pending').map(a => ({
+      id: `app-${a.approvalId || a._id}`,
+      type: 'APPROVAL',
+      category: 'Pending Review',
+      title: a.project || `Project Proposal ${a.projectId}`,
+      message: `${a.type || 'R&D Proposal'} • Budget: ${a.estimatedBudget || a.proposedBudget || '₹ 80,000'} submitted by ${a.submittedBy || 'Faculty Mentor'}.`,
+      time: a.date || 'Recent',
+      actionLabel: 'Review in Approvals',
+      targetTab: 'approvals'
+    })),
+    ...(dashboardData?.challenges || []).filter(c => c.status === 'Pending' || c.status === 'Review').map(c => ({
+      id: `chl-${c.challengeId || c.id}`,
+      type: 'CHALLENGE',
+      category: 'Action Needed',
+      title: c.title || `Grassroots Challenge ${c.challengeId}`,
+      message: `${c.domain || 'State Issue'} • ${c.district || 'Jharkhand'} (${c.affectedPopulation || 'Community Impact'})`,
+      time: c.assignedOn || 'New',
+      actionLabel: 'Review Challenge',
+      targetTab: 'challenges'
+    })),
+    ...(dashboardData?.recentActivities || []).slice(0, 5).map((act, idx) => ({
+      id: `act-${act._id || idx}`,
+      type: 'ACTIVITY',
+      category: 'Audit Notice',
+      title: act.type || 'SYSTEM LOG',
+      message: act.text,
+      time: act.relativeTime || 'Recently',
+      actionLabel: 'Open Dashboard',
+      targetTab: 'dashboard'
+    }))
+  ];
+
   return (
     <div className="min-h-screen bg-[#f8fafc] flex flex-col h-screen overflow-hidden text-slate-900 font-sans select-none">
       <UniversityHeader
         universityName={uniName}
         adminName={adminName}
         adminRole={user?.profile?.nodalOfficerDesignation || 'University Nodal Officer'}
-        selectedDistrict={selectedDistrict}
-        setSelectedDistrict={setSelectedDistrict}
-        selectedSector={selectedSector}
-        setSelectedSector={setSelectedSector}
-        onExportPdf={() => window.print()}
-        notificationCount={dashboardData?.unreadNotificationCount || 7}
+        notificationCount={notificationsList.length}
+        notifications={notificationsList}
+        onNavigateTab={(tab) => setActiveTab(tab)}
       />
 
       <div className="flex flex-1 min-h-0 overflow-hidden relative">
@@ -77,6 +122,7 @@ export const UniversityLayout = ({ user, onLogout }) => {
           setIsMobileMenuOpen={setIsMobileMenuOpen}
           onLogout={onLogout}
           universityName={uniName}
+          approvalCount={pendingApprovalsCount}
         />
 
         <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden bg-[#f8fafc]">
