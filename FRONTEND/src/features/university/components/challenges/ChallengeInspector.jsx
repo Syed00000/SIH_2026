@@ -22,8 +22,13 @@ export const ChallengeInspector = ({
   const [showFullStatement, setShowFullStatement] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [chatStats, setChatStats] = useState({ hasUnread: false, unreadCount: 0, hasMessages: false });
+  const [localAccepted, setLocalAccepted] = useState(false);
 
   const challengeId = challenge?.id || challenge?.challengeId;
+
+  useEffect(() => {
+    setLocalAccepted(false);
+  }, [challengeId]);
 
   const fetchChatStats = async () => {
     if (!challengeId) return;
@@ -65,15 +70,20 @@ export const ChallengeInspector = ({
   const isMentorAssigned = Boolean(mentorName && mentorName !== 'Unassigned' && mentorName !== 'Not Assigned');
 
   const norm = (() => {
-    if (!challenge.status && !challenge.acceptanceStatus) return 'Pending';
+    if (localAccepted) return 'Accepted';
+    const acc = String(challenge.assignedUniversity?.acceptanceStatus || challenge.acceptanceStatus || '').toLowerCase();
     const s = String(challenge.status || '').toLowerCase();
-    const acc = String(challenge.acceptanceStatus || '').toLowerCase();
     if (s.includes('accept') || acc === 'accepted' || s === 'completed') return 'Accepted';
     if (s.includes('reject') || s.includes('decline') || acc === 'declined') return 'Rejected';
     if (s === 'clarified' || acc === 'clarified' || Boolean(challenge.clarificationResponse)) return 'Clarified';
     if (s.includes('clarif') || acc.includes('clarif') || Boolean(challenge.clarificationQuery)) return 'Clarification Requested';
     return 'Pending';
   })();
+
+  const handleAcceptClick = () => {
+    setLocalAccepted(true);
+    if (onAccept) onAccept(challenge);
+  };
 
   return (
     <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 select-none animate-in fade-in duration-150">
@@ -112,7 +122,7 @@ export const ChallengeInspector = ({
           hasUnread={chatStats.hasUnread}
           unreadCount={chatStats.unreadCount}
           hasMessages={chatStats.hasMessages}
-          onAccept={onAccept ? () => onAccept(challenge) : null}
+          onAccept={onAccept ? handleAcceptClick : null}
           onAssignFaculty={onAssignFaculty ? () => onAssignFaculty(challenge) : null}
           onRequestClarification={onRequestClarification ? () => onRequestClarification(challenge) : null}
           onDecline={onDecline ? () => onDecline(challenge) : null}

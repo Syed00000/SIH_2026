@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { ApprovalsNotificationBanner } from './ApprovalsNotificationBanner.jsx';
 import { ApprovalsKpis } from './ApprovalsKpis.jsx';
 import { ApprovalsFilterBar } from './ApprovalsFilterBar.jsx';
 import { ApprovalsTable } from './ApprovalsTable.jsx';
@@ -17,14 +18,13 @@ export const ApprovalsPanel = () => {
   const [search, setSearch] = useState('');
   const [typeFilter, setTypeFilter] = useState('All');
   const [statusFilter, setStatusFilter] = useState('All');
-  const [activeTab, setActiveTab] = useState('budget'); // 'budget' or 'prototype'
+  const [activeTab, setActiveTab] = useState('budget');
 
   const fetchApprovals = async () => {
     setLoading(true);
     try {
       const data = await universityApiService.getApprovals(UNIVERSITY_CODE);
-      const list = Array.isArray(data) ? data : [];
-      setApprovals(list);
+      setApprovals(Array.isArray(data) ? data : []);
     } catch (err) {
       console.error('fetchApprovals error:', err.message);
     } finally {
@@ -48,18 +48,10 @@ export const ApprovalsPanel = () => {
 
   const handleUpdateStatus = async (approval, newStatus, remarks = '') => {
     try {
-      await universityApiService.updateApprovalStatus(
-        approval.approvalId || approval._id,
-        UNIVERSITY_CODE,
-        newStatus,
-        remarks
-      );
+      const id = approval.approvalId || approval._id;
+      await universityApiService.updateApprovalStatus(id, UNIVERSITY_CODE, newStatus, remarks);
       setApprovals((prev) =>
-        prev.map((a) =>
-          (a.approvalId || a._id) === (approval.approvalId || approval._id)
-            ? { ...a, status: newStatus, adminRemarks: remarks }
-            : a
-        )
+        prev.map((a) => (a.approvalId || a._id) === id ? { ...a, status: newStatus, adminRemarks: remarks } : a)
       );
     } catch (err) {
       console.error('updateApprovalStatus error:', err.message);
@@ -70,30 +62,26 @@ export const ApprovalsPanel = () => {
     try {
       const id = approval.approvalId || approval._id;
       await universityApiService.deleteApproval(id, UNIVERSITY_CODE);
-      setApprovals(prev => prev.filter(a => (a.approvalId || a._id) !== id));
+      setApprovals((prev) => prev.filter((a) => (a.approvalId || a._id) !== id));
       handleCloseModal();
     } catch (err) {
       console.error('deleteApproval error:', err.message);
     }
   };
 
-  const handleOpenIndustryModal = (approval) => {
+  const handleOpenIndustryModal = () => {
     setIsIndustryModalOpen(true);
-    // Keep the Detail modal open underneath or close it, 
-    // it's up to UX. We can just overlay it.
   };
 
   const filtered = approvals.filter((a) => {
-    // Tab splitting logic
     if (activeTab === 'budget' && a.type === 'Prototype Approval') return false;
     if (activeTab === 'prototype' && a.type !== 'Prototype Approval') return false;
-
     if (typeFilter !== 'All' && a.type !== typeFilter) return false;
     if (statusFilter !== 'All' && a.status !== statusFilter) return false;
     if (search.trim()) {
       const q = search.toLowerCase();
-      const searchable = `${a.approvalId} ${a.project} ${a.challengeId} ${a.requestedBy} ${a.type}`.toLowerCase();
-      if (!searchable.includes(q)) return false;
+      const s = `${a.approvalId} ${a.project} ${a.challengeId} ${a.requestedBy} ${a.type}`.toLowerCase();
+      if (!s.includes(q)) return false;
     }
     return true;
   });
@@ -105,6 +93,15 @@ export const ApprovalsPanel = () => {
 
   return (
     <div className="space-y-4 max-w-7xl mx-auto select-none pb-12">
+      {/* Top Notification Alert */}
+      <ApprovalsNotificationBanner
+        pendingCount={pending}
+        onFilterPending={() => {
+          setStatusFilter('Pending');
+          setActiveTab('budget');
+        }}
+      />
+
       <div>
         <h1 className="text-xl font-bold text-slate-900 tracking-tight">
           University Approvals & Proposal Dossiers

@@ -64,19 +64,23 @@ export const ProblemBriefAndFeedback = ({
       )}
 
       {/* University Authority Review Feedback Banner */}
-      {currentProject?.budgetStatus === 'Changes Required by University' && (
-        <div className="p-3.5 bg-amber-50 border border-amber-300 rounded-xl space-y-1">
-          <div className="flex items-center space-x-2 text-amber-900 font-bold text-xs">
-            <AlertCircle className="w-4 h-4 text-amber-700 shrink-0" />
-            <span>University Authority Requested Revisions</span>
+      {(Boolean(currentProject?.adminRemarks || currentProject?.universityRemarks) ||
+        String(currentProject?.budgetStatus || '').toLowerCase().includes('changes required')) && (
+        <div className="p-4 bg-amber-50/95 border-2 border-amber-300 rounded-2xl space-y-2 shadow-2xs animate-in fade-in duration-200 text-left">
+          <div className="flex items-center justify-between border-b border-amber-200/80 pb-2">
+            <div className="flex items-center space-x-2 text-amber-950 font-black text-xs uppercase tracking-wide">
+              <AlertCircle className="w-4 h-4 text-amber-700 shrink-0" />
+              <span>University Authority Review Remarks / Feedback</span>
+            </div>
+            <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-amber-500 text-white shadow-2xs">
+              Official Directive
+            </span>
           </div>
-          {currentProject.adminRemarks && (
-            <p className="text-xs text-amber-800 font-medium pl-6">
-              Authority Note: "{currentProject.adminRemarks}"
-            </p>
-          )}
-          <p className="text-[10.5px] text-amber-700 font-semibold pl-6">
-            Please adjust the technical methodology or budget allocations below and resubmit.
+          <div className="p-3 bg-white/90 border border-amber-200/80 rounded-xl text-xs font-bold text-amber-950 leading-relaxed italic">
+            "{currentProject.adminRemarks || currentProject.universityRemarks || 'University Authority has requested technical or financial revisions.'}"
+          </div>
+          <p className="text-[11px] text-amber-900 font-medium">
+            Please review the directives above from the University Nodal Officer and update your technical methodology, milestone stages, or itemized budget allocations accordingly.
           </p>
         </div>
       )}

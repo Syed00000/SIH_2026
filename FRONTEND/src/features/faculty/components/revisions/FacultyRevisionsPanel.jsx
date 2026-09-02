@@ -44,7 +44,8 @@ export const FacultyRevisionsPanel = ({
         pStatus.includes('changes required') ||
         gStatus.includes('changes required') ||
         status.includes('changes required') ||
-        Boolean(p.adminRemarks && (bStatus.includes('changes') || pStatus.includes('changes')))
+        Boolean(p.adminRemarks) ||
+        Boolean(p.universityRemarks)
       );
     })
     .map((p) => ({
@@ -57,7 +58,7 @@ export const FacultyRevisionsPanel = ({
       district: p.district || 'Jharkhand',
       type: p.prototypeStatus?.includes('Changes') ? 'Prototype Revision' : 'Proposal & Budget Revision',
       status: 'Changes Required',
-      adminRemarks: p.adminRemarks || 'University review committee requested technical and budgetary revisions before state forwarding.',
+      adminRemarks: p.adminRemarks || p.universityRemarks || 'University review committee requested technical and budgetary revisions before state forwarding.',
       requestedBy: p.teamLead || faculty?.name || 'Lead Faculty Investigator',
       budget: p.proposedBudget || p.budget || p.sanctionedBudget || '₹ 2,15,015',
       updatedAt: p.updatedAt || new Date(),

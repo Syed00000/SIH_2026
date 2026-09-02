@@ -359,7 +359,7 @@ export const ApprovalDetailModal = ({
                 Faculty Milestone Roadmap & Research Stages
               </h3>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-4 gap-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5">
               {(Array.isArray(approval.milestoneRoadmap) && approval.milestoneRoadmap.length > 0
                 ? approval.milestoneRoadmap
                 : [
@@ -369,14 +369,14 @@ export const ApprovalDetailModal = ({
                     { stage: 4, title: 'Public Rollout & Scale', targetDays: 'Days 121-180', deliverable: 'Deployment and handover to district administration' }
                   ]
               ).map((stage, sIdx) => (
-                <div key={sIdx} className="p-2.5 bg-slate-50 border border-slate-200 rounded-lg space-y-1">
+                <div key={sIdx} className="p-3 bg-slate-50/80 border border-slate-200/90 rounded-xl space-y-1.5 hover:bg-emerald-50/20 transition-all">
                   <div className="flex items-center justify-between text-[10px]">
-                    <span className="font-extrabold text-[#007A61] uppercase">Stage {stage.stage || sIdx + 1}</span>
-                    <span className="font-bold text-slate-500">{stage.targetDays || `Phase ${sIdx + 1}`}</span>
+                    <span className="font-black text-[#007A61] uppercase tracking-wide">Stage {stage.stage || sIdx + 1}</span>
+                    <span className="font-bold text-slate-500 bg-white px-1.5 py-0.5 rounded border border-slate-200/80">{stage.targetDays || `Phase ${sIdx + 1}`}</span>
                   </div>
-                  <div className="text-xs font-bold text-slate-900 leading-snug">{stage.title}</div>
+                  <div className="text-xs font-black text-slate-900 leading-snug">{stage.title}</div>
                   {stage.deliverable && (
-                    <div className="text-[10px] text-slate-500 line-clamp-2">{stage.deliverable}</div>
+                    <div className="text-[10.5px] text-slate-600 leading-relaxed pt-0.5">{stage.deliverable}</div>
                   )}
                 </div>
               ))}

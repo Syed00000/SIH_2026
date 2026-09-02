@@ -1,5 +1,5 @@
 import React from 'react';
-import { MessageSquare, Check, UserPlus, HelpCircle, AlertOctagon } from 'lucide-react';
+import { MessageSquare, Check, GraduationCap, HelpCircle, AlertOctagon } from 'lucide-react';
 
 export const InspectorActionFooter = ({
   norm,
@@ -50,10 +50,10 @@ export const InspectorActionFooter = ({
         {norm === 'Accepted' && onAssignFaculty && (
           <button
             onClick={onAssignFaculty}
-            className="flex items-center space-x-1.5 px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-extrabold transition-all cursor-pointer shadow-2xs"
+            className="flex items-center space-x-2 px-4 py-2 rounded-xl bg-[#007A61] hover:bg-[#00604c] text-white text-xs font-black transition-all cursor-pointer shadow-xs border border-emerald-700 animate-in fade-in zoom-in-95 duration-150"
           >
-            <UserPlus className="w-4 h-4" />
-            <span>{isMentorAssigned ? 'Reassign Mentor' : 'Assign Faculty Mentor'}</span>
+            <GraduationCap className="w-4 h-4 text-emerald-200" />
+            <span>{isMentorAssigned ? 'Reassign Faculty' : 'Assign to Faculty'}</span>
           </button>
         )}
 

@@ -81,8 +81,22 @@ export class ProjectApprovalRepository {
         });
       }
 
-      if (cleanUpdate.budgetStatus === 'Submitted to University for Review' || cleanUpdate.proposedBudget || cleanUpdate.budgetBreakdown) {
+      if (cleanUpdate.budgetStatus === 'Submitted to University for Review' || cleanUpdate.proposedBudget || cleanUpdate.budgetBreakdown || cleanUpdate.milestoneRoadmap) {
         await syncProjectApprovalRequest({ res, updateData: cleanUpdate, projectId, uniCode });
+      }
+
+      if (cleanUpdate.milestoneRoadmap && Array.isArray(cleanUpdate.milestoneRoadmap)) {
+        const { UniversityApproval } = await import('../model.js');
+        await UniversityApproval.updateMany(
+          {
+            $or: [
+              { projectId: res?.projectId || projectId },
+              { challengeId: res?.challengeId || projectId },
+              { approvalId: `APP-${res?.projectId || projectId}` }
+            ]
+          },
+          { $set: { milestoneRoadmap: cleanUpdate.milestoneRoadmap } }
+        ).catch((err) => console.warn('Milestone roadmap sync to approval warning:', err.message));
       }
 
       await syncGovernmentDirectives({ res, updateData: cleanUpdate, projectId, uniCode });

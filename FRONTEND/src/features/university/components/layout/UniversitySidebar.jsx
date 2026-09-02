@@ -7,7 +7,6 @@ import {
   Handshake,
   CheckCircle2,
   BarChart3,
-  Bell,
   Landmark,
   Settings,
   LogOut,
@@ -24,7 +23,6 @@ const NAV_ITEMS = [
   { id: 'partners', label: 'Industry Partners', icon: Handshake },
   { id: 'approvals', label: 'Approvals', icon: CheckCircle2 },
   { id: 'reports', label: 'Reports & Analytics', icon: BarChart3 },
-  { id: 'notifications', label: 'Notifications', icon: Bell, badge: 7 },
   { id: 'profile', label: 'University Profile', icon: Landmark },
   { id: 'settings', label: 'Settings', icon: Settings }
 ];
@@ -37,8 +35,27 @@ export const UniversitySidebar = ({
   isMobileMenuOpen = false,
   setIsMobileMenuOpen,
   onLogout,
-  universityName = 'Ranchi University'
+  universityName = 'Ranchi University',
+  approvalCount = 0
 }) => {
+  const navItems = [
+    { id: 'dashboard', label: 'Dashboard', icon: Home },
+    { id: 'challenges', label: 'Assigned Challenges', icon: Layers },
+    { id: 'faculty', label: 'Faculty Mentors', icon: GraduationCap },
+    { id: 'projects', label: 'Projects Portfolio', icon: Briefcase },
+    { id: 'partners', label: 'Industry Partners', icon: Handshake },
+    {
+      id: 'approvals',
+      label: 'Approvals',
+      icon: CheckCircle2,
+      badge: approvalCount > 0 ? approvalCount : null,
+      badgeColor: 'amber'
+    },
+    { id: 'reports', label: 'Reports & Analytics', icon: BarChart3 },
+    { id: 'profile', label: 'University Profile', icon: Landmark },
+    { id: 'settings', label: 'Settings', icon: Settings }
+  ];
+
   return (
     <aside
       className={`bg-white border-r border-slate-200/90 px-3 pt-3.5 pb-4 flex flex-col justify-between flex-shrink-0 transition-all duration-200 h-full z-20 shadow-2xs select-none ${
@@ -79,7 +96,7 @@ export const UniversitySidebar = ({
 
         {/* Menu Navigation Items */}
         <nav className="space-y-1">
-          {NAV_ITEMS.map((item) => {
+          {navItems.map((item) => {
             const Icon = item.icon;
             const isActive = activeTab === item.id || (item.id === 'faculty' && activeTab?.startsWith('faculty'));
 
@@ -87,7 +104,7 @@ export const UniversitySidebar = ({
               <button
                 key={item.id}
                 onClick={() => {
-                  setActiveTab && setActiveTab(item.id);
+                  if (setActiveTab) setActiveTab(item.id);
                   if (setIsMobileMenuOpen) setIsMobileMenuOpen(false);
                 }}
                 className={`w-full flex items-center justify-between rounded-xl text-xs font-bold transition-all relative cursor-pointer ${
@@ -104,15 +121,27 @@ export const UniversitySidebar = ({
                   {isSidebarExpanded && <span className="truncate tracking-tight">{item.label}</span>}
                 </div>
 
-                {item.badge && isSidebarExpanded && (
-                  <span
-                    className={`px-2 py-0.5 rounded-full text-[10px] font-black leading-none ${
-                      isActive ? 'bg-white text-[#007A61]' : 'bg-[#007A61] text-white'
-                    }`}
-                  >
-                    {item.badge}
-                  </span>
-                )}
+                {item.badge ? (
+                  isSidebarExpanded ? (
+                    <span
+                      className={`px-2 py-0.5 rounded-full text-[10px] font-black leading-none ${
+                        isActive
+                          ? 'bg-white text-[#007A61]'
+                          : item.badgeColor === 'amber'
+                          ? 'bg-amber-500 text-white shadow-2xs'
+                          : 'bg-[#007A61] text-white'
+                      }`}
+                    >
+                      {item.badge}
+                    </span>
+                  ) : (
+                    <span
+                      className={`absolute top-1.5 right-1.5 w-2 h-2 rounded-full ${
+                        item.badgeColor === 'amber' ? 'bg-amber-500' : 'bg-[#007A61]'
+                      }`}
+                    />
+                  )
+                ) : null}
               </button>
             );
           })}
