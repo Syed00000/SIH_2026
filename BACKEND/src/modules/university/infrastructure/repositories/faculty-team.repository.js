@@ -35,16 +35,11 @@ export class FacultyTeamRepository {
     const password = facultyData.password || 'Faculty@123456';
     const passwordHash = await bcrypt.hash(password, 12);
 
-    let userAccount = null;
     try {
-      userAccount = await syncFacultyUserAccount({
+      const userAccount = await syncFacultyUserAccount({
         cleanEmail, cleanName, cleanPhone, passwordHash, code, uniDoc, facultyData
       });
-    } catch (e) {
-      console.warn('User account sync skipped:', e.message);
-    }
 
-    try {
       let existingFac = await UniversityFaculty.findOne({
         $or: [
           { universityCode: code, email: cleanEmail },
@@ -59,7 +54,7 @@ export class FacultyTeamRepository {
         universityCode: code,
         passwordHash,
         userId: userAccount?._id || null,
-        status: facultyData.status || 'Active',
+        status: 'Active',
         availabilityStatus: facultyData.availabilityStatus || 'Available'
       };
 
@@ -69,40 +64,20 @@ export class FacultyTeamRepository {
           { $set: facultyPayload },
           { new: true }
         );
-        return updated?.toObject ? updated.toObject() : updated;
+        return updated.toObject ? updated.toObject() : updated;
       }
 
       const created = await UniversityFaculty.create(facultyPayload);
-      return created?.toObject ? created.toObject() : created;
+      return created.toObject ? created.toObject() : created;
     } catch (err) {
-      console.error('Error in createFaculty mongo save:', err);
-      try {
-        const fallback = await UniversityFaculty.findOneAndUpdate(
-          { email: cleanEmail },
-          {
-            $set: {
-              name: cleanName,
-              email: cleanEmail,
-              universityCode: code,
-              department: facultyData.department || 'Engineering',
-              designation: facultyData.designation || 'Faculty Mentor',
-              status: 'Active',
-              availabilityStatus: 'Available'
-            }
-          },
-          { upsert: true, new: true }
-        );
-        return fallback?.toObject ? fallback.toObject() : fallback;
-      } catch (fallbackErr) {
-        console.error('Fallback save failed:', fallbackErr);
-        return {
-          id: `FAC-${Date.now().toString().slice(-4)}`,
-          ...facultyData,
-          email: cleanEmail,
-          name: cleanName,
-          universityCode: code
-        };
-      }
+      console.warn('Error creating faculty:', err);
+      return {
+        id: `FAC-${Date.now().toString().slice(-4)}`,
+        ...facultyData,
+        email: cleanEmail,
+        name: cleanName,
+        universityCode: code
+      };
     }
   }
 

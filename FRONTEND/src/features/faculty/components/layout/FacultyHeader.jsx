@@ -1,17 +1,11 @@
 import React from 'react';
-import { FileText, Bell, ChevronDown, Sparkles, Building2 } from 'lucide-react';
-import { JHARKHAND_DISTRICTS_LIST, SECTORS_LIST } from '../../../government/data/governmentConstants.js';
+import { Bell } from 'lucide-react';
 
 export const FacultyHeader = ({
   universityName = 'Ranchi University',
   facultyName = 'Dr. Binod Kumar',
   facultyRole = 'Senior Research Scientist',
   department = 'Electrical & Electronics',
-  selectedDistrict = 'All',
-  setSelectedDistrict,
-  selectedSector = 'All',
-  setSelectedSector,
-  onExportPdf,
   notificationCount = 3
 }) => {
   const avatarInitials = (facultyName || 'FM')
@@ -53,56 +47,8 @@ export const FacultyHeader = ({
         </span>
       </div>
 
-      {/* Right Controls: Filters, Export PDF, Notification Bell, Faculty Avatar */}
+      {/* Right Controls: Notification Bell, Faculty Avatar */}
       <div className="flex items-center space-x-3">
-        {/* District Filter Dropdown */}
-        <div className="hidden sm:flex items-center space-x-1.5">
-          <span className="text-xs font-semibold text-slate-600">District:</span>
-          <div className="relative">
-            <select
-              value={selectedDistrict}
-              onChange={(e) => setSelectedDistrict && setSelectedDistrict(e.target.value)}
-              className="text-xs font-semibold text-slate-700 bg-white border border-slate-200 rounded-xl px-2.5 py-1.5 pr-7 hover:border-[#007A61] focus:outline-none focus:ring-1 focus:ring-[#007A61] cursor-pointer appearance-none shadow-2xs"
-            >
-              {JHARKHAND_DISTRICTS_LIST.map((dist) => (
-                <option key={dist} value={dist}>
-                  {dist}
-                </option>
-              ))}
-            </select>
-            <ChevronDown className="w-3.5 h-3.5 text-slate-400 absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none" />
-          </div>
-        </div>
-
-        {/* Sector Filter Dropdown */}
-        <div className="hidden sm:flex items-center space-x-1.5">
-          <span className="text-xs font-semibold text-slate-600">Sector:</span>
-          <div className="relative">
-            <select
-              value={selectedSector}
-              onChange={(e) => setSelectedSector && setSelectedSector(e.target.value)}
-              className="text-xs font-semibold text-slate-700 bg-white border border-slate-200 rounded-xl px-2.5 py-1.5 pr-7 hover:border-[#007A61] focus:outline-none focus:ring-1 focus:ring-[#007A61] cursor-pointer appearance-none shadow-2xs"
-            >
-              {SECTORS_LIST.map((sec) => (
-                <option key={sec} value={sec}>
-                  {sec}
-                </option>
-              ))}
-            </select>
-            <ChevronDown className="w-3.5 h-3.5 text-slate-400 absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none" />
-          </div>
-        </div>
-
-        {/* Export PDF Button */}
-        <button
-          type="button"
-          onClick={onExportPdf || (() => window.print())}
-          className="flex items-center space-x-1.5 bg-white hover:bg-emerald-50/60 hover:text-[#007A61] hover:border-emerald-300 text-slate-700 font-bold px-3 py-1.5 rounded-xl border border-slate-200 text-xs shadow-2xs transition-colors cursor-pointer"
-        >
-          <FileText className="w-3.5 h-3.5 text-[#007A61]" />
-          <span className="hidden sm:inline">Export PDF</span>
-        </button>
-
         {/* Notification Bell */}
         <button
           type="button"

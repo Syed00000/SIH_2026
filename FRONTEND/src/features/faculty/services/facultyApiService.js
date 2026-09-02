@@ -32,44 +32,33 @@ export const facultyApiService = {
 
     // Filter challenges assigned to this faculty mentor
     const myChallenges = challengesList.filter((c) => {
-      const mentorEmail = (c.assignedFaculty?.email || '').toLowerCase().trim();
-      const mentorName = (c.assignedFaculty?.name || c.assignedUniversity?.mentorName || '').toLowerCase().trim();
-      if (!mentorEmail && !mentorName) return false;
+      const mentorEmail = c.assignedFaculty?.email?.toLowerCase() || '';
+      const mentorName = (c.assignedFaculty?.name || c.assignedUniversity?.mentorName || '').toLowerCase();
       return (
-        (cleanEmail && mentorEmail === cleanEmail) ||
+        mentorEmail === cleanEmail ||
         (facultyNameLower && mentorName && (mentorName.includes(facultyNameLower) || facultyNameLower.includes(mentorName)))
       );
     });
 
     // Filter projects mentored by this faculty
     const myProjects = projectsList.filter((p) => {
-      const mentorEmail = (p.facultyMentor?.email || '').toLowerCase().trim();
-      const mentorName = (p.facultyMentor?.name || p.leadMentor || '').toLowerCase().trim();
-      if (!mentorEmail && !mentorName) return false;
+      const mentorEmail = p.facultyMentor?.email?.toLowerCase() || '';
+      const mentorName = (p.facultyMentor?.name || p.leadMentor || '').toLowerCase();
       return (
-        (cleanEmail && mentorEmail === cleanEmail) ||
+        mentorEmail === cleanEmail ||
         (facultyNameLower && mentorName && (mentorName.includes(facultyNameLower) || facultyNameLower.includes(mentorName)))
       );
     });
 
-    // Revisions requested by University Authority for this faculty
-    const myProjectIds = new Set(myProjects.map(p => p.projectId));
-    const myChallengeIds = new Set(myChallenges.map(c => c.challengeId || c.id));
-    const revisionsList = approvalsList.filter((a) => {
-      const isRevision = a.status === 'Changes Required' || a.status === 'Changes Requested';
-      if (!isRevision) return false;
-      const matchEmail = a.faculty?.email?.toLowerCase() === cleanEmail || a.requestedByEmail?.toLowerCase() === cleanEmail;
-      const matchName = facultyNameLower && (a.faculty?.name?.toLowerCase().includes(facultyNameLower) || a.requestedBy?.toLowerCase().includes(facultyNameLower));
-      const matchProj = myProjectIds.has(a.projectId) || myChallengeIds.has(a.challengeId);
-      return matchEmail || matchName || matchProj;
-    });
+    // Revisions requested by University Authority
+    const revisionsList = approvalsList.filter(
+      (a) => a.status === 'Changes Required' || a.status === 'Changes Requested'
+    );
 
     return {
       faculty: currentFaculty,
-      challenges: myChallenges,
-      allChallenges: challengesList,
-      projects: myProjects,
-      allProjects: projectsList,
+      challenges: myChallenges.length > 0 ? myChallenges : challengesList,
+      projects: myProjects.length > 0 ? myProjects : projectsList,
       approvals: approvalsList,
       revisions: revisionsList
     };

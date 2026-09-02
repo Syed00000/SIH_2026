@@ -7,28 +7,36 @@ export class ProjectApprovalRepository {
       ? { _id: projectId }
       : { $or: [{ projectId }, { challengeId: projectId }] };
 
+    const cleanUpdate = { ...updateData };
+    delete cleanUpdate._id;
+    delete cleanUpdate.__v;
+    delete cleanUpdate.createdAt;
+    delete cleanUpdate.updatedAt;
+
     try {
-      const res = await UniversityProject.findOneAndUpdate(query, { $set: updateData }, { new: true });
+      const res = await UniversityProject.findOneAndUpdate(query, { $set: cleanUpdate }, { new: true });
       const uniCode = (universityCode || res?.universityCode || 'RU001').toUpperCase();
 
-      if (updateData.teamMembers && Array.isArray(updateData.teamMembers)) {
+      if (cleanUpdate.teamMembers && Array.isArray(cleanUpdate.teamMembers)) {
         await UniversityActivity.create({
           universityCode: uniCode,
-          text: `Student Research Team (${updateData.teamMembers.length} members) organized for project ${res?.projectId || projectId}.`,
+          text: `Student Research Team (${cleanUpdate.teamMembers.length} members) organized for project ${res?.projectId || projectId}.`,
           type: 'TEAM_UPDATED',
           timestamp: new Date()
         });
       }
 
-      if (updateData.budgetStatus === 'Submitted to University for Review' || updateData.proposedBudget || updateData.budgetBreakdown) {
-        await syncProjectApprovalRequest({ res, updateData, projectId, uniCode });
+      if (cleanUpdate.budgetStatus === 'Submitted to University for Review' || cleanUpdate.proposedBudget || cleanUpdate.budgetBreakdown) {
+        await syncProjectApprovalRequest({ res, updateData: cleanUpdate, projectId, uniCode });
       }
 
-      await syncGovernmentDirectives({ res, updateData, projectId, uniCode });
+      await syncGovernmentDirectives({ res, updateData: cleanUpdate, projectId, uniCode });
 
       if (res) return res;
-    } catch { }
-    return { projectId, ...updateData };
+    } catch (err) {
+      console.error('ProjectApprovalRepository updateProject error:', err);
+    }
+    return { projectId, ...cleanUpdate };
   }
 }
 
