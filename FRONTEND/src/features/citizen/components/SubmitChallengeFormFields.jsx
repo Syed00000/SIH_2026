@@ -1,5 +1,5 @@
-import React from 'react';
-import { MapPin, User, Image as ImageIcon, Loader2, ShieldCheck, Users, AlertCircle } from 'lucide-react';
+import React, { useState, useRef } from 'react';
+import { MapPin, User, Loader2, ShieldCheck, Users, AlertCircle, X } from 'lucide-react';
 import { CitizenThemedSelect } from './CitizenThemedSelect.jsx';
 
 const JHARKHAND_DISTRICTS = [
@@ -262,43 +262,6 @@ export const SubmitChallengeFormFields = ({
         </div>
       </div>
 
-      {/* 4. Media & Photos */}
-      <div className="space-y-4 pb-2">
-        <span className="text-xs font-extrabold text-emerald-800 uppercase tracking-wider block">
-          4. Image / Photo Proof (Optional)
-        </span>
-        <input
-          type="url"
-          name="mediaUrl"
-          value={formData.mediaUrl}
-          onChange={handleChange}
-          placeholder="Paste image URL (or select sample photo below)"
-          className="w-full text-xs font-medium px-3.5 py-2.5 rounded-xl bg-white border border-slate-200/90 text-slate-900 focus:outline-none focus:border-emerald-600 shadow-2xs"
-        />
-        <div className="flex items-center space-x-2 pt-0.5">
-          <span className="text-xs text-slate-500 font-semibold">Quick Photo:</span>
-          <button
-            type="button"
-            onClick={() => handlePresetPhoto('https://images.unsplash.com/photo-1515694346937-94d85e41e6f0?w=800&auto=format&fit=crop&q=60')}
-            className="text-xs px-2.5 py-1 bg-white border border-slate-200 hover:border-slate-300 rounded-lg font-medium text-slate-700 cursor-pointer shadow-2xs"
-          >
-            🛣️ Damaged Road
-          </button>
-          <button
-            type="button"
-            onClick={() => handlePresetPhoto('https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=800&auto=format&fit=crop&q=60')}
-            className="text-xs px-2.5 py-1 bg-white border border-slate-200 hover:border-slate-300 rounded-lg font-medium text-slate-700 cursor-pointer shadow-2xs"
-          >
-            💧 Water Issue
-          </button>
-        </div>
-        {formData.mediaUrl && (
-          <div className="w-28 h-20 rounded-xl overflow-hidden border border-slate-200 mt-2">
-            <img src={formData.mediaUrl} alt="Preview" className="w-full h-full object-cover" />
-          </div>
-        )}
-      </div>
-
       {/* Bottom Error Notification if present */}
       {error && (
         <div className="p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-semibold flex items-center space-x-2 shadow-2xs">
@@ -313,7 +276,7 @@ export const SubmitChallengeFormFields = ({
           <button
             type="button"
             onClick={onClose}
-            className="py-2.5 px-5 rounded-xl border border-slate-200 text-xs font-bold text-slate-700 hover:bg-slate-50 transition-colors cursor-pointer"
+            className="py-2.5 px-5 rounded-xl border border-slate-200 text-xs font-bold text-slate-700 hover:text-rose-600 hover:bg-rose-50 hover:border-rose-200 transition-colors cursor-pointer"
           >
             Cancel
           </button>
@@ -321,7 +284,7 @@ export const SubmitChallengeFormFields = ({
         <button
           type="submit"
           disabled={loading}
-          className="py-2.5 px-6 rounded-xl bg-[#064e3b] hover:bg-[#047857] text-white text-xs font-bold shadow-2xs transition-all flex items-center justify-center space-x-2 cursor-pointer disabled:opacity-70 active:scale-95"
+          className="py-2.5 px-6 rounded-xl bg-white text-slate-900 border-2 border-slate-200 hover:bg-[#064e3b] hover:border-[#064e3b] hover:text-white text-xs font-bold shadow-2xs transition-all flex items-center justify-center space-x-2 cursor-pointer disabled:opacity-70 active:scale-95 group"
         >
           {loading ? (
             <>
@@ -336,6 +299,7 @@ export const SubmitChallengeFormFields = ({
           )}
         </button>
       </div>
+
     </>
   );
 };

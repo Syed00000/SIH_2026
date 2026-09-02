@@ -14,7 +14,7 @@ export const CitizenHeroBanner = ({ onSubmitClick }) => {
         />
       </div>
 
-      <div className="relative z-10 max-w-[65%] sm:max-w-[70%] space-y-2.5">
+      <div className="relative z-10 max-w-[85%] sm:max-w-[70%] space-y-2.5">
         <div>
           <h2 className="text-xl md:text-2xl font-extrabold tracking-tight leading-snug">
             Your Challenge <br />

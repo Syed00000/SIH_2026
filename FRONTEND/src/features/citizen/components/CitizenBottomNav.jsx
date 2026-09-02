@@ -1,10 +1,10 @@
 import React from 'react';
-import { Home, FileText, Plus, BarChart3, User } from 'lucide-react';
+import { Home, FileText, Plus, HelpCircle, User } from 'lucide-react';
 
 export const CitizenBottomNav = ({ activeTab = 'home', onChangeTab, onSubmitClick }) => {
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-slate-200/80 shadow-[0_-4px_12px_rgba(0,0,0,0.06)] px-3 py-1.5 max-w-md mx-auto sm:rounded-t-2xl">
-      <div className="flex items-center justify-between relative">
+      <div className="flex items-center justify-between relative w-full">
         {/* 1. Home */}
         <button
           onClick={() => onChangeTab('home')}
@@ -31,7 +31,7 @@ export const CitizenBottomNav = ({ activeTab = 'home', onChangeTab, onSubmitClic
         >
           <FileText className={`w-5 h-5 ${activeTab === 'challenges' ? 'stroke-[2.5]' : 'stroke-[1.8]'}`} />
           <span
-            className={`text-[10px] mt-0.5 leading-tight ${
+            className={`text-[10px] mt-0.5 leading-tight whitespace-nowrap ${
               activeTab === 'challenges' ? 'font-bold' : 'font-medium'
             }`}
           >
@@ -44,29 +44,29 @@ export const CitizenBottomNav = ({ activeTab = 'home', onChangeTab, onSubmitClic
           <button
             onClick={onSubmitClick || (() => onChangeTab('submit'))}
             aria-label="Submit a Challenge"
-            className="w-12 h-12 rounded-full bg-gradient-to-tr from-[#064e3b] to-[#047857] hover:from-[#047857] hover:to-[#059669] text-white shadow-md border-3 border-white flex items-center justify-center transition-transform active:scale-95 cursor-pointer"
+            className="w-12 h-12 rounded-full bg-gradient-to-tr from-[#064e3b] to-[#047857] hover:from-[#047857] hover:to-[#059669] text-white shadow-md border-3 border-white flex items-center justify-center transition-transform active:scale-95 cursor-pointer relative z-10"
           >
             <Plus className="w-6 h-6 stroke-[2.8]" />
           </button>
-          <span className="text-[10px] font-bold text-emerald-800 mt-0.5 leading-tight">
+          <span className="text-[10px] font-bold text-emerald-800 mt-1 leading-tight">
             Submit
           </span>
         </div>
 
-        {/* 4. Updates */}
+        {/* 4. Help */}
         <button
-          onClick={() => onChangeTab('updates')}
+          onClick={() => onChangeTab('guidelines')}
           className={`flex-1 flex flex-col items-center justify-center py-1 transition-colors cursor-pointer ${
-            activeTab === 'updates' ? 'text-emerald-700' : 'text-slate-400 hover:text-slate-600'
+            activeTab === 'guidelines' ? 'text-emerald-700' : 'text-slate-400 hover:text-slate-600'
           }`}
         >
-          <BarChart3 className={`w-5 h-5 ${activeTab === 'updates' ? 'stroke-[2.5]' : 'stroke-[1.8]'}`} />
+          <HelpCircle className={`w-5 h-5 ${activeTab === 'guidelines' ? 'stroke-[2.5]' : 'stroke-[1.8]'}`} />
           <span
             className={`text-[10px] mt-0.5 leading-tight ${
-              activeTab === 'updates' ? 'font-bold' : 'font-medium'
+              activeTab === 'guidelines' ? 'font-bold' : 'font-medium'
             }`}
           >
-            Updates
+            Help
           </span>
         </button>
 

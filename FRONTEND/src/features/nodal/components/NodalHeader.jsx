@@ -46,26 +46,6 @@ export const NodalHeader = ({
         </div>
       </div>
 
-      {/* Center: JoharSetu Nodal Portal Indicator */}
-      <div className="hidden lg:flex items-center space-x-2 bg-emerald-50/70 border border-emerald-200/80 px-3 py-1 rounded-full">
-        <span className="w-2 h-2 rounded-full bg-[#047857] animate-pulse" />
-        <span className="font-extrabold text-[#064e3b] text-xs tracking-wider uppercase">
-          JoharSetu Nodal Authority
-        </span>
-        {nodalDistrict && (
-          <>
-            <span className="text-emerald-400">&bull;</span>
-            <span className="text-[11px] font-bold text-emerald-900 bg-emerald-100/90 px-2 py-0.5 rounded">
-              📍 {nodalDistrict} District
-            </span>
-          </>
-        )}
-        <span className="text-emerald-400">&bull;</span>
-        <span className="text-[11px] font-semibold text-emerald-800">
-          Grassroots Triage Console
-        </span>
-      </div>
-
       {/* Right Controls: Notification Bell & Officer Profile Pill */}
       <div className="flex items-center space-x-2.5">
         {/* Notification Bell */}

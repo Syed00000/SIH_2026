@@ -136,8 +136,8 @@ export const CitizenChallengeDetailModal = ({ challenge, isOpen, onClose, onChal
   const affectedPop = challenge.impactMetrics?.affectedPopulation || challenge.affectedPopulation;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-150">
-      <div className="bg-white w-full max-w-3xl rounded-2xl shadow-2xl border border-slate-200 flex flex-col max-h-[92vh] overflow-hidden text-left">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-5 sm:p-6 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-150">
+      <div className="bg-white w-full max-w-3xl rounded-2xl shadow-2xl border border-slate-200 flex flex-col max-h-[80vh] overflow-hidden text-left">
         {/* Header */}
         <div className="px-5 py-4 bg-white border-b border-slate-200/90 flex items-center justify-between flex-shrink-0">
           <div className="flex items-center space-x-3 min-w-0">
@@ -186,7 +186,7 @@ export const CitizenChallengeDetailModal = ({ challenge, isOpen, onClose, onChal
                   type="button"
                   disabled={isProcessing}
                   onClick={() => setShowDeleteConfirm(false)}
-                  className="px-3 py-1.5 rounded-lg bg-white border border-slate-200 text-slate-700 font-bold text-xs hover:bg-slate-50 cursor-pointer"
+                  className="px-3 py-1.5 rounded-lg bg-white border border-slate-200 text-slate-700 font-bold text-xs hover:text-rose-600 hover:bg-rose-50 hover:border-rose-200 transition-colors cursor-pointer"
                 >
                   Cancel
                 </button>
@@ -247,7 +247,7 @@ export const CitizenChallengeDetailModal = ({ challenge, isOpen, onClose, onChal
                   type="button"
                   disabled={isProcessing}
                   onClick={() => setShowWithdrawConfirm(false)}
-                  className="px-3 py-1.5 rounded-lg bg-white border border-slate-200 text-slate-700 font-bold text-xs hover:bg-slate-50 cursor-pointer"
+                  className="px-3 py-1.5 rounded-lg bg-white border border-slate-200 text-slate-700 font-bold text-xs hover:text-rose-600 hover:bg-rose-50 hover:border-rose-200 transition-colors cursor-pointer"
                 >
                   Cancel
                 </button>
@@ -298,20 +298,7 @@ export const CitizenChallengeDetailModal = ({ challenge, isOpen, onClose, onChal
             </div>
           </div>
 
-          {/* Issue Photo */}
-          {(challenge.mediaUrls?.[0]?.url || challenge.image) && (
-            <div className="rounded-xl overflow-hidden border border-slate-200 shadow-2xs max-h-48">
-              <img
-                src={challenge.mediaUrls?.[0]?.url || challenge.image || defaultRoadImg}
-                alt="Problem snapshot"
-                className="w-full h-48 object-cover"
-                onError={(e) => {
-                  e.target.onerror = null;
-                  e.target.src = defaultRoadImg;
-                }}
-              />
-            </div>
-          )}
+
 
           {/* Description */}
           <div className="bg-slate-50/80 p-4 rounded-xl border border-slate-200/70 space-y-1">
@@ -427,22 +414,31 @@ export const CitizenChallengeDetailModal = ({ challenge, isOpen, onClose, onChal
         </div>
 
         {/* Footer */}
-        <div className="p-3.5 bg-slate-50 border-t border-slate-200/90 flex flex-wrap items-center justify-between gap-2 text-xs">
-          <div className="flex items-center space-x-2">
+        <div className="p-3.5 bg-slate-50 border-t border-slate-200/90 flex flex-col gap-2">
+          <div className="flex items-center justify-between w-full">
             <button
               onClick={handleDownloadDossier}
-              className="px-3.5 py-2 border border-slate-200 hover:bg-slate-100 text-slate-800 font-bold rounded-xl transition-colors cursor-pointer flex items-center space-x-1.5 shadow-2xs"
+              className="px-3.5 py-2 border border-slate-200 hover:bg-slate-100 text-slate-800 font-bold rounded-xl transition-colors cursor-pointer flex items-center space-x-1.5 shadow-2xs text-xs"
             >
               <Download className="w-3.5 h-3.5 text-[#047857]" />
-              <span>Download Receipt</span>
+              <span className="whitespace-nowrap">Download Receipt</span>
             </button>
 
-            {/* Withdraw Button for unassigned active challenges only */}
+            <button
+              onClick={onClose}
+              className="px-5 py-2 bg-white text-black border border-slate-200 hover:bg-rose-600 hover:text-white hover:border-rose-600 font-bold rounded-xl shadow-2xs transition-colors cursor-pointer text-xs"
+            >
+              Close
+            </button>
+          </div>
+
+          {/* Action Context / Status Notes below buttons to prevent awkward wrapping */}
+          <div className="flex flex-wrap items-center gap-2">
             {canWithdraw && (
               <button
                 type="button"
                 onClick={() => setShowWithdrawConfirm(true)}
-                className="px-3 py-2 border border-amber-200 text-amber-800 hover:bg-amber-50 font-bold rounded-xl transition-colors cursor-pointer flex items-center space-x-1.5 shadow-2xs"
+                className="px-3 py-1.5 border border-amber-200 text-amber-800 hover:bg-amber-50 font-bold rounded-lg transition-colors cursor-pointer flex items-center space-x-1.5 shadow-2xs text-[11px]"
                 title="Withdraw this problem statement"
               >
                 <RotateCcw className="w-3.5 h-3.5 text-amber-700" />
@@ -450,19 +446,17 @@ export const CitizenChallengeDetailModal = ({ challenge, isOpen, onClose, onChal
               </button>
             )}
 
-            {/* Note if problem is already assigned to an institution */}
             {isAssigned && !isResolved && !isWithdrawn && (
-              <span className="text-[11px] font-semibold text-emerald-800" title="Assigned problems cannot be withdrawn">
+              <span className="text-[11px] font-semibold text-emerald-800 w-full sm:w-auto text-center" title="Assigned problems cannot be withdrawn">
                 Assigned to HEI (Cannot Withdraw)
               </span>
             )}
 
-            {/* Delete Button for withdrawn challenges */}
             {isWithdrawn && !showDeleteConfirm && (
               <button
                 type="button"
                 onClick={() => setShowDeleteConfirm(true)}
-                className="px-3 py-2 border border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100 font-bold rounded-xl transition-colors cursor-pointer flex items-center space-x-1.5 shadow-2xs"
+                className="px-3 py-1.5 border border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100 font-bold rounded-lg transition-colors cursor-pointer flex items-center space-x-1.5 shadow-2xs text-[11px]"
                 title="Permanently delete this withdrawn problem"
               >
                 <Trash2 className="w-3.5 h-3.5 text-rose-600" />
@@ -470,13 +464,6 @@ export const CitizenChallengeDetailModal = ({ challenge, isOpen, onClose, onChal
               </button>
             )}
           </div>
-
-          <button
-            onClick={onClose}
-            className="px-4 py-2 bg-white text-black border border-slate-200 hover:bg-rose-600 hover:text-white hover:border-rose-600 font-bold rounded-xl shadow-2xs transition-colors cursor-pointer"
-          >
-            Close
-          </button>
         </div>
       </div>
     </div>

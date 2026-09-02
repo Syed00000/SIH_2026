@@ -29,8 +29,7 @@ export const SubmitChallengeModal = ({
     designation: '',
     organization: '',
     priority: 'Medium',
-    affectedPopulation: '500 - 2,000 people (Village / Ward)',
-    mediaUrl: ''
+    affectedPopulation: '500 - 2,000 people (Village / Ward)'
   });
 
   const [customDomain, setCustomDomain] = useState('');
@@ -109,10 +108,7 @@ export const SubmitChallengeModal = ({
         designation: formData.designation || '',
         organization: formData.organization || '',
         priority: formData.priority || 'Medium',
-        affectedPopulation: formData.affectedPopulation || '500 - 2,000 people (Village / Ward)',
-        mediaUrls: formData.mediaUrl
-          ? [{ url: formData.mediaUrl, caption: 'Submitted issue photo' }]
-          : []
+        affectedPopulation: formData.affectedPopulation || '500 - 2,000 people (Village / Ward)'
       };
 
       const result = await citizenService.submitChallenge(payload);
@@ -191,7 +187,7 @@ export const SubmitChallengeModal = ({
         </div>
         <button
           onClick={onClose}
-          className="w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors flex items-center justify-center cursor-pointer"
+          className="w-9 h-9 rounded-full bg-white/10 hover:bg-rose-600/90 text-white transition-colors flex items-center justify-center cursor-pointer"
           title="Close form"
         >
           <X className="w-5 h-5" />

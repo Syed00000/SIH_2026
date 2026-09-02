@@ -29,7 +29,7 @@ export const MentoredProjectsSection = ({ projects = [], onNavigateTab }) => {
           <p className="text-[11px]">When Ranchi University assigns you as a Lead Mentor, problems will appear here.</p>
         </div>
       ) : (
-        <div className="space-y-2.5">
+        <div className="border border-slate-200/80 rounded-xl overflow-hidden shadow-2xs">
           {projects.map((p, i) => (
             <MentoredProjectCard
               key={p.projectId || i}

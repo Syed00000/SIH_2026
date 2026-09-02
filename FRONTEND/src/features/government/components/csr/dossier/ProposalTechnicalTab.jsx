@@ -58,17 +58,17 @@ export const ProposalTechnicalTab = ({ proposal, linkedProject }) => {
           </span>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-4 gap-2.5">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 gap-3">
           {customRoadmap.map((item, idx) => (
             <div
               key={idx}
-              className="p-3 bg-slate-50/80 border border-slate-200 rounded-xl flex flex-col justify-between space-y-1.5 hover:bg-white hover:border-[#007A61] transition-all shadow-2xs"
+              className="p-3.5 bg-slate-50/80 border border-slate-200 rounded-xl flex flex-col justify-between space-y-2 hover:bg-white hover:border-[#007A61] transition-all shadow-2xs"
             >
               <div className="flex items-center justify-between">
-                <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">
+                <span className="text-[10px] font-extrabold text-white bg-[#007A61] px-2 py-0.5 rounded-md uppercase tracking-wider">
                   Stage {item.stage || idx + 1}
                 </span>
-                <span className="text-[9.5px] font-bold text-[#007A61] bg-white border border-emerald-200 px-1.5 py-0.2 rounded">
+                <span className="text-[9.5px] font-bold text-slate-700 bg-white border border-slate-200 px-1.5 py-0.5 rounded">
                   {item.targetDays || `Phase ${idx + 1}`}
                 </span>
               </div>
@@ -76,7 +76,7 @@ export const ProposalTechnicalTab = ({ proposal, linkedProject }) => {
                 {item.title}
               </div>
               {item.deliverable && (
-                <p className="text-[10px] text-slate-500 line-clamp-2 leading-relaxed pt-0.5 border-t border-slate-200/60">
+                <p className="text-[11px] text-slate-600 leading-relaxed pt-1.5 border-t border-slate-200/60 whitespace-pre-wrap">
                   {item.deliverable}
                 </p>
               )}
