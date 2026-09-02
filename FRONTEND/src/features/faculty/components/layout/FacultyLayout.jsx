@@ -131,6 +131,12 @@ export const FacultyLayout = ({ user, onLogout }) => {
                 onRefresh={loadData}
                 onNavigateTab={(tab) => setActiveTab(tab)}
               />
+            ) : activeTab === 'teams' ? (
+              <FacultyTeamsPanel
+                projects={data.projects}
+                faculty={data.faculty}
+                onRefresh={loadData}
+              />
             ) : activeTab === 'profile' ? (
               <FacultyProfilePanel
                 faculty={data.faculty}

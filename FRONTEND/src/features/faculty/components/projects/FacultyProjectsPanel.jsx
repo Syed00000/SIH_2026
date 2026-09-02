@@ -196,9 +196,15 @@ export const FacultyProjectsPanel = ({
                   </div>
 
                   <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl col-span-2 sm:col-span-1">
-                    <span className="text-[10px] text-slate-400 font-bold uppercase block tracking-wider">Project Progress</span>
-                    <span className="font-extrabold text-[#007A61] text-xs mt-0.5 block">
-                      {selectedProject.governmentStatus === 'Approved' || selectedProject.status === 'Completed' ? 100 : (selectedProject.progressPercentage || 14)}% ({selectedProject.governmentStatus === 'Approved' || selectedProject.status === 'Completed' ? 7 : (selectedProject.milestonesCompleted || 1)}/7 Steps)
+                    <span className="text-[10px] text-slate-400 font-bold uppercase block tracking-wider">Assigned Tasks Status</span>
+                    <span className="font-extrabold text-slate-900 text-xs mt-0.5 block">
+                      <span className="text-[#007A61]">
+                        {selectedProject.governmentStatus === 'Approved' || selectedProject.status === 'Completed' ? 7 : (selectedProject.milestonesCompleted || 1)} Completed
+                      </span>
+                      {' • '}
+                      <span className="text-amber-600">
+                        {selectedProject.governmentStatus === 'Approved' || selectedProject.status === 'Completed' ? 0 : 7 - (selectedProject.milestonesCompleted || 1)} Pending
+                      </span>
                     </span>
                   </div>
                 </div>
@@ -273,10 +279,9 @@ export const FacultyProjectsPanel = ({
                   </div>
                 )}
 
-                {/* 7-Step Milestones */}
                 <div className="space-y-2.5 pt-2">
                   <h3 className="text-xs font-extrabold text-slate-900 uppercase tracking-wider">
-                    R&D Lifecycle Milestone Stepper
+                    Work Breakdown & Task Progress
                   </h3>
 
                   {(selectedProject.milestones || []).map((m, idx) => {
@@ -312,17 +317,6 @@ export const FacultyProjectsPanel = ({
                             <span className="text-[10px] text-slate-500">Status: {isDone ? 'Completed' : m.status}</span>
                           </div>
                         </div>
-
-                        {isCurrent && (
-                          <button
-                            type="button"
-                            disabled={updating}
-                            onClick={() => handleAdvanceMilestone(selectedProject, m.id)}
-                            className="px-2.5 py-1 bg-[#007A61] hover:bg-[#006650] text-white text-[10.5px] font-bold rounded-lg transition-colors cursor-pointer shrink-0"
-                          >
-                            {updating ? <Loader2 className="w-3 h-3 animate-spin" /> : 'Mark Done'}
-                          </button>
-                        )}
                       </div>
                     );
                   })}

@@ -17,6 +17,7 @@ const NAV_ITEMS = [
   { id: 'dashboard', label: 'Dashboard', icon: Home },
   { id: 'challenges', label: 'Assigned Challenges', icon: Layers },
   { id: 'projects', label: 'Projects Portfolio', icon: Briefcase },
+  { id: 'teams', label: 'Student Teams', icon: Users },
   { id: 'profile', label: 'Faculty Profile', icon: User }
 ];
 
