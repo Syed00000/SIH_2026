@@ -1,5 +1,6 @@
 import React from 'react';
-import { MapPin, Calendar, ChevronRight, PlusCircle } from 'lucide-react';
+import { MapPin,
+Calendar, ChevronRight, PlusCircle } from 'lucide-react';
 import defaultRoadImg from '../assets/road_challenge.jpg';
 
 export const RecentChallengesCard = ({ challenge, onClick, onViewAllClick, onSubmitClick }) => {

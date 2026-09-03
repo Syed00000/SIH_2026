@@ -11,7 +11,8 @@ const TYPE_CONFIG = {
 
 export const UniversityRecentActivity = ({
   activities = [],
-  onViewAll
+  onViewAll,
+  onClear
 }) => {
   return (
     <div className="bg-white border border-slate-200 rounded-none flex flex-col justify-between h-full">

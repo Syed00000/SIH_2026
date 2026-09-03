@@ -69,6 +69,7 @@ export class UniversityService {
   deleteApproval(approvalId, universityCode) { return this.partnerApprovalService.deleteApproval(approvalId, universityCode); }
   createIndustryRequest(universityCode, payload) { return this.partnerApprovalService.createIndustryRequest(universityCode, payload); }
   getIndustryRequests(universityCode) { return this.partnerApprovalService.getIndustryRequests(universityCode); }
+  updateIndustryRequestStatus(requestId, status, universityCode) { return this.partnerApprovalService.updateIndustryRequestStatus(requestId, status, universityCode); }
   deleteIndustryRequest(requestId, universityCode) { return this.partnerApprovalService.deleteIndustryRequest(requestId, universityCode); }
 
   async getProfile(universityCode) {

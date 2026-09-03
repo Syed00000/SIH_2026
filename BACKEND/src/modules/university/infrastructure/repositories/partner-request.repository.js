@@ -134,6 +134,35 @@ export class PartnerRequestRepository {
       return { success: false, error: err.message };
     }
   }
+  async updateIndustryRequestStatus(requestId, status, universityCode) {
+    try {
+      const code = (universityCode || 'RU001').toUpperCase();
+      
+      const query = requestId.startsWith('IND-REQ-') 
+        ? { requestId, universityCode: code }
+        : { _id: requestId, universityCode: code };
+
+      const updatedReq = await UniversityIndustryRequest.findOneAndUpdate(
+        query,
+        { status, updatedAt: new Date() },
+        { new: true }
+      );
+      if (updatedReq) {
+        await UniversityActivity.create({
+          universityCode: code,
+          text: `Industry request "${updatedReq.projectTitle}" status updated to ${status}`,
+          type: 'INDUSTRY_REQUEST',
+          user: 'Industry Partner',
+          time: `${new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}`,
+          timestamp: new Date()
+        });
+      }
+      return { success: true, request: updatedReq };
+    } catch (err) {
+      console.warn('Error updating industry request status in DB:', err);
+      return { success: false, error: err.message };
+    }
+  }
 }
 
 export const partnerRequestRepository = new PartnerRequestRepository();

@@ -80,6 +80,17 @@ export const partnersApprovalsApi = {
     return [];
   },
 
+  async updateIndustryRequestStatus(requestId, status, universityCode = DEFAULT_UNIVERSITY_CODE) {
+    try {
+      const res = await apiClient.patch(
+        `university/industry-requests/${encodeURIComponent(requestId)}/status?universityCode=${encodeURIComponent(universityCode)}`,
+        { status }
+      );
+      if (res?.data) return res.data;
+    } catch (err) { console.error('API updateIndustryRequestStatus error:', err.message); }
+    return { success: false };
+  },
+
   async deleteIndustryRequest(requestId, universityCode = DEFAULT_UNIVERSITY_CODE) {
     try {
       const res = await apiClient.delete(`university/industry-requests/${encodeURIComponent(requestId)}?universityCode=${encodeURIComponent(universityCode)}`);

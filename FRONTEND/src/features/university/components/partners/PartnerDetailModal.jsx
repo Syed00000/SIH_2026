@@ -206,7 +206,11 @@ export const PartnerDetailModal = ({
                         <FolderGit2 className="w-3.5 h-3.5 text-[#007A61] shrink-0" />
                         <span className="truncate">{req.projectTitle}</span>
                       </div>
-                      <span className="px-2 py-0.5 rounded-md text-[10px] font-extrabold bg-amber-50 text-amber-800 border border-amber-200">
+                      <span className={`px-2 py-0.5 rounded-md text-[10px] font-extrabold border ${
+                        req.status === 'Approved' ? 'bg-emerald-50 text-emerald-800 border-emerald-200' :
+                        req.status === 'Rejected' ? 'bg-rose-50 text-rose-800 border-rose-200' :
+                        'bg-amber-50 text-amber-800 border-amber-200'
+                      }`}>
                         {req.status || 'Pending'}
                       </span>
                     </div>
