@@ -1,5 +1,5 @@
 import React from 'react';
-import { Layers, IndianRupee, Sparkles } from 'lucide-react';
+import { Layers, Sparkles } from 'lucide-react';
 
 export const ProposalBudgetTab = ({ proposal, linkedProject }) => {
   const budgetBreakdown =
@@ -14,10 +14,34 @@ export const ProposalBudgetTab = ({ proposal, linkedProject }) => {
           { category: 'Student Fellowship & Project Overhead', amount: '₹ 8,000' }
         ];
 
-  const totalAmount = proposal.fundingRequested || proposal.allocatedAmount || linkedProject?.proposedBudget || '₹ 75,000';
+  const totalSum = budgetBreakdown.reduce((sum, item) => sum + (typeof item.amount === 'number' ? item.amount : Number(String(item.amount || '0').replace(/[^\d]/g, '')) || 0), 0);
+  const totalAmount = totalSum > 0 ? `₹ ${totalSum.toLocaleString('en-IN')}` : (proposal.fundingRequested || proposal.allocatedAmount || linkedProject?.proposedBudget || '₹ 75,000');
+  const extraVal = totalSum > 0 ? Math.max(0, totalSum - 80000) : (Number(proposal.additionalAmount || linkedProject?.additionalAmount) || 0);
 
   return (
     <div className="space-y-4 text-xs select-none">
+      {/* Supplemental Faculty Grant Card */}
+      {extraVal > 0 && (
+        <div className="p-3.5 bg-amber-50/90 border border-amber-200 rounded-xl flex items-center justify-between shadow-2xs">
+          <div className="flex items-center space-x-2.5">
+            <div className="w-8 h-8 rounded-lg bg-amber-500 text-white flex items-center justify-center font-black shrink-0">
+              <Sparkles className="w-4 h-4" />
+            </div>
+            <div>
+              <h4 className="font-extrabold text-xs text-amber-950">
+                Additional Allocation Added by Faculty Investigator
+              </h4>
+              <p className="text-[11px] text-amber-800">
+                University approved +₹ {extraVal.toLocaleString('en-IN')} supplemental funding included in this revised DPR grant.
+              </p>
+            </div>
+          </div>
+          <span className="font-mono font-black text-amber-900 bg-amber-100/90 px-2.5 py-1 rounded-lg border border-amber-300 shrink-0 text-xs">
+            +₹ {extraVal.toLocaleString('en-IN')}
+          </span>
+        </div>
+      )}
+
       <div className="p-4 bg-white rounded-xl border border-slate-200/90 space-y-3 shadow-2xs">
         <div className="flex items-center justify-between pb-2 border-b border-slate-100">
           <div className="flex items-center space-x-2">

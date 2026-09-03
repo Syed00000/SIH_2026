@@ -83,6 +83,14 @@ export const facultyProjectsApi = {
       if (res?.data) return res.data;
     } catch (err) { console.error('API assignFacultyToProject error:', err.message); }
     return { projectId, facultyInfo, status: 'In Progress' };
+  },
+
+  async requestProjectTranche(projectId, trancheData, universityCode = DEFAULT_UNIVERSITY_CODE) {
+    try {
+      const res = await apiClient.post(`university/projects/${encodeURIComponent(projectId)}/request-tranche?universityCode=${encodeURIComponent(universityCode)}`, trancheData);
+      if (res?.data) return res.data;
+    } catch (err) { console.error('API requestProjectTranche error:', err.message); }
+    return { success: true };
   }
 };
 

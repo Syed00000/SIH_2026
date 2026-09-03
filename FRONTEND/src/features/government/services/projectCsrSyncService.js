@@ -26,13 +26,20 @@ class ProjectCsrSyncService {
 
   async initializeFromBackend() {
     try {
-      // 1. Load ledger first to know any disbursed funds
-      const savedLedger = JSON.parse(localStorage.getItem('joharsetu_csr_ledger') || '[]')
-        .filter(item => {
-          const rawAmt = Number(item.rawAmount) || Number(String(item.amount || item.disbursedAmount || '0').replace(/[^\d]/g, ''));
-          return !String(item.id).startsWith('PAY-992') && rawAmt > 0;
-        });
-      this.csrLedger = savedLedger;
+      // 1. Clear any legacy dummy ledger from localStorage
+      try {
+        localStorage.removeItem('joharsetu_csr_ledger');
+      } catch {}
+
+      // Fetch live ledger from backend MongoDB
+      let backendLedger = [];
+      try {
+        const ledgerRes = await apiClient.get('government/funds/ledger');
+        backendLedger = ledgerRes.data?.data || ledgerRes.data || [];
+      } catch (err) {
+        console.warn('Failed to load backend ledger:', err);
+      }
+      this.csrLedger = Array.isArray(backendLedger) ? backendLedger : [];
 
       // 2. Fetch live projects from MongoDB
       const res = await apiClient.get('university/projects?universityCode=RU001');
@@ -41,8 +48,16 @@ class ProjectCsrSyncService {
 
       // 3. Map Solution Proposals
       this.solutionProposals = projectsList.map((p, idx) => {
-        const budgetStr = String(p.proposedBudget || p.budget || '0');
-        const budgetVal = parseFloat(budgetStr.replace(/[^\d.]/g, '')) || 0;
+        const bBreakdownSum = Array.isArray(p.budgetBreakdown) && p.budgetBreakdown.length > 0
+          ? p.budgetBreakdown.reduce((sum, it) => sum + (typeof it.amount === 'number' ? it.amount : Number(String(it.amount || '0').replace(/[^\d]/g, '')) || 0), 0)
+          : 0;
+        const bProp = Number(String(p.proposedBudget || '0').replace(/[^\d]/g, '')) || 0;
+        const bSanct = Number(String(p.sanctionedBudget || '0').replace(/[^\d]/g, '')) || 0;
+        const bBase = Number(String(p.budget || '0').replace(/[^\d]/g, '')) || 0;
+        const effectiveBudgetNum = bBreakdownSum > 0 ? bBreakdownSum : Math.max(bProp, bSanct, bBase, 80000);
+        const effectiveBudgetStr = `₹ ${effectiveBudgetNum.toLocaleString('en-IN')}`;
+        const effectiveAdditional = Math.max(0, effectiveBudgetNum - 80000);
+
         const uniCode = p.universityCode || 'RU001';
         const uniName = uniCode === 'RU001' ? 'Ranchi University (RU001)' : `Nodal University (${uniCode})`;
         const pId = p.projectId || p._id;
@@ -71,10 +86,14 @@ class ProjectCsrSyncService {
           teamLead: p.leadMentor || p.facultyMentor?.name || p.faculty || p.mentorName || 'Unassigned Lead',
           studentTeam: p.studentTeam || p.teamName || 'Research Team',
           teamName: p.teamName || p.studentTeam || 'Research Team',
-          requestedGrant: formatBudget(p.proposedBudget || p.budget || 73000),
-          budgetRequested: formatBudget(p.proposedBudget || p.budget || 73000),
-          allocatedAmount: formatBudget(p.sanctionedBudget || p.proposedBudget || p.budget || 73000),
-          rawBudget: budgetVal || 73000,
+          fundingRequested: effectiveBudgetStr,
+          requestedGrant: effectiveBudgetStr,
+          budgetRequested: effectiveBudgetStr,
+          allocatedAmount: effectiveBudgetStr,
+          budget: effectiveBudgetStr,
+          proposedBudget: effectiveBudgetStr,
+          rawBudget: effectiveBudgetNum,
+          additionalAmount: effectiveAdditional,
           status: isApproved ? 'Approved' : (p.status || 'Pending'),
           budgetStatus: isFunded ? 'Grant Sanctioned by Government' : isApproved ? 'Forwarded to CSR Grants Pipeline' : (p.budgetStatus || 'Pending Review'),
           sourceScheme: p.domain ? `${p.domain} State Innovation Grant` : 'Govt State R&D & CSR Pool',
@@ -94,20 +113,13 @@ class ProjectCsrSyncService {
           milestones: p.milestones || [],
           budgetBreakdown: p.budgetBreakdown || [],
           disbursedAmount: finalDisbursedStr,
+          trancheRequest: p.trancheRequest || null,
           createdAt: p.createdAt || new Date()
         };
       });
 
-      // 4. CSR & State Grants Pipeline
-      this.csrProposals = this.solutionProposals.filter((p) => {
-        return (
-          p.budgetStatus === 'Forwarded to Government for Grant Sanction' ||
-          p.budgetStatus === 'Forwarded to CSR Grants Pipeline' ||
-          p.budgetStatus === 'Grant Sanctioned by Government' ||
-          p.budgetStatus === 'Grant Disbursed' ||
-          p.status === 'Approved'
-        );
-      });
+      // 4. CSR & State Grants Pipeline (all citizen problem statements / solutions)
+      this.csrProposals = this.solutionProposals;
 
       // 5. Active Projects (Funded / In Execution / Forwarded Prototypes)
       this.activeProjects = this.solutionProposals
@@ -131,6 +143,9 @@ class ProjectCsrSyncService {
             disbursedAmount: p.disbursedAmount,
             budgetStatus: p.budgetStatus,
             rawBudget: p.rawBudget,
+            additionalAmount: p.additionalAmount || 0,
+            proposedBudget: p.proposedBudget,
+            budget: p.budget,
             telemetryStatus: 'Active Telemetry',
             hardwareSpecs: p.hardwareSpecs || '',
             teamLead: p.teamLead,
@@ -249,6 +264,31 @@ class ProjectCsrSyncService {
     return this.solutionProposals;
   }
 
+  updateProposalTrancheRequest(projectId, trancheRequest) {
+    const cleanId = String(projectId || '').replace('PROP-', '');
+    this.solutionProposals = this.solutionProposals.map((p) => {
+      const pId = String(p.id || p.projectId || '').replace('PROP-', '');
+      if (pId === cleanId) {
+        return { ...p, trancheRequest };
+      }
+      return p;
+    });
+    this.csrProposals = this.solutionProposals;
+    this.activeProjects = this.activeProjects.map((p) => {
+      const pId = String(p.id || p.projectId || '').replace('PROP-', '');
+      if (pId === cleanId) {
+        return { ...p, trancheRequest };
+      }
+      return p;
+    });
+    this.notify('DATA_SYNCED', {
+      updatedProjects: this.getActiveProjects(),
+      updatedSolProposals: this.solutionProposals,
+      updatedCsrProposals: this.csrProposals,
+      updatedCsrLedger: this.csrLedger
+    });
+  }
+
   async rejectProposalFromProjects(proposal, remarks = '') {
     const pId = proposal.projectId || (proposal.id ? proposal.id.replace('PROP-', '') : '');
     this.solutionProposals = this.solutionProposals.map((p) => {
@@ -315,7 +355,11 @@ class ProjectCsrSyncService {
       const itemAmt = Number(item.rawAmount) || Number(String(item.amount || item.disbursedAmount || '0').replace(/[^\d]/g, ''));
       return itemAmt > 0;
     })];
-    localStorage.setItem('joharsetu_csr_ledger', JSON.stringify(this.csrLedger));
+
+    // Save directly to backend MongoDB
+    try {
+      apiClient.post('government/funds/ledger', newEntry).catch(() => {});
+    } catch {}
 
     // Update in-memory solution proposals
     let cumulativeDisbursedStr = formattedAmt;
@@ -438,6 +482,19 @@ class ProjectCsrSyncService {
     this.csrProposals = this.csrProposals.filter((p) => p.id !== id);
     this.notify('PROPOSALS_UPDATED', { updatedCsrProposals: this.csrProposals });
     return this.csrProposals;
+  }
+
+  async authorizePayment(ledgerId) {
+    try {
+      apiClient.put(`government/funds/ledger/${ledgerId}/authorize`).catch(() => {});
+    } catch {}
+    this.csrLedger = this.csrLedger.map((item) =>
+      item.id === ledgerId || item.paymentId === ledgerId
+        ? { ...item, makerCheckerStatus: 'Approved', makerCheckerSign: 'Verified & Approved' }
+        : item
+    );
+    this.notify('LEDGER_UPDATED', { updatedCsrLedger: this.csrLedger });
+    return this.csrLedger;
   }
 }
 

@@ -91,13 +91,14 @@ export const facultyApiService = {
     };
   },
 
-  async resubmitRevision(approvalId, universityCode = 'RU001', notes = '') {
+  async resubmitRevision(approvalId, universityCode = 'RU001', notes = '', extraData = {}) {
     try {
       const res = await universityApiService.updateApprovalStatus(
         approvalId,
         universityCode,
         'Pending',
-        notes ? `Faculty Revision: ${notes}` : 'Revised proposal resubmitted by Faculty'
+        notes ? `Faculty Revision: ${notes}` : 'Revised proposal resubmitted by Faculty',
+        extraData
       );
       return res;
     } catch (err) {

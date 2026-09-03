@@ -1,10 +1,42 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { CheckSquare, Square, ShieldCheck, RefreshCw } from 'lucide-react';
 import { COMPLIANCE_CHECKLIST_ITEMS } from '../../data/csrConstants.js';
+import apiClient from '../../../../infrastructure/api/client.js';
 
 export const CSRComplianceChecklist = () => {
   const [checklist, setChecklist] = useState(COMPLIANCE_CHECKLIST_ITEMS);
   const [refreshing, setRefreshing] = useState(false);
+
+  const fetchLiveCompliance = async () => {
+    try {
+      const res = await apiClient.get('government/funds/utilization');
+      const data = res.data?.data || res.data || {};
+      const hasProjects = Boolean(data.projects?.length > 0);
+      const hasDisbursed = Boolean(data.paymentsCount > 0 || data.projects?.some((p) => p.hasDisbursal));
+
+      setChecklist((prev) =>
+        prev.map((item) => {
+          if (item.id === 'gfr_12a') {
+            return { ...item, status: hasDisbursed ? 'Verified' : 'Under Review', statusType: hasDisbursed ? 'verified' : 'pending' };
+          }
+          if (item.id === 'mou_signoff') {
+            return { ...item, status: hasProjects ? 'Verified' : 'Pending', statusType: hasProjects ? 'verified' : 'pending' };
+          }
+          if (item.id === 'milestone_signoff') {
+            return { ...item, status: hasProjects ? 'Verified' : 'Pending', statusType: hasProjects ? 'verified' : 'pending' };
+          }
+          if (item.id === 'tax_deduction') {
+            return { ...item, status: hasDisbursed ? 'Verified' : 'Pending', statusType: hasDisbursed ? 'verified' : 'pending' };
+          }
+          return item;
+        })
+      );
+    } catch {}
+  };
+
+  useEffect(() => {
+    fetchLiveCompliance();
+  }, []);
 
   const toggleItem = (id) => {
     setChecklist(
@@ -24,16 +56,9 @@ export const CSRComplianceChecklist = () => {
 
   const handleAuditRecheck = () => {
     setRefreshing(true);
-    setTimeout(() => {
-      setRefreshing(false);
-      setChecklist(
-        checklist.map((item) => ({
-          ...item,
-          status: 'Verified',
-          statusType: 'verified'
-        }))
-      );
-    }, 1000);
+    fetchLiveCompliance().finally(() => {
+      setTimeout(() => setRefreshing(false), 500);
+    });
   };
 
   return (

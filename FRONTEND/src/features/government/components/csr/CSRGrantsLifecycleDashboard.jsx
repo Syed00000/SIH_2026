@@ -1,10 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import {
-  Building2,
-  FileDown,
-  Activity,
-  CheckCircle
-} from 'lucide-react';
 import { CSRPhaseTabs } from './CSRPhaseTabs.jsx';
 import { CSRFundingSources } from './CSRFundingSources.jsx';
 import { CSRStatutoryParameters } from './CSRStatutoryParameters.jsx';
@@ -13,7 +7,7 @@ import { CSREscrowMatrix } from './CSREscrowMatrix.jsx';
 import { CSRPaymentLedgerTable } from './CSRPaymentLedgerTable.jsx';
 import { CSRFundUtilization } from './CSRFundUtilization.jsx';
 import { CSRComplianceChecklist } from './CSRComplianceChecklist.jsx';
-import { CSRClosureReporting } from './CSRClosureReporting.jsx';
+import { CSRLifecycleHeader } from './CSRLifecycleHeader.jsx';
 import { InitiateDisbursalModal } from './InitiateDisbursalModal.jsx';
 import { projectCsrSyncService } from '../../services/projectCsrSyncService.js';
 import { exportCsrLifecycleReportPdf } from '../../services/exportPdfService.js';
@@ -32,6 +26,10 @@ export const CSRGrantsLifecycleDashboard = () => {
 
   // Subscribe to bidirectional sync events from Projects & Solutions
   useEffect(() => {
+    projectCsrSyncService.initializeFromBackend().then(() => {
+      setProposals(projectCsrSyncService.getCsrProposals());
+      setLedger(projectCsrSyncService.getCsrLedger());
+    });
     const unsubscribe = projectCsrSyncService.subscribe((eventType, data) => {
       if (data?.updatedLedger) {
         setLedger(data.updatedLedger);
@@ -69,7 +67,6 @@ export const CSRGrantsLifecycleDashboard = () => {
     try {
       const updated = projectCsrSyncService.authorizePayment(ledgerId);
       setLedger(Array.isArray(updated) ? updated : projectCsrSyncService.getCsrLedger() || []);
-      localStorage.setItem('joharsetu_csr_ledger', JSON.stringify(updated));
     } catch {}
   };
 
@@ -100,49 +97,11 @@ export const CSRGrantsLifecycleDashboard = () => {
   return (
     <div className="space-y-4 pb-10 max-w-[1600px] w-full mx-auto px-4 min-w-0 max-w-full overflow-hidden animate-in fade-in duration-200">
       {/* 1. Header Banner Card */}
-      <div className="bg-white rounded-md p-5 sm:p-6 border border-slate-200 shadow-3xs flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-xl md:text-2xl font-black text-slate-900 tracking-tight">
-            End-to-End Fund Flow & Payment Process Lifecycle
-          </h1>
-          <p className="text-xs md:text-sm text-slate-500 font-medium mt-1 leading-relaxed">
-            Master ledger tracking across Schedule VII compliance, multi-tier vetting, and automated disbursement gateways.
-          </p>
-        </div>
-
-        {/* Right Header Controls: Source Selector + Export + Badge */}
-        <div className="flex flex-wrap items-center gap-3 shrink-0">
-          {/* Source Dropdown Filter */}
-          <div className="flex items-center space-x-1.5 bg-white border border-slate-200 px-3 py-1.5 rounded-md text-xs shadow-xs">
-            <span className="text-slate-400 font-bold text-[11px]">Source:</span>
-            <select
-              value={sourceFilter}
-              onChange={(e) => setSourceFilter(e.target.value)}
-              className="bg-transparent font-bold text-slate-800 outline-none cursor-pointer text-xs"
-            >
-              <option value="All Sources">All Sources (Corporate + Govt)</option>
-              <option value="Corporate CSR">Corporate CSR Funds</option>
-              <option value="Govt Grants">Government Grants</option>
-              <option value="Joint Co-Funding">Joint Co-Funding</option>
-            </select>
-          </div>
-
-          {/* Export Audit Log Button */}
-          <button
-            onClick={handleExportAudit}
-            className="inline-flex items-center space-x-1.5 px-3.5 py-1.5 bg-white hover:bg-slate-50 border border-slate-200 rounded-md text-xs font-bold text-slate-700 shadow-xs cursor-pointer transition-colors"
-            title="Download Comprehensive Statutory Audit PDF"
-          >
-            <FileDown className="w-3.5 h-3.5 text-slate-600" />
-            <span>Export Audit Log</span>
-          </button>
-
-          {/* Audit Active Pill Badge */}
-          <div className="px-3.5 py-1.5 bg-white border border-slate-200 rounded-md text-xs font-bold text-slate-900 shadow-xs whitespace-nowrap">
-            Audit Active: 2026-27
-          </div>
-        </div>
-      </div>
+      <CSRLifecycleHeader
+        sourceFilter={sourceFilter}
+        setSourceFilter={setSourceFilter}
+        onExportAudit={handleExportAudit}
+      />
 
       {/* 2. Four Phase Tabs */}
       <CSRPhaseTabs
@@ -203,12 +162,6 @@ export const CSRGrantsLifecycleDashboard = () => {
           <div className="lg:col-span-4">
             <CSRComplianceChecklist />
           </div>
-        </div>
-      )}
-
-      {activePhase === 'phase_7_8' && (
-        <div className="space-y-4">
-          <CSRClosureReporting />
         </div>
       )}
 

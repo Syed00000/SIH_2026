@@ -39,20 +39,11 @@ export const DashboardContainer = ({ onNavigate }) => {
       <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
         <Card className="max-w-md w-full text-center p-6 bg-white border border-slate-200 shadow-xs rounded-md">
           <CardHeader className="pb-2">
-            <CardTitle className="text-lg font-bold text-slate-900">
-              Authentication Required
-            </CardTitle>
-            <CardDescription className="text-slate-500 text-xs">
-              Please sign in to access your JoharSetu portal dashboard.
-            </CardDescription>
+            <CardTitle className="text-lg font-bold text-slate-900">Authentication Required</CardTitle>
+            <CardDescription className="text-slate-500 text-xs">Please sign in to access your JoharSetu portal dashboard.</CardDescription>
           </CardHeader>
           <CardContent className="pt-3">
-            <Button
-              onClick={() => (onNavigate ? onNavigate('/login') : (window.location.href = '/login'))}
-              className="w-full py-2 rounded-md font-semibold text-xs cursor-pointer bg-slate-900 text-white hover:bg-slate-800"
-            >
-              Sign In Now
-            </Button>
+            <Button onClick={() => (onNavigate ? onNavigate('/login') : (window.location.href = '/login'))} className="w-full py-2 rounded-md font-semibold text-xs cursor-pointer bg-slate-900 text-white hover:bg-slate-800">Sign In Now</Button>
           </CardContent>
         </Card>
       </div>
@@ -63,34 +54,16 @@ export const DashboardContainer = ({ onNavigate }) => {
 
   const handleLogout = async () => {
     await logout();
-    if (onNavigate) {
-      onNavigate('/login');
-    } else {
-      window.location.href = '/login';
-    }
+    if (onNavigate) onNavigate('/login'); else window.location.href = '/login';
   };
 
   // 1. Render Dedicated Portals
   const urlPortal = typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('portal') : null;
-  if (urlPortal === 'citizen' || role === 'CITIZEN') {
-    return <CitizenPortal user={user} onLogout={handleLogout} />;
-  }
-
-  if (urlPortal === 'nodal' || role === 'NODAL' || role.includes('NODAL')) {
-    return <NodalPortal user={user} onLogout={handleLogout} />;
-  }
-
-  if (urlPortal === 'faculty' || role === 'FACULTY' || role.includes('FACULTY')) {
-    return <FacultyLayout user={user} onLogout={handleLogout} />;
-  }
-
-  if (urlPortal === 'university' || role === 'UNIVERSITY' || role === 'HEI') {
-    return <UniversityLayout user={user} onLogout={handleLogout} />;
-  }
-
-  if (role === 'GOVERNMENT' || role === 'ADMIN') {
-    return <GovernmentLayout onLogout={handleLogout} />;
-  }
+  if (urlPortal === 'citizen' || role === 'CITIZEN') return <CitizenPortal user={user} onLogout={handleLogout} />;
+  if (urlPortal === 'nodal' || role.includes('NODAL')) return <NodalPortal user={user} onLogout={handleLogout} />;
+  if (urlPortal === 'faculty' || role.includes('FACULTY')) return <FacultyLayout user={user} onLogout={handleLogout} />;
+  if (urlPortal === 'university' || role === 'UNIVERSITY' || role === 'HEI') return <UniversityLayout user={user} onLogout={handleLogout} />;
+  if (role === 'GOVERNMENT' || role === 'ADMIN') return <GovernmentLayout onLogout={handleLogout} />;
 
   return (
     <div

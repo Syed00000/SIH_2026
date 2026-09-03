@@ -7,6 +7,8 @@ export const saveProposalDraft = async ({ currentProject, totalCalculatedBudget,
     amount: `₹ ${Number(item.amount || 0).toLocaleString('en-IN')}`,
     amountNumber: Number(item.amount || 0)
   }));
+  const baseline = Number(String(currentProject.baselineBudget || currentProject.originalBudget || '80000').replace(/[^\d]/g, '')) || 80000;
+  const additionalAmount = Math.max(0, totalCalculatedBudget - baseline);
 
   return universityApiService.updateProject(currentProject.projectId || currentProject._id, {
     ...currentProject,
@@ -14,7 +16,9 @@ export const saveProposalDraft = async ({ currentProject, totalCalculatedBudget,
     milestoneRoadmap: milestoneStages,
     budget: budgetFormatted,
     budgetBreakdown,
-    proposedBudget: budgetFormatted
+    proposedBudget: budgetFormatted,
+    additionalAmount,
+    baselineBudget: baseline
   });
 };
 
@@ -28,6 +32,8 @@ export const submitProposalFinal = async ({ currentProject, totalCalculatedBudge
 
   const isRevision = currentProject.budgetStatus?.includes('Changes Required') || (currentProject.revisionCount || 0) > 0;
   const nextRevCount = isRevision ? Number(currentProject.revisionCount || 1) + 1 : 1;
+  const baseline = Number(String(currentProject.baselineBudget || currentProject.originalBudget || '80000').replace(/[^\d]/g, '')) || 80000;
+  const additionalAmount = Math.max(0, totalCalculatedBudget - baseline);
 
   const updatedMilestones = currentProject.milestones?.length
     ? currentProject.milestones.map((m, idx) => {
@@ -46,6 +52,8 @@ export const submitProposalFinal = async ({ currentProject, totalCalculatedBudge
     budget: budgetFormatted,
     budgetBreakdown,
     proposedBudget: budgetFormatted,
+    additionalAmount,
+    baselineBudget: baseline,
     budgetStatus: 'Submitted to University for Review',
     isRevised: isRevision,
     revisionCount: nextRevCount,

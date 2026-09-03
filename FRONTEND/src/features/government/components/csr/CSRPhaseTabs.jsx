@@ -3,7 +3,7 @@ import { CSR_PHASES } from '../../data/csrConstants.js';
 
 export const CSRPhaseTabs = ({ activePhase = 'phase_1_2', onSelectPhase }) => {
   return (
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-3.5 select-none">
+    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 select-none">
       {CSR_PHASES.map((phase) => {
         const isActive = activePhase === phase.id;
         return (

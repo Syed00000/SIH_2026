@@ -19,8 +19,8 @@ export class UniversityPartnerApprovalService {
     return await this.repository.getApprovalsByUniversity(universityCode);
   }
 
-  async updateApproval(approvalId, universityCode, status, remarks = '') {
-    return await this.repository.updateApprovalStatus(approvalId, universityCode, status, remarks);
+  async updateApproval(approvalId, universityCode, status, remarks = '', extraData = {}) {
+    return await this.repository.updateApprovalStatus(approvalId, universityCode, status, remarks, extraData);
   }
 
   async deleteApproval(approvalId, universityCode) {

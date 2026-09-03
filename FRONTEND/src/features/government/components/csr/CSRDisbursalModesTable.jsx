@@ -1,10 +1,32 @@
-import React, { useState } from 'react';
-import { Check, Activity } from 'lucide-react';
-import { DISBURSAL_GATEWAY_MODES } from '../../data/csrConstants.js';
+import React, { useState, useEffect } from 'react';
+import { Check, Activity, Loader2 } from 'lucide-react';
+import apiClient from '../../../../infrastructure/api/client.js';
 import { GatewayConfigModal } from './GatewayConfigModal.jsx';
 
 export const CSRDisbursalModesTable = () => {
+  const [gateways, setGateways] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [selectedGatewayMode, setSelectedGatewayMode] = useState(null);
+
+  useEffect(() => {
+    let isMounted = true;
+    const fetchGateways = async () => {
+      try {
+        const res = await apiClient.get('government/funds/gateways');
+        const data = res?.data?.data || res?.data || [];
+        if (isMounted) {
+          setGateways(Array.isArray(data) ? data : []);
+        }
+      } catch (err) {
+        console.warn('Failed to load gateways from backend:', err);
+      } finally {
+        if (isMounted) setLoading(false);
+      }
+    };
+
+    fetchGateways();
+    return () => { isMounted = false; };
+  }, []);
 
   return (
     <>
@@ -21,8 +43,8 @@ export const CSRDisbursalModesTable = () => {
           </div>
 
           <span className="inline-flex items-center space-x-1.5 text-xs font-semibold text-slate-900 self-start sm:self-auto">
-            <Activity className="w-3.5 h-3.5 text-slate-900" />
-            <span>Gateways Operational</span>
+            <Activity className="w-3.5 h-3.5 text-[#007A61]" />
+            <span>Gateways Operational ({gateways.length} Live)</span>
           </span>
         </div>
 
@@ -39,40 +61,55 @@ export const CSRDisbursalModesTable = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 text-xs">
-              {DISBURSAL_GATEWAY_MODES.map((row) => (
-                <tr
-                  key={row.id}
-                  onClick={() => setSelectedGatewayMode(row)}
-                  className="hover:bg-slate-50 transition-colors cursor-pointer group"
-                >
-                  <td className="py-3 px-4 whitespace-nowrap font-bold text-slate-900 text-[11.5px]">
-                    {row.name}
-                  </td>
-                  <td className="py-3 px-4 font-medium text-slate-800 text-[11px]">
-                    {row.primaryUse}
-                  </td>
-                  <td className="py-3 px-4 text-slate-600 font-normal text-[11px]">
-                    {row.dailyLimit}
-                  </td>
-                  <td className="py-3 px-4 whitespace-nowrap">
-                    <span className="inline-flex items-center space-x-1.5 font-medium text-slate-900 text-[11px]">
-                      <Check className="w-3.5 h-3.5 text-slate-900" />
-                      <span>{row.protocol}</span>
-                    </span>
-                  </td>
-                  <td className="py-3 px-4 text-right whitespace-nowrap">
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setSelectedGatewayMode(row);
-                      }}
-                      className="px-2.5 py-1 rounded-md border border-slate-200 hover:bg-slate-100 text-slate-900 text-xs font-semibold cursor-pointer shadow-xs"
-                    >
-                      Test Ping
-                    </button>
+              {loading ? (
+                <tr>
+                  <td colSpan="5" className="py-8 text-center text-slate-400">
+                    <Loader2 className="w-5 h-5 animate-spin mx-auto mb-2 text-slate-500" />
+                    <span>Loading verified state payment gateways from database...</span>
                   </td>
                 </tr>
-              ))}
+              ) : gateways.length === 0 ? (
+                <tr>
+                  <td colSpan="5" className="py-8 text-center text-slate-400">
+                    No active gateway channels configured.
+                  </td>
+                </tr>
+              ) : (
+                gateways.map((row) => (
+                  <tr
+                    key={row.gatewayId || row.id || row._id}
+                    onClick={() => setSelectedGatewayMode(row)}
+                    className="hover:bg-slate-50 transition-colors cursor-pointer group"
+                  >
+                    <td className="py-3 px-4 whitespace-nowrap font-bold text-slate-900 text-[11.5px]">
+                      {row.name}
+                    </td>
+                    <td className="py-3 px-4 font-medium text-slate-800 text-[11px]">
+                      {row.primaryUse}
+                    </td>
+                    <td className="py-3 px-4 text-slate-600 font-normal text-[11px]">
+                      {row.dailyLimit}
+                    </td>
+                    <td className="py-3 px-4 whitespace-nowrap">
+                      <span className="inline-flex items-center space-x-1.5 font-medium text-slate-900 text-[11px]">
+                        <Check className="w-3.5 h-3.5 text-[#007A61]" />
+                        <span>{row.protocol}</span>
+                      </span>
+                    </td>
+                    <td className="py-3 px-4 text-right whitespace-nowrap">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedGatewayMode(row);
+                        }}
+                        className="px-2.5 py-1 rounded-md border border-slate-200 hover:bg-slate-100 text-slate-900 text-xs font-semibold cursor-pointer shadow-xs"
+                      >
+                        Test Ping
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
@@ -82,6 +119,7 @@ export const CSRDisbursalModesTable = () => {
         isOpen={Boolean(selectedGatewayMode)}
         onClose={() => setSelectedGatewayMode(null)}
         initialMode={selectedGatewayMode}
+        gateways={gateways}
       />
     </>
   );

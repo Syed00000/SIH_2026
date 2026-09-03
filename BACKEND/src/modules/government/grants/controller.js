@@ -60,9 +60,86 @@ export const deleteFund = async (req, res, next) => {
   }
 };
 
+export const getLedger = async (req, res, next) => {
+  try {
+    const { governmentLedgerService } = await import('./ledger.service.js');
+    const data = await governmentLedgerService.getLedger();
+    res.status(200).json({ status: 'SUCCESS', data });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const createPayment = async (req, res, next) => {
+  try {
+    const { governmentLedgerService } = await import('./ledger.service.js');
+    const data = await governmentLedgerService.createPayment(req.body);
+    res.status(201).json({ status: 'SUCCESS', message: 'Grant disbursement recorded successfully', data });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const authorizePayment = async (req, res, next) => {
+  try {
+    const { governmentLedgerService } = await import('./ledger.service.js');
+    const data = await governmentLedgerService.authorizePayment(req.params.id);
+    res.status(200).json({ status: 'SUCCESS', message: 'Payment authorized', data });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const clearLedger = async (req, res, next) => {
+  try {
+    const { governmentLedgerService } = await import('./ledger.service.js');
+    const data = await governmentLedgerService.clearLedger();
+    res.status(200).json({ status: 'SUCCESS', ...data });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getUtilization = async (req, res, next) => {
+  try {
+    const { governmentLedgerService } = await import('./ledger.service.js');
+    const data = await governmentLedgerService.getUtilizationAndCompliance();
+    res.status(200).json({ status: 'SUCCESS', data });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getGateways = async (req, res, next) => {
+  try {
+    const { governmentGatewayService } = await import('./gateway.service.js');
+    const data = await governmentGatewayService.getGateways();
+    res.status(200).json({ status: 'SUCCESS', data });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const pingGateway = async (req, res, next) => {
+  try {
+    const { governmentGatewayService } = await import('./gateway.service.js');
+    const data = await governmentGatewayService.pingGateway(req.params.id);
+    res.status(200).json({ status: 'SUCCESS', data });
+  } catch (error) {
+    next(error);
+  }
+};
+
 export default {
   getFunds,
   createFund,
   updateFund,
-  deleteFund
+  deleteFund,
+  getLedger,
+  createPayment,
+  authorizePayment,
+  clearLedger,
+  getUtilization,
+  getGateways,
+  pingGateway
 };

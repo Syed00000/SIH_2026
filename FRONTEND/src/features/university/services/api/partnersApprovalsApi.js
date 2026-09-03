@@ -44,15 +44,15 @@ export const partnersApprovalsApi = {
     return { approvalId, status };
   },
 
-  async updateApprovalStatus(approvalId, universityCode, status, adminRemarks = '') {
+  async updateApprovalStatus(approvalId, universityCode, status, adminRemarks = '', extraData = {}) {
     try {
       const res = await apiClient.patch(
         `university/approvals/${approvalId}?universityCode=${encodeURIComponent(universityCode)}`,
-        { status, adminRemarks }
+        { status, adminRemarks, ...extraData }
       );
       if (res?.data) return res.data;
     } catch (err) { console.error('API updateApprovalStatus error:', err.message); }
-    return { approvalId, status, adminRemarks };
+    return { approvalId, status, adminRemarks, ...extraData };
   },
 
   async deleteApproval(approvalId, universityCode = DEFAULT_UNIVERSITY_CODE) {
