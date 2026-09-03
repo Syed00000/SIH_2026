@@ -47,6 +47,19 @@ export class ChallengeTriageService {
 
   async deleteChallenge(challengeId) {
     if (!challengeId) throw new Error('Challenge ID is required');
+
+    // Cascade delete any uploaded Cloudinary assets and citizen media records
+    try {
+      const { citizenMediaService } = await import('./citizen-media.service.js');
+      await citizenMediaService.cascadeDeleteChallengeMedia(challengeId);
+    } catch (mediaErr) {
+      logger.warn({
+        msg: 'Warning: Failed to clean up media during challenge deletion',
+        challengeId,
+        error: mediaErr.message
+      });
+    }
+
     const deleted = await this.repository.deleteById(challengeId);
     if (!deleted) throw new Error(`Challenge ${challengeId} not found`);
     return { success: true, message: `Challenge ${challengeId} deleted successfully` };

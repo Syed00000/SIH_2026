@@ -96,6 +96,14 @@ export const citizenChallengeSchema = new mongoose.Schema(
       type: submitterSchema,
       required: true
     },
+    media: {
+      type: [mediaSchema],
+      default: () => []
+    },
+    mediaUrls: {
+      type: [String],
+      default: () => []
+    },
 
     milestones: {
       type: [milestoneSchema],

@@ -68,6 +68,31 @@ export const citizenService = {
   async deleteChallenge(challengeId) {
     const response = await apiClient.delete(`citizen/challenges/${challengeId}`);
     return response.data || response;
+  },
+
+  async uploadEvidence(file, { challengeId = null, citizenId = null, caption = '' } = {}) {
+    const formData = new FormData();
+    formData.append('file', file);
+    if (challengeId) formData.append('challengeId', challengeId);
+    if (citizenId) formData.append('citizenId', citizenId);
+    if (caption) formData.append('caption', caption);
+
+    const response = await apiClient.upload('citizen/media/upload', formData);
+    return response.data || response;
+  },
+
+  async deleteEvidence(mediaId) {
+    const response = await apiClient.delete(`citizen/media/${mediaId}`);
+    return response.data || response;
+  },
+
+  async fetchChallengeMedia(challengeId) {
+    try {
+      const response = await apiClient.get(`citizen/challenges/${challengeId}/media`);
+      return response.data || [];
+    } catch {
+      return [];
+    }
   }
 };
 

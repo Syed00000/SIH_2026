@@ -4,6 +4,7 @@ import { ChallengeSubmissionService } from './services/challenge-submission.serv
 import { ChallengeQueryService } from './services/challenge-query.service.js';
 import { ChallengeAnalyticsService } from './services/challenge-analytics.service.js';
 import { ChallengeTriageService } from './services/challenge-triage.service.js';
+import { citizenMediaService } from './services/citizen-media.service.js';
 
 export class CitizenService {
   constructor(repository = citizenRepository) {
@@ -12,6 +13,7 @@ export class CitizenService {
     this.queryService = new ChallengeQueryService(repository);
     this.analyticsService = new ChallengeAnalyticsService(repository);
     this.triageService = new ChallengeTriageService(repository);
+    this.mediaService = citizenMediaService;
   }
 
   generateChallengeId() {
@@ -56,6 +58,18 @@ export class CitizenService {
 
   async deleteChallenge(challengeId) {
     return this.triageService.deleteChallenge(challengeId);
+  }
+
+  async uploadMedia(data) {
+    return this.mediaService.uploadEvidence(data);
+  }
+
+  async getMediaById(mediaId, user = null) {
+    return this.mediaService.getMediaById(mediaId, user);
+  }
+
+  async deleteMedia(mediaId, user = null) {
+    return this.mediaService.deleteMedia(mediaId, user);
   }
 }
 

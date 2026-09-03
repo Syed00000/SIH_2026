@@ -97,10 +97,31 @@ export class ChallengeSubmissionService {
         affectedPopulation: data.affectedPopulation || '',
         estimatedBudget: data.estimatedBudget || ''
       },
+      media: Array.isArray(data.media) ? data.media : [],
+      mediaUrls: Array.isArray(data.mediaUrls)
+        ? data.mediaUrls
+        : Array.isArray(data.media)
+          ? data.media.map((m) => (typeof m === 'string' ? m : m.url)).filter(Boolean)
+          : [],
       submittedAt: new Date()
     };
 
     const saved = await this.repository.create(newChallenge);
+
+    // If media items contain mediaIds, update those CitizenMedia records with this challengeId
+    if (Array.isArray(data.media) && data.media.length > 0) {
+      try {
+        const { CitizenMedia } = await import('../../infrastructure/model.js');
+        const mediaIds = data.media.map((m) => m.mediaId).filter(Boolean);
+        if (mediaIds.length > 0) {
+          await CitizenMedia.updateMany(
+            { mediaId: { $in: mediaIds } },
+            { $set: { challengeId } }
+          );
+        }
+      } catch (_) {}
+    }
+
     return saved.toObject();
   }
 }

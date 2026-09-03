@@ -3,6 +3,7 @@ import { createSubmissionHandler } from './handlers/submission.handler.js';
 import { createQueryHandler } from './handlers/query.handler.js';
 import { createAnalyticsHandler } from './handlers/analytics.handler.js';
 import { createTriageHandler } from './handlers/triage.handler.js';
+import { createMediaHandler } from './handlers/media.handler.js';
 
 export class CitizenController {
   constructor(service = citizenService) {
@@ -11,6 +12,7 @@ export class CitizenController {
     this.queryHandler = createQueryHandler(service);
     this.analyticsHandler = createAnalyticsHandler(service);
     this.triageHandler = createTriageHandler(service);
+    this.mediaHandler = createMediaHandler();
   }
 
   submitChallenge(req, res, next) {
@@ -51,6 +53,22 @@ export class CitizenController {
 
   deleteChallenge(req, res, next) {
     return this.triageHandler.deleteChallenge(req, res, next);
+  }
+
+  uploadMedia(req, res, next) {
+    return this.mediaHandler.uploadMedia(req, res, next);
+  }
+
+  getMedia(req, res, next) {
+    return this.mediaHandler.getMedia(req, res, next);
+  }
+
+  getChallengeMedia(req, res, next) {
+    return this.mediaHandler.getChallengeMedia(req, res, next);
+  }
+
+  deleteMedia(req, res, next) {
+    return this.mediaHandler.deleteMedia(req, res, next);
   }
 }
 

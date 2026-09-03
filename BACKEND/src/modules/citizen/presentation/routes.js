@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { citizenController } from './controller.js';
 import jwt from 'jsonwebtoken';
 import config from '../../../shared/config/index.js';
+import { handleSingleMediaUpload } from './middleware/media-upload.middleware.js';
 
 const router = Router();
 
@@ -35,6 +36,17 @@ router.patch('/challenges/:id/assign', optionalAuth, (req, res, next) => citizen
 router.patch('/challenges/:id/withdraw', optionalAuth, (req, res, next) => citizenController.withdrawChallenge(req, res, next));
 router.post('/challenges/:id/withdraw', optionalAuth, (req, res, next) => citizenController.withdrawChallenge(req, res, next));
 router.delete('/challenges/:id', optionalAuth, (req, res, next) => citizenController.deleteChallenge(req, res, next));
+
+// Evidence Media Routes (Storage Provider Wrapper)
+router.post(
+  '/media/upload',
+  optionalAuth,
+  handleSingleMediaUpload('file'),
+  (req, res, next) => citizenController.uploadMedia(req, res, next)
+);
+router.get('/media/:mediaId', optionalAuth, (req, res, next) => citizenController.getMedia(req, res, next));
+router.get('/challenges/:challengeId/media', optionalAuth, (req, res, next) => citizenController.getChallengeMedia(req, res, next));
+router.delete('/media/:mediaId', optionalAuth, (req, res, next) => citizenController.deleteMedia(req, res, next));
 
 router.get('/stats', optionalAuth, (req, res, next) => citizenController.getStats(req, res, next));
 router.get('/updates', optionalAuth, (req, res, next) => citizenController.getUpdates(req, res, next));

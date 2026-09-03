@@ -1,18 +1,7 @@
 import React, { useState } from 'react';
-import {
-  ShieldCheck,
-  Phone,
-  Mail,
-  Quote,
-  Camera,
-  Video,
-  Eye,
-  X,
-  ExternalLink,
-  ImageOff,
-  FileText,
-  Download
-} from 'lucide-react';
+import { ShieldCheck, Phone, Mail, Quote, Camera, ImageOff } from 'lucide-react';
+import { ChallengeInspectorEvidenceCard } from './ChallengeInspectorEvidenceCard.jsx';
+import { ChallengeInspectorEvidenceLightbox } from './ChallengeInspectorEvidenceLightbox.jsx';
 
 export const ChallengeInspectorEvidenceTab = ({ challenge = {} }) => {
   const [selectedPreview, setSelectedPreview] = useState(null);
@@ -20,49 +9,47 @@ export const ChallengeInspectorEvidenceTab = ({ challenge = {} }) => {
   const submitter = challenge.submitter || {};
   const submitterRole = submitter.role || 'Verified Citizen / Resident';
   const maskedMobile = submitter.mobileNumber || submitter.maskedMobile || '+91 ******4829 (Confidential)';
-  const testimony = challenge.description || challenge.problemStatement || 'Problem statement verified by local community and submitted via Citizen Innovation Portal.';
+  const testimony = challenge.description || challenge.problemStatement || 'Problem statement verified by local community.';
 
-  // Gather all evidence media
   const rawMedia = [
-    ...(Array.isArray(challenge.mediaUrls) ? challenge.mediaUrls : []),
+    ...(Array.isArray(challenge.media) ? challenge.media : []),
     ...(Array.isArray(challenge.evidence) ? challenge.evidence : []),
     ...(Array.isArray(challenge.attachments) ? challenge.attachments : []),
     ...(Array.isArray(challenge.photos) ? challenge.photos : []),
     ...(Array.isArray(challenge.images) ? challenge.images : []),
-    ...(Array.isArray(challenge.videos) ? challenge.videos : [])
+    ...(Array.isArray(challenge.videos) ? challenge.videos : []),
+    ...(Array.isArray(challenge.mediaUrls) ? challenge.mediaUrls : [])
   ].filter(Boolean);
 
-  const normalizedMedia = rawMedia.map((item, idx) => {
-    if (typeof item === 'string') {
-      const isVid = Boolean(item.match(/\.(mp4|webm|ogg|mov|m4v)(\?.*)?$/i) || item.includes('video'));
-      return {
-        url: item,
-        type: isVid ? 'video' : 'photo',
-        caption: `Evidence Item #${idx + 1}`
-      };
-    }
-    const url = item.url || item.src || item.link || '';
-    const isVid = item.type === 'video' || Boolean(url.match(/\.(mp4|webm|ogg|mov|m4v)(\?.*)?$/i));
-    return {
+  const seenUrls = new Set();
+  const normalizedMedia = [];
+
+  for (let idx = 0; idx < rawMedia.length; idx++) {
+    const item = rawMedia[idx];
+    const url = typeof item === 'string' ? item.trim() : (item.url || item.src || item.link || '').trim();
+    if (!url || seenUrls.has(url)) continue;
+    seenUrls.add(url);
+
+    const isVid = Boolean(item.fileType === 'video' || item.type === 'video' || url.match(/\.(mp4|webm|ogg|mov|m4v)(\?.*)?$/i) || url.includes('/video/'));
+    const isPdf = Boolean(item.fileType === 'pdf' || item.type === 'pdf' || url.match(/\.pdf(\?.*)?$/i) || url.includes('/raw/'));
+
+    normalizedMedia.push({
       url,
-      type: isVid ? 'video' : 'photo',
-      caption: item.caption || item.name || `Evidence Item #${idx + 1}`,
+      type: isVid ? 'video' : isPdf ? 'pdf' : 'photo',
+      caption: item.caption || item.fileName || item.name || `Evidence Item #${normalizedMedia.length + 1}`,
       uploadedAt: item.uploadedAt || item.date
-    };
-  }).filter((m) => m.url && m.url.trim() !== '');
+    });
+  }
 
   const hasMedia = normalizedMedia.length > 0;
 
   return (
     <div className="space-y-3.5 text-xs text-slate-700 text-left">
-      {/* Evidence Media Section */}
       <div className="bg-white border border-slate-200/90 rounded-2xl p-4 shadow-xs space-y-3">
         <div className="flex items-center justify-between pb-2 border-b border-slate-100">
           <div className="flex items-center space-x-2">
             <Camera className="w-4 h-4 text-[#007A61]" />
-            <span className="font-extrabold text-slate-900 text-xs">
-              Problem Photo & Video Evidence
-            </span>
+            <span className="font-extrabold text-slate-900 text-xs">Problem Photo & Video Evidence</span>
           </div>
           {hasMedia ? (
             <span className="text-[10px] font-bold bg-emerald-50 text-[#007A61] px-2.5 py-0.5 rounded-full border border-emerald-200">
@@ -78,146 +65,63 @@ export const ChallengeInspectorEvidenceTab = ({ challenge = {} }) => {
         {hasMedia ? (
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 pt-1">
             {normalizedMedia.map((media, idx) => (
-              <div
-                key={idx}
-                onClick={() => setSelectedPreview(media)}
-                className="relative aspect-video rounded-xl overflow-hidden border border-slate-200 bg-slate-900 group cursor-pointer shadow-2xs hover:border-[#007A61] transition-all"
-              >
-                {media.type === 'video' ? (
-                  <div className="w-full h-full flex flex-col items-center justify-center bg-slate-900 text-white">
-                    <Video className="w-6 h-6 text-emerald-400 mb-1" />
-                    <span className="text-[10px] font-bold">Video Evidence</span>
-                  </div>
-                ) : (
-                  <img
-                    src={media.url}
-                    alt={media.caption}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                  />
-                )}
-                <div className="absolute inset-0 bg-slate-950/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center space-x-1.5 text-white text-[11px] font-bold">
-                  <Eye className="w-3.5 h-3.5" />
-                  <span>Inspect</span>
-                </div>
-                <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/70 to-transparent p-1.5 text-[9.5px] text-white font-medium truncate">
-                  {media.caption}
-                </div>
-              </div>
+              <ChallengeInspectorEvidenceCard key={idx} media={media} onClick={() => setSelectedPreview(media)} />
             ))}
           </div>
         ) : (
-          /* Empty State when no photos or videos are available */
           <div className="py-8 px-4 text-center space-y-2 bg-slate-50/70 border border-dashed border-slate-200 rounded-xl">
             <div className="w-10 h-10 rounded-xl bg-amber-50 border border-amber-200 text-amber-600 flex items-center justify-center mx-auto shadow-2xs">
               <ImageOff className="w-5 h-5" />
             </div>
             <div>
               <div className="font-extrabold text-slate-800 text-xs">Evidence Not Available</div>
-              <p className="text-[11px] text-slate-500 max-w-sm mx-auto mt-0.5">
-                No photo or video evidence was attached to this challenge by the citizen.
+              <p className="text-[11px] text-slate-500 mt-0.5 max-w-sm mx-auto">
+                The submitter provided a textual problem statement without photographic documentation.
               </p>
-            </div>
-            <div className="inline-flex items-center space-x-1.5 px-2.5 py-0.5 bg-white rounded-full text-[10px] font-bold text-slate-600 border border-slate-200">
-              <FileText className="w-3 h-3 text-slate-400" />
-              <span>Submission Type: Text-Only Problem Statement</span>
             </div>
           </div>
         )}
       </div>
 
-      {/* Verified Citizen Details */}
-      <div className="p-4 bg-white border border-slate-200/90 rounded-2xl shadow-xs space-y-3">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-2.5">
-            <div className="w-8 h-8 rounded-xl bg-emerald-50 text-[#007A61] font-bold flex items-center justify-center border border-emerald-200 text-xs shadow-2xs">
-              <ShieldCheck className="w-4 h-4" />
-            </div>
-            <div>
-              <div className="font-extrabold text-slate-900 text-xs flex items-center space-x-1.5">
-                <span>Verified Citizen</span>
-                <span className="text-[9px] font-bold bg-[#007A61] text-white px-1.5 py-0.2 rounded-full">
-                  Citizen
-                </span>
-              </div>
-              <div className="text-[10.5px] text-emerald-800 font-semibold">{submitterRole}</div>
-            </div>
+      {/* Verified Submitter Section */}
+      <div className="bg-emerald-50/40 border border-emerald-200/80 rounded-2xl p-4 shadow-xs space-y-3">
+        <div className="flex items-center justify-between pb-2 border-b border-emerald-200/60">
+          <div className="flex items-center space-x-2 text-emerald-950 font-extrabold text-xs">
+            <ShieldCheck className="w-4 h-4 text-emerald-700" />
+            <span>Submitter Profile & Testimony</span>
           </div>
-          <span className="text-[10px] font-bold bg-slate-100 text-slate-700 px-2.5 py-1 rounded-full border border-slate-200">
-            Privacy Protected
+          <span className="text-[10px] font-bold uppercase tracking-wider bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-md border border-emerald-200">
+            {submitterRole}
           </span>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs pt-2 border-t border-slate-100">
-          <div className="flex items-center space-x-2 text-slate-700 bg-slate-50 p-2 rounded-xl border border-slate-100">
-            <Phone className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-            <span className="font-mono font-medium text-[11px]">{maskedMobile}</span>
-          </div>
-
-          <div className="flex items-center space-x-2 text-slate-700 bg-slate-50 p-2 rounded-xl border border-slate-100">
-            <Mail className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-            <span className="font-medium text-[11px] truncate">citizen.verified@jharkhand.gov.in</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Citizen Direct Testimony */}
-      <div className="p-4 bg-white border border-slate-200/90 rounded-2xl shadow-xs space-y-2">
-        <div className="flex items-center space-x-1.5 text-slate-800">
-          <Quote className="w-4 h-4 text-[#007A61]" />
-          <span className="text-xs font-bold text-slate-900">Direct Citizen Statement</span>
-        </div>
-        <p className="text-xs text-slate-800 italic leading-relaxed bg-slate-50/80 p-3 rounded-xl border border-slate-200/80 font-normal">
-          "{testimony}"
-        </p>
-      </div>
-
-      {/* Full Evidence Lightbox Modal */}
-      {selectedPreview && (
-        <div className="fixed inset-0 z-60 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-xs select-none animate-in fade-in duration-150">
-          <div className="relative max-w-3xl w-full bg-white rounded-2xl overflow-hidden shadow-2xl p-3 flex flex-col max-h-[85vh]">
-            <div className="flex items-center justify-between pb-2 mb-2 border-b border-slate-100">
-              <span className="font-extrabold text-xs text-slate-900 truncate">
-                {selectedPreview.caption || 'Evidence Inspection'}
-              </span>
-              <div className="flex items-center space-x-2">
-                <a
-                  href={selectedPreview.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="p-1.5 text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer"
-                  title="Open Original"
-                >
-                  <ExternalLink className="w-4 h-4" />
-                </a>
-                <button
-                  onClick={() => setSelectedPreview(null)}
-                  className="p-1.5 text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer"
-                  title="Close"
-                >
-                  <X className="w-4 h-4" />
-                </button>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1 text-[11.5px]">
+          <div className="space-y-1">
+            <span className="text-[10px] uppercase font-bold tracking-wider text-slate-600 block">Reported By</span>
+            <div className="font-bold text-slate-900">{submitter.name || 'Anonymous Resident'}</div>
+            <div className="text-slate-600 text-[11px] flex items-center space-x-1">
+              <Phone className="w-3 h-3 text-slate-400 inline" />
+              <span>{maskedMobile}</span>
+            </div>
+            {submitter.email && (
+              <div className="text-slate-600 text-[11px] flex items-center space-x-1">
+                <Mail className="w-3 h-3 text-slate-400 inline" />
+                <span className="truncate">{submitter.email}</span>
               </div>
-            </div>
+            )}
+          </div>
 
-            <div className="flex-1 overflow-hidden flex items-center justify-center bg-slate-950 rounded-xl p-2 min-h-[300px]">
-              {selectedPreview.type === 'video' ? (
-                <video
-                  src={selectedPreview.url}
-                  controls
-                  autoPlay
-                  className="max-h-[65vh] max-w-full rounded-lg"
-                />
-              ) : (
-                <img
-                  src={selectedPreview.url}
-                  alt={selectedPreview.caption}
-                  className="max-h-[65vh] max-w-full object-contain rounded-lg"
-                />
-              )}
+          <div className="space-y-1">
+            <span className="text-[10px] uppercase font-bold tracking-wider text-slate-600 block">Ground Verification Note</span>
+            <div className="relative pl-3 italic text-slate-700 bg-white/70 rounded-lg p-2 border border-emerald-100">
+              <Quote className="w-3 h-3 text-emerald-600 absolute -top-1 -left-1 opacity-40" />
+              <p className="line-clamp-3 text-[11px] leading-relaxed">"{testimony}"</p>
             </div>
           </div>
         </div>
-      )}
+      </div>
+
+      <ChallengeInspectorEvidenceLightbox selectedPreview={selectedPreview} onClose={() => setSelectedPreview(null)} />
     </div>
   );
 };

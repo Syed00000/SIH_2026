@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { X, AlertCircle } from 'lucide-react';
+import { X } from 'lucide-react';
 import { citizenService } from '../services/citizenService.js';
 import { SubmitChallengeFormFields } from './SubmitChallengeFormFields.jsx';
 import { SubmitChallengeSuccessView } from './SubmitChallengeSuccessView.jsx';
+import { validateChallengeForm, buildChallengePayload } from './helpers/challengeSubmission.helper.js';
 
 export const SubmitChallengeModal = ({
   isOpen = true,
@@ -29,7 +30,8 @@ export const SubmitChallengeModal = ({
     designation: '',
     organization: '',
     priority: 'Medium',
-    affectedPopulation: '500 - 2,000 people (Village / Ward)'
+    affectedPopulation: '500 - 2,000 people (Village / Ward)',
+    media: []
   });
 
   const [customDomain, setCustomDomain] = useState('');
@@ -67,50 +69,16 @@ export const SubmitChallengeModal = ({
         ? customDomain.trim()
         : formData.domain;
 
-    if (!formData.title.trim()) {
-      setError('Please enter a problem title / heading');
-      return;
-    }
-    if (!finalDomain) {
-      setError('Please select or specify a challenge domain');
-      return;
-    }
-    if (!formData.description.trim() || formData.description.trim().length < 5) {
-      setError('Please provide a problem statement description (at least 5 characters)');
-      return;
-    }
-    if (!formData.district) {
-      setError('Please select a district in Jharkhand');
+    const validationError = validateChallengeForm(formData, finalDomain);
+    if (validationError) {
+      setError(validationError);
       return;
     }
 
     setLoading(true);
 
     try {
-      const payload = {
-        title: formData.title.trim(),
-        domain: finalDomain,
-        description: formData.description.trim(),
-        district: formData.district,
-        block: formData.block || '',
-        panchayatOrWard: formData.panchayatOrWard || '',
-        landmark: formData.landmark || '',
-        pincode: formData.pincode || '',
-        fullAddress:
-          formData.fullAddress ||
-          `${formData.landmark ? formData.landmark + ', ' : ''}${
-            formData.block ? formData.block + ', ' : ''
-          }${formData.district}, Jharkhand`,
-        submitterName: formData.submitterName || user?.fullName || 'Citizen Contributor',
-        submitterPhone: formData.submitterPhone || user?.mobileNumber || '9876543210',
-        submitterEmail: formData.submitterEmail || user?.email || '',
-        submitterRole: formData.submitterRole || 'Citizen',
-        designation: formData.designation || '',
-        organization: formData.organization || '',
-        priority: formData.priority || 'Medium',
-        affectedPopulation: formData.affectedPopulation || '500 - 2,000 people (Village / Ward)'
-      };
-
+      const payload = buildChallengePayload(formData, finalDomain, user);
       const result = await citizenService.submitChallenge(payload);
       setSubmittedChallenge(result);
       if (onSuccess) onSuccess(result);
@@ -123,22 +91,15 @@ export const SubmitChallengeModal = ({
 
   const formBody = submittedChallenge ? (
     <SubmitChallengeSuccessView
-      challenge={submittedChallenge}
-      defaultDomain={formData.domain}
-      onClose={() => {
-        setSubmittedChallenge(null);
-        if (onClose) onClose();
-      }}
+      submittedChallenge={submittedChallenge}
+      formData={formData}
+      onClose={onClose}
+      setSubmittedChallenge={setSubmittedChallenge}
+      setFormData={setFormData}
+      user={user}
     />
   ) : (
-    <form onSubmit={handleSubmit} className="space-y-6 text-left">
-      {error && (
-        <div className="p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-semibold flex items-center space-x-2 shadow-2xs">
-          <AlertCircle className="w-4 h-4 flex-shrink-0" />
-          <span>{error}</span>
-        </div>
-      )}
-
+    <form onSubmit={handleSubmit} className="p-6 space-y-6">
       <SubmitChallengeFormFields
         formData={formData}
         setFormData={setFormData}
@@ -157,47 +118,34 @@ export const SubmitChallengeModal = ({
 
   if (isInline) {
     return (
-      <div className="space-y-5 text-left pb-6 animate-fadeIn w-full">
-        <div className="bg-white border border-slate-200/90 rounded-xl p-5 shadow-2xs">
-          <h2 className="text-lg font-black text-slate-900 tracking-tight">
-            Submit a Problem Statement
-          </h2>
-          <p className="text-xs text-slate-500 font-medium mt-0.5">
-            Department of Higher and Technical Education &bull; Jharkhand Societal Innovation Portal
-          </p>
-        </div>
-
-        <div className="bg-white rounded-xl border border-slate-200/90 p-5 sm:p-7 shadow-2xs">
-          {formBody}
-        </div>
+      <div className="bg-white rounded-3xl border border-slate-200/90 shadow-xs overflow-hidden">
+        {formBody}
       </div>
     );
   }
 
   return (
-    <div className="fixed inset-0 z-50 bg-[#f4f8f5] flex flex-col h-screen w-screen overflow-hidden text-left animate-in fade-in duration-150">
-      <div className="px-6 py-3.5 bg-[#064e3b] text-white flex items-center justify-between flex-shrink-0 shadow-xs border-b border-emerald-900/30">
-        <div>
-          <h3 className="text-base sm:text-lg font-black tracking-tight leading-snug">
-            Submit a Problem Statement
-          </h3>
-          <p className="text-xs text-emerald-100/90 font-medium">
-            Jharkhand Societal Innovation Portal &bull; Department of Higher and Technical Education
-          </p>
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4">
+      <div className="relative bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden border border-slate-200">
+        <div className="sticky top-0 z-10 bg-white/95 backdrop-blur-xs px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+          <div>
+            <h2 className="text-base font-extrabold text-slate-900">
+              Submit Local Problem Statement
+            </h2>
+            <p className="text-xs text-slate-500 font-medium">
+              Report an urgent ground issue in Jharkhand for university student innovation
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
+          >
+            <X className="w-5 h-5" />
+          </button>
         </div>
-        <button
-          onClick={onClose}
-          className="w-9 h-9 rounded-full bg-white/10 hover:bg-rose-600/90 text-white transition-colors flex items-center justify-center cursor-pointer"
-          title="Close form"
-        >
-          <X className="w-5 h-5" />
-        </button>
-      </div>
 
-      <div className="flex-1 overflow-y-auto p-4 sm:p-6 md:p-8 flex flex-col items-center custom-scrollbar">
-        <div className="max-w-4xl w-full bg-white rounded-2xl border border-slate-200/90 p-5 sm:p-8 shadow-xs">
-          {formBody}
-        </div>
+        <div className="overflow-y-auto flex-1">{formBody}</div>
       </div>
     </div>
   );

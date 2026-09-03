@@ -89,8 +89,10 @@ const request = async (endpoint, options = {}, isRetry = false, isNetworkRetry =
   const url = buildUrl(endpoint);
   const token = getAccessToken();
 
+  const isFormData = typeof FormData !== 'undefined' && options.body instanceof FormData;
+
   const headers = {
-    'Content-Type': 'application/json',
+    ...(!isFormData && { 'Content-Type': 'application/json' }),
     ...(token && { Authorization: `Bearer ${token}` }),
     ...options.headers,
   };
@@ -170,6 +172,7 @@ const request = async (endpoint, options = {}, isRetry = false, isNetworkRetry =
 export const apiClient = {
   get: (endpoint, options) => request(endpoint, { method: 'GET', ...options }),
   post: (endpoint, body, options) => request(endpoint, { method: 'POST', body: JSON.stringify(body), ...options }),
+  upload: (endpoint, formData, options) => request(endpoint, { method: 'POST', body: formData, ...options }),
   put: (endpoint, body, options) => request(endpoint, { method: 'PUT', body: JSON.stringify(body), ...options }),
   patch: (endpoint, body, options) => request(endpoint, { method: 'PATCH', body: body ? JSON.stringify(body) : undefined, ...options }),
   delete: (endpoint, options) => request(endpoint, { method: 'DELETE', ...options }),

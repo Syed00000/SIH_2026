@@ -31,8 +31,14 @@ export const submitterSchema = new mongoose.Schema(
 
 export const mediaSchema = new mongoose.Schema(
   {
-    url: { type: String },
+    mediaId: { type: String, default: '' },
+    url: { type: String, default: '' },
     caption: { type: String, default: '' },
+    fileName: { type: String, default: '' },
+    fileType: { type: String, default: 'image' },
+    fileSize: { type: Number, default: 0 },
+    mimeType: { type: String, default: '' },
+    providerPublicId: { type: String, default: '' },
     uploadedAt: { type: Date, default: Date.now }
   },
   { _id: false }

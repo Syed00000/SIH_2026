@@ -16,7 +16,12 @@ const configSchema = z.object({
   GOVT_ADMIN_NAME: z.string().default('Government Admin'),
   GOVT_ADMIN_EMAIL: z.string().email().optional(),
   GOVT_ADMIN_PASSWORD: z.string().min(6).optional(),
-  GOVT_ADMIN_MOBILE: z.string().default('9876543210')
+  GOVT_ADMIN_MOBILE: z.string().default('9876543210'),
+  CLOUDINARY_CLOUD_NAME: z.string().optional().default(''),
+  CLOUDINARY_API_KEY: z.string().optional().default(''),
+  CLOUDINARY_API_SECRET: z.string().optional().default(''),
+  CLOUDINARY_URL: z.string().optional().default(''),
+  STORAGE_PROVIDER: z.enum(['cloudinary', 'local', 's3']).default('cloudinary')
 });
 
 const parseConfig = () => {
@@ -33,7 +38,12 @@ const parseConfig = () => {
     GOVT_ADMIN_NAME: process.env.GOVT_ADMIN_NAME,
     GOVT_ADMIN_EMAIL: process.env.GOVT_ADMIN_EMAIL,
     GOVT_ADMIN_PASSWORD: process.env.GOVT_ADMIN_PASSWORD,
-    GOVT_ADMIN_MOBILE: process.env.GOVT_ADMIN_MOBILE
+    GOVT_ADMIN_MOBILE: process.env.GOVT_ADMIN_MOBILE,
+    CLOUDINARY_CLOUD_NAME: process.env.CLOUDINARY_CLOUD_NAME,
+    CLOUDINARY_API_KEY: process.env.CLOUDINARY_API_KEY,
+    CLOUDINARY_API_SECRET: process.env.CLOUDINARY_API_SECRET,
+    CLOUDINARY_URL: process.env.CLOUDINARY_URL,
+    STORAGE_PROVIDER: process.env.STORAGE_PROVIDER
   });
 
   if (!result.success) {
