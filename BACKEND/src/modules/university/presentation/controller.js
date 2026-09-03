@@ -41,6 +41,7 @@ export class UniversityController {
   deleteApproval(req, res, next) { return this.partnerApprovalHandler.deleteApproval(req, res, next); }
   createIndustryRequest(req, res, next) { return this.partnerApprovalHandler.createIndustryRequest(req, res, next); }
   getIndustryRequests(req, res, next) { return this.partnerApprovalHandler.getIndustryRequests(req, res, next); }
+  updateIndustryRequestStatus(req, res, next) { return this.partnerApprovalHandler.updateIndustryRequestStatus(req, res, next); }
   deleteIndustryRequest(req, res, next) { return this.partnerApprovalHandler.deleteIndustryRequest(req, res, next); }
 
   getReports(req, res, next) { return this.dashboardProfileHandler.getReports(req, res, next); }

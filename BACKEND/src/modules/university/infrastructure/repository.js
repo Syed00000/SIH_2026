@@ -119,6 +119,10 @@ export class UniversityDashboardRepository {
     return this.partnerRequestRepo.getIndustryRequests(universityCode);
   }
 
+  updateIndustryRequestStatus(requestId, status, universityCode) {
+    return this.partnerRequestRepo.updateIndustryRequestStatus(requestId, status, universityCode);
+  }
+
   deleteIndustryRequest(requestId, universityCode) {
     return this.partnerRequestRepo.deleteIndustryRequest(requestId, universityCode);
   }

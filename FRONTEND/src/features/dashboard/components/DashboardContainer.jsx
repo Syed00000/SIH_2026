@@ -10,6 +10,8 @@ import { GovernmentLayout } from '../../government/components/layout/GovernmentL
 import { UniversityLayout } from '../../university/components/layout/UniversityLayout.jsx';
 import { FacultyLayout } from '../../faculty/components/layout/FacultyLayout.jsx';
 import { NodalPortal } from '../../nodal/NodalPortal.jsx';
+import { IndustrySidebar } from '../../industry/components/layout/IndustrySidebar.jsx';
+import { IndustryDashboard } from '../../industry/components/dashboard/IndustryDashboard.jsx';
 import { RoleProfile } from './RoleProfile.jsx';
 import { AccountSettings } from './AccountSettings.jsx';
 import { Button } from '../../../shared/components/ui/button.jsx';
@@ -113,21 +115,34 @@ export const DashboardContainer = ({ onNavigate }) => {
       {/* Main App Layout */}
       <div className="flex-1 flex flex-col md:flex-row overflow-hidden relative min-h-0">
         {/* Navigation Sidebar */}
-        <DashboardSidebar
-          role={role}
-          activeTab={activeTab}
-          setActiveTab={setActiveTab}
-          isSidebarExpanded={isSidebarExpanded}
-          setIsSidebarExpanded={setIsSidebarExpanded}
-          isMobileMenuOpen={isMobileMenuOpen}
-          setIsMobileMenuOpen={setIsMobileMenuOpen}
-          handleLogout={handleLogout}
-        />
+        {role === 'INDUSTRY' ? (
+          <IndustrySidebar
+            activeTab={activeTab}
+            setActiveTab={setActiveTab}
+            isSidebarExpanded={isSidebarExpanded}
+            setIsSidebarExpanded={setIsSidebarExpanded}
+            isMobileMenuOpen={isMobileMenuOpen}
+            setIsMobileMenuOpen={setIsMobileMenuOpen}
+            onLogout={handleLogout}
+            companyName={user?.organizationName || user?.name || user?.fullName || 'Industry Partner'}
+          />
+        ) : (
+          <DashboardSidebar
+            role={role}
+            activeTab={activeTab}
+            setActiveTab={setActiveTab}
+            isSidebarExpanded={isSidebarExpanded}
+            setIsSidebarExpanded={setIsSidebarExpanded}
+            isMobileMenuOpen={isMobileMenuOpen}
+            setIsMobileMenuOpen={setIsMobileMenuOpen}
+            handleLogout={handleLogout}
+          />
+        )}
 
         {/* Content Area With Independent Scrolling & Fixed Bottom Footer */}
-        <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden bg-slate-50/70">
+        <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden bg-white">
           {/* Scrollable Dashboard Viewport */}
-          <main className="flex-1 p-3.5 md:p-4.5 space-y-3.5 overflow-y-auto min-h-0">
+          <main className="flex-1 p-3.5 md:p-4.5 space-y-3.5 overflow-y-auto min-h-0 bg-white">
             {/* Email Verification Alert */}
             {!user.emailVerified && (
               <Alert variant="warning" title="Email Unverified">
@@ -157,8 +172,13 @@ export const DashboardContainer = ({ onNavigate }) => {
                 user={user}
                 role={role}
               />
+            ) : role === 'INDUSTRY' ? (
+              <IndustryDashboard
+                activeTab={activeTab}
+                user={user}
+              />
             ) : (
-              /* Generic/Fallback for non-Citizen roles */
+              /* Generic/Fallback for non-Citizen/non-Industry roles */
               <div className="space-y-4">
                 {activeTab === 'overview' && (
                   <div className="space-y-4">
