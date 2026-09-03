@@ -23,6 +23,8 @@ export async function syncProjectApprovalRequest({ res, updateData, projectId, u
         date: new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }),
         dateTime: new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }),
         status: 'Pending',
+        adminRemarks: '',
+        universityRemarks: '',
         faculty: { name: res?.leadMentor || res?.facultyMentor?.name || 'Faculty Mentor', department: res?.facultyMentor?.department || 'Engineering' },
         team: { name: res?.studentTeam || 'Student Research Team', membersCount: res?.teamMembers?.length || 4 },
         startDate: res?.startDate || '20 May 2026',

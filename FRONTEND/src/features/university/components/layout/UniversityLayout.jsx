@@ -22,30 +22,28 @@ export const UniversityLayout = ({ user, onLogout }) => {
   const [pendingApprovalsCount, setPendingApprovalsCount] = useState(0);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    let isMounted = true;
-    async function loadData() {
-      setLoading(true);
-      try {
-        const [data, approvalsData] = await Promise.all([
-          universityApiService.getDashboardSummary(universityCode),
-          universityApiService.getApprovals(universityCode)
-        ]);
-        if (isMounted) {
-          setDashboardData(data);
-          const appList = Array.isArray(approvalsData) ? approvalsData : [];
-          setApprovalsList(appList);
-          const pendingCount = appList.filter(a => a.status === 'Pending').length;
-          setPendingApprovalsCount(pendingCount);
-        }
-      } catch (err) {
-        console.error('Failed to load university dashboard layout data:', err);
-      } finally {
-        if (isMounted) setLoading(false);
-      }
+  const loadData = async (isBackground = false) => {
+    if (!isBackground) setLoading(true);
+    try {
+      const [data, approvalsData] = await Promise.all([
+        universityApiService.getDashboardSummary(universityCode),
+        universityApiService.getApprovals(universityCode)
+      ]);
+      setDashboardData(data);
+      const appList = Array.isArray(approvalsData) ? approvalsData : [];
+      setApprovalsList(appList);
+      setPendingApprovalsCount(appList.filter(a => a.status === 'Pending').length);
+    } catch (err) {
+      console.error('Failed to load university dashboard layout data:', err);
+    } finally {
+      if (!isBackground) setLoading(false);
     }
+  };
+
+  useEffect(() => {
     loadData();
-    return () => { isMounted = false; };
+    const interval = setInterval(() => loadData(true), 4000);
+    return () => clearInterval(interval);
   }, [universityCode]);
 
   const handleUpdateChallenge = async (payload) => {
@@ -79,17 +77,7 @@ export const UniversityLayout = ({ user, onLogout }) => {
       actionLabel: 'Review in Approvals',
       targetTab: 'approvals'
     })),
-    ...(dashboardData?.challenges || []).filter(c => c.status === 'Pending' || c.status === 'Review').map(c => ({
-      id: `chl-${c.challengeId || c.id}`,
-      type: 'CHALLENGE',
-      category: 'Action Needed',
-      title: c.title || `Grassroots Challenge ${c.challengeId}`,
-      message: `${c.domain || 'State Issue'} • ${c.district || 'Jharkhand'} (${c.affectedPopulation || 'Community Impact'})`,
-      time: c.assignedOn || 'New',
-      actionLabel: 'Review Challenge',
-      targetTab: 'challenges'
-    })),
-    ...(dashboardData?.recentActivities || []).slice(0, 5).map((act, idx) => ({
+    ...(dashboardData?.recentActivities || []).slice(0, 10).map((act, idx) => ({
       id: `act-${act._id || idx}`,
       type: 'ACTIVITY',
       category: 'Audit Notice',
@@ -110,6 +98,8 @@ export const UniversityLayout = ({ user, onLogout }) => {
         notificationCount={notificationsList.length}
         notifications={notificationsList}
         onNavigateTab={(tab) => setActiveTab(tab)}
+        onClearNotifications={() => loadData(false)}
+        universityCode={universityCode}
       />
 
       <div className="flex flex-1 min-h-0 overflow-hidden relative">
@@ -147,6 +137,7 @@ export const UniversityLayout = ({ user, onLogout }) => {
                 setSelectedFacultyForEdit={setSelectedFacultyForEdit}
                 facultyDetailContext={facultyDetailContext}
                 setFacultyDetailContext={setFacultyDetailContext}
+                onClearNotifications={() => loadData(false)}
               />
             )}
           </main>

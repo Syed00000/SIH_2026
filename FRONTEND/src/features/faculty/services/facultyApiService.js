@@ -5,11 +5,12 @@ export const facultyApiService = {
   // Fetch all data for this faculty
   async getFacultyData(facultyEmail, universityCode = 'RU001') {
     const cleanEmail = (facultyEmail || '').toLowerCase().trim();
-    const [allChallenges, allProjects, allFaculty, allApprovals] = await Promise.all([
+    const [allChallenges, allProjects, allFaculty, allApprovals, allActivities] = await Promise.all([
       universityApiService.getAssignedChallenges(universityCode),
       universityApiService.getProjects(universityCode),
       universityApiService.getFaculty(universityCode),
-      universityApiService.getApprovals(universityCode)
+      universityApiService.getApprovals(universityCode),
+      apiClient.get(`university/notifications?universityCode=${encodeURIComponent(universityCode)}`).then((r) => r?.data?.data || []).catch(() => [])
     ]);
 
     const challengesList = allChallenges?.challenges || (Array.isArray(allChallenges) ? allChallenges : []);
@@ -85,7 +86,8 @@ export const facultyApiService = {
       challenges: myChallenges.length > 0 ? myChallenges : challengesList,
       projects: enrichedProjects,
       approvals: approvalsList,
-      revisions: revisionsList
+      revisions: revisionsList,
+      activities: allActivities || []
     };
   },
 

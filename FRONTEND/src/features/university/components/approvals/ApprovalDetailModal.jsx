@@ -200,9 +200,9 @@ export const ApprovalDetailModal = ({
   const [isForwarding, setIsForwarding] = useState(false);
 
   useEffect(() => {
-    setRemarks(approval?.adminRemarks || '');
+    setRemarks('');
     setForwarded(Boolean(approval?.sentToGovernment));
-  }, [approval?.approvalId, approval?.sentToGovernment]);
+  }, [approval?.approvalId, isOpen]);
 
   if (!isOpen || !approval) return null;
 
@@ -214,6 +214,7 @@ export const ApprovalDetailModal = ({
       const projId = approval.projectId || approval.approvalId.replace('APP-', '');
       await universityApiService.forwardPrototypeToGovernment(projId, 'RU001', remarks);
       setForwarded(true);
+      setRemarks('');
     } catch (err) {
       console.error('Failed to forward prototype to government:', err);
     } finally {
@@ -225,12 +226,18 @@ export const ApprovalDetailModal = ({
     setIsProcessing(true);
     try {
       await actionFn(approval, remarks);
+      setRemarks('');
       onClose();
     } catch (err) {
       console.error('Approval action error:', err);
     } finally {
       setIsProcessing(false);
     }
+  };
+
+  const handleClose = () => {
+    setRemarks('');
+    onClose();
   };
 
   return (
@@ -268,7 +275,7 @@ export const ApprovalDetailModal = ({
           </div>
 
           <button
-            onClick={onClose}
+            onClick={handleClose}
             className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
             title="Close dossier"
           >
@@ -434,15 +441,22 @@ export const ApprovalDetailModal = ({
 
           {/* University Authority Feedback & Remarks */}
           <div className="bg-white border border-slate-200/90 rounded-xl p-4 shadow-2xs space-y-2">
-            <label className="block text-xs font-extrabold uppercase tracking-wider text-slate-700">
-              University Authority Remarks / Feedback for Faculty & Government *
-            </label>
+            <div className="flex items-center justify-between">
+              <label className="block text-xs font-extrabold uppercase tracking-wider text-slate-700">
+                University Authority Remarks / Feedback for Faculty & Government *
+              </label>
+              {approval.adminRemarks && (
+                <span className="text-[10px] text-slate-400 italic truncate max-w-[280px]" title={approval.adminRemarks}>
+                  Last Sent: "{approval.adminRemarks}"
+                </span>
+              )}
+            </div>
             <textarea
               value={remarks}
               onChange={(e) => setRemarks(e.target.value)}
               rows={2}
               maxLength={500}
-              placeholder="e.g. Approved. Proposal aligns with state rural electrification standards. Forwarded for grant sanction."
+              placeholder="Enter new remarks/feedback for this action..."
               className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-[#007A61] focus:bg-white resize-none"
             />
             <div className="text-[10px] text-slate-400 text-right">

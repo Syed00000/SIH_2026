@@ -56,9 +56,15 @@ export const createDashboardProfileHandler = (service) => {
       // Map activities to notification shape
       const notifications = (data || []).map((a) => ({
         id: a._id,
-        title: a.type === 'submission' ? 'New Submission' : a.type === 'achievement' ? 'Achievement' : a.type === 'alert' ? 'Alert' : 'Notification',
+        title: a.type === 'directive' || a.type === 'REVISION_REQUESTED'
+          ? 'University Revision Request'
+          : a.type === 'CHALLENGE_ASSIGNED'
+          ? 'Challenge Allocated'
+          : a.type === 'PROPOSAL_SUBMITTED'
+          ? 'Proposal Submitted'
+          : a.type === 'submission' ? 'New Submission' : a.type === 'achievement' ? 'Achievement' : a.type === 'alert' ? 'Alert' : 'Directive & Feedback',
         description: a.text,
-        type: a.type || 'info',
+        type: a.type || 'directive',
         time: a.timestamp,
         read: false,
       }));

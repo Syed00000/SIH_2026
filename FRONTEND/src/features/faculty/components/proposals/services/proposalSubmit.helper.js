@@ -39,6 +39,8 @@ export const submitProposalFinal = async ({ currentProject, totalCalculatedBudge
 
   return universityApiService.updateProject(currentProject.projectId || currentProject._id, {
     ...currentProject,
+    adminRemarks: '',
+    universityRemarks: '',
     methodology,
     milestoneRoadmap: milestoneStages,
     budget: budgetFormatted,

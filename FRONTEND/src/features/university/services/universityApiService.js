@@ -79,6 +79,16 @@ export const universityApiService = {
       if (res?.data) return res.data;
     } catch (err) { console.error('API updateProfile error:', err.message); }
     return null;
+  },
+
+  async clearActivities(universityCode = DEFAULT_UNIVERSITY_CODE) {
+    try {
+      const res = await apiClient.delete(`university/notifications?universityCode=${encodeURIComponent(universityCode)}`);
+      return res?.data || { success: true };
+    } catch (err) {
+      console.error('API clearActivities error:', err.message);
+      return { success: false };
+    }
   }
 };
 

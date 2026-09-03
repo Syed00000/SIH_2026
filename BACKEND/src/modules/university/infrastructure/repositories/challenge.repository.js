@@ -1,4 +1,4 @@
-import { UniversityFaculty, UniversityProject, UniversityApproval } from '../model.js';
+import { UniversityFaculty, UniversityProject, UniversityApproval, UniversityActivity } from '../model.js';
 import { CitizenChallenge } from '../../../citizen/infrastructure/model.js';
 import User from '../../../users/infrastructure/model.js';
 import { findUniversityIdentity } from '../helpers/lookup.helper.js';
@@ -165,28 +165,18 @@ export class ChallengeRepository {
         }
       );
 
-      // Also update existing UniversityProject and UniversityApproval if created
       const projId = challengeId.replace('CHL-JH-2026-', 'PRJ-');
-      await UniversityProject.updateMany(
-        { $or: [{ challengeId }, { projectId: challengeId }, { projectId: projId }] },
-        {
-          $set: {
-            leadMentor: resolvedFaculty.name,
-            facultyMentor: resolvedFaculty
-          }
-        }
-      );
-
-      await UniversityApproval.updateMany(
-        { $or: [{ challengeId }, { projectId: challengeId }, { projectId: projId }] },
-        {
-          $set: {
-            requestedBy: resolvedFaculty.name,
-            requestedByEmail: resolvedFaculty.email,
-            faculty: resolvedFaculty
-          }
-        }
-      );
+      const pMatch = { $or: [{ challengeId }, { projectId: challengeId }, { projectId: projId }] };
+      await Promise.all([
+        UniversityProject.updateMany(pMatch, { $set: { leadMentor: resolvedFaculty.name, facultyMentor: resolvedFaculty } }),
+        UniversityApproval.updateMany(pMatch, { $set: { requestedBy: resolvedFaculty.name, requestedByEmail: resolvedFaculty.email, faculty: resolvedFaculty } }),
+        UniversityActivity.create({
+          universityCode: (universityCode || 'RU001').toUpperCase(),
+          text: `New Challenge Allocated: "${chlTitle || challengeId}" assigned to Lead Faculty Mentor ${resolvedFaculty.name} (${resolvedFaculty.department || 'Engineering'}).`,
+          type: 'CHALLENGE_ASSIGNED',
+          timestamp: new Date()
+        }).catch(() => {})
+      ]);
 
       return { challengeId, assignedFaculty: resolvedFaculty, status: 'Accepted', actionLabel: 'View' };
     } catch (err) {
