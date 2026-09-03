@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { FacultyHeader } from './FacultyHeader.jsx';
 import { FacultySidebar } from './FacultySidebar.jsx';
 import { FacultyDashboard } from '../dashboard/FacultyDashboard.jsx';
@@ -68,43 +68,56 @@ export const FacultyLayout = ({ user, onLogout }) => {
   const facultyDept = data.faculty?.department || user?.profile?.department || 'Electrical & Electronics';
   const uniName = data.faculty?.universityName || 'Ranchi University';
 
-  // Calculate pending revision requests count
   const projectRevisionsCount = (data.projects || []).filter((p) => {
-    const bStatus = String(p.budgetStatus || '').toLowerCase();
-    const pStatus = String(p.prototypeStatus || '').toLowerCase();
-    const gStatus = String(p.governmentStatus || '').toLowerCase();
-    const status = String(p.status || '').toLowerCase();
-    return (
-      bStatus.includes('changes required') ||
-      pStatus.includes('changes required') ||
-      gStatus.includes('changes required') ||
-      status.includes('changes required') ||
-      Boolean(p.adminRemarks && (bStatus.includes('changes') || pStatus.includes('changes')))
-    );
+    const s = `${p.budgetStatus} ${p.prototypeStatus} ${p.governmentStatus} ${p.status}`.toLowerCase();
+    return s.includes('changes required') || Boolean(p.adminRemarks && s.includes('changes'));
   }).length;
+  const totalRevisionCount = Math.max(projectRevisionsCount, (data.revisions || []).length);
 
-  const approvalRevisionsCount = (data.revisions || []).length;
-  const totalRevisionCount = Math.max(projectRevisionsCount, approvalRevisionsCount);
+  // Dynamic notifications list: preserves ALL revision messages & database activities
+  const notificationsList = useMemo(() => {
+    const list = [
+      ...(data.activities || []).map((a) => ({
+        id: `act-${a.id || a._id}`,
+        title: a.title || (a.type === 'directive' ? 'University Revision Directive' : 'Institutional Notification'),
+        message: a.description || a.text,
+        type: a.type || 'directive',
+        projectId: a.projectId,
+        challengeId: a.challengeId,
+        date: a.time || a.timestamp || new Date().toISOString()
+      })),
+      ...(data.projects || []).filter((p) => p.adminRemarks || p.universityRemarks).map((p) => ({
+        id: `notif-${p.projectId || p.challengeId}`,
+        title: `University Directive: ${p.title || p.projectId}`,
+        message: p.adminRemarks || p.universityRemarks,
+        type: 'directive',
+        projectId: p.projectId || p.challengeId,
+        date: p.updatedAt || new Date().toISOString()
+      })),
+      ...(data.approvals || []).flatMap((app) =>
+        (app.history || [])
+          .filter((h) => h.action === 'Changes Requested' || h.action?.includes('Revision'))
+          .map((h, idx) => ({
+            id: `rev-hist-${app.approvalId || app.projectId}-${idx}`,
+            title: `Revision Feedback #${idx + 1}: ${app.project || app.title || 'Proposal'}`,
+            message: h.note || 'Revision requested by University Authority.',
+            type: 'directive',
+            projectId: app.projectId || app.approvalId?.replace('APP-', ''),
+            challengeId: app.challengeId,
+            date: h.timestamp || app.date || new Date().toISOString()
+          }))
+      )
+    ];
+    const seen = new Set();
+    return list.filter((i) => {
+      const k = `${i.projectId || ''}_${(i.message || '').trim().toLowerCase()}`;
+      if (seen.has(k)) return false;
+      seen.add(k);
+      return true;
+    });
+  }, [data.activities, data.projects, data.approvals]);
 
-  // Dynamic notifications list from project remarks & revisions
-  const notificationsList = [
-    ...(data.projects || []).filter((p) => p.adminRemarks || p.universityRemarks).map((p) => ({
-      id: `notif-${p.projectId || p.challengeId}`,
-      title: p.title || `Project ${p.projectId}`,
-      message: p.adminRemarks || p.universityRemarks,
-      projectId: p.projectId || p.challengeId,
-      date: p.updatedAt ? new Date(p.updatedAt).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }) : 'Recently'
-    })),
-    ...(data.revisions || []).filter((r) => r.adminRemarks).map((r) => ({
-      id: `notif-rev-${r.approvalId || r.projectId}`,
-      title: r.project || r.title || `Project ${r.projectId}`,
-      message: r.adminRemarks,
-      projectId: r.projectId || r.approvalId?.replace('APP-', ''),
-      date: r.dateTime || 'Recently'
-    }))
-  ];
-
-  const totalNotificationCount = Math.max(notificationsList.length, totalRevisionCount);
+  const totalNotificationCount = notificationsList.length;
 
   return (
     <div className="min-h-screen bg-[#f8fafc] flex flex-col h-screen overflow-hidden text-slate-900 font-sans select-none">
@@ -122,6 +135,7 @@ export const FacultyLayout = ({ user, onLogout }) => {
         notificationCount={totalNotificationCount}
         notifications={notificationsList}
         onViewAllNotifications={() => setActiveTab('notifications')}
+        onClearNotifications={() => loadData(false)}
         onSelectNotification={(n) => {
           if (n.projectId) {
             setSelectedProjectId(n.projectId);
@@ -151,7 +165,13 @@ export const FacultyLayout = ({ user, onLogout }) => {
                 Loading Faculty Mentorship Workspace...
               </div>
             ) : activeTab === 'notifications' ? (
-              <FacultyNotificationsPanel onBack={() => setActiveTab('dashboard')} />
+              <FacultyNotificationsPanel
+                onBack={() => setActiveTab('dashboard')}
+                universityCode={universityCode}
+                notifications={notificationsList}
+                onNavigateProject={(id) => { setSelectedProjectId(id); setActiveTab('project-workspace'); }}
+                onClearNotifications={() => loadData(false)}
+              />
             ) : activeTab === 'challenges' ? (
               <FacultyAssignedChallenges challenges={data.challenges} faculty={data.faculty} onDraftProposal={() => setActiveTab('dashboard')} />
             ) : activeTab === 'revisions' ? (

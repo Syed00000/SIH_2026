@@ -29,7 +29,8 @@ export const UniversityTabContent = ({
   selectedFacultyForEdit,
   setSelectedFacultyForEdit,
   facultyDetailContext,
-  setFacultyDetailContext
+  setFacultyDetailContext,
+  onClearNotifications
 }) => {
   if (activeTab === 'dashboard') {
     return (
@@ -128,7 +129,16 @@ export const UniversityTabContent = ({
   if (activeTab === 'partners') return <IndustryPartnersPanel />;
   if (activeTab === 'approvals') return <ApprovalsPanel />;
   if (activeTab === 'reports') return <ReportsPanel />;
-  if (activeTab === 'notifications') return <UniversityNotificationsPanel />;
+  if (activeTab === 'notifications') {
+    return (
+      <UniversityNotificationsPanel
+        universityCode={universityCode}
+        onBack={() => setActiveTab('dashboard')}
+        onClearNotifications={onClearNotifications}
+        onNavigateTab={setActiveTab}
+      />
+    );
+  }
   if (activeTab === 'profile') return <UniversityProfilePanel universityData={dashboardData?.university} />;
   if (activeTab === 'settings') return <UniversitySettingsPanel />;
 

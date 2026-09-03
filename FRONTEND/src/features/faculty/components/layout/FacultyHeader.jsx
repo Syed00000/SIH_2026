@@ -12,8 +12,10 @@ const TYPE_META = {
 };
 
 const relTime = (ts) => {
-  if (!ts) return 'Recently';
-  const diff = Date.now() - new Date(ts).getTime();
+  if (!ts) return 'Just now';
+  const t = new Date(ts).getTime();
+  if (isNaN(t)) return typeof ts === 'string' && ts.trim() ? ts : 'Just now';
+  const diff = Math.max(0, Date.now() - t);
   if (diff < 60000) return 'just now';
   if (diff < 3600000) return `${Math.floor(diff / 60000)}m ago`;
   if (diff < 86400000) return `${Math.floor(diff / 3600000)}h ago`;
@@ -21,15 +23,9 @@ const relTime = (ts) => {
 };
 
 export const FacultyHeader = ({
-  universityName = 'Ranchi University',
-  facultyName = 'Dr. Binod Kumar',
-  facultyRole = 'Senior Research Scientist',
-  department = 'Electrical & Electronics',
-  notificationCount = 0,
-  notifications = [],
-  onSelectNotification,
-  onViewAllNotifications,
-  universityCode = 'RU001'
+  universityName = 'Ranchi University', facultyName = 'Dr. Binod Kumar', facultyRole = 'Senior Research Scientist',
+  department = 'Electrical & Electronics', notificationCount = 0, notifications = [],
+  onSelectNotification, onViewAllNotifications, onClearNotifications, universityCode = 'RU001'
 }) => {
   const [open, setOpen] = useState(false);
   const [notifs, setNotifs] = useState([]);
@@ -45,20 +41,23 @@ export const FacultyHeader = ({
   }, []);
 
   useEffect(() => {
-    if (!open) return;
-    setLoading(true);
-    const directiveItems = (notifications || []).map((d) => ({
-      id: d.id, title: d.title, description: d.message, type: 'directive', time: d.date, projectId: d.projectId, read: false
+    const mapped = (notifications || []).map((d) => ({
+      id: d.id, title: d.title, description: d.message, type: d.type || 'directive', time: d.date || d.time, projectId: d.projectId, challengeId: d.challengeId, read: false
     }));
-    facultyApiService.getNotifications(universityCode)
-      .then((data) => setNotifs([...directiveItems, ...(data || []).map((n) => ({ ...n, read: false }))]))
-      .catch(() => setNotifs(directiveItems))
-      .finally(() => setLoading(false));
-  }, [open, universityCode, notifications]);
+    setNotifs((prev) => {
+      const pIds = prev.map((p) => p.id).join(',');
+      const nIds = mapped.map((m) => m.id).join(',');
+      return pIds === nIds ? prev : mapped;
+    });
+  }, [notifications]);
 
-  const unread = notifs.filter((n) => !n.read).length || notificationCount || (notifications || []).length;
+  const unread = open ? notifs.filter((n) => !n.read).length : (notifications || []).length;
   const markAllRead = () => setNotifs((p) => p.map((n) => ({ ...n, read: true })));
-  const clearAll = async () => { setNotifs([]); await facultyApiService.clearNotifications(universityCode).catch(() => {}); };
+  const clearAll = async () => {
+    setNotifs([]);
+    await facultyApiService.clearNotifications(universityCode).catch(() => {});
+    if (onClearNotifications) onClearNotifications();
+  };
 
   return (
     <>
@@ -110,7 +109,7 @@ export const FacultyHeader = ({
           <div
             ref={panelRef}
             style={{ position: 'fixed', top: '60px', right: '16px', zIndex: 50, width: '390px', maxWidth: 'calc(100vw - 32px)', maxHeight: '82vh' }}
-            className="bg-white rounded-2xl shadow-2xl border border-slate-200 flex flex-col overflow-hidden animate-in fade-in duration-150"
+            className="bg-white rounded-2xl shadow-2xl border border-slate-200 flex flex-col overflow-hidden"
           >
             <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 bg-gradient-to-r from-emerald-50/70 to-amber-50/60">
               <div className="flex items-center gap-2">
@@ -131,9 +130,7 @@ export const FacultyHeader = ({
             </div>
 
             <div className="overflow-y-auto flex-1 divide-y divide-slate-50">
-              {loading ? (
-                <div className="flex items-center justify-center py-12 text-slate-400 text-xs font-medium">Loading notifications...</div>
-              ) : notifs.length === 0 ? (
+              {notifs.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-16 text-slate-400">
                   <Bell className="w-10 h-10 mb-3 opacity-30" />
                   <p className="text-sm font-medium">No active notifications</p>
@@ -145,12 +142,7 @@ export const FacultyHeader = ({
                   return (
                     <div
                       key={n.id}
-                      onClick={() => {
-                        if (n.projectId && onSelectNotification) {
-                          onSelectNotification(n);
-                          setOpen(false);
-                        }
-                      }}
+                      onClick={() => { if (onSelectNotification) onSelectNotification(n); setOpen(false); }}
                       className={`flex items-start gap-3 px-5 py-4 cursor-pointer transition-colors ${n.read ? 'bg-white hover:bg-slate-50' : 'bg-emerald-50/40 hover:bg-emerald-50/70'}`}
                     >
                       <div className="flex-shrink-0 w-9 h-9 rounded-xl flex items-center justify-center mt-0.5" style={{ background: m.bg }}>

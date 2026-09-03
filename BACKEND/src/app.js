@@ -2,8 +2,13 @@ import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import mongoose from 'mongoose';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import { errorHandler } from './shared/errors/errorHandler.js';
 import { NotFoundError } from './shared/errors/AppError.js';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 import authRoutes from './modules/auth/presentation/routes.js';
 import heisRoutes from './modules/government/heis/presentation/routes.js';
@@ -38,6 +43,7 @@ app.use(
 
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+app.use('/uploads', express.static(path.resolve(__dirname, '../public/uploads')));
 
 app.get('/health', (req, res) => {
   const isDbConnected = mongoose.connection.readyState === 1;

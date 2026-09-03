@@ -52,7 +52,7 @@ export const ApprovalDrawer = ({
   const [toast, setToast] = useState(null);
 
   useEffect(() => {
-    setRemarks(approval?.adminRemarks || '');
+    setRemarks('');
   }, [approval?.approvalId]);
 
   if (!approval) return null;
@@ -77,16 +77,19 @@ export const ApprovalDrawer = ({
 
   const handleApprove = () => {
     onApprove(approval, remarks);
+    setRemarks('');
     showToast('Proposal Approved & Forwarded to Government for Grant Sanction.');
   };
 
   const handleReject = () => {
     onReject(approval, remarks);
+    setRemarks('');
     showToast('Proposal rejected.', 'error');
   };
 
   const handleChanges = () => {
     onRequestChanges(approval, remarks);
+    setRemarks('');
     showToast('Revision requested from Faculty Mentor.', 'warn');
   };
 
