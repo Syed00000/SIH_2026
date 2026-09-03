@@ -83,6 +83,9 @@ export const FacultyLayout = ({ user, onLogout }) => {
     );
   }).length;
 
+  const approvalRevisionsCount = (data.revisions || []).length;
+  const totalRevisionCount = Math.max(projectRevisionsCount, approvalRevisionsCount);
+
   // Dynamic notifications list from project remarks & revisions
   const notificationsList = [
     ...(data.projects || []).filter((p) => p.adminRemarks || p.universityRemarks).map((p) => ({
