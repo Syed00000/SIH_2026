@@ -27,22 +27,35 @@ export const InitiateDisbursalModal = ({
     currentProposal?.fundingRequested || currentProposal?.allocatedAmount || currentProposal?.budget || '₹ 75,000'
   );
 
-  const [grossAmount, setGrossAmount] = useState(Math.round(totalBudget * 0.5) || 37500);
+  const disbursedSoFar = parseGrantRupees(currentProposal?.disbursedAmount || '₹ 0');
+  const remainingBudget = Math.max(0, totalBudget - disbursedSoFar);
+  const defaultInitialGross = disbursedSoFar > 0 ? remainingBudget : (Math.round(totalBudget * 0.5) || 40000);
+
+  const [grossAmount, setGrossAmount] = useState(defaultInitialGross);
   const [tdsType, setTdsType] = useState('194C'); // 194C (2%) or 194J (10%)
   const [mode, setMode] = useState('PFMS');
-  const [purpose, setPurpose] = useState('Tranche 1 Payout: Hardware CAD, Rig Prototyping & Sensor Bench Setup');
+  const [purpose, setPurpose] = useState(
+    disbursedSoFar > 0
+      ? 'Tranche 2 / Final Installment Payout: Field Validation & Deployment'
+      : 'Tranche 1 Payout: Hardware CAD, Rig Prototyping & Sensor Bench Setup'
+  );
 
   useEffect(() => {
     if (initialProposal) {
       setSelectedProposalId(initialProposal.id);
       const b = parseGrantRupees(
-        initialProposal.fundingRequested || initialProposal.allocatedAmount || initialProposal.budget || '₹ 75,000'
+        initialProposal.fundingRequested || initialProposal.allocatedAmount || initialProposal.budget || '₹ 80,000'
       );
+      const d = parseGrantRupees(initialProposal.disbursedAmount || '₹ 0');
+      const rem = Math.max(0, b - d);
       if (b > 0) {
-        setGrossAmount(Math.round(b * 0.5));
+        setGrossAmount(d > 0 ? rem : Math.round(b * 0.5));
+        if (d > 0) {
+          setPurpose('Tranche 2 / Final Installment Payout: Field Validation & Deployment');
+        }
       }
     }
-  }, [initialProposal?.id]);
+  }, [initialProposal?.id, initialProposal?.disbursedAmount]);
 
   if (!isOpen) return null;
 
@@ -61,7 +74,7 @@ export const InitiateDisbursalModal = ({
     const newPayment = {
       id: `PAY-${Math.floor(90000 + Math.random() * 9999)}`,
       payer: 'Govt State Treasury (PFMS Escrow)',
-      payee: currentProposal ? currentProposal.institutionName : 'Ranchi University (RU001)',
+      payee: currentProposal ? (currentProposal.institutionName || currentProposal.hei || 'Ranchi University (RU001)') : 'Ranchi University (RU001)',
       amount: formatRupeesINR(grossAmount),
       rawAmount: grossAmount,
       disbursedAmount: formatRupeesINR(grossAmount),
@@ -74,7 +87,9 @@ export const InitiateDisbursalModal = ({
       bankStatus: 'success',
       timestamp: new Date().toLocaleDateString('en-IN'),
       scheme: currentProposal ? currentProposal.sourceScheme : 'State Innovation Grant',
-      projectRef: selectedProposalId || currentProposal?.id,
+      projectRef: selectedProposalId || currentProposal?.projectId || currentProposal?.id,
+      projectTitle: currentProposal?.title || currentProposal?.projectTitle || 'Citizen Problem Statement',
+      challengeId: currentProposal?.challengeId || '',
       tdsAmount: `₹ ${tdsAmount.toLocaleString('en-IN')} (${tdsType} @ ${tdsType === '194C' ? '2%' : '10%'})`,
       netDisbursed: formatRupeesINR(netAmount),
       purpose: purpose

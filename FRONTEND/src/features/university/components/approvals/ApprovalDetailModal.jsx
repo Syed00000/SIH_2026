@@ -208,6 +208,14 @@ export const ApprovalDetailModal = ({
 
   const canAct = approval.status === 'Pending' || approval.status === 'Changes Required';
 
+  const lineItemsSum = Array.isArray(approval?.budgetBreakdown) && approval.budgetBreakdown.length > 0
+    ? approval.budgetBreakdown.reduce((sum, item) => sum + (typeof item.amount === 'number' ? item.amount : Number(String(item.amount || '0').replace(/[^\d]/g, '')) || 0), 0)
+    : 0;
+  const effectiveTotalNum = lineItemsSum > 0 ? lineItemsSum : (Number(String(approval?.proposedBudget || approval?.estimatedBudget || '80000').replace(/[^\d]/g, '')) || 80000);
+  const baselineBudget = Number(String(approval?.baselineBudget || '80000').replace(/[^\d]/g, '')) || 80000;
+  const effectiveExtraNum = Math.max(0, effectiveTotalNum - baselineBudget);
+  const totalFormatted = `₹ ${effectiveTotalNum.toLocaleString('en-IN')}`;
+
   const handleForwardToGov = async () => {
     setIsForwarding(true);
     try {
@@ -225,7 +233,12 @@ export const ApprovalDetailModal = ({
   const handleAction = async (actionFn) => {
     setIsProcessing(true);
     try {
-      await actionFn(approval, remarks);
+      await actionFn(approval, remarks, {
+        budget: totalFormatted,
+        proposedBudget: totalFormatted,
+        additionalAmount: effectiveExtraNum,
+        budgetBreakdown: approval.budgetBreakdown
+      });
       setRemarks('');
       onClose();
     } catch (err) {
@@ -404,8 +417,13 @@ export const ApprovalDetailModal = ({
                   Total Grant Requested
                 </span>
                 <span className="text-base font-black font-mono text-[#007A61]">
-                  {approval.proposedBudget || approval.estimatedBudget || '₹ 80,000'}
+                  {totalFormatted}
                 </span>
+                {effectiveExtraNum > 0 && (
+                  <span className="text-[10px] font-bold text-amber-700 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded block mt-0.5">
+                    +₹ {effectiveExtraNum.toLocaleString('en-IN')} Extra from Faculty
+                  </span>
+                )}
               </div>
             </div>
 

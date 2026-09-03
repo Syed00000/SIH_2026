@@ -46,12 +46,12 @@ export const ApprovalsPanel = () => {
     setSelected(null);
   };
 
-  const handleUpdateStatus = async (approval, newStatus, remarks = '') => {
+  const handleUpdateStatus = async (approval, newStatus, remarks = '', extraData = {}) => {
     try {
       const id = approval.approvalId || approval._id;
-      await universityApiService.updateApprovalStatus(id, UNIVERSITY_CODE, newStatus, remarks);
+      await universityApiService.updateApprovalStatus(id, UNIVERSITY_CODE, newStatus, remarks, extraData);
       setApprovals((prev) =>
-        prev.map((a) => (a.approvalId || a._id) === id ? { ...a, status: newStatus, adminRemarks: remarks } : a)
+        prev.map((a) => (a.approvalId || a._id) === id ? { ...a, status: newStatus, adminRemarks: remarks, ...extraData } : a)
       );
     } catch (err) {
       console.error('updateApprovalStatus error:', err.message);
@@ -173,9 +173,9 @@ export const ApprovalsPanel = () => {
           approval={selected}
           isOpen={isModalOpen}
           onClose={handleCloseModal}
-          onApprove={(apr, remarks) => handleUpdateStatus(apr, 'Approved', remarks)}
-          onReject={(apr, remarks) => handleUpdateStatus(apr, 'Rejected', remarks)}
-          onRequestChanges={(apr, remarks) => handleUpdateStatus(apr, 'Changes Required', remarks)}
+          onApprove={(apr, remarks, extra) => handleUpdateStatus(apr, 'Approved', remarks, extra)}
+          onReject={(apr, remarks, extra) => handleUpdateStatus(apr, 'Rejected', remarks, extra)}
+          onRequestChanges={(apr, remarks, extra) => handleUpdateStatus(apr, 'Changes Required', remarks, extra)}
           onDelete={handleDelete}
           onOpenIndustryModal={handleOpenIndustryModal}
         />

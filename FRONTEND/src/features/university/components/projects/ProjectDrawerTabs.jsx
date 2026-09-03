@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   CheckCircle2,
   Upload,
@@ -27,6 +27,38 @@ export const ProjectDrawerTabs = ({
   onMarkCompleted
 }) => {
   const [showFullProblem, setShowFullProblem] = useState(false);
+  const [trancheRequested, setTrancheRequested] = useState(
+    Boolean(project.trancheRequest?.status === 'Pending')
+  );
+  const [isRequestingTranche, setIsRequestingTranche] = useState(false);
+
+  useEffect(() => {
+    setTrancheRequested(Boolean(project.trancheRequest?.status === 'Pending'));
+  }, [project.trancheRequest?.status, project.id, project.projectId]);
+
+  const handleRequestSecondEmi = async (amount) => {
+    setIsRequestingTranche(true);
+    try {
+      const projId = project.projectId || project.id;
+      const tranchePayload = {
+        status: 'Pending',
+        amount: Number(amount) || 40000,
+        requestedTranche: 2,
+        formattedAmount: `₹ ${(Number(amount) || 40000).toLocaleString('en-IN')}`,
+        reason: 'Stage 1 Formulation & Rig Prototyping completed. Requesting Second EMI release.',
+        requestedAt: new Date(),
+        requestedBy: 'Ranchi University (RU001)'
+      };
+
+      await universityApiService.requestProjectTranche(projId, tranchePayload);
+      projectCsrSyncService.updateProposalTrancheRequest(projId, tranchePayload);
+      setTrancheRequested(true);
+    } catch (e) {
+      console.warn('Request second EMI error:', e);
+    } finally {
+      setIsRequestingTranche(false);
+    }
+  };
 
   const hasMentor = Boolean(
     project.facultyMentor?.name || (project.leadMentor && project.leadMentor !== 'Unassigned')
@@ -257,15 +289,41 @@ export const ProjectDrawerTabs = ({
                     </div>
                   ))}
 
-                  {pendingVal > 0 && (
-                    <div className="flex items-center justify-between text-[10.5px] text-amber-900 font-medium bg-amber-100/50 p-2 rounded-lg border border-amber-200 shadow-2xs mt-2">
-                      <div className="flex items-center space-x-1.5">
-                        <Clock className="w-3.5 h-3.5 text-amber-700" />
-                        <span>Pending Balance</span>
+                  {pendingVal > 0 ? (
+                    <div className="mt-2.5 p-3 bg-blue-50/80 border border-blue-200 rounded-xl space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="font-extrabold text-blue-950 text-xs">Second Installment / EMI</span>
+                        <span className="text-[11px] font-mono font-bold text-blue-700">₹ {pendingVal.toLocaleString('en-IN')} Available</span>
                       </div>
-                      <span className="font-bold">₹ {pendingVal.toLocaleString('en-IN')}</span>
+                      <p className="text-[11px] text-blue-900 leading-snug">
+                        First EMI of ₹ {totalDisbursedVal.toLocaleString('en-IN')} credited to Escrow. Submit request to Government State Treasury for release of 2nd EMI.
+                      </p>
+                      {trancheRequested ? (
+                        <div className="flex items-center space-x-1.5 text-xs font-bold text-amber-800 bg-amber-50 p-2 rounded-lg border border-amber-200">
+                          <Clock className="w-3.5 h-3.5 text-amber-600" />
+                          <span>Second EMI Requested &bull; Pending Government Release</span>
+                        </div>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => handleRequestSecondEmi(pendingVal)}
+                          disabled={isRequestingTranche}
+                          className="w-full py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-lg shadow-xs flex items-center justify-center space-x-1.5 cursor-pointer transition-colors"
+                        >
+                          <Send className="w-3.5 h-3.5" />
+                          <span>{isRequestingTranche ? 'Submitting Request...' : `Request Second EMI (₹ ${pendingVal.toLocaleString('en-IN')})`}</span>
+                        </button>
+                      )}
                     </div>
-                  )}
+                  ) : totalDisbursedVal > 0 ? (
+                    <div className="mt-2.5 p-2.5 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center justify-between text-xs font-bold text-emerald-900 shadow-2xs">
+                      <div className="flex items-center space-x-1.5">
+                        <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                        <span>Approved DPR Budget Completed (100% Disbursed)</span>
+                      </div>
+                      <span className="text-[10px] px-2 py-0.5 bg-emerald-600 text-white rounded font-mono font-bold">FULLY RELEASED</span>
+                    </div>
+                  ) : null}
                 </div>
               );
             })()}

@@ -25,6 +25,7 @@ router.patch('/projects/:id/assign-faculty', (req, res, next) => universityContr
 router.post('/projects/:id/prototype', (req, res, next) => universityController.submitPrototype(req, res, next));
 router.post('/projects/:id/forward-to-government', (req, res, next) => universityController.forwardPrototypeToGovernment(req, res, next));
 router.patch('/projects/:id/government-prototype-status', (req, res, next) => universityController.updateGovernmentPrototypeStatus(req, res, next));
+router.post('/projects/:id/request-tranche', (req, res, next) => universityController.requestTranche(req, res, next));
 
 router.get('/activities', (req, res, next) => universityController.getActivities(req, res, next));
 router.delete('/activities', (req, res, next) => universityController.clearActivities(req, res, next));

@@ -107,6 +107,34 @@ export const createChallengeProjectHandler = (service) => {
     } catch (error) { next(error); }
   };
 
+  const requestTranche = async (req, res, next) => {
+    try {
+      const { id } = req.params;
+      const code = extractUniversityCode(req, 'RU001');
+      const { amount, requestedTranche, reason } = req.body;
+      const trancheRequest = {
+        status: 'Pending',
+        requestedTranche: Number(requestedTranche) || 2,
+        amount: Number(amount) || 40000,
+        formattedAmount: `₹ ${(Number(amount) || 40000).toLocaleString('en-IN')}`,
+        reason: reason || 'Milestone deliverables validated. Requesting release of second EMI.',
+        requestedAt: new Date(),
+        requestedBy: code === 'RU001' ? 'Ranchi University (RU001)' : `Nodal University (${code})`
+      };
+      const updated = await service.updateProject(code, id, { trancheRequest });
+      
+      const { UniversityActivity } = await import('../../infrastructure/model.js');
+      await UniversityActivity.create({
+        universityCode: code,
+        text: `🏛️ University requested Second Installment / EMI (${trancheRequest.formattedAmount}) from Government for project.`,
+        type: 'directive',
+        timestamp: new Date()
+      }).catch(() => {});
+
+      res.status(200).json({ status: 'SUCCESS', message: 'Second EMI (Tranche) requested successfully', data: updated });
+    } catch (error) { next(error); }
+  };
+
   return {
     getChallenges,
     updateChallengeStatus,
@@ -118,7 +146,8 @@ export const createChallengeProjectHandler = (service) => {
     assignFacultyToProject,
     submitPrototype,
     forwardPrototypeToGovernment,
-    updateGovernmentPrototypeStatus
+    updateGovernmentPrototypeStatus,
+    requestTranche
   };
 };
 

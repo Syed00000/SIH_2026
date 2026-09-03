@@ -29,9 +29,15 @@ export const CSRPaymentLedgerTable = ({
   const [selectedPayment, setSelectedPayment] = useState(null);
   const [isInitiateModalOpen, setIsInitiateModalOpen] = useState(false);
 
-  // Return live ledger directly
+  // Return live ledger directly, strictly filtering out any legacy mock entries
   const activeLedgerData = useMemo(() => {
-    return ledger || [];
+    return (ledger || []).filter(
+      (row) =>
+        !row.payee?.includes('NIT Jamshedpur (IOT') &&
+        !row.payee?.includes('Sido Kanhu Murmu') &&
+        !row.payee?.includes('Vinoba Bhave Univ') &&
+        !row.payer?.includes('Tata Steel CSR')
+    );
   }, [ledger]);
 
   // Pagination State
