@@ -76,6 +76,7 @@ export const AdminViewModal = ({ isOpen, onClose, admin, onAdminUpdated }) => {
   const hasPlainPassword = Boolean(currentAdmin.password);
   const loginPassword = currentAdmin.password || '';
   const adminId = currentAdmin.id || currentAdmin._id;
+  const statusStyle = getStatusStyle(currentAdmin.status);
 
   const handleSaveCredentials = async (e) => {
     e?.preventDefault();

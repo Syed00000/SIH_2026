@@ -45,7 +45,7 @@ export const useFacultyProposal = ({ projects = [], onRefresh, initialProjectId 
           currentProject.budgetBreakdown.map((b, idx) => ({
             id: `item-${idx}-${Date.now()}`,
             title: b.category || b.title || 'Budget Item',
-            amount: typeof b.amount === 'number' ? b.amount : Number((b.amount || '').replace(/[^0-9]/g, '')) || 10000
+            amount: typeof b.amount === 'number' ? b.amount : Number(String(b.amount || '').replace(/[^0-9]/g, '')) || 10000
           }))
         );
       }

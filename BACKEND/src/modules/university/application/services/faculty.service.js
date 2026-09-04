@@ -22,6 +22,18 @@ export class UniversityFacultyService {
   async getTeams(universityCode) {
     return await this.repository.getTeamsByUniversity(universityCode);
   }
+
+  async createTeam(universityCode, data) {
+    return await this.repository.createTeam(universityCode, data);
+  }
+
+  async updateTeam(universityCode, id, data) {
+    return await this.repository.updateTeam(universityCode, id, data);
+  }
+
+  async deleteTeam(universityCode, id) {
+    return await this.repository.deleteTeam(universityCode, id);
+  }
 }
 
 export default UniversityFacultyService;

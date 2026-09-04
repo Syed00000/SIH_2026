@@ -1,6 +1,24 @@
 import React from 'react';
 import { GraduationCap, Camera, ImageOff, ExternalLink, Video } from 'lucide-react';
 
+const resolveMediaUrl = (rawUrl) => {
+  if (!rawUrl || typeof rawUrl !== 'string') return '';
+  const trimmed = rawUrl.trim();
+  if (
+    trimmed.startsWith('http://') ||
+    trimmed.startsWith('https://') ||
+    trimmed.startsWith('data:') ||
+    trimmed.startsWith('blob:')
+  ) {
+    return trimmed;
+  }
+  const cleanPath = trimmed.startsWith('/') ? trimmed : `/${trimmed}`;
+  const backendBase = (typeof window !== 'undefined' && window.location.port === '5173')
+    ? 'http://127.0.0.1:3000'
+    : '';
+  return `${backendBase}${cleanPath}`;
+};
+
 export const InspectorOverviewTab = ({
   displayedStatement,
   rawStatement,
@@ -13,6 +31,7 @@ export const InspectorOverviewTab = ({
 }) => {
   // Collect media
   const rawMedia = [
+    ...(Array.isArray(challenge.media) ? challenge.media : []),
     ...(Array.isArray(challenge.mediaUrls) ? challenge.mediaUrls : []),
     ...(Array.isArray(challenge.evidence) ? challenge.evidence : []),
     ...(Array.isArray(challenge.attachments) ? challenge.attachments : []),
@@ -24,11 +43,12 @@ export const InspectorOverviewTab = ({
   const normalizedMedia = rawMedia.map((item, idx) => {
     if (typeof item === 'string') {
       const isVid = Boolean(item.match(/\.(mp4|webm|ogg|mov|m4v)(\?.*)?$/i) || item.includes('video'));
-      return { url: item, type: isVid ? 'video' : 'photo', caption: `Item #${idx + 1}` };
+      return { url: resolveMediaUrl(item), rawUrl: item, type: isVid ? 'video' : 'photo', caption: `Item #${idx + 1}` };
     }
-    const url = item.url || item.src || item.link || '';
-    const isVid = item.type === 'video' || Boolean(url.match(/\.(mp4|webm|ogg|mov|m4v)(\?.*)?$/i));
-    return { url, type: isVid ? 'video' : 'photo', caption: item.caption || item.name || `Item #${idx + 1}` };
+    const rawUrl = item.url || item.src || item.link || item.accessUrl || '';
+    const url = resolveMediaUrl(rawUrl);
+    const isVid = item.type === 'video' || Boolean(rawUrl.match(/\.(mp4|webm|ogg|mov|m4v)(\?.*)?$/i));
+    return { url, rawUrl, type: isVid ? 'video' : 'photo', caption: item.caption || item.name || `Item #${idx + 1}` };
   }).filter((m) => m.url && m.url.trim() !== '');
 
   const hasMedia = normalizedMedia.length > 0;

@@ -16,6 +16,10 @@ router.put('/faculty/:id', (req, res, next) => universityController.updateFacult
 router.delete('/faculty/:id', (req, res, next) => universityController.deleteFaculty(req, res, next));
 
 router.get('/teams', (req, res, next) => universityController.getTeams(req, res, next));
+router.post('/teams', (req, res, next) => universityController.createTeam(req, res, next));
+router.patch('/teams/:id', (req, res, next) => universityController.updateTeam(req, res, next));
+router.put('/teams/:id', (req, res, next) => universityController.updateTeam(req, res, next));
+router.delete('/teams/:id', (req, res, next) => universityController.deleteTeam(req, res, next));
 router.get('/projects', (req, res, next) => universityController.getProjects(req, res, next));
 router.post('/projects', (req, res, next) => universityController.createProject(req, res, next));
 router.patch('/projects/:id', (req, res, next) => universityController.updateProject(req, res, next));

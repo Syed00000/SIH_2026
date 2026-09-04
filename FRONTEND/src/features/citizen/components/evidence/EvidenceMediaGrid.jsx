@@ -1,6 +1,24 @@
 import React, { useState } from 'react';
 import { Eye, FileText, Trash2, X } from 'lucide-react';
 
+const resolveMediaUrl = (rawUrl) => {
+  if (!rawUrl || typeof rawUrl !== 'string') return '';
+  const trimmed = rawUrl.trim();
+  if (
+    trimmed.startsWith('http://') ||
+    trimmed.startsWith('https://') ||
+    trimmed.startsWith('data:') ||
+    trimmed.startsWith('blob:')
+  ) {
+    return trimmed;
+  }
+  const cleanPath = trimmed.startsWith('/') ? trimmed : `/${trimmed}`;
+  const backendBase = (typeof window !== 'undefined' && window.location.port === '5173')
+    ? 'http://127.0.0.1:3000'
+    : '';
+  return `${backendBase}${cleanPath}`;
+};
+
 export const EvidenceMediaGrid = ({
   mediaList = [],
   onDelete,
@@ -19,10 +37,11 @@ export const EvidenceMediaGrid = ({
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
         {mediaList.map((item, idx) => {
-          const url = typeof item === 'string' ? item : item.url;
+          const rawUrl = typeof item === 'string' ? item : (item.url || item.accessUrl || '');
+          const url = resolveMediaUrl(rawUrl);
           const type =
             item.fileType ||
-            (url.match(/\.(mp4|webm|mov)(\?.*)?$/i) ? 'video' : url.match(/\.pdf(\?.*)?$/i) ? 'pdf' : 'image');
+            (rawUrl.match(/\.(mp4|webm|mov)(\?.*)?$/i) ? 'video' : rawUrl.match(/\.pdf(\?.*)?$/i) ? 'pdf' : 'image');
           const name = item.fileName || item.caption || `Evidence #${idx + 1}`;
           const sizeKB = item.fileSize ? Math.round(item.fileSize / 1024) : null;
 

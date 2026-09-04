@@ -1,6 +1,24 @@
 import React, { useState } from 'react';
 import { Camera, Video, FileText, Eye, ExternalLink, X, Download } from 'lucide-react';
 
+const resolveMediaUrl = (rawUrl) => {
+  if (!rawUrl || typeof rawUrl !== 'string') return '';
+  const trimmed = rawUrl.trim();
+  if (
+    trimmed.startsWith('http://') ||
+    trimmed.startsWith('https://') ||
+    trimmed.startsWith('data:') ||
+    trimmed.startsWith('blob:')
+  ) {
+    return trimmed;
+  }
+  const cleanPath = trimmed.startsWith('/') ? trimmed : `/${trimmed}`;
+  const backendBase = (typeof window !== 'undefined' && window.location.port === '5173')
+    ? 'http://127.0.0.1:3000'
+    : '';
+  return `${backendBase}${cleanPath}`;
+};
+
 export const DossierMediaTab = ({ evidenceMedia = [] }) => {
   const [selectedPreview, setSelectedPreview] = useState(null);
 
@@ -19,16 +37,19 @@ export const DossierMediaTab = ({ evidenceMedia = [] }) => {
       const isVid = Boolean(item.match(/\.(mp4|webm|ogg|mov|m4v)(\?.*)?$/i) || item.includes('/video/'));
       const isPdf = Boolean(item.match(/\.pdf(\?.*)?$/i) || item.includes('/raw/'));
       return {
-        url: item,
+        url: resolveMediaUrl(item),
+        rawUrl: item,
         type: isVid ? 'video' : isPdf ? 'pdf' : 'image',
         name: `Evidence Item #${idx + 1}`
       };
     }
-    const url = item.url || item.src || item.link || '';
-    const isVid = item.fileType === 'video' || item.type === 'video' || Boolean(url.match(/\.(mp4|webm|ogg|mov|m4v)(\?.*)?$/i));
-    const isPdf = item.fileType === 'pdf' || item.type === 'pdf' || Boolean(url.match(/\.pdf(\?.*)?$/i));
+    const rawUrl = item.url || item.src || item.link || item.accessUrl || '';
+    const url = resolveMediaUrl(rawUrl);
+    const isVid = item.fileType === 'video' || item.type === 'video' || Boolean(rawUrl.match(/\.(mp4|webm|ogg|mov|m4v)(\?.*)?$/i));
+    const isPdf = item.fileType === 'pdf' || item.type === 'pdf' || Boolean(rawUrl.match(/\.pdf(\?.*)?$/i));
     return {
       url,
+      rawUrl,
       type: isVid ? 'video' : isPdf ? 'pdf' : 'image',
       name: item.fileName || item.caption || item.name || `Evidence Item #${idx + 1}`,
       size: item.fileSize ? `${Math.round(item.fileSize / 1024)} KB` : ''
