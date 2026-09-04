@@ -142,6 +142,7 @@ export const FacultyLayout = ({ user, onLogout }) => {
             setActiveTab('project-workspace');
           }
         }}
+        onProfileClick={() => setActiveTab('profile')}
       />
 
       <div className="flex flex-1 min-h-0 overflow-hidden relative">

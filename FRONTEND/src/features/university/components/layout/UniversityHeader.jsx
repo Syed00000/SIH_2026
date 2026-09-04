@@ -1,21 +1,18 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Bell, CheckCircle2, Layers, Clock, X, ChevronRight, AlertCircle, FileText, Trash2 } from 'lucide-react';
 import { universityApiService } from '../../services/universityApiService.js';
-
 export const UniversityHeader = ({
   universityName = 'Ranchi University', adminName = 'Dr. Ankit Verma', adminRole = 'University Nodal Officer',
-  notificationCount = 0, notifications = [], onNavigateTab, onClearNotifications, universityCode = 'RU001'
+  notificationCount = 0, notifications = [], onNavigateTab, onClearNotifications, universityCode = 'RU001', onProfileClick
 }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
-
   const avatarInitials = adminName
     .split(' ')
     .map((w) => w[0])
     .join('')
     .slice(0, 2)
     .toUpperCase() || 'AV';
-
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -29,18 +26,14 @@ export const UniversityHeader = ({
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [isDropdownOpen]);
-
   const count = notificationCount || notifications.length;
-
   const handleClearAll = async () => {
     setIsDropdownOpen(false);
     await universityApiService.clearActivities(universityCode).catch(() => {});
     if (onClearNotifications) onClearNotifications();
   };
-
   return (
     <header className="sticky top-0 z-30 w-full bg-white border-b border-slate-200/90 px-4 md:px-6 py-2.5 flex items-center justify-between flex-shrink-0 shadow-xs select-none">
-      {/* Left: Emblem & Department Typography */}
       <div className="flex items-center space-x-3">
         <img src="https://www.jharkhand.gov.in/images/jhlogo55.PNG" alt="Logo" className="w-10 h-10 object-contain" />
         <div>
@@ -48,8 +41,6 @@ export const UniversityHeader = ({
           <p className="text-[10px] md:text-[11px] text-slate-500 font-medium leading-tight">Department of Higher and Technical Education</p>
         </div>
       </div>
-
-      {/* Center: JoharSetu Admin Title */}
       <div className="hidden lg:flex flex-col items-center">
         <div className="flex items-center space-x-1.5">
           <span className="w-2 h-2 rounded-full bg-[#007A61] animate-pulse" />
@@ -57,8 +48,6 @@ export const UniversityHeader = ({
         </div>
         <span className="text-[10px] font-semibold text-slate-500 tracking-normal">University Innovation & R&D Portal</span>
       </div>
-
-      {/* Right Controls: Notification Bell, University & Admin Avatar */}
       <div className="flex items-center space-x-3 relative" ref={dropdownRef}>
         {/* Notification Bell with Dynamic Badge */}
         <button
@@ -78,7 +67,6 @@ export const UniversityHeader = ({
             </span>
           )}
         </button>
-
         {/* Interactive Notifications Details Dropdown */}
         {isDropdownOpen && (
           <div className="absolute right-0 top-11 w-80 sm:w-96 bg-white border border-slate-200 rounded-2xl shadow-2xl z-50 overflow-hidden text-left">
@@ -101,7 +89,6 @@ export const UniversityHeader = ({
                 <X className="w-3.5 h-3.5" />
               </button>
             </div>
-
             <div className="max-h-80 overflow-y-auto divide-y divide-slate-100 custom-scrollbar">
               {notifications.length > 0 ? (
                 notifications.map((item, idx) => (
@@ -132,11 +119,9 @@ export const UniversityHeader = ({
                         {item.time || 'Recent'}
                       </span>
                     </div>
-
                     <p className="text-xs text-slate-700 font-medium leading-snug line-clamp-2">
                       {item.message}
                     </p>
-
                     <div className="flex items-center justify-between pt-0.5">
                       <span className="text-[9.5px] font-extrabold text-[#007A61] uppercase tracking-wider bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-100">
                         {item.category || item.type || 'SYSTEM'}
@@ -155,7 +140,6 @@ export const UniversityHeader = ({
                 </div>
               )}
             </div>
-
             <div className="border-t border-slate-100 px-4 py-2.5 bg-slate-50/50 flex items-center justify-between text-xs font-semibold">
               <button
                 type="button"
@@ -176,9 +160,11 @@ export const UniversityHeader = ({
             </div>
           </div>
         )}
-
-        {/* University Name & Admin Profile on Header Right */}
-        <div className="flex items-center space-x-2 pl-1 pr-2 py-0.5">
+        <div 
+          onClick={(e) => { e.stopPropagation(); if(onProfileClick) onProfileClick(); else if(onNavigateTab) onNavigateTab('profile'); }}
+          className="flex items-center space-x-2 pl-1 pr-2 py-0.5 cursor-pointer hover:opacity-80 transition-opacity"
+          title="View Profile"
+        >
           <div className="w-8 h-8 rounded-xl bg-[#007A61] text-white flex items-center justify-center font-bold text-xs shadow-2xs">
             {avatarInitials}
           </div>
@@ -195,5 +181,4 @@ export const UniversityHeader = ({
     </header>
   );
 };
-
 export default UniversityHeader;

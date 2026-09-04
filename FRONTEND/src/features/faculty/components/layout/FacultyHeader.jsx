@@ -25,7 +25,7 @@ const relTime = (ts) => {
 export const FacultyHeader = ({
   universityName = 'Ranchi University', facultyName = 'Dr. Binod Kumar', facultyRole = 'Senior Research Scientist',
   department = 'Electrical & Electronics', notificationCount = 0, notifications = [],
-  onSelectNotification, onViewAllNotifications, onClearNotifications, universityCode = 'RU001'
+  onSelectNotification, onViewAllNotifications, onClearNotifications, universityCode = 'RU001', onProfileClick
 }) => {
   const [open, setOpen] = useState(false);
   const [notifs, setNotifs] = useState([]);
@@ -93,7 +93,11 @@ export const FacultyHeader = ({
             )}
           </button>
 
-          <div className="flex items-center space-x-2.5 pl-2 border-l border-slate-200">
+          <div 
+            onClick={onProfileClick}
+            className="flex items-center space-x-2.5 pl-2 border-l border-slate-200 cursor-pointer hover:opacity-80 transition-opacity"
+            title="View Profile"
+          >
             <div className="w-8 h-8 rounded-xl bg-[#007A61] text-white flex items-center justify-center font-extrabold text-xs shadow-xs">{initials}</div>
             <div className="hidden xl:flex flex-col text-left">
               <span className="text-xs font-bold text-slate-900 leading-tight truncate max-w-[140px]">{facultyName}</span>

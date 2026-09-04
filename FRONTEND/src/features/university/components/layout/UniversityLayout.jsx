@@ -100,6 +100,7 @@ export const UniversityLayout = ({ user, onLogout }) => {
         onNavigateTab={(tab) => setActiveTab(tab)}
         onClearNotifications={() => loadData(false)}
         universityCode={universityCode}
+        onProfileClick={() => setActiveTab('profile')}
       />
 
       <div className="flex flex-1 min-h-0 overflow-hidden relative">
