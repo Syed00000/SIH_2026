@@ -3,52 +3,11 @@ import { UniversityHeader } from './UniversityHeader.jsx';
 import { UniversitySidebar } from './UniversitySidebar.jsx';
 import { UniversityFooter } from './UniversityFooter.jsx';
 import { UniversityTabContent } from './UniversityTabContent.jsx';
+import { useUniversityActiveTab } from './useUniversityActiveTab.js';
 import { universityApiService } from '../../services/universityApiService.js';
 
 export const UniversityLayout = ({ user, onLogout }) => {
-  const getInitialTab = () => {
-    try {
-      const params = new URLSearchParams(window.location.search);
-      const urlTab = params.get('tab');
-      if (urlTab) return urlTab;
-      const stored = localStorage.getItem('joharsetu_uni_active_tab');
-      if (stored) return stored;
-    } catch {
-      // fallback
-    }
-    return 'dashboard';
-  };
-
-  const [activeTab, setActiveTab] = useState(getInitialTab);
-
-  const handleSetActiveTab = (tab) => {
-    setActiveTab(tab);
-    try {
-      localStorage.setItem('joharsetu_uni_active_tab', tab);
-      const url = new URL(window.location.href);
-      url.searchParams.set('tab', tab);
-      window.history.replaceState({}, '', url.toString());
-    } catch {
-      // ignore
-    }
-  };
-
-  useEffect(() => {
-    const handlePopState = () => {
-      try {
-        const params = new URLSearchParams(window.location.search);
-        const urlTab = params.get('tab');
-        if (urlTab) {
-          setActiveTab(urlTab);
-        }
-      } catch {
-        // ignore
-      }
-    };
-
-    window.addEventListener('popstate', handlePopState);
-    return () => window.removeEventListener('popstate', handlePopState);
-  }, []);
+  const [activeTab, handleSetActiveTab] = useUniversityActiveTab('dashboard');
 
   const [isSidebarExpanded, setIsSidebarExpanded] = useState(true);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
