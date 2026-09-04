@@ -81,12 +81,13 @@ export const ProjectsPanel = ({ onNavigateTab }) => {
   };
 
   const handleSoftDeleteProject = async (proj) => {
-    if (window.confirm(`Archive project "${proj.title}" from active view?`)) {
+    if (window.confirm(`Permanently delete project "${proj.title}"? This will purge all associated assignments, faculty allocations, and records.`)) {
       await universityApiService.deleteProject(proj.projectId || proj._id);
-      await fetchProjects();
-      if (selectedProject?.projectId === proj.projectId) {
+      setProjects((prev) => prev.filter((p) => p.projectId !== proj.projectId && p._id !== proj._id));
+      if (selectedProject?.projectId === proj.projectId || selectedProject?._id === proj._id) {
         setSelectedProject(null);
       }
+      await fetchProjects();
     }
   };
 

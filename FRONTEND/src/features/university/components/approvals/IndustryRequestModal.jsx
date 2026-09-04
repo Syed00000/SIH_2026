@@ -26,7 +26,7 @@ export const IndustryRequestModal = ({ isOpen, onClose, approval, onSuccess }) =
       setLoadingPartners(true);
       universityApiService.getPartners('RU001')
         .then((data) => {
-          const list = Array.isArray(data) ? data : [];
+          const list = Array.isArray(data) ? data : (Array.isArray(data?.data) ? data.data : []);
           setPartners(list);
           if (list.length > 0) {
             setSelectedPartnerId(list[0].partnerId || list[0]._id);

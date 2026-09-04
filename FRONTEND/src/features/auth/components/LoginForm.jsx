@@ -43,9 +43,7 @@ export const LoginForm = ({ onNavigate }) => {
     const trimmedEmail = email.trim();
 
     if (!trimmedEmail) {
-      errors.email = 'Please enter your email address.';
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) {
-      errors.email = 'Please enter a valid email address.';
+      errors.email = 'Please enter your email, username, or mobile number.';
     }
 
     if (!password) {
@@ -176,7 +174,7 @@ export const LoginForm = ({ onNavigate }) => {
                 htmlFor="login-email"
                 className="text-xs font-bold uppercase tracking-wider text-slate-700 block mb-1.5"
               >
-                Email Address
+                Email ID / Username / Mobile
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
@@ -184,11 +182,11 @@ export const LoginForm = ({ onNavigate }) => {
                 </div>
                 <input
                   id="login-email"
-                  type="email"
-                  autoComplete="email"
+                  type="text"
+                  autoComplete="username"
                   value={email}
                   onChange={handleEmailChange}
-                  placeholder="name@example.com"
+                  placeholder="name@example.com or username"
                   aria-invalid={!!fieldErrors.email || !!errorMessage}
                   className={`w-full pl-10 pr-3.5 py-2.5 text-sm font-semibold text-slate-900 bg-white border rounded-lg transition-all focus:outline-none placeholder:text-slate-400 placeholder:font-normal shadow-2xs ${
                     fieldErrors.email || errorMessage

@@ -35,6 +35,7 @@ export const ChallengesTable = ({
   onDeclineChallenge,
   onViewDossier,
   onOpenChat,
+  onDeleteChallenge,
   loading = false
 }) => {
   const [currentPage, setCurrentPage] = useState(1);
@@ -81,6 +82,7 @@ export const ChallengesTable = ({
                     onSelectChallenge={onSelectChallenge}
                     onActionClick={onActionClick}
                     onOpenChat={onOpenChat}
+                    onDeleteChallenge={onDeleteChallenge}
                   />
                 );
               })

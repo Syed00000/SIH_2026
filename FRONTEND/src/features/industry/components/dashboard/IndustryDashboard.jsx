@@ -10,11 +10,14 @@ import {
   Panel15_Settings, Panel16_QuickActions 
 } from './panels/IndustryPanels7To16.jsx';
 import { IndustryRequestActionModal } from './IndustryRequestActionModal.jsx';
+import { IndustryFundingView } from '../funding/IndustryFundingView.jsx';
 
-export const IndustryDashboard = ({ activeTab, user }) => {
+export const IndustryDashboard = ({ activeTab, setActiveTab, user }) => {
   const [selectedRequest, setSelectedRequest] = useState(null);
   const {
     loading,
+    industryProfile,
+    stats,
     collaborationRequests,
     projects,
     capabilitiesData,
@@ -43,18 +46,18 @@ export const IndustryDashboard = ({ activeTab, user }) => {
       return (
         <div className="space-y-4">
           <div className="grid grid-cols-1 xl:grid-cols-8 gap-4">
-            <Panel1_Overview user={user} />
+            <Panel1_Overview user={user} industry={industryProfile} stats={stats} />
           </div>
           <div className="grid grid-cols-1 xl:grid-cols-8 gap-4">
-            <Panel2_Profile />
-            <Panel3_Capabilities data={capabilitiesData} />
+            <Panel2_Profile user={user} industry={industryProfile} />
+            <Panel3_Capabilities data={capabilitiesData} industry={industryProfile} />
           </div>
           <div className="grid grid-cols-1 xl:grid-cols-8 gap-4">
             <Panel4_Collaboration data={collaborationRequests} onViewRequest={setSelectedRequest} />
           </div>
           <div className="grid grid-cols-1 xl:grid-cols-12 gap-4">
             <Panel5_Projects data={projects} />
-            <Panel6_Funding data={fundingData} />
+            <Panel6_Funding data={fundingData} onNavigateToFunding={() => setActiveTab && setActiveTab('funding')} />
           </div>
           <div className="grid grid-cols-1 xl:grid-cols-10 gap-4">
             <Panel7_Labs data={labsData} />
@@ -69,20 +72,20 @@ export const IndustryDashboard = ({ activeTab, user }) => {
             <Panel12_Communication />
           </div>
           <div className="grid grid-cols-1 xl:grid-cols-12 gap-4">
-            <Panel14_Impact />
+            <Panel14_Impact stats={stats} fundingData={fundingData} />
             <Panel15_Settings />
-            <Panel16_QuickActions />
+            <Panel16_QuickActions onNavigate={setActiveTab} />
           </div>
         </div>
       );
     }
 
     switch (activeTab) {
-      case 'profile': return <div className="grid grid-cols-1 xl:grid-cols-4 gap-4"><Panel2_Profile /></div>;
-      case 'capabilities': return <div className="grid grid-cols-1 xl:grid-cols-4 gap-4"><Panel3_Capabilities data={capabilitiesData} /></div>;
+      case 'profile': return <div className="grid grid-cols-1 xl:grid-cols-4 gap-4"><Panel2_Profile user={user} industry={industryProfile} /></div>;
+      case 'capabilities': return <div className="grid grid-cols-1 xl:grid-cols-4 gap-4"><Panel3_Capabilities data={capabilitiesData} industry={industryProfile} /></div>;
       case 'collaboration': return <div className="grid grid-cols-1 xl:grid-cols-8 gap-4"><Panel4_Collaboration data={collaborationRequests} onViewRequest={setSelectedRequest} /></div>;
       case 'projects': return <div className="grid grid-cols-1 xl:grid-cols-6 gap-4"><Panel5_Projects data={projects} /></div>;
-      case 'funding': return <div className="grid grid-cols-1 xl:grid-cols-6 gap-4"><Panel6_Funding data={fundingData} /></div>;
+      case 'funding': return <IndustryFundingView user={user} />;
       case 'testing': return <div className="grid grid-cols-1 xl:grid-cols-6 gap-4"><Panel7_Labs data={labsData} /></div>;
       case 'experts': return <div className="grid grid-cols-1 xl:grid-cols-6 gap-4"><Panel8_Experts data={expertsData} /></div>;
       case 'documents': return <div className="grid grid-cols-1 xl:grid-cols-6 gap-4"><Panel9_Documents data={documentsData} /></div>;
@@ -90,7 +93,7 @@ export const IndustryDashboard = ({ activeTab, user }) => {
       case 'internships': return <div className="grid grid-cols-1 xl:grid-cols-6 gap-4"><Panel11_Internships data={internshipsData} /></div>;
       case 'communication': return <div className="grid grid-cols-1 xl:grid-cols-6 gap-4"><Panel12_Communication /></div>;
       case 'reports':
-      case 'impact': return <div className="grid grid-cols-1 xl:grid-cols-6 gap-4"><Panel14_Impact /></div>;
+      case 'impact': return <div className="grid grid-cols-1 xl:grid-cols-6 gap-4"><Panel14_Impact stats={stats} fundingData={fundingData} /></div>;
       case 'settings': return <div className="grid grid-cols-1 xl:grid-cols-4 gap-4"><Panel15_Settings /></div>;
       default:
         return (

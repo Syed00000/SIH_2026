@@ -35,6 +35,10 @@ export class UniversityDashboardRepository {
     return this.challengeRepo.assignFaculty(challengeId, universityCode, facultyInfo);
   }
 
+  deleteChallenge(universityCode, challengeId, deletedBy) {
+    return this.challengeRepo.deleteChallenge(universityCode, challengeId, deletedBy);
+  }
+
   getProjectsByUniversity(universityCode, includeDeleted) {
     return this.projectCrudRepo.getProjectsByUniversity(universityCode, includeDeleted);
   }
@@ -75,8 +79,8 @@ export class UniversityDashboardRepository {
     return this.facultyTeamRepo.getTeamsByUniversity(universityCode);
   }
 
-  getPartnersByUniversity() {
-    return this.partnerRequestRepo.getPartnersByUniversity();
+  getPartnersByUniversity(universityCode) {
+    return this.partnerRequestRepo.getPartnersByUniversity(universityCode);
   }
 
   getApprovalsByUniversity(universityCode) {

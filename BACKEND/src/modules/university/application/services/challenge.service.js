@@ -26,6 +26,10 @@ export class UniversityChallengeService {
     if (!updated) throw new NotFoundError('Challenge not found');
     return updated;
   }
+
+  async deleteChallenge(universityCode, challengeId, deletedBy) {
+    return await this.repository.deleteChallenge(universityCode, challengeId, deletedBy);
+  }
 }
 
 export default UniversityChallengeService;

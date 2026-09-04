@@ -35,6 +35,15 @@ export const createChallengeProjectHandler = (service) => {
     } catch (error) { next(error); }
   };
 
+  const deleteChallenge = async (req, res, next) => {
+    try {
+      const { id } = req.params;
+      const code = extractUniversityCode(req, 'RUNI-JH');
+      const data = await service.deleteChallenge(code, id);
+      res.status(200).json({ status: 'SUCCESS', message: 'Challenge removed and purged successfully', data });
+    } catch (error) { next(error); }
+  };
+
   const getProjects = async (req, res, next) => {
     try {
       const code = extractUniversityCode(req, 'RUNI-JH');
@@ -139,6 +148,7 @@ export const createChallengeProjectHandler = (service) => {
     getChallenges,
     updateChallengeStatus,
     assignFaculty,
+    deleteChallenge,
     getProjects,
     createProject,
     updateProject,

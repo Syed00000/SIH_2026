@@ -139,6 +139,18 @@ export const useAssignedChallenges = ({
     await fetchChallenges();
   };
 
+  const handleDeleteChallenge = async (challenge) => {
+    const cid = challenge?.challengeId || challenge?.id;
+    if (!cid) return;
+    if (window.confirm(`Are you sure you want to permanently remove challenge "${challenge.title || cid}"? This will purge all associated projects, faculty allocations, and records.`)) {
+      await universityApiService.deleteChallenge(cid, universityCode);
+      if (selectedChallenge?.challengeId === cid || selectedChallenge?.id === cid) {
+        setSelectedChallenge(null);
+      }
+      await fetchChallenges();
+    }
+  };
+
   return {
     statusFilter, setStatusFilter,
     domainFilter, setDomainFilter,
@@ -152,7 +164,8 @@ export const useAssignedChallenges = ({
     chatChallenge, setChatChallenge,
     loading, modalConfig, setModalConfig,
     chatStatsMap, fetchChatStats,
-    handleModalSubmit
+    handleModalSubmit,
+    handleDeleteChallenge
   };
 };
 

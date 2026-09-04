@@ -8,15 +8,18 @@ import {
   ArrowUpRight,
   UserCheck,
   UserX,
-  Layers
+  Layers,
+  Trash2
 } from 'lucide-react';
 import { ProblemEvidenceDossierModal } from '../../../nodal/components/ProblemEvidenceDossierModal.jsx';
+import { facultyApiService } from '../../services/facultyApiService.js';
 
 export const FacultyAssignedChallenges = ({
   challenges = [],
   allChallenges = [],
   faculty,
-  onDraftProposal
+  onDraftProposal,
+  onRefresh
 }) => {
   const [search, setSearch] = useState('');
   const [domainFilter, setDomainFilter] = useState('All');
@@ -71,6 +74,20 @@ export const FacultyAssignedChallenges = ({
     }
     return true;
   });
+
+  const handleDropChallenge = async (c) => {
+    const cid = c.challengeId || c.id;
+    if (!cid) return;
+    if (window.confirm(`Are you sure you want to decline/drop this problem assignment "${c.title}"? It will be unassigned from you and returned to Ranchi University.`)) {
+      try {
+        await facultyApiService.dropChallenge(cid, faculty?.universityCode || 'RU001');
+        if (onRefresh) await onRefresh();
+        else window.location.reload();
+      } catch (err) {
+        alert('Failed to drop challenge: ' + err.message);
+      }
+    }
+  };
 
   return (
     <div className="space-y-4 max-w-7xl mx-auto select-none pb-12">
@@ -267,14 +284,24 @@ export const FacultyAssignedChallenges = ({
                   </button>
 
                   {status.isAssignedToMe ? (
-                    <button
-                      type="button"
-                      onClick={() => onDraftProposal ? onDraftProposal(c) : null}
-                      className="px-3.5 py-1.5 bg-[#007A61] hover:bg-[#006650] text-white rounded-xl text-[11px] font-bold transition-all shadow-2xs flex items-center space-x-1 cursor-pointer"
-                    >
-                      <span>Draft Proposal & Budget</span>
-                      <ArrowUpRight className="w-3.5 h-3.5" />
-                    </button>
+                    <div className="flex items-center space-x-1.5">
+                      <button
+                        type="button"
+                        onClick={() => handleDropChallenge(c)}
+                        className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-colors cursor-pointer border border-transparent hover:border-rose-200"
+                        title="Decline / Drop Problem Assignment"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => onDraftProposal ? onDraftProposal(c) : null}
+                        className="px-3.5 py-1.5 bg-[#007A61] hover:bg-[#006650] text-white rounded-xl text-[11px] font-bold transition-all shadow-2xs flex items-center space-x-1 cursor-pointer"
+                      >
+                        <span>Draft Proposal & Budget</span>
+                        <ArrowUpRight className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
                   ) : (
                     <span className="px-3 py-1.5 bg-slate-100 border border-slate-200/80 text-slate-500 rounded-xl text-[10.5px] font-bold">
                       Reassigned to {status.mentorName}

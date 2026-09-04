@@ -1,107 +1,113 @@
 import { useState, useEffect } from 'react';
 import { universityApiService } from '../../../../university/services/universityApiService.js';
+import { industryFundService } from '../../../services/industryFundService.js';
 
 export const useIndustryData = (user) => {
   const [loading, setLoading] = useState(true);
+  const [industryProfile, setIndustryProfile] = useState(null);
+  const [stats, setStats] = useState({
+    activeProjectsCount: 0,
+    collaborationsCount: 0,
+    totalCommitted: 0,
+    totalDisbursed: 0,
+    totalCommittedFormatted: '₹ 0.00 L'
+  });
+
   const [collaborationRequests, setCollaborationRequests] = useState({
     received: [],
     sent: [],
     matched: []
   });
+
   const [projects, setProjects] = useState({
     ongoing: [],
     completed: []
   });
 
-  // Mock data for panels that don't have endpoints yet, exactly matching the screenshot
-  const capabilitiesData = {
-    expertise: ['AI / ML', 'IoT', 'Robotics', 'Electronics', 'Manufacturing', 'Water Technology', 'Renewable Energy', 'Healthcare', 'Agriculture', 'Software', 'Infrastructure', 'Civil Engineering'],
-  };
-
-  const fundingData = {
-    totalCommitted: '2.45 Cr',
-    distribution: [
-      { name: 'Research Funding', value: 85, color: '#007A61', percentage: '35%' },
-      { name: 'Prototype Funding', value: 65, color: '#3b82f6', percentage: '27%' },
-      { name: 'Lab & Equipment', value: 45, color: '#8b5cf6', percentage: '18%' },
-      { name: 'Pilot Funding', value: 30, color: '#f59e0b', percentage: '12%' },
-      { name: 'CSR Support', value: 20, color: '#10b981', percentage: '8%' }
-    ]
-  };
-
-  const labsData = [
-    { name: 'Environmental Testing Lab', type: 'Testing', location: 'Ranchi', status: 'Available' },
-    { name: 'Electronics Lab', type: 'Testing', location: 'Jamshedpur', status: 'Available' },
-    { name: 'Manufacturing Unit', type: 'Prototype', location: 'Ranchi', status: 'Request' },
-    { name: 'Water Quality Lab', type: 'Testing', location: 'Dhanbad', status: 'Available' },
-    { name: 'Material Testing Lab', type: 'Testing', location: 'Ranchi', status: 'Available' },
-  ];
-
-  const expertsData = [
-    { name: 'Rahul Kumar', role: 'Technical Expert', spec: 'IoT & Sensors', availability: '20 hrs/month' },
-    { name: 'Dr. Neha Singh', role: 'Research Expert', spec: 'AI & Data Science', availability: '15 hrs/month' },
-    { name: 'Amit Verma', role: 'Project Mentor', spec: 'Renewable Energy', availability: '10 hrs/month' },
-    { name: 'Sanjay Patel', role: 'Testing Engineer', spec: 'Electronics', availability: '25 hrs/month' },
-    { name: 'Pooja Sharma', role: 'Domain Expert', spec: 'Water Technology', availability: '12 hrs/month' },
-  ];
-
-  const documentsData = [
-    { name: 'MoU - Ariba & BIT', type: 'MoU', date: '06 May 2025', status: 'Signed' },
-    { name: 'NDA Agreement', type: 'NDA', date: '12 May 2025', status: 'Signed' },
-    { name: 'Research Agreement', type: 'Agreement', date: '20 May 2025', status: 'Signed' },
-    { name: 'Funding Agreement', type: 'Agreement', date: '28 Apr 2025', status: 'Pending' },
-    { name: 'Test Report - Prototype 1', type: 'Report', date: '15 May 2025', status: 'Uploaded' },
-  ];
-
-  const internshipsData = [
-    { name: 'IoT Summer Internship', type: 'Internship', duration: '3 Months', status: 'Open' },
-    { name: 'AI Research Internship', type: 'Research', duration: '2 Months', status: 'Open' },
-    { name: 'Manufacturing Training', type: 'Training', duration: '1 Month', status: 'Closed' },
-    { name: 'Industry Project', type: 'Project', duration: '2 Months', status: 'Open' },
-    { name: 'Faculty Visit Program', type: 'Faculty Visit', duration: '1 Week', status: 'Open' },
-  ];
+  // Dynamic industry funding state from backend
+  const [fundingData, setFundingData] = useState({
+    totalCommitted: 0,
+    totalCommittedFormatted: '₹ 0.00 L',
+    totalDisbursed: 0,
+    totalRemaining: 0,
+    distribution: [],
+    funds: [],
+    disbursements: [],
+    incomingRequests: [],
+    availableUniversities: []
+  });
 
   const loadData = async () => {
     try {
       setLoading(true);
-      // Connect to existing University API to fetch collaboration projects
-      // For demonstration in the dashboard, if API fails, fallback to mockup data
-      let fetchedProjects = [];
+
+      // 1. Fetch Real Industry Profile & Global Stats from MongoDB
+      let profileData = null;
       try {
-        fetchedProjects = await universityApiService.getAllProjects?.() || [];
-      } catch (e) {
-        console.warn("Could not fetch real projects, using fallback data.");
-      }
-      
-      let formattedRequests = [];
-      try {
-         const reqs = await universityApiService.getIndustryRequests();
-         if (reqs && reqs.length > 0) {
-           formattedRequests = reqs.map((r) => {
-             let requiredParts = [];
-             if (r.fundingRequested) requiredParts.push('Funding');
-             if (r.labAccessRequested) requiredParts.push('Testing & Lab');
-             if (r.mentorshipRequested) requiredParts.push('Mentorship');
-             return {
-                id: r.requestId || r._id || Math.random().toString(),
-                title: r.projectTitle || 'N/A',
-                university: r.universityName || 'Ranchi University',
-                required: requiredParts.join(' + ') || 'General Collaboration',
-                status: r.status || 'Pending'
-             };
-           });
-         }
-      } catch (e) {
-         console.warn("Could not fetch real requests.");
+        const pRes = await industryFundService.getProfile();
+        if (pRes?.data) {
+          profileData = pRes.data.industry;
+          setIndustryProfile(pRes.data.industry);
+          if (pRes.data.stats) {
+            setStats(pRes.data.stats);
+          }
+        }
+      } catch (err) {
+        console.warn('Failed to fetch real industry profile:', err);
       }
 
-      const realOrMockProjects = [
-        { id: 1, title: 'Smart Water Monitoring System', university: 'BIT Sindri', stage: 'Testing', progress: 68, status: 'On Track' },
-        { id: 2, title: 'AI Based Waste Classification', university: 'Ranchi University', stage: 'Prototype', progress: 42, status: 'On Track' },
-        { id: 3, title: 'Solar Powered Smart Bus Stop', university: 'BIT Mesra', stage: 'Lab Testing', progress: 55, status: 'Delayed' },
-        { id: 4, title: 'Flood Early Warning System', university: 'CU Jharkhand', stage: 'Prototype', progress: 30, status: 'On Track' },
-        { id: 5, title: 'Smart Street Light System', university: 'NIT Jamshedpur', stage: 'Development', progress: 78, status: 'On Track' },
-      ];
+      // 2. Fetch Real Industry Funds & Available Universities from MongoDB
+      let liveFunds = null;
+      try {
+        const fRes = await industryFundService.getFunds(profileData?.legalName || user?.organizationName);
+        if (fRes) {
+          liveFunds = fRes;
+          setFundingData(fRes);
+        }
+      } catch (err) {
+        console.warn('Failed to fetch real industry funds:', err);
+      }
+
+      // 3. Extract Real Incoming Collaboration Requests from MongoDB
+      let formattedRequests = [];
+      if (liveFunds?.incomingRequests && liveFunds.incomingRequests.length > 0) {
+        formattedRequests = liveFunds.incomingRequests.map((r) => {
+          let requiredParts = [];
+          if (r.fundingRequested) requiredParts.push('Funding');
+          if (r.labAccessRequested) requiredParts.push('Testing & Lab');
+          if (r.mentorshipRequested) requiredParts.push('Mentorship');
+          return {
+            id: r.requestId || r._id,
+            requestId: r.requestId,
+            title: r.projectTitle || 'N/A',
+            university: r.universityName || r.universityCode || 'Ranchi University',
+            universityCode: r.universityCode,
+            required: requiredParts.join(' + ') || (r.fundingRequested ? 'Funding Support' : 'Research Collaboration'),
+            budget: r.estimatedBudget || '₹ 0',
+            amountNumber: r.amountNumber || 0,
+            status: r.status || 'Pending',
+            faculty: r.facultyName || 'Faculty Nodal Officer',
+            date: r.submittedAt ? new Date(r.submittedAt).toLocaleDateString('en-IN') : 'Recent'
+          };
+        });
+      } else {
+        try {
+          const reqs = await universityApiService.getIndustryRequests();
+          if (Array.isArray(reqs)) {
+            formattedRequests = reqs.map((r) => ({
+              id: r.requestId || r._id,
+              requestId: r.requestId,
+              title: r.projectTitle || 'N/A',
+              university: r.universityName || r.universityCode || 'Ranchi University',
+              universityCode: r.universityCode,
+              required: r.fundingRequested ? 'Funding Support' : 'Research Collaboration',
+              budget: r.estimatedBudget || '₹ 0',
+              status: r.status || 'Pending',
+              date: r.submittedAt ? new Date(r.submittedAt).toLocaleDateString('en-IN') : 'Recent'
+            }));
+          }
+        } catch {}
+      }
 
       setCollaborationRequests({
         received: formattedRequests,
@@ -109,13 +115,33 @@ export const useIndustryData = (user) => {
         matched: []
       });
 
+      // 4. Extract Real Active Projects from MongoDB (Zero Mock Data)
+      let activeProjectsList = [];
+      if (liveFunds?.availableUniversities && liveFunds.availableUniversities.length > 0) {
+        liveFunds.availableUniversities.forEach((uni) => {
+          if (Array.isArray(uni.activeProjects)) {
+            uni.activeProjects.forEach((proj) => {
+              activeProjectsList.push({
+                id: proj.id,
+                title: proj.title,
+                university: uni.name,
+                stage: proj.status || 'In Progress',
+                budget: proj.sanctionedBudget || '₹ 0',
+                disbursed: proj.disbursedAmount || '₹ 0',
+                status: proj.disbursedAmount && proj.disbursedAmount !== '₹ 0' ? 'Funded' : 'Active'
+              });
+            });
+          }
+        });
+      }
+
       setProjects({
-        ongoing: realOrMockProjects,
+        ongoing: activeProjectsList,
         completed: []
       });
-      
+
     } catch (error) {
-      console.error("Error loading industry data:", error);
+      console.error('Error loading real industry data:', error);
     } finally {
       setLoading(false);
     }
@@ -125,16 +151,27 @@ export const useIndustryData = (user) => {
     loadData();
   }, [user]);
 
+  // Real capabilities directly from Industry's registered domains in MongoDB
+  const capabilitiesData = {
+    expertise: industryProfile?.thematicDomains?.length 
+      ? industryProfile.thematicDomains 
+      : (industryProfile?.thematicDomain ? [industryProfile.thematicDomain] : [])
+  };
+
   return {
     loading,
+    industryProfile,
+    stats,
     collaborationRequests,
     projects,
     capabilitiesData,
     fundingData,
-    labsData,
-    expertsData,
-    documentsData,
-    internshipsData,
+    labsData: [],
+    expertsData: [],
+    documentsData: [],
+    internshipsData: [],
     refreshData: loadData
   };
 };
+
+export default useIndustryData;

@@ -75,6 +75,14 @@ export const facultyProjectsApi = {
     return { success: true, projectId };
   },
 
+  async deleteChallenge(challengeId, universityCode = DEFAULT_UNIVERSITY_CODE) {
+    try {
+      const res = await apiClient.delete(`university/challenges/${encodeURIComponent(challengeId)}?universityCode=${encodeURIComponent(universityCode)}`);
+      if (res?.data) return res.data;
+    } catch (err) { console.error('API deleteChallenge error:', err.message); }
+    return { success: true, challengeId };
+  },
+
   async assignFacultyToProject(projectId, facultyInfo, universityCode = DEFAULT_UNIVERSITY_CODE) {
     try {
       const res = await apiClient.post(`university/projects/${encodeURIComponent(projectId)}/assign-faculty?universityCode=${encodeURIComponent(universityCode)}`, {

@@ -17,6 +17,7 @@ export class UniversityController {
   getChallenges(req, res, next) { return this.challengeProjectHandler.getChallenges(req, res, next); }
   updateChallengeStatus(req, res, next) { return this.challengeProjectHandler.updateChallengeStatus(req, res, next); }
   assignFaculty(req, res, next) { return this.challengeProjectHandler.assignFaculty(req, res, next); }
+  deleteChallenge(req, res, next) { return this.challengeProjectHandler.deleteChallenge(req, res, next); }
 
   getFaculty(req, res, next) { return this.facultyTeamHandler.getFaculty(req, res, next); }
   createFaculty(req, res, next) { return this.facultyTeamHandler.createFaculty(req, res, next); }

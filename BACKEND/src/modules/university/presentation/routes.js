@@ -7,6 +7,7 @@ router.get('/dashboard', (req, res, next) => universityController.getDashboard(r
 router.get('/challenges', (req, res, next) => universityController.getChallenges(req, res, next));
 router.patch('/challenges/:id/status', (req, res, next) => universityController.updateChallengeStatus(req, res, next));
 router.post('/challenges/:id/assign-faculty', (req, res, next) => universityController.assignFaculty(req, res, next));
+router.delete('/challenges/:id', (req, res, next) => universityController.deleteChallenge(req, res, next));
 
 router.get('/faculty', (req, res, next) => universityController.getFaculty(req, res, next));
 router.post('/faculty', (req, res, next) => universityController.createFaculty(req, res, next));

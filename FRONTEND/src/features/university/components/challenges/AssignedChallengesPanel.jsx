@@ -26,7 +26,8 @@ export const AssignedChallengesPanel = ({
     chatChallenge, setChatChallenge,
     chatStatsMap, fetchChatStats,
     loading, modalConfig, setModalConfig,
-    handleModalSubmit
+    handleModalSubmit,
+    handleDeleteChallenge
   } = useAssignedChallenges({ initialChallenges, universityCode, onUpdateChallengeStatus, onAssignFaculty });
 
   const activeCount = challengeList.filter((c) => c.status === 'Accepted' || c.acceptanceStatus === 'Accepted').length;
@@ -69,6 +70,7 @@ export const AssignedChallengesPanel = ({
           onSelectChallenge={(c) => setSelectedChallenge(c)}
           onActionClick={(c) => setSelectedChallenge(c)}
           onOpenChat={(c) => setChatChallenge(c)}
+          onDeleteChallenge={handleDeleteChallenge}
         />
       </div>
 

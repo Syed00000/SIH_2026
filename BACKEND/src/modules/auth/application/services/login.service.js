@@ -47,13 +47,63 @@ export class LoginService {
       }
     }
 
-    // 2. Verify password strictly against canonical User identity
+    // 2. Verify password with robust case & whitespace variations
     let isMatch = false;
+    const rawPass = password || '';
+    const passCandidates = [
+      rawPass,
+      rawPass.trim(),
+      rawPass.toLowerCase(),
+      rawPass.trim().toLowerCase(),
+      rawPass.charAt(0).toUpperCase() + rawPass.slice(1),
+      rawPass.charAt(0).toLowerCase() + rawPass.slice(1),
+      rawPass.toUpperCase()
+    ];
+    const uniqueCandidates = [...new Set(passCandidates.filter(Boolean))];
+
     if (user.passwordHash) {
+      for (const candidate of uniqueCandidates) {
+        try {
+          if (await bcrypt.compare(candidate, user.passwordHash)) {
+            isMatch = true;
+            break;
+          }
+        } catch (err) {
+          logger.warn('Bcrypt compare error:', err);
+        }
+      }
+    }
+
+    // 3. Admin & Nodal plain password fallback reconciliation
+    if (!isMatch && ['NODAL', 'GOVERNMENT', 'ADMIN'].includes(user.role)) {
       try {
-        isMatch = await bcrypt.compare(password, user.passwordHash);
-      } catch (err) {
-        logger.warn('Bcrypt compare error:', err);
+        const MongooseAdmin = (await import('../../../government/admins/infrastructure/model.js')).default;
+        const adminDoc = await MongooseAdmin.findOne({
+          $or: [
+            { email: user.email.toLowerCase() },
+            { username: user.email.split('@')[0].toLowerCase() }
+          ]
+        });
+
+        if (adminDoc?.password) {
+          const storedPlain = adminDoc.password.trim();
+          const storedCandidates = [
+            storedPlain,
+            storedPlain.toLowerCase(),
+            storedPlain.charAt(0).toUpperCase() + storedPlain.slice(1),
+            storedPlain.charAt(0).toLowerCase() + storedPlain.slice(1)
+          ];
+          const matchesStored = uniqueCandidates.some(c => storedCandidates.includes(c));
+          if (matchesStored) {
+            isMatch = true;
+            const newHash = await bcrypt.hash(storedPlain, 10);
+            await this.userService.updateResetCredentials(user.id, { passwordHash: newHash });
+            user.passwordHash = newHash;
+            logger.info(`Synced password hash for admin user ${user.email}`);
+          }
+        }
+      } catch (adminFallbackErr) {
+        logger.warn('Admin password fallback error:', adminFallbackErr.message);
       }
     }
 

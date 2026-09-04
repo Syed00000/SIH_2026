@@ -4,6 +4,7 @@ import { buildProjectStubFromCitizenChallenge } from '../helpers/project-stub.he
 import { buildAssignedProjectMilestones } from '../helpers/project-assignment.helper.js';
 import { syncProjectFacultyAssignment } from '../helpers/project-faculty-sync.helper.js';
 import { findUniversityIdentity } from '../helpers/lookup.helper.js';
+import { cascadeDeleteProblemOrProject } from '../helpers/cascade-delete.helper.js';
 
 export class ProjectCrudRepository {
   async getProjectsByUniversity(universityCode, includeDeleted = false) {
@@ -23,6 +24,13 @@ export class ProjectCrudRepository {
     try {
       let projects = (await UniversityProject.find(query).sort({ updatedAt: -1 }).lean()) || [];
 
+      // Safeguard: collect all deleted challenge IDs to ensure they are never resurrected
+      const deletedProjects = await UniversityProject.find({
+        universityCode: { $in: validCodes },
+        isDeleted: true
+      }, { challengeId: 1 }).lean();
+      const deletedChallengeIds = new Set(deletedProjects.map((p) => p.challengeId).filter(Boolean));
+
       const citizenOrConditions = [{ 'assignedUniversity.id': { $in: validCodes } }];
       if (uniName) {
         const escapedName = uniName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -37,14 +45,17 @@ export class ProjectCrudRepository {
               { 'assignedUniversity.acceptanceStatus': 'Accepted' },
               { status: { $in: ['In Progress', 'Accepted'] } }
             ]
-          }
+          },
+          { 'assignedUniversity.acceptanceStatus': { $ne: 'Declined' } },
+          { status: { $ne: 'Declined' } },
+          { isDeleted: { $ne: true } }
         ]
       }).lean();
 
       const existingChallengeIds = new Set(projects.map((p) => p.challengeId).filter(Boolean));
 
       for (const chl of acceptedChallenges) {
-        if (!existingChallengeIds.has(chl.challengeId)) {
+        if (!existingChallengeIds.has(chl.challengeId) && !deletedChallengeIds.has(chl.challengeId)) {
           const projDoc = buildProjectStubFromCitizenChallenge(chl, code);
           try {
             await UniversityProject.findOneAndUpdate(
@@ -83,16 +94,7 @@ export class ProjectCrudRepository {
   }
 
   async deleteProject(universityCode, projectId, deletedBy = 'University Admin') {
-    const query = typeof projectId === 'string' && projectId.match(/^[0-9a-fA-F]{24}$/) ? { _id: projectId } : { projectId };
-    try {
-      const res = await UniversityProject.findOneAndUpdate(
-        query,
-        { $set: { isDeleted: true, deletedBy, deletedAt: new Date(), status: 'Archived' } },
-        { new: true }
-      );
-      if (res) return res;
-    } catch { }
-    return { success: true, projectId };
+    return await cascadeDeleteProblemOrProject(universityCode, projectId, deletedBy);
   }
 
   async assignFacultyToProject(universityCode, projectId, facultyInfo) {

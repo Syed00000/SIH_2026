@@ -26,6 +26,8 @@ export const CreatePartnershipModal = ({
   const [outcome, setOutcome] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [facultyName, setFacultyName] = useState('Dr. Binod Kumar');
+  const [studentTeam, setStudentTeam] = useState('Student Innovation Team');
 
   useEffect(() => {
     if (isOpen) {
@@ -34,8 +36,8 @@ export const CreatePartnershipModal = ({
         universityApiService.getPartners('RU001'),
         universityApiService.getProjects('RU001')
       ]).then(([partnersList, projectsList]) => {
-        const pList = Array.isArray(partnersList) ? partnersList : [];
-        const prjList = Array.isArray(projectsList) ? projectsList : [];
+        const pList = Array.isArray(partnersList) ? partnersList : (Array.isArray(partnersList?.data) ? partnersList.data : []);
+        const prjList = Array.isArray(projectsList) ? projectsList : (Array.isArray(projectsList?.data) ? projectsList.data : []);
         setPartners(pList);
         setProjects(prjList);
 
@@ -78,8 +80,8 @@ export const CreatePartnershipModal = ({
         estimatedBudget: budget,
         duration,
         executionOutcome: outcome,
-        facultyName: 'Dr. Binod Kumar (Nodal Faculty)',
-        studentTeam: 'Smart Aqua Innovators / Binod GANG'
+        facultyName: facultyName || 'Faculty Nodal Officer',
+        studentTeam: studentTeam || 'University Research Team'
       };
 
       await universityApiService.createIndustryRequest(payload);
@@ -181,16 +183,20 @@ export const CreatePartnershipModal = ({
                     onChange={(e) => setSelectedPartnerId(e.target.value)}
                     className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-800 focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#007A61] focus:border-[#007A61] shadow-2xs cursor-pointer"
                   >
-                    {partners.map((p) => {
-                      const id = p.partnerId || p._id;
-                      const name = p.name || p.legalName;
-                      const cat = p.industryType || p.type || p.category || 'Corporate';
-                      return (
-                        <option key={id} value={id}>
-                          {name} ({cat})
-                        </option>
-                      );
-                    })}
+                    {partners && partners.length > 0 ? (
+                      partners.map((p) => {
+                        const id = p.partnerId || p._id;
+                        const name = p.name || p.legalName;
+                        const cat = p.industryType || p.type || p.category || 'Corporate';
+                        return (
+                          <option key={id} value={id}>
+                            {name} ({cat})
+                          </option>
+                        );
+                      })
+                    ) : (
+                      <option value="" disabled>No Government registered industries found</option>
+                    )}
                   </select>
                 </div>
               )}

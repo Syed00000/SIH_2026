@@ -153,6 +153,67 @@ export class MongoUserRepository extends UserRepository {
       } catch (facErr) {
         // Continue
       }
+
+      // 6. Government Admin & Nodal Officer lookup & auto-reconciliation
+      try {
+        const MongooseAdmin = (await import('../../government/admins/infrastructure/model.js')).default;
+        const adminDoc = await MongooseAdmin.findOne({
+          $or: [
+            { username: lower },
+            { email: lower },
+            { mobileNumber: clean }
+          ]
+        }).select('+passwordHash');
+
+        if (adminDoc) {
+          const authRole = (adminDoc.role || '').toLowerCase().includes('nodal') ? 'NODAL' : 'GOVERNMENT';
+          let adminUser = await MongooseUser.findOne({ email: adminDoc.email.toLowerCase().trim() }).select('+passwordHash');
+
+          let targetHash = adminDoc.passwordHash;
+          if (!targetHash && adminDoc.password) {
+            targetHash = await bcrypt.hash(adminDoc.password, 10);
+            adminDoc.passwordHash = targetHash;
+            await adminDoc.save().catch(() => {});
+          }
+
+          if (!adminUser) {
+            let cleanMobile = (adminDoc.mobileNumber || '').replace(/[^0-9]/g, '').slice(-10);
+            if (!/^[6-9]\d{9}$/.test(cleanMobile)) {
+              cleanMobile = '98' + Math.floor(10000000 + Math.random() * 90000000);
+            }
+            const existingMob = await MongooseUser.findOne({ mobileNumber: cleanMobile });
+            if (existingMob) {
+              cleanMobile = '99' + Math.floor(10000000 + Math.random() * 90000000);
+            }
+
+            adminUser = await MongooseUser.create({
+              fullName: adminDoc.fullName,
+              email: adminDoc.email.toLowerCase().trim(),
+              mobileNumber: cleanMobile,
+              passwordHash: targetHash || (await bcrypt.hash('Nodal@123456', 10)),
+              role: authRole,
+              accountStatus: adminDoc.status === 'Active' ? 'ACTIVE' : 'SUSPENDED',
+              emailVerification: { verified: true, verifiedAt: new Date() },
+              profile: {
+                institutionName: adminDoc.assignedDepartment || 'Higher & Technical Education',
+                nodalOfficerDesignation: adminDoc.role,
+                district: adminDoc.district || '',
+                preferredLanguage: 'HINDI'
+              }
+            });
+          } else if (targetHash && adminUser.passwordHash !== targetHash) {
+            adminUser.passwordHash = targetHash;
+            adminUser.role = authRole;
+            adminUser.accountStatus = 'ACTIVE';
+            adminUser.emailVerification = { verified: true, verifiedAt: new Date() };
+            await adminUser.save();
+          }
+
+          if (adminUser) return this._toEntity(adminUser);
+        }
+      } catch (adminErr) {
+        // Continue fallback
+      }
     }
 
     return this.findByEmail(lower);

@@ -4,6 +4,7 @@ import User from '../../../users/infrastructure/model.js';
 import { findUniversityIdentity } from '../helpers/lookup.helper.js';
 import { formatChallengeItem } from '../helpers/challenge-formatter.helper.js';
 import { buildChallengeStatusUpdatePayload } from '../helpers/challenge-status-builder.helper.js';
+import { cascadeDeleteProblemOrProject } from '../helpers/cascade-delete.helper.js';
 
 export class ChallengeRepository {
   async getChallengesByUniversity(universityCode, { status, domain, district, search, page = 1, limit = 100 } = {}) {
@@ -183,6 +184,10 @@ export class ChallengeRepository {
       console.warn('Error assigning faculty in DB:', err);
     }
     return { challengeId, assignedFaculty: facultyInfo, status: 'Accepted', actionLabel: 'View' };
+  }
+
+  async deleteChallenge(universityCode, challengeId, deletedBy = 'University Admin') {
+    return await cascadeDeleteProblemOrProject(universityCode, challengeId, deletedBy);
   }
 }
 

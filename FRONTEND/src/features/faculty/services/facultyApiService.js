@@ -51,7 +51,7 @@ export const facultyApiService = {
       );
     });
 
-    const activeProjectList = filteredProjects.length > 0 ? filteredProjects : projectsList;
+    const activeProjectList = filteredProjects;
 
     // Cross-link latest remarks and feedback from university approvals onto project objects
     const enrichedProjects = activeProjectList.map((p) => {
@@ -83,7 +83,8 @@ export const facultyApiService = {
 
     return {
       faculty: currentFaculty,
-      challenges: myChallenges.length > 0 ? myChallenges : challengesList,
+      challenges: myChallenges,
+      allChallenges: challengesList,
       projects: enrichedProjects,
       approvals: approvalsList,
       revisions: revisionsList,
@@ -166,6 +167,26 @@ export const facultyApiService = {
     } catch (err) {
       console.error('API clearNotifications error:', err.message);
       return { success: false };
+    }
+  },
+
+  async deleteProject(projectId, universityCode = 'RU001') {
+    try {
+      const res = await apiClient.delete(`university/projects/${encodeURIComponent(projectId)}?universityCode=${encodeURIComponent(universityCode)}`);
+      return res?.data || { success: true, projectId };
+    } catch (err) {
+      console.error('API faculty deleteProject error:', err.message);
+      throw err;
+    }
+  },
+
+  async dropChallenge(challengeId, universityCode = 'RU001') {
+    try {
+      const res = await apiClient.delete(`university/challenges/${encodeURIComponent(challengeId)}?universityCode=${encodeURIComponent(universityCode)}`);
+      return res?.data || { success: true, challengeId };
+    } catch (err) {
+      console.error('API faculty dropChallenge error:', err.message);
+      throw err;
     }
   }
 };

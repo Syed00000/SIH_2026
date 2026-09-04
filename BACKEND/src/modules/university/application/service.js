@@ -45,6 +45,9 @@ export class UniversityService {
   assignFaculty(challengeId, universityCode, facultyInfo) {
     return this.challengeService.assignFaculty(challengeId, universityCode, facultyInfo);
   }
+  deleteChallenge(universityCode, id) {
+    return this.challengeService.deleteChallenge(universityCode, id);
+  }
 
   getProjects(universityCode) { return this.projectService.getProjects(universityCode); }
   createProject(universityCode, data) { return this.projectService.createProject(universityCode, data); }

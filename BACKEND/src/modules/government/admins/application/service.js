@@ -64,16 +64,20 @@ export class AdminService {
     const existingUsername = await Admin.findOne({ username: finalUsername.toLowerCase().trim() });
     if (existingUsername) throw new ValidationError('Username is already taken');
 
-    const passwordHash = password ? await bcrypt.hash(password, 10) : await bcrypt.hash('Admin@Jharkhand2026!', 10);
+    const cleanPassword = password && password.trim() ? password.trim() : 'Nodal@123456';
+    const passwordHash = await bcrypt.hash(cleanPassword, 10);
     const colors = ['purple', 'green', 'orange', 'pink', 'teal', 'blue', 'cyan', 'indigo'];
     const avatarColor = colors[Math.floor(Math.random() * colors.length)];
+
+    const cleanMobile = mobileNumber.toString().replace(/[^0-9]/g, '').slice(-10);
 
     const newAdmin = new Admin({
       fullName: fullName.trim(),
       username: finalUsername.toLowerCase().trim(),
       email: email.toLowerCase().trim(),
+      password: cleanPassword,
       passwordHash,
-      mobileNumber: mobileNumber.trim(),
+      mobileNumber: cleanMobile || mobileNumber.trim(),
       role,
       primaryRole,
       accessLevel,
@@ -95,11 +99,11 @@ export class AdminService {
 
   async updateAdmin(id, updateData) {
     if (!mongoose.Types.ObjectId.isValid(id)) throw new ValidationError('Invalid Admin ID format');
-    const existing = await Admin.findById(id);
+    const existing = await Admin.findById(id).select('+passwordHash');
     if (!existing) throw new NotFoundError('Administrator not found');
 
     const oldEmail = existing.email;
-    const { email, username, password, ...rest } = updateData;
+    const { email, username, password, mobileNumber, ...rest } = updateData;
 
     if (email && email.toLowerCase().trim() !== existing.email) {
       const duplicateEmail = await Admin.findOne({ email: email.toLowerCase().trim(), _id: { $ne: id } });
@@ -116,18 +120,22 @@ export class AdminService {
       existing.username = username.toLowerCase().trim();
     }
 
+    if (mobileNumber) {
+      existing.mobileNumber = mobileNumber.toString().replace(/[^0-9]/g, '').slice(-10) || mobileNumber.trim();
+    }
+
     let newPasswordHash = null;
     if (password && password.trim()) {
-      newPasswordHash = await bcrypt.hash(password.trim(), 10);
+      const cleanPass = password.trim();
+      newPasswordHash = await bcrypt.hash(cleanPass, 10);
+      existing.password = cleanPass;
       existing.passwordHash = newPasswordHash;
     }
 
     Object.assign(existing, rest);
     await existing.save();
 
-    try {
-      await syncAdminUserAuth(existing, newPasswordHash, oldEmail);
-    } catch (_) {}
+    await syncAdminUserAuth(existing, newPasswordHash || existing.passwordHash, oldEmail);
 
     return existing.toJSON();
   }

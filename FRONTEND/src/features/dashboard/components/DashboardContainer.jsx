@@ -148,6 +148,7 @@ export const DashboardContainer = ({ onNavigate }) => {
             ) : role === 'INDUSTRY' ? (
               <IndustryDashboard
                 activeTab={activeTab}
+                setActiveTab={setActiveTab}
                 user={user}
               />
             ) : (

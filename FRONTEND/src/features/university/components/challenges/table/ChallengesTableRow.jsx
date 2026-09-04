@@ -1,5 +1,5 @@
 import React from 'react';
-import { Eye, MessageSquare } from 'lucide-react';
+import { Eye, MessageSquare, Trash2 } from 'lucide-react';
 
 export const ChallengesTableRow = ({
   c,
@@ -9,7 +9,8 @@ export const ChallengesTableRow = ({
   hasUnreadChat = false,
   onSelectChallenge,
   onActionClick,
-  onOpenChat
+  onOpenChat,
+  onDeleteChallenge
 }) => {
   const title = c.title || 'Challenge';
   const firstLetter = title.charAt(0).toUpperCase();
@@ -173,6 +174,16 @@ export const ChallengesTableRow = ({
             <Eye className="w-3.5 h-3.5" />
             <span>Inspect</span>
           </button>
+          {onDeleteChallenge && (
+            <button
+              type="button"
+              onClick={() => onDeleteChallenge(c)}
+              className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
+              title="Delete & Purge Problem"
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+            </button>
+          )}
         </div>
       </td>
     </tr>

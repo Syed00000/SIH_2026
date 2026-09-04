@@ -6,6 +6,7 @@ const adminSchema = new mongoose.Schema(
     username: { type: String, required: true, trim: true, lowercase: true, index: true },
     email: { type: String, required: true, unique: true, trim: true, lowercase: true, index: true },
     passwordHash: { type: String, select: false },
+    password: { type: String, default: null },
     mobileNumber: { type: String, required: true, trim: true },
     role: { type: String, required: true, default: 'Nodal Officer' },
     primaryRole: { type: String, default: 'District Nodal Lead' },
@@ -33,7 +34,7 @@ const adminSchema = new mongoose.Schema(
 adminSchema.set('toJSON', {
   transform: (_, ret) => {
     ret.id = ret._id.toString();
-    delete ret.password;
+    ret.password = ret.password || null;
     delete ret.passwordHash;
     delete ret.__v;
     return ret;

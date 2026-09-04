@@ -24,7 +24,7 @@ export const IndustryPartnersPanel = () => {
     setLoading(true);
     try {
       const data = await universityApiService.getPartners('RU001');
-      setPartners(Array.isArray(data) ? data : []);
+      setPartners(Array.isArray(data) ? data : (Array.isArray(data?.data) ? data.data : []));
     } catch (err) {
       console.error('Failed to load partners:', err);
     } finally {

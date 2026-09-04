@@ -4,20 +4,20 @@ import { findUniversityIdentity } from '../helpers/lookup.helper.js';
 
 export class PartnerRequestRepository {
   async getPartnersByUniversity(universityCode) {
-    const identity = await findUniversityIdentity(universityCode);
-    if (!identity) return [];
-
     try {
+      // 1. Fetch real Government Manage Industries directly from MongooseIndustry
       const rawIndustries = await MongooseIndustry.find({ status: { $ne: 'Disabled' } }).sort({ createdAt: -1 }).lean();
       if (rawIndustries && rawIndustries.length > 0) {
         return rawIndustries.map((ind) => ({
           _id: ind._id,
           partnerId: ind.industryId || ind._id.toString(),
           name: ind.legalName || 'Government Registered Partner',
+          legalName: ind.legalName || 'Government Registered Partner',
           shortName: ind.shortName || ind.legalName,
           logoText: (ind.shortName || ind.legalName || 'IND').slice(0, 3).toUpperCase(),
           type: ind.category || 'Private Industry',
           industryType: ind.category || 'Private Industry',
+          category: ind.category || 'Private Industry',
           committedGrant: ind.financials?.csrCommittedCr ? `₹ ${ind.financials.csrCommittedCr} Cr` : '₹ 0.0 Lakhs',
           grantAmount: ind.financials?.csrCommittedCr ? `₹ ${ind.financials.csrCommittedCr} Cr` : '₹ 0.0 Lakhs',
           focusArea: ind.thematicDomain || 'Technology & Innovation',
@@ -32,15 +32,25 @@ export class PartnerRequestRepository {
             email: ind.officialEmail || ind.credentials?.loginEmail || '',
             phone: ind.mobileNumber || ''
           },
+          officialEmail: ind.officialEmail || ind.credentials?.loginEmail || '',
+          spocName: ind.spocName || 'Nodal Officer',
           website: ind.website || '',
-          location: ind.address ? `${ind.address.city || ''}, ${ind.address.state || 'Jharkhand'}, India` : 'Jharkhand, India',
+          location: ind.address ? `${ind.address.city || ind.address.district || ''}, ${ind.address.state || 'Jharkhand'}, India` : 'Jharkhand, India',
           registeredOn: ind.createdAt ? new Date(ind.createdAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : '',
           engagementStatus: ind.verificationStatus === 'Verified' ? 'Government Verified Partner' : 'Pending Verification',
           about: ind.legalName ? `${ind.legalName} is an official industry partner registered under Jharkhand State Higher Education.` : ''
         }));
       }
-      return (await UniversityPartner.find({ universityCode: { $in: identity.validIdentifiers } }).lean()) || [];
-    } catch {
+
+      if (universityCode) {
+        const identity = await findUniversityIdentity(universityCode);
+        if (identity) {
+          return (await UniversityPartner.find({ universityCode: { $in: identity.validIdentifiers } }).lean()) || [];
+        }
+      }
+      return [];
+    } catch (err) {
+      console.error('Error fetching university partners:', err);
       return [];
     }
   }
