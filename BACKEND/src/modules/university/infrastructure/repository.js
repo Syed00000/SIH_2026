@@ -123,8 +123,8 @@ export class UniversityDashboardRepository {
     return this.partnerRequestRepo.getIndustryRequests(universityCode);
   }
 
-  updateIndustryRequestStatus(requestId, status, universityCode) {
-    return this.partnerRequestRepo.updateIndustryRequestStatus(requestId, status, universityCode);
+  updateIndustryRequestStatus(requestId, status, universityCode, extra = {}) {
+    return this.partnerRequestRepo.updateIndustryRequestStatus(requestId, status, universityCode, extra);
   }
 
   deleteIndustryRequest(requestId, universityCode) {

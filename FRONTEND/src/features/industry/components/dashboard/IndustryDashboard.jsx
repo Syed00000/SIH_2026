@@ -12,6 +12,8 @@ import {
 import { IndustryRequestActionModal } from './IndustryRequestActionModal.jsx';
 import { IndustryFundingView } from '../funding/IndustryFundingView.jsx';
 import { IndustryActiveProjectsView } from '../projects/IndustryActiveProjectsView.jsx';
+import { IndustryTestingLabsView } from '../labs/IndustryTestingLabsView.jsx';
+import { IndustryComingSoonPanel } from '../common/IndustryComingSoonPanel.jsx';
 
 export const IndustryDashboard = ({ activeTab, setActiveTab, user }) => {
   const [selectedRequest, setSelectedRequest] = useState(null);
@@ -37,10 +39,6 @@ export const IndustryDashboard = ({ activeTab, setActiveTab, user }) => {
       </div>
     );
   }
-
-  // If the user selects a specific tab from the sidebar (other than dashboard),
-  // we could isolate that panel. But since the mockup shows a massive dashboard,
-  // we will render the grid for "dashboard" and isolate specific ones if clicked.
 
   const renderContent = () => {
     if (activeTab === 'dashboard') {
@@ -89,26 +87,39 @@ export const IndustryDashboard = ({ activeTab, setActiveTab, user }) => {
     }
 
     switch (activeTab) {
-      case 'profile': return <div className="grid grid-cols-1 xl:grid-cols-4 gap-4"><Panel2_Profile user={user} industry={industryProfile} /></div>;
-      case 'capabilities': return <div className="grid grid-cols-1 xl:grid-cols-4 gap-4"><Panel3_Capabilities data={capabilitiesData} industry={industryProfile} /></div>;
-      case 'collaboration': return <div className="grid grid-cols-1 xl:grid-cols-8 gap-4"><Panel4_Collaboration data={collaborationRequests} onViewRequest={setSelectedRequest} /></div>;
-      case 'projects': return <IndustryActiveProjectsView projects={projects} onNavigateToFunding={() => setActiveTab && setActiveTab('funding')} />;
-      case 'funding': return <IndustryFundingView user={user} />;
-      case 'testing': return <div className="grid grid-cols-1 xl:grid-cols-6 gap-4"><Panel7_Labs data={labsData} /></div>;
-      case 'experts': return <div className="grid grid-cols-1 xl:grid-cols-6 gap-4"><Panel8_Experts data={expertsData} /></div>;
-      case 'documents': return <div className="grid grid-cols-1 xl:grid-cols-6 gap-4"><Panel9_Documents data={documentsData} /></div>;
-      case 'ip_transfer': return <div className="grid grid-cols-1 xl:grid-cols-6 gap-4"><Panel10_IP /></div>;
-      case 'internships': return <div className="grid grid-cols-1 xl:grid-cols-6 gap-4"><Panel11_Internships data={internshipsData} /></div>;
-      case 'communication': return <div className="grid grid-cols-1 xl:grid-cols-6 gap-4"><Panel12_Communication /></div>;
-      case 'reports':
-      case 'impact': return <div className="grid grid-cols-1 xl:grid-cols-6 gap-4"><Panel14_Impact stats={stats} fundingData={fundingData} /></div>;
-      case 'settings': return <div className="grid grid-cols-1 xl:grid-cols-4 gap-4"><Panel15_Settings /></div>;
-      default:
+      case 'collaboration':
         return (
-          <div className="bg-white p-6 rounded-xl shadow-2xs text-center text-slate-500">
-            Work in progress for section: {activeTab}
+          <div className="grid grid-cols-1 xl:grid-cols-8 gap-4">
+            <Panel4_Collaboration data={collaborationRequests} onViewRequest={setSelectedRequest} />
           </div>
         );
+      case 'projects':
+        return <IndustryActiveProjectsView projects={projects} onNavigateToFunding={() => setActiveTab && setActiveTab('funding')} />;
+      case 'funding':
+        return <IndustryFundingView user={user} />;
+      case 'testing':
+        return <IndustryTestingLabsView projects={projects} />;
+      case 'profile':
+        return <IndustryComingSoonPanel title="Industry Profile & Credentials" onBackToDashboard={() => setActiveTab('dashboard')} />;
+      case 'capabilities':
+        return <IndustryComingSoonPanel title="R&D Capabilities & Infrastructure" onBackToDashboard={() => setActiveTab('dashboard')} />;
+      case 'experts':
+        return <IndustryComingSoonPanel title="Domain Experts & Mentorship Network" onBackToDashboard={() => setActiveTab('dashboard')} />;
+      case 'documents':
+        return <IndustryComingSoonPanel title="Legal Dossiers & MOUs" onBackToDashboard={() => setActiveTab('dashboard')} />;
+      case 'ip_transfer':
+        return <IndustryComingSoonPanel title="IP Licensing & Patent Commercialization" onBackToDashboard={() => setActiveTab('dashboard')} />;
+      case 'internships':
+        return <IndustryComingSoonPanel title="Student Internships & Talent Hiring" onBackToDashboard={() => setActiveTab('dashboard')} />;
+      case 'communication':
+        return <IndustryComingSoonPanel title="Direct University R&D Communications" onBackToDashboard={() => setActiveTab('dashboard')} />;
+      case 'reports':
+      case 'impact':
+        return <IndustryComingSoonPanel title="Impact Assessment & Milestone Analytics" onBackToDashboard={() => setActiveTab('dashboard')} />;
+      case 'settings':
+        return <IndustryComingSoonPanel title="Security & Organization Settings" onBackToDashboard={() => setActiveTab('dashboard')} />;
+      default:
+        return <IndustryComingSoonPanel title={`Module: ${activeTab}`} onBackToDashboard={() => setActiveTab('dashboard')} />;
     }
   };
 

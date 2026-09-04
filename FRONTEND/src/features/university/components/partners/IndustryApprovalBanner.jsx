@@ -48,11 +48,16 @@ export const IndustryApprovalBanner = ({
             </div>
 
             <div className="mt-1">
-              <h4 className="text-xs font-black text-slate-900 leading-tight">
-                {partnerName} has officially approved collaboration & lab access
+              <h4 className="text-xs font-black text-slate-900 leading-tight flex items-center flex-wrap gap-1.5">
+                <span>{partnerName} has officially approved collaboration & lab access</span>
+                {latest.labChargesQuoted && (
+                  <span className="text-[10px] text-[#007A61] bg-white px-2 py-0.5 rounded border border-emerald-300 font-black">
+                    Lab Fee: {latest.labChargesQuoted}
+                  </span>
+                )}
               </h4>
               <p className="text-[11px] text-slate-600 mt-0.5 leading-normal">
-                Proposal &bull; <strong className="text-slate-800">"{projectTitle}"</strong> has been approved for budget {budget}. Industry testing laboratories and technical resources are now unlocked.
+                Proposal &bull; <strong className="text-slate-800">"{projectTitle}"</strong> {latest.labChargesQuoted ? `quoted lab fee of ${latest.labChargesQuoted}. ${latest.quoteStatus === 'Accepted' ? 'Fee Accepted & Facilities Unlocked.' : 'Review & Accept lab fee in Dossier.'}` : `has been approved for budget ${budget}. Industry testing laboratories unlocked.`}
               </p>
             </div>
           </div>

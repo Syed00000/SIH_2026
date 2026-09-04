@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { X, Factory, ShieldCheck, CheckCircle2, Send, Lock, MapPin, ExternalLink } from 'lucide-react';
+import { X, Factory, ShieldCheck, Send, Lock, Clock, MapPin, ExternalLink } from 'lucide-react';
 import { universityApiService } from '../../services/universityApiService.js';
-import { PartnerRequestsHistory } from './PartnerRequestsHistory.jsx';
 import { PartnerSpocCard } from './PartnerSpocCard.jsx';
+import { PartnerDomainBadges } from './PartnerDomainBadges.jsx';
+import { PartnerProblemStatementSection } from './PartnerProblemStatementSection.jsx';
 
 export const PartnerDetailModal = ({
   partner,
@@ -12,6 +13,7 @@ export const PartnerDetailModal = ({
 }) => {
   const [partnerRequests, setPartnerRequests] = useState([]);
   const [loadingRequests, setLoadingRequests] = useState(false);
+  const [selectedProblem, setSelectedProblem] = useState(null);
 
   useEffect(() => {
     if (isOpen && partner) {
@@ -42,6 +44,12 @@ export const PartnerDetailModal = ({
   const domains = partner.domains?.length ? partner.domains : [partner.focusArea || partner.thematicDomain || 'Technology & R&D'];
   const supportModes = partner.supportOffered?.length ? partner.supportOffered : (partner.supportModes || ['CSR Funding', 'Lab Testing', 'Mentorship']);
   const location = partner.location || (partner.address?.city ? `${partner.address.city}, ${partner.address.district || ''}, Jharkhand` : 'Jharkhand, India');
+
+  const matchedReqForProblem = partnerRequests.find(
+    (r) => (!selectedProblem || r.projectTitle?.toLowerCase() === selectedProblem?.title?.toLowerCase() || r.projectId === selectedProblem?.id)
+  );
+  const isSelectedProblemApproved = matchedReqForProblem?.status === 'Approved';
+  const isSelectedProblemPending = matchedReqForProblem?.status === 'Pending';
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs select-none animate-in fade-in duration-200">
@@ -79,7 +87,7 @@ export const PartnerDetailModal = ({
         </div>
 
         {/* Modal Body */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-5 bg-[#fafafa]">
+        <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-[#fafafa]">
           {/* Overview Card */}
           <div className="bg-white border border-slate-200/90 rounded-2xl p-4 shadow-2xs space-y-3">
             <div className="flex items-center justify-between">
@@ -93,19 +101,13 @@ export const PartnerDetailModal = ({
             <p className="text-xs text-slate-700 leading-relaxed font-medium">
               {partner.about || `${partnerName} is an official industrial CSR partner onboarded under the Jharkhand Higher & Technical Education Innovation Framework.`}
             </p>
-            
             <div className="flex items-center space-x-2 text-xs font-semibold text-slate-600 pt-1 border-t border-slate-100">
               <MapPin className="w-3.5 h-3.5 text-[#007A61] shrink-0" />
               <span>{location}</span>
               {partner.website && (
                 <>
                   <span className="text-slate-300">•</span>
-                  <a 
-                    href={partner.website} 
-                    target="_blank" 
-                    rel="noreferrer" 
-                    className="text-[#007A61] hover:underline flex items-center space-x-1 font-bold"
-                  >
+                  <a href={partner.website} target="_blank" rel="noreferrer" className="text-[#007A61] hover:underline flex items-center space-x-1 font-bold">
                     <span>Official Portal</span>
                     <ExternalLink className="w-3 h-3" />
                   </a>
@@ -117,46 +119,19 @@ export const PartnerDetailModal = ({
           {/* SPOC Contact Card */}
           <PartnerSpocCard spoc={spoc} />
 
-          {/* Research Domains & Support Capabilities */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div className="bg-white border border-slate-200/90 rounded-2xl p-4 shadow-2xs space-y-2">
-              <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 block">
-                Thematic Research Domains
-              </span>
-              <div className="flex flex-wrap gap-1.5">
-                {domains.map((d, i) => (
-                  <span key={i} className="px-2.5 py-1 bg-emerald-50 border border-emerald-200 text-[#007A61] text-[11px] font-bold rounded-lg">
-                    {d}
-                  </span>
-                ))}
-              </div>
-            </div>
-
-            <div className="bg-white border border-slate-200/90 rounded-2xl p-4 shadow-2xs space-y-2">
-              <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 block">
-                Support Modes Offered
-              </span>
-              <div className="flex flex-wrap gap-1.5">
-                {supportModes.map((s, i) => (
-                  <span key={i} className="px-2.5 py-1 bg-blue-50 border border-blue-200 text-blue-800 text-[11px] font-bold rounded-lg flex items-center space-x-1">
-                    <CheckCircle2 className="w-3 h-3 text-blue-600 shrink-0" />
-                    <span>{s}</span>
-                  </span>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* Dispatched Proposals History from DB */}
-          <PartnerRequestsHistory
-            partnerName={partnerName}
+          {/* Actual Problem Statement Selection for this Partner */}
+          <PartnerProblemStatementSection
+            partner={partner}
             partnerRequests={partnerRequests}
-            loadingRequests={loadingRequests}
-            setPartnerRequests={setPartnerRequests}
+            selectedProblem={selectedProblem}
+            onSelectProblem={setSelectedProblem}
           />
+
+          {/* Research Domains & Support Capabilities */}
+          <PartnerDomainBadges domains={domains} supportModes={supportModes} />
         </div>
 
-        {/* Footer */}
+        {/* Footer with ONLY 1 Request Lab Access button */}
         <div className="px-6 py-4 bg-white border-t border-slate-200 flex items-center justify-between shrink-0">
           <span className="text-xs text-slate-500 font-medium">
             Active under Jharkhand Higher Education MoU.
@@ -169,22 +144,27 @@ export const PartnerDetailModal = ({
             >
               Close
             </button>
-            {partnerRequests.some((r) => r.status === 'Approved') ? (
+            {isSelectedProblemApproved ? (
               <div className="px-4 py-2 bg-emerald-50 text-emerald-800 border border-emerald-300 rounded-xl text-xs font-black flex items-center space-x-1.5 shadow-2xs select-none">
                 <Lock className="w-4 h-4 text-[#007A61]" />
                 <span>Approved from University</span>
+              </div>
+            ) : isSelectedProblemPending ? (
+              <div className="px-4 py-2 bg-amber-50 text-amber-800 border border-amber-300 rounded-xl text-xs font-bold flex items-center space-x-1.5 shadow-2xs select-none">
+                <Clock className="w-4 h-4 text-amber-600" />
+                <span>Request Pending</span>
               </div>
             ) : (
               <button
                 type="button"
                 onClick={() => {
                   onClose();
-                  onOpenSendRequest && onOpenSendRequest(partner);
+                  onOpenSendRequest && onOpenSendRequest(partner, selectedProblem);
                 }}
                 className="px-5 py-2.5 bg-[#007A61] hover:bg-[#00604c] text-white text-xs font-bold rounded-xl flex items-center space-x-2 transition-all shadow-md cursor-pointer"
               >
                 <Send className="w-4 h-4" />
-                <span>Initiate CSR / Partnership Request</span>
+                <span>Request Lab Access for Problem</span>
               </button>
             )}
           </div>

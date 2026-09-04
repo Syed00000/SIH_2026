@@ -1,4 +1,4 @@
-import { UniversityPartner, UniversityIndustryRequest, UniversityActivity } from '../model.js';
+import { UniversityProject, UniversityPartner, UniversityIndustryRequest, UniversityActivity } from '../model.js';
 import MongooseIndustry from '../../../government/industries/infrastructure/model.js';
 import { findUniversityIdentity } from '../helpers/lookup.helper.js';
 import { syncIndustryApprovedProject } from '../helpers/industry-project-sync.helper.js';
@@ -84,6 +84,8 @@ export class PartnerRequestRepository {
         requestId,
         universityCode: code,
         projectTitle: payload.projectTitle,
+        problemStatement: payload.problemStatement || payload.executionOutcome || '',
+        challengeId: payload.challengeId || '',
         projectId: payload.projectId || '',
         partnerId,
         partnerName,
@@ -145,22 +147,28 @@ export class PartnerRequestRepository {
       return { success: false, error: err.message };
     }
   }
-  async updateIndustryRequestStatus(requestId, status, universityCode) {
+  async updateIndustryRequestStatus(requestId, status, universityCode, extra = {}) {
     try {
       const code = (universityCode || 'RU001').toUpperCase();
       const query = requestId.startsWith('IND-REQ-') ? { requestId } : { _id: requestId };
+      const updateData = { ...extra, updatedAt: new Date() };
+      if (status) updateData.status = status;
 
       const updatedReq = await UniversityIndustryRequest.findOneAndUpdate(
         query,
-        { status, updatedAt: new Date() },
+        { $set: updateData },
         { new: true }
       );
       if (updatedReq) {
-        if (status === 'Approved') {
+        if (extra.testingStages) {
+          const pFilter = updatedReq.projectId ? { projectId: updatedReq.projectId } : { title: updatedReq.projectTitle };
+          await UniversityProject.updateOne(pFilter, { $set: { testingStages: extra.testingStages } });
+        }
+        if (status === 'Approved' && (!updatedReq.quoteStatus || updatedReq.quoteStatus === 'Accepted')) {
           await syncIndustryApprovedProject(updatedReq);
         }
         const actText = status === 'Approved'
-          ? `Industry Partner "${updatedReq.partnerName}" approved collaboration & lab access for "${updatedReq.projectTitle}" (${updatedReq.estimatedBudget || 'CSR Grant'}).`
+          ? `Industry Partner "${updatedReq.partnerName}" approved collaboration & lab access for "${updatedReq.projectTitle}" (${updatedReq.labChargesQuoted ? `Lab Fee: ${updatedReq.labChargesQuoted}` : updatedReq.estimatedBudget || 'CSR Grant'}).`
           : `Industry request "${updatedReq.projectTitle}" status updated to ${status}`;
         await UniversityActivity.create({
           universityCode: code,

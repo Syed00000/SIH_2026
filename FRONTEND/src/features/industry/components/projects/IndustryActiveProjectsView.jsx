@@ -141,7 +141,7 @@ export const IndustryActiveProjectsView = ({ projects = {}, onNavigateToFunding 
                         </span>
                       </td>
                       <td className="px-4 py-3">
-                        <div className="font-bold text-slate-900 text-xs">{proj.budget || 'In Progress'}</div>
+                        <div className="font-bold text-slate-900 text-xs">{proj.labChargesQuoted || proj.budget || 'In Progress'}</div>
                         <div className="text-[10px] text-slate-400 font-medium">Disbursed: {proj.disbursed || '₹ 0'}</div>
                       </td>
                       <td className="px-4 py-3 text-right space-x-2">
