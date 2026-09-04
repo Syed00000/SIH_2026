@@ -1,127 +1,192 @@
-import React from 'react';
-import { Users, Crown, ArrowRight, FileText, Plus } from 'lucide-react';
+import React, { useState } from 'react';
+import { Users, Crown, Edit3, Trash2, Plus, Search } from 'lucide-react';
 
-export const FacultyTeamsListTable = ({ projects = [], onSelectProject, onAddNewTeam }) => {
+export const FacultyTeamsListTable = ({ teams = [], onSelectTeam, onAddNewTeam, onDeleteTeam }) => {
+  const [search, setSearch] = useState('');
+  const [teamToDelete, setTeamToDelete] = useState(null);
+
+  const filtered = teams.filter((t) => {
+    if (!search.trim()) return true;
+    const q = search.toLowerCase();
+    return (
+      (t.name || '').toLowerCase().includes(q) ||
+      (t.teamCode || '').toLowerCase().includes(q) ||
+      (t.studentLead || '').toLowerCase().includes(q) ||
+      (t.project || '').toLowerCase().includes(q) ||
+      (t.members || []).some(m => (m.name || '').toLowerCase().includes(q) || (m.rollNo || '').toLowerCase().includes(q))
+    );
+  });
+
   return (
-    <div className="bg-white border border-slate-200/90 rounded-2xl shadow-2xs overflow-hidden">
-      <div className="p-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+    <div className="bg-white border border-slate-200/90 rounded-2xl shadow-2xs overflow-hidden space-y-0">
+      <div className="p-4 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-slate-50/50">
         <div>
           <h3 className="text-sm font-black text-slate-900 flex items-center space-x-2">
             <Users className="w-4 h-4 text-[#007A61]" />
-            <span>All Mentored Teams</span>
+            <span>All Mentored Research Teams</span>
           </h3>
-          <p className="text-[11px] text-slate-500 mt-1">
-            Overview of all your R&D projects and their assigned student teams.
-          </p>
+          <p className="text-[11px] text-slate-500 mt-0.5">Student teams & research squads formed by your research cell.</p>
         </div>
-        <div className="flex items-center space-x-3">
-          <div className="text-[10.5px] font-bold bg-slate-100 text-slate-600 px-3 py-1.5 rounded-full border border-slate-200">
-            {projects.length} Total Projects
-          </div>
-          <button
-            onClick={onAddNewTeam}
-            className="flex items-center space-x-1.5 bg-[#007A61] hover:bg-[#006650] text-white text-xs font-bold px-3.5 py-2 rounded-xl transition-all shadow-2xs cursor-pointer"
-          >
+        <div className="flex items-center space-x-2">
+          <div className="text-[10.5px] font-bold bg-slate-100 text-slate-600 px-3 py-1.5 rounded-full border border-slate-200">{teams.length} Teams</div>
+          <button onClick={onAddNewTeam} className="flex items-center space-x-1.5 bg-[#007A61] hover:bg-[#006650] text-white text-xs font-bold px-3.5 py-2 rounded-xl transition-all shadow-2xs cursor-pointer">
             <Plus className="w-4 h-4" />
             <span>Add New Team</span>
           </button>
         </div>
       </div>
 
-      <div className="overflow-x-auto">
-        <table className="w-full text-left text-xs">
-          <thead className="bg-slate-50 text-slate-500 font-extrabold border-b border-slate-200 uppercase tracking-wider text-[10px]">
-            <tr>
-              <th className="px-5 py-3">Project / Problem Statement</th>
-              <th className="px-5 py-3">Team Identity</th>
-              <th className="px-5 py-3">Student Leader</th>
-              <th className="px-5 py-3 text-center">Roster</th>
-              <th className="px-5 py-3 text-right">Action</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-100">
-            {projects.map((proj) => {
-              const projectId = proj.projectId || proj.challengeId || proj._id;
-              const hasTeam = Array.isArray(proj.teamMembers) && proj.teamMembers.length > 0;
-              const lead = hasTeam
-                ? proj.teamMembers.find((m) => m.isLead) || proj.teamMembers[0]
-                : proj.studentLead && proj.studentLead !== 'Unassigned'
-                ? { name: proj.studentLead, rollNo: 'Lead Innovator' }
-                : null;
+      <div className="p-3 border-b border-slate-100 bg-white">
+        <div className="relative">
+          <input
+            type="text" value={search} onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search teams by name, leader, roll number, project..."
+            className="w-full pl-8 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:ring-1 focus:ring-[#007A61] focus:bg-white shadow-2xs"
+          />
+          <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2" />
+        </div>
+      </div>
 
-              return (
-                <tr 
-                  key={projectId} 
-                  onClick={() => onSelectProject(projectId)}
-                  className="hover:bg-emerald-50/40 transition-colors cursor-pointer group"
-                >
-                  <td className="px-5 py-4 w-1/3">
-                    <div className="flex items-start space-x-3">
-                      <div className="w-7 h-7 rounded-lg bg-slate-100 text-slate-500 flex items-center justify-center shrink-0 border border-slate-200">
-                        <FileText className="w-3.5 h-3.5" />
-                      </div>
-                      <div>
-                        <div className="font-bold text-slate-900 line-clamp-2 leading-snug group-hover:text-[#007A61] transition-colors">
-                          {proj.title}
-                        </div>
-                        <div className="text-[10px] text-slate-500 mt-1 font-mono flex items-center space-x-1.5">
-                          <span className="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
-                          <span>{projectId}</span>
-                        </div>
-                      </div>
-                    </div>
-                  </td>
-                  
-                  <td className="px-5 py-4">
-                    <div className="font-extrabold text-slate-800">
-                      {proj.studentTeam || proj.teamName || 'Innovation Lab'}
-                    </div>
-                    {!hasTeam && (
-                      <span className="inline-block mt-1 text-[9.5px] font-bold bg-amber-50 text-amber-600 px-2 py-0.5 rounded border border-amber-200/50">
-                        Formation Pending
-                      </span>
-                    )}
-                  </td>
-
-                  <td className="px-5 py-4">
-                    {lead ? (
+      {filtered.length === 0 ? (
+        <div className="py-12 text-center text-slate-400 space-y-2">
+          <Users className="w-10 h-10 mx-auto text-slate-300" />
+          <h4 className="font-bold text-slate-700 text-xs">
+            {teams.length === 0 ? 'No Teams Created Yet' : 'No Matching Teams Found'}
+          </h4>
+          <p className="text-[11px] max-w-sm mx-auto text-slate-500">
+            {teams.length === 0 ? 'You can create a team with or without problem statements and recruit members anytime.' : 'Try searching with different keywords.'}
+          </p>
+          {teams.length === 0 && (
+            <button
+              type="button"
+              onClick={onAddNewTeam}
+              className="mt-2 inline-flex items-center space-x-1.5 bg-[#007A61] hover:bg-[#006650] text-white text-xs font-bold px-4 py-2 rounded-xl transition-all shadow-2xs cursor-pointer"
+            >
+              <Plus className="w-4 h-4" />
+              <span>Create Your First Team</span>
+            </button>
+          )}
+        </div>
+      ) : (
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-xs">
+            <thead className="bg-slate-50 text-slate-500 font-extrabold border-b border-slate-200 uppercase tracking-wider text-[10px]">
+              <tr>
+                <th className="px-4 py-3">Team Identity</th>
+                <th className="px-4 py-3">Linked Ground Problem / Project</th>
+                <th className="px-4 py-3">Student Team Leader</th>
+                <th className="px-4 py-3 text-center">Roster</th>
+                <th className="px-4 py-3 text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {filtered.map((t) => {
+                const isUnassigned = !t.projectId || t.project.includes('Not Assigned Yet');
+                return (
+                  <tr key={t.id || t.teamCode} className="hover:bg-emerald-50/40 transition-colors">
+                    <td className="px-4 py-3.5">
                       <div className="flex items-center space-x-2.5">
-                        <div className="w-6 h-6 rounded-full bg-amber-100 text-amber-700 flex items-center justify-center text-[9px] font-black shrink-0 border border-amber-300">
-                          <Crown className="w-3 h-3" />
+                        <div className="w-8 h-8 rounded-xl bg-emerald-100 text-[#007A61] flex items-center justify-center font-black text-xs shrink-0 border border-emerald-200">
+                          {t.name.slice(0, 2).toUpperCase()}
                         </div>
                         <div>
-                          <div className="font-bold text-slate-800">{lead.name}</div>
-                          <div className="text-[10px] text-slate-500">{lead.rollNo}</div>
+                          <div className="font-extrabold text-slate-900 leading-snug">{t.name}</div>
+                          <div className="text-[10px] text-slate-500 font-mono mt-0.5">{t.teamCode}</div>
                         </div>
                       </div>
-                    ) : (
-                      <span className="text-[11px] text-slate-400 italic">Unassigned</span>
-                    )}
-                  </td>
+                    </td>
 
-                  <td className="px-5 py-4 text-center">
-                    {hasTeam ? (
-                      <div className="inline-flex items-center space-x-1.5 bg-emerald-50 text-emerald-700 border border-emerald-200/60 px-2.5 py-1 rounded-full font-bold">
-                        <Users className="w-3.5 h-3.5" />
-                        <span>{proj.teamMembers.length}</span>
+                    <td className="px-4 py-3.5 max-w-xs">
+                      {isUnassigned ? (
+                        <span className="inline-flex items-center px-2 py-0.5 bg-amber-50 text-amber-800 border border-amber-200 rounded-md text-[10px] font-bold">
+                          Not Assigned Yet (Independent Lab)
+                        </span>
+                      ) : (
+                        <div className="space-y-0.5">
+                          <div className="font-bold text-slate-800 line-clamp-1">{t.project}</div>
+                          {t.projectId && <span className="text-[9.5px] font-mono text-slate-500 bg-slate-100 px-1 rounded">{t.projectId}</span>}
+                        </div>
+                      )}
+                    </td>
+
+                    <td className="px-4 py-3.5">
+                      {t.studentLead && t.studentLead !== 'Unassigned' ? (
+                        <div className="flex items-center space-x-2">
+                          <div className="w-5 h-5 rounded-full bg-amber-100 text-amber-700 flex items-center justify-center text-[9px] font-black shrink-0 border border-amber-300">
+                            <Crown className="w-3 h-3" />
+                          </div>
+                          <div>
+                            <div className="font-bold text-slate-800">{t.studentLead}</div>
+                            {t.members?.find(m => m.isLead)?.rollNo && (
+                              <div className="text-[9.5px] text-slate-500 font-mono">{t.members.find(m => m.isLead).rollNo}</div>
+                            )}
+                          </div>
+                        </div>
+                      ) : (
+                        <span className="text-[11px] text-slate-400 italic">Unassigned</span>
+                      )}
+                    </td>
+
+                    <td className="px-4 py-3.5 text-center">
+                      <span className={`inline-flex items-center space-x-1 px-2.5 py-1 rounded-full text-[10.5px] font-bold ${
+                        t.membersCount > 0 ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-slate-100 text-slate-500'
+                      }`}>
+                        <Users className="w-3 h-3" />
+                        <span>{t.membersCount} {t.membersCount === 1 ? 'Member' : 'Members'}</span>
+                      </span>
+                    </td>
+
+                    <td className="px-4 py-3.5 text-right">
+                      <div className="flex items-center justify-end space-x-1.5">
+                        <button
+                          type="button"
+                          onClick={() => onSelectTeam(t)}
+                          className="px-2.5 py-1.5 bg-slate-50 hover:bg-[#007A61] text-slate-700 hover:text-white border border-slate-200 hover:border-[#007A61] rounded-xl text-[11px] font-bold transition-all shadow-2xs flex items-center space-x-1 cursor-pointer"
+                        >
+                          <Edit3 className="w-3 h-3" />
+                          <span>Edit</span>
+                        </button>
+                        {onDeleteTeam && (
+                          <button
+                            type="button"
+                            onClick={() => setTeamToDelete(t)}
+                            className="p-1.5 bg-slate-50 hover:bg-red-50 text-slate-400 hover:text-red-600 border border-slate-200 hover:border-red-200 rounded-xl transition-colors cursor-pointer"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        )}
                       </div>
-                    ) : (
-                      <span className="text-slate-300 font-bold">-</span>
-                    )}
-                  </td>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
 
-                  <td className="px-5 py-4 text-right">
-                    <span className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-lg bg-white border border-slate-200 text-slate-600 text-[11px] font-bold group-hover:border-[#007A61] group-hover:text-[#007A61] group-hover:bg-emerald-50 transition-all shadow-2xs">
-                      <span>{hasTeam ? 'Manage Team' : 'Assign Team'}</span>
-                      <ArrowRight className="w-3.5 h-3.5" />
-                    </span>
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
+      {teamToDelete && (
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl max-w-sm w-full border border-slate-200 shadow-2xl p-5 space-y-3 text-left">
+            <h4 className="text-sm font-bold text-slate-900">Delete Team</h4>
+            <p className="text-xs text-slate-600">
+              Are you sure you want to delete <strong>{teamToDelete.name}</strong> ({teamToDelete.teamCode})?
+            </p>
+            <div className="flex items-center justify-end space-x-2 pt-2">
+              <button type="button" onClick={() => setTeamToDelete(null)} className="px-3 py-1.5 bg-slate-100 text-slate-700 text-xs font-bold rounded-xl cursor-pointer">
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => { onDeleteTeam(teamToDelete); setTeamToDelete(null); }}
+                className="px-4 py-1.5 bg-red-600 hover:bg-red-700 text-white text-xs font-bold rounded-xl cursor-pointer"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

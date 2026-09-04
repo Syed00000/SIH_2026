@@ -244,6 +244,45 @@ export class FacultyTeamRepository {
       return [];
     }
   }
+
+  async createTeam(universityCode, teamData) {
+    const identity = await findUniversityIdentity(universityCode);
+    const code = identity?.code || (universityCode || 'RU001').toUpperCase().trim();
+    const teamCode = teamData.teamCode || `TEAM-RU-${Date.now().toString().slice(-4)}`;
+    try {
+      const payload = {
+        teamCode,
+        universityCode: code,
+        name: teamData.name || teamData.teamName || 'Research Innovation Team',
+        leader: teamData.leader || teamData.studentLead || 'Unassigned',
+        membersCount: (teamData.members || teamData.teamMembers || []).length,
+        members: teamData.members || teamData.teamMembers || [],
+        projectId: teamData.project || teamData.projectId || '',
+        projectTitle: teamData.projectTitle || '',
+        mentor: teamData.mentor || 'Faculty Mentor',
+        facultyMentorName: teamData.mentor || 'Faculty Mentor',
+        status: teamData.status || 'Active'
+      };
+      const doc = await UniversityTeam.create(payload);
+      return doc ? doc.toObject() : payload;
+    } catch { return { teamCode, ...teamData, universityCode: code }; }
+  }
+
+  async updateTeam(universityCode, teamId, updateData) {
+    try {
+      const query = teamId.match(/^[0-9a-fA-F]{24}$/) ? { _id: teamId } : { teamCode: teamId };
+      const doc = await UniversityTeam.findOneAndUpdate(query, { $set: updateData }, { new: true });
+      return doc ? doc.toObject() : updateData;
+    } catch { return updateData; }
+  }
+
+  async deleteTeam(universityCode, teamId) {
+    try {
+      const query = teamId.match(/^[0-9a-fA-F]{24}$/) ? { _id: teamId } : { teamCode: teamId };
+      await UniversityTeam.findOneAndDelete(query);
+    } catch { }
+    return { success: true, teamId };
+  }
 }
 
 export const facultyTeamRepository = new FacultyTeamRepository();

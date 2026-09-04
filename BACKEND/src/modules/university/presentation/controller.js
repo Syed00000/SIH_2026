@@ -24,6 +24,9 @@ export class UniversityController {
   updateFaculty(req, res, next) { return this.facultyTeamHandler.updateFaculty(req, res, next); }
   deleteFaculty(req, res, next) { return this.facultyTeamHandler.deleteFaculty(req, res, next); }
   getTeams(req, res, next) { return this.facultyTeamHandler.getTeams(req, res, next); }
+  createTeam(req, res, next) { return this.facultyTeamHandler.createTeam(req, res, next); }
+  updateTeam(req, res, next) { return this.facultyTeamHandler.updateTeam(req, res, next); }
+  deleteTeam(req, res, next) { return this.facultyTeamHandler.deleteTeam(req, res, next); }
 
   getProjects(req, res, next) { return this.challengeProjectHandler.getProjects(req, res, next); }
   createProject(req, res, next) { return this.challengeProjectHandler.createProject(req, res, next); }

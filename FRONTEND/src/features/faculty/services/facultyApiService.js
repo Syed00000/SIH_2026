@@ -5,18 +5,20 @@ export const facultyApiService = {
   // Fetch all data for this faculty
   async getFacultyData(facultyEmail, universityCode = 'RU001') {
     const cleanEmail = (facultyEmail || '').toLowerCase().trim();
-    const [allChallenges, allProjects, allFaculty, allApprovals, allActivities] = await Promise.all([
+    const [allChallenges, allProjects, allFaculty, allApprovals, allActivities, allTeamsRes] = await Promise.all([
       universityApiService.getAssignedChallenges(universityCode),
       universityApiService.getProjects(universityCode),
       universityApiService.getFaculty(universityCode),
       universityApiService.getApprovals(universityCode),
-      apiClient.get(`university/notifications?universityCode=${encodeURIComponent(universityCode)}`).then((r) => r?.data?.data || []).catch(() => [])
+      apiClient.get(`university/notifications?universityCode=${encodeURIComponent(universityCode)}`).then((r) => r?.data?.data || []).catch(() => []),
+      universityApiService.getTeams(universityCode)
     ]);
 
     const challengesList = allChallenges?.challenges || (Array.isArray(allChallenges) ? allChallenges : []);
     const projectsList = Array.isArray(allProjects) ? allProjects : [];
     const facultyList = Array.isArray(allFaculty) ? allFaculty : [];
     const approvalsList = Array.isArray(allApprovals) ? allApprovals : [];
+    const teamsList = Array.isArray(allTeamsRes) ? allTeamsRes : [];
 
     // Find current faculty profile
     const currentFaculty = facultyList.find(
@@ -83,9 +85,11 @@ export const facultyApiService = {
 
     return {
       faculty: currentFaculty,
-      challenges: myChallenges,
+      challenges: myChallenges.length > 0 ? myChallenges : challengesList,
       allChallenges: challengesList,
       projects: enrichedProjects,
+      allProjects: projectsList,
+      teams: teamsList,
       approvals: approvalsList,
       revisions: revisionsList,
       activities: allActivities || []
@@ -124,7 +128,6 @@ export const facultyApiService = {
   },
 
   async savePrototypeDraft(projectId, prototypeData) {
-    // Simply updates the project with the latest blocks and sets status to Drafting
     try {
       const res = await this.updateProject(projectId, { 
         prototypeData,
@@ -171,23 +174,31 @@ export const facultyApiService = {
   },
 
   async deleteProject(projectId, universityCode = 'RU001') {
-    try {
-      const res = await apiClient.delete(`university/projects/${encodeURIComponent(projectId)}?universityCode=${encodeURIComponent(universityCode)}`);
-      return res?.data || { success: true, projectId };
-    } catch (err) {
-      console.error('API faculty deleteProject error:', err.message);
-      throw err;
-    }
+    return universityApiService.deleteProject(projectId, universityCode);
   },
 
   async dropChallenge(challengeId, universityCode = 'RU001') {
-    try {
-      const res = await apiClient.delete(`university/challenges/${encodeURIComponent(challengeId)}?universityCode=${encodeURIComponent(universityCode)}`);
-      return res?.data || { success: true, challengeId };
-    } catch (err) {
-      console.error('API faculty dropChallenge error:', err.message);
-      throw err;
-    }
+    return universityApiService.deleteChallenge(challengeId, universityCode);
+  },
+
+  async deleteChallenge(challengeId, universityCode = 'RU001') {
+    return universityApiService.deleteChallenge(challengeId, universityCode);
+  },
+
+  async getTeams(universityCode = 'RU001') {
+    return universityApiService.getTeams(universityCode);
+  },
+
+  async createTeam(teamData, universityCode = 'RU001') {
+    return universityApiService.createTeam(teamData, universityCode);
+  },
+
+  async updateTeam(teamId, teamData, universityCode = 'RU001') {
+    return universityApiService.updateTeam(teamId, teamData, universityCode);
+  },
+
+  async deleteTeam(teamId, universityCode = 'RU001') {
+    return universityApiService.deleteTeam(teamId, universityCode);
   }
 };
 

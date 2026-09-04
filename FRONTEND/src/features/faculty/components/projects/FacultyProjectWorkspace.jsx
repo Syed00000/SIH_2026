@@ -12,7 +12,33 @@ export const FacultyProjectWorkspace = ({
   onRefresh,
   onBack
 }) => {
-  const [activeTab, setActiveTab] = useState('overview');
+  const getInitialWorkspaceTab = () => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const urlSubTab = params.get('subtab');
+      const validSubTabs = ['overview', 'team', 'proposal', 'prototype'];
+      if (urlSubTab && validSubTabs.includes(urlSubTab)) return urlSubTab;
+      const stored = localStorage.getItem('joharsetu_faculty_workspace_tab');
+      if (stored && validSubTabs.includes(stored)) return stored;
+    } catch {
+      // ignore
+    }
+    return 'overview';
+  };
+
+  const [activeTab, setActiveTab] = useState(getInitialWorkspaceTab);
+
+  const handleSetWorkspaceTab = (tab) => {
+    setActiveTab(tab);
+    try {
+      localStorage.setItem('joharsetu_faculty_workspace_tab', tab);
+      const url = new URL(window.location.href);
+      url.searchParams.set('subtab', tab);
+      window.history.replaceState({}, '', url.toString());
+    } catch {
+      // ignore
+    }
+  };
 
   if (!project) return null;
 
@@ -94,7 +120,7 @@ export const FacultyProjectWorkspace = ({
       {/* Tabs */}
       <div className="flex space-x-1 border-b border-slate-200">
         <button
-          onClick={() => setActiveTab('overview')}
+          onClick={() => handleSetWorkspaceTab('overview')}
           className={`px-4 py-2 text-xs font-bold transition-colors border-b-2 cursor-pointer ${
             activeTab === 'overview' ? 'border-[#007A61] text-[#007A61]' : 'border-transparent text-slate-500 hover:text-slate-800'
           }`}
@@ -105,7 +131,7 @@ export const FacultyProjectWorkspace = ({
           </div>
         </button>
         <button
-          onClick={() => setActiveTab('team')}
+          onClick={() => handleSetWorkspaceTab('team')}
           className={`px-4 py-2 text-xs font-bold transition-colors border-b-2 cursor-pointer ${
             activeTab === 'team' ? 'border-[#007A61] text-[#007A61]' : 'border-transparent text-slate-500 hover:text-slate-800'
           }`}
@@ -116,7 +142,7 @@ export const FacultyProjectWorkspace = ({
           </div>
         </button>
         <button
-          onClick={() => setActiveTab('proposal')}
+          onClick={() => handleSetWorkspaceTab('proposal')}
           className={`px-4 py-2 text-xs font-bold transition-colors border-b-2 cursor-pointer ${
             activeTab === 'proposal' ? 'border-[#007A61] text-[#007A61]' : 'border-transparent text-slate-500 hover:text-slate-800'
           }`}
@@ -127,7 +153,7 @@ export const FacultyProjectWorkspace = ({
           </div>
         </button>
         <button
-          onClick={() => setActiveTab('prototype')}
+          onClick={() => handleSetWorkspaceTab('prototype')}
           className={`px-4 py-2 text-xs font-bold transition-colors border-b-2 cursor-pointer ${
             activeTab === 'prototype' ? 'border-[#007A61] text-[#007A61]' : 'border-transparent text-slate-500 hover:text-slate-800'
           }`}

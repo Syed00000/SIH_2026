@@ -1,36 +1,31 @@
-import { useState, useEffect } from 'react';
-import { universityApiService } from '../../../../university/services/universityApiService.js';
+import { useState, useMemo } from 'react';
+import { facultyApiService } from '../../../services/facultyApiService.js';
 
-export const useFacultyTeams = ({ projects = [], faculty, onRefresh, initialProjectId = null, viewMode = 'list' }) => {
-  const [selectedProjectId, setSelectedProjectId] = useState(
-    initialProjectId || projects[0]?.projectId || projects[0]?.challengeId || projects[0]?._id || ''
-  );
+const STORAGE_KEY = 'joharsetu_faculty_custom_teams';
 
-  useEffect(() => {
-    if (!selectedProjectId && projects.length > 0) {
-      setSelectedProjectId(initialProjectId || projects[0]?.projectId || projects[0]?.challengeId || projects[0]?._id);
-    }
-  }, [projects, initialProjectId, selectedProjectId]);
+const getStoredTeams = () => {
+  try {
+    return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+  } catch {
+    return [];
+  }
+};
 
-  const currentProject =
-    projects.find(
-      (p) =>
-        p.projectId === selectedProjectId ||
-        p.challengeId === selectedProjectId ||
-        (p._id && p._id.toString() === selectedProjectId)
-    ) ||
-    projects[0] ||
-    null;
-
-  const [teamName, setTeamName] = useState(
-    currentProject?.studentTeam || currentProject?.teamName || 'Smart Aqua Innovators'
-  );
-
-  const [teamMembers, setTeamMembers] = useState(
-    Array.isArray(currentProject?.teamMembers) && currentProject.teamMembers.length > 0
-      ? currentProject.teamMembers
-      : []
-  );
+export const useFacultyTeams = ({
+  projects = [],
+  challenges = [],
+  teams = [],
+  faculty,
+  onRefresh,
+  initialProjectId = null
+}) => {
+  const [editingTeamId, setEditingTeamId] = useState(null);
+  const [selectedProjectId, setSelectedProjectId] = useState(initialProjectId || '');
+  const [teamName, setTeamName] = useState('');
+  const [teamMembers, setTeamMembers] = useState([]);
+  const [saving, setSaving] = useState(false);
+  const [savedSuccess, setSavedSuccess] = useState(false);
+  const [localTeams, setLocalTeams] = useState(getStoredTeams);
 
   const [newMember, setNewMember] = useState({
     name: '',
@@ -39,92 +34,86 @@ export const useFacultyTeams = ({ projects = [], faculty, onRefresh, initialProj
     role: 'Student Team Leader',
     email: '',
     year: '3rd Year B.Tech',
-    isLead: true
+    isLead: false
   });
 
-  const [saving, setSaving] = useState(false);
-  const [savedSuccess, setSavedSuccess] = useState(false);
+  const allTeams = useMemo(() => {
+    const list = [];
+    const seen = new Set();
 
-  // Synchronize teamName and teamMembers when project changes
-  useEffect(() => {
-    if (currentProject) {
-      const defaultName =
-        currentProject.studentTeam ||
-        currentProject.teamName ||
-        `${faculty?.name?.split(' ')[0] || 'Research'} Innovation Team`;
-      setTeamName(defaultName);
-      setTeamMembers(Array.isArray(currentProject.teamMembers) ? currentProject.teamMembers : []);
-    }
-  }, [currentProject?.projectId, currentProject?._id, currentProject?.challengeId]);
+    projects.forEach((p) => {
+      const id = p.projectId || p.challengeId || p._id;
+      const tName = p.studentTeam || p.teamName || (p.teamMembers?.length ? `${p.title?.slice(0, 20)} Team` : '');
+      if (tName || (p.teamMembers && p.teamMembers.length > 0)) {
+        seen.add(id);
+        list.push({
+          id,
+          teamCode: p.teamCode || `TEAM-PRJ-${id}`,
+          name: tName || 'Innovation Lab Team',
+          studentLead: p.studentLead || p.teamMembers?.find((m) => m.isLead)?.name || 'Unassigned',
+          membersCount: p.teamMembers?.length || 0,
+          members: p.teamMembers || [],
+          project: p.title || 'Assigned Project',
+          projectId: id,
+          domain: p.domain || 'Technology',
+          status: p.status || 'Active',
+          source: 'project'
+        });
+      }
+    });
 
-  const handleSaveTeam = async (overrideMembers = null, overrideTeamName = null) => {
-    if (!currentProject) return;
-    setSaving(true);
-    try {
-      const activeMembers = overrideMembers !== null ? overrideMembers : teamMembers;
-      const activeName = overrideTeamName !== null ? overrideTeamName : teamName;
-      const leadMember = activeMembers.find((m) => m.isLead) || (activeMembers.length > 0 ? activeMembers[0] : null);
-      const finalTeamName = activeName?.trim() || `${faculty?.name?.split(' ')[0] || 'Research'} Innovation Team`;
-      const leadName = leadMember?.name || 'Unassigned';
+    [...teams, ...localTeams].forEach((t) => {
+      const code = t.teamCode || t.id || t._id;
+      if (!code || seen.has(code)) return;
+      seen.add(code);
+      list.push({
+        id: code,
+        teamCode: code,
+        name: t.name || t.teamName || 'Research Innovation Team',
+        studentLead: t.leader || t.studentLead || t.members?.find((m) => m.isLead)?.name || 'Unassigned',
+        membersCount: t.members?.length || t.teamMembers?.length || t.membersCount || 0,
+        members: t.members || t.teamMembers || [],
+        project: t.project && t.project !== 'Unassigned' ? t.project : 'Not Assigned Yet (Independent Lab)',
+        projectId: t.projectId || '',
+        domain: t.domain || 'R&D',
+        status: t.status || 'Active',
+        source: 'standalone'
+      });
+    });
+    return list;
+  }, [projects, teams, localTeams]);
 
-      const projId = currentProject.projectId || currentProject.challengeId || currentProject._id;
-      const uniCode = faculty?.universityCode || currentProject.universityCode || 'RU001';
-
-      await universityApiService.updateProject(
-        projId,
-        {
-          teamMembers: activeMembers,
-          teamMembersCount: activeMembers.length,
-          studentLead: leadName,
-          studentTeam: finalTeamName,
-          teamName: finalTeamName
-        },
-        uniCode
-      );
-
-      setSavedSuccess(true);
-      if (onRefresh) await onRefresh();
-      setTimeout(() => setSavedSuccess(false), 3000);
-      return true;
-    } catch (err) {
-      console.error('Failed to save team:', err);
-      return false;
-    } finally {
-      setSaving(false);
-    }
+  const handleStartCreate = () => {
+    setEditingTeamId(null);
+    setTeamName('');
+    setSelectedProjectId('');
+    setTeamMembers([]);
   };
 
-  const handleAddMember = async (e) => {
+  const handleStartEdit = (t) => {
+    setEditingTeamId(t.id || t.teamCode || t.projectId);
+    setTeamName(t.name || t.teamName || '');
+    setSelectedProjectId(t.projectId || '');
+    setTeamMembers(Array.isArray(t.members) ? t.members : Array.isArray(t.teamMembers) ? t.teamMembers : []);
+  };
+
+  const handleAddMember = (e) => {
     if (e && e.preventDefault) e.preventDefault();
     if (!newMember.name.trim()) return;
 
-    const isThisLead = Boolean(
-      newMember.isLead ||
-      newMember.role?.toLowerCase().includes('lead') ||
-      teamMembers.length === 0 ||
-      !teamMembers.some((m) => m.isLead)
-    );
-
-    const updatedExisting = isThisLead
-      ? teamMembers.map((m) => ({ ...m, isLead: false }))
-      : teamMembers;
-
-    const addedMember = {
-      id: `STU-${Date.now().toString().slice(-4)}`,
-      name: newMember.name.trim(),
-      rollNo: newMember.rollNo.trim() || `RU23BTECH${Math.floor(100 + Math.random() * 900)}`,
-      department: newMember.department,
-      role: newMember.role.trim() || (isThisLead ? 'Student Team Leader' : 'Student Researcher'),
-      email: newMember.email.trim() || `${newMember.name.toLowerCase().replace(/\s+/g, '.')}@student.ru.ac.in`,
-      year: newMember.year || '3rd Year B.Tech',
-      isLead: isThisLead
-    };
-
-    const newRoster = [...updatedExisting, addedMember];
-    setTeamMembers(newRoster);
-
-    // Auto-save instantly so student leader is saved in database immediately
-    await handleSaveTeam(newRoster, teamName);
+    setTeamMembers((prev) => [
+      ...prev,
+      {
+        id: `STU-${Date.now().toString().slice(-4)}`,
+        name: newMember.name.trim(),
+        rollNo: newMember.rollNo.trim() || `RU23BTECH${Math.floor(100 + Math.random() * 900)}`,
+        department: newMember.department,
+        role: newMember.role,
+        email: newMember.email.trim() || `${newMember.name.toLowerCase().replace(/\s+/g, '.')}@student.ru.ac.in`,
+        year: newMember.year,
+        isLead: newMember.isLead || prev.length === 0
+      }
+    ]);
 
     setNewMember({
       name: '',
@@ -137,25 +126,90 @@ export const useFacultyTeams = ({ projects = [], faculty, onRefresh, initialProj
     });
   };
 
-  const handleToggleLead = async (idx) => {
-    const updated = teamMembers.map((m, i) => ({ ...m, isLead: i === idx }));
-    setTeamMembers(updated);
-    await handleSaveTeam(updated, teamName);
+  const handleToggleLead = (idx) => setTeamMembers((prev) => prev.map((m, i) => ({ ...m, isLead: i === idx })));
+  const handleRemoveMember = (idx) => setTeamMembers((prev) => prev.filter((_, i) => i !== idx));
+
+  const handleDeleteTeam = async (t) => {
+    const id = t.id || t.teamCode || t.projectId;
+    try {
+      await facultyApiService.deleteTeam(id);
+    } catch { }
+    const updated = localTeams.filter((item) => item.id !== id && item.teamCode !== id && item.projectId !== id);
+    setLocalTeams(updated);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+    if (onRefresh) await onRefresh();
   };
 
-  const handleRemoveMember = async (idx) => {
-    let remaining = teamMembers.filter((_, i) => i !== idx);
-    if (teamMembers[idx]?.isLead && remaining.length > 0 && !remaining.some((m) => m.isLead)) {
-      remaining = remaining.map((m, i) => ({ ...m, isLead: i === 0 }));
+  const handleSaveTeam = async () => {
+    setSaving(true);
+    try {
+      const leadMember = teamMembers.find((m) => m.isLead) || teamMembers[0];
+      const finalTeamName = teamName.trim() || `${faculty?.name?.split(' ')[0] || 'Research'} Innovation Team`;
+      const leadName = leadMember?.name || 'Unassigned';
+
+      const targetProj = projects.find((p) => p.projectId === selectedProjectId || p.challengeId === selectedProjectId);
+      const targetChl = challenges.find((c) => c.challengeId === selectedProjectId || c.id === selectedProjectId);
+      const projTitle =
+        targetProj?.title ||
+        targetChl?.title ||
+        (selectedProjectId ? selectedProjectId : 'Not Assigned Yet (Independent Lab)');
+
+      const teamCode = editingTeamId || `TEAM-RU-${Date.now().toString().slice(-4)}`;
+      const payload = {
+        teamCode,
+        id: teamCode,
+        name: finalTeamName,
+        teamName: finalTeamName,
+        leader: leadName,
+        studentLead: leadName,
+        membersCount: teamMembers.length,
+        members: teamMembers,
+        project: projTitle,
+        projectId: selectedProjectId || '',
+        mentor: faculty?.name || 'Faculty Mentor',
+        status: 'Active'
+      };
+
+      if (targetProj) {
+        await facultyApiService.updateProject(targetProj.projectId || targetProj._id, {
+          ...targetProj,
+          teamMembers,
+          teamMembersCount: teamMembers.length,
+          studentLead: leadName,
+          studentTeam: finalTeamName,
+          teamName: finalTeamName
+        });
+      }
+
+      if (editingTeamId) {
+        await facultyApiService.updateTeam(teamCode, payload);
+      } else {
+        await facultyApiService.createTeam(payload);
+      }
+
+      const filtered = localTeams.filter(
+        (t) => t.id !== teamCode && t.teamCode !== teamCode && (!selectedProjectId || t.projectId !== selectedProjectId)
+      );
+      const updatedLocal = [payload, ...filtered];
+      setLocalTeams(updatedLocal);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedLocal));
+
+      setSavedSuccess(true);
+      if (onRefresh) await onRefresh();
+      setTimeout(() => setSavedSuccess(false), 2500);
+      return true;
+    } catch (err) {
+      console.error('Failed to save team:', err);
+      return false;
+    } finally {
+      setSaving(false);
     }
-    setTeamMembers(remaining);
-    await handleSaveTeam(remaining, teamName);
   };
 
   return {
+    editingTeamId,
     selectedProjectId,
     setSelectedProjectId,
-    currentProject,
     teamName,
     setTeamName,
     teamMembers,
@@ -163,9 +217,13 @@ export const useFacultyTeams = ({ projects = [], faculty, onRefresh, initialProj
     setNewMember,
     saving,
     savedSuccess,
+    allTeams,
+    handleStartCreate,
+    handleStartEdit,
     handleAddMember,
     handleToggleLead,
     handleRemoveMember,
+    handleDeleteTeam,
     handleSaveTeam
   };
 };

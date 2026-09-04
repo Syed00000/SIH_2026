@@ -13,8 +13,35 @@ import { FacultyNotificationsPanel } from './FacultyNotificationsPanel.jsx';
 import { facultyApiService } from '../../services/facultyApiService.js';
 
 export const FacultyLayout = ({ user, onLogout }) => {
-  const [activeTab, setActiveTab] = useState('dashboard');
-  const [selectedProjectId, setSelectedProjectId] = useState(null);
+  const getInitialTab = () => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const urlTab = params.get('tab');
+      const validTabs = ['dashboard', 'challenges', 'projects', 'revisions', 'teams', 'profile', 'project-workspace'];
+      if (urlTab && validTabs.includes(urlTab)) return urlTab;
+      const stored = localStorage.getItem('joharsetu_faculty_active_tab');
+      if (stored && validTabs.includes(stored)) return stored;
+    } catch {
+      // fallback
+    }
+    return 'dashboard';
+  };
+
+  const getInitialProjectId = () => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const urlId = params.get('projectId');
+      if (urlId) return urlId;
+      const stored = localStorage.getItem('joharsetu_faculty_project_id');
+      if (stored) return stored;
+    } catch {
+      // fallback
+    }
+    return null;
+  };
+
+  const [activeTab, setActiveTab] = useState(getInitialTab);
+  const [selectedProjectId, setSelectedProjectId] = useState(getInitialProjectId);
   const [isSidebarExpanded, setIsSidebarExpanded] = useState(true);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [selectedDistrict, setSelectedDistrict] = useState('All');
@@ -27,6 +54,56 @@ export const FacultyLayout = ({ user, onLogout }) => {
     approvals: [],
     revisions: []
   });
+
+  const handleSetActiveTab = (tab, projectId = null) => {
+    setActiveTab(tab);
+    if (projectId) {
+      setSelectedProjectId(projectId);
+    } else if (tab !== 'project-workspace') {
+      setSelectedProjectId(null);
+    }
+
+    try {
+      localStorage.setItem('joharsetu_faculty_active_tab', tab);
+      const url = new URL(window.location.href);
+      url.searchParams.set('tab', tab);
+
+      const targetProjectId = projectId || (tab === 'project-workspace' ? selectedProjectId : null);
+      if (tab === 'project-workspace' && targetProjectId) {
+        url.searchParams.set('projectId', targetProjectId);
+        localStorage.setItem('joharsetu_faculty_project_id', targetProjectId);
+      } else if (tab !== 'project-workspace') {
+        url.searchParams.delete('projectId');
+        localStorage.removeItem('joharsetu_faculty_project_id');
+      }
+
+      window.history.replaceState({}, '', url.toString());
+    } catch {
+      // ignore
+    }
+  };
+
+  useEffect(() => {
+    const handlePopState = () => {
+      try {
+        const params = new URLSearchParams(window.location.search);
+        const urlTab = params.get('tab');
+        const urlProjectId = params.get('projectId');
+        const validTabs = ['dashboard', 'challenges', 'projects', 'revisions', 'teams', 'profile', 'project-workspace'];
+        if (urlTab && validTabs.includes(urlTab)) {
+          setActiveTab(urlTab);
+        }
+        if (urlProjectId) {
+          setSelectedProjectId(urlProjectId);
+        }
+      } catch {
+        // ignore
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
 
   const facultyEmail = user?.email || 'binod@ru.ac.in';
   const rawCode = user?.profile?.universityCode || user?.profile?.aisheCode || user?.profile?.code || 'RU001';
@@ -134,12 +211,11 @@ export const FacultyLayout = ({ user, onLogout }) => {
         onExportPdf={() => window.print()}
         notificationCount={totalNotificationCount}
         notifications={notificationsList}
-        onViewAllNotifications={() => setActiveTab('notifications')}
+        onViewAllNotifications={() => handleSetActiveTab('notifications')}
         onClearNotifications={() => loadData(false)}
         onSelectNotification={(n) => {
           if (n.projectId) {
-            setSelectedProjectId(n.projectId);
-            setActiveTab('project-workspace');
+            handleSetActiveTab('project-workspace', n.projectId);
           }
         }}
         onProfileClick={() => setActiveTab('profile')}
@@ -148,7 +224,7 @@ export const FacultyLayout = ({ user, onLogout }) => {
       <div className="flex flex-1 min-h-0 overflow-hidden relative">
         <FacultySidebar
           activeTab={activeTab}
-          setActiveTab={setActiveTab}
+          setActiveTab={handleSetActiveTab}
           isSidebarExpanded={isSidebarExpanded}
           setIsSidebarExpanded={setIsSidebarExpanded}
           isMobileMenuOpen={isMobileMenuOpen}
@@ -167,26 +243,85 @@ export const FacultyLayout = ({ user, onLogout }) => {
               </div>
             ) : activeTab === 'notifications' ? (
               <FacultyNotificationsPanel
-                onBack={() => setActiveTab('dashboard')}
+                onBack={() => handleSetActiveTab('dashboard')}
                 universityCode={universityCode}
                 notifications={notificationsList}
-                onNavigateProject={(id) => { setSelectedProjectId(id); setActiveTab('project-workspace'); }}
+                onNavigateProject={(id) => { setSelectedProjectId(id); handleSetActiveTab('project-workspace', id); }}
                 onClearNotifications={() => loadData(false)}
               />
+            ) : activeTab === 'dashboard' ? (
+              <FacultyDashboard
+                faculty={data.faculty}
+                challenges={data.challenges}
+                projects={data.projects}
+                onNavigateTab={(tab, id = null) => {
+                  handleSetActiveTab(tab, id);
+                }}
+              />
             ) : activeTab === 'challenges' ? (
-              <FacultyAssignedChallenges challenges={data.challenges} faculty={data.faculty} onDraftProposal={() => setActiveTab('dashboard')} />
+              <FacultyAssignedChallenges
+                challenges={data.challenges || []}
+                allChallenges={data.allChallenges || []}
+                faculty={data.faculty}
+                onRefresh={loadData}
+                onDraftProposal={() => handleSetActiveTab('dashboard')}
+              />
             ) : activeTab === 'revisions' ? (
-              <FacultyRevisionsPanel revisions={data.revisions || []} projects={data.projects || []} faculty={data.faculty} onRefresh={loadData} onNavigateTab={(t, id) => { if (id) setSelectedProjectId(id); setActiveTab(t); }} />
+              <FacultyRevisionsPanel
+                revisions={data.revisions || []}
+                projects={data.projects || []}
+                faculty={data.faculty}
+                onRefresh={loadData}
+                onNavigateTab={(tab, id = null) => {
+                  handleSetActiveTab(tab, id);
+                }}
+              />
             ) : activeTab === 'project-workspace' ? (
-              <FacultyProjectWorkspace project={data.projects.find(p => p.projectId === selectedProjectId || p.challengeId === selectedProjectId)} projects={data.projects} faculty={data.faculty} onRefresh={loadData} onBack={() => setActiveTab('dashboard')} />
+              data.projects.find(p => p.projectId === selectedProjectId || p.challengeId === selectedProjectId) ? (
+                <FacultyProjectWorkspace
+                  project={data.projects.find(p => p.projectId === selectedProjectId || p.challengeId === selectedProjectId)}
+                  projects={data.projects}
+                  faculty={data.faculty}
+                  onRefresh={loadData}
+                  onBack={() => handleSetActiveTab('dashboard')}
+                />
+              ) : (
+                <div className="bg-white border border-slate-200/90 rounded-2xl p-10 text-center text-slate-500 space-y-3">
+                  <p className="text-xs font-bold text-slate-700">Project workspace could not locate selected project or is loading.</p>
+                  <button
+                    onClick={() => handleSetActiveTab('dashboard')}
+                    className="px-4 py-2 bg-[#007A61] hover:bg-[#006650] text-white text-xs font-bold rounded-xl transition-all shadow-2xs cursor-pointer"
+                  >
+                    Back to Dashboard
+                  </button>
+                </div>
+              )
             ) : activeTab === 'projects' ? (
-              <FacultyProjectsPanel projects={data.projects} faculty={data.faculty} onRefresh={loadData} onNavigateTab={setActiveTab} />
+              <FacultyProjectsPanel
+                projects={data.projects}
+                faculty={data.faculty}
+                onRefresh={loadData}
+                onNavigateTab={(tab, id = null) => handleSetActiveTab(tab, id)}
+              />
             ) : activeTab === 'teams' ? (
-              <FacultyTeamsPanel projects={data.projects} faculty={data.faculty} onRefresh={loadData} />
+              <FacultyTeamsPanel
+                projects={data.projects || []}
+                challenges={data.challenges || data.allChallenges || []}
+                teams={data.teams || []}
+                faculty={data.faculty}
+                onRefresh={loadData}
+              />
             ) : activeTab === 'profile' ? (
               <FacultyProfilePanel faculty={data.faculty} onRefresh={loadData} />
             ) : (
-              <FacultyDashboard faculty={data.faculty} challenges={data.challenges} projects={data.projects} onNavigateTab={(t, id) => { if (id) setSelectedProjectId(id); setActiveTab(t); }} />
+              <FacultyDashboard
+                faculty={data.faculty}
+                challenges={data.challenges}
+                projects={data.projects}
+                onNavigateTab={(tab, id = null) => {
+                  handleSetActiveTab(tab, id);
+                }}
+              />
             )}
           </main>
         </div>
