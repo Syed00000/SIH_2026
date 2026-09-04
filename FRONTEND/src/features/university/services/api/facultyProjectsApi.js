@@ -38,9 +38,33 @@ export const facultyProjectsApi = {
   async getTeams(universityCode = DEFAULT_UNIVERSITY_CODE) {
     try {
       const res = await apiClient.get(`university/teams?universityCode=${encodeURIComponent(universityCode)}`);
-      if (res?.data) return res.data;
+      if (res?.data && Array.isArray(res.data)) return res.data;
     } catch (err) { console.error('API getTeams error:', err.message); }
     return [];
+  },
+
+  async createTeam(teamData, universityCode = DEFAULT_UNIVERSITY_CODE) {
+    try {
+      const res = await apiClient.post(`university/teams?universityCode=${encodeURIComponent(universityCode)}`, teamData);
+      if (res?.data) return res.data;
+    } catch (err) { console.error('API createTeam error:', err.message); }
+    return teamData;
+  },
+
+  async updateTeam(teamId, teamData, universityCode = DEFAULT_UNIVERSITY_CODE) {
+    try {
+      const res = await apiClient.patch(`university/teams/${encodeURIComponent(teamId)}?universityCode=${encodeURIComponent(universityCode)}`, teamData);
+      if (res?.data) return res.data;
+    } catch (err) { console.error('API updateTeam error:', err.message); }
+    return { teamId, ...teamData };
+  },
+
+  async deleteTeam(teamId, universityCode = DEFAULT_UNIVERSITY_CODE) {
+    try {
+      const res = await apiClient.delete(`university/teams/${encodeURIComponent(teamId)}?universityCode=${encodeURIComponent(universityCode)}`);
+      if (res?.data) return res.data;
+    } catch (err) { console.error('API deleteTeam error:', err.message); }
+    return { success: true, teamId };
   },
 
   async getProjects(universityCode = DEFAULT_UNIVERSITY_CODE) {

@@ -63,6 +63,9 @@ export class UniversityService {
   updateFaculty(universityCode, id, data) { return this.facultyService.updateFaculty(universityCode, id, data); }
   deleteFaculty(universityCode, id) { return this.facultyService.deleteFaculty(universityCode, id); }
   getTeams(universityCode) { return this.facultyService.getTeams(universityCode); }
+  createTeam(universityCode, data) { return this.facultyService.createTeam(universityCode, data); }
+  updateTeam(universityCode, id, data) { return this.facultyService.updateTeam(universityCode, id, data); }
+  deleteTeam(universityCode, id) { return this.facultyService.deleteTeam(universityCode, id); }
 
   getActivities(universityCode) { return this.partnerApprovalService.getActivities(universityCode); }
   clearActivities(universityCode) { return this.partnerApprovalService.clearActivities(universityCode); }

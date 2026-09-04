@@ -3,6 +3,24 @@ import { ShieldCheck, Phone, Mail, Quote, Camera, ImageOff } from 'lucide-react'
 import { ChallengeInspectorEvidenceCard } from './ChallengeInspectorEvidenceCard.jsx';
 import { ChallengeInspectorEvidenceLightbox } from './ChallengeInspectorEvidenceLightbox.jsx';
 
+const resolveMediaUrl = (rawUrl) => {
+  if (!rawUrl || typeof rawUrl !== 'string') return '';
+  const trimmed = rawUrl.trim();
+  if (
+    trimmed.startsWith('http://') ||
+    trimmed.startsWith('https://') ||
+    trimmed.startsWith('data:') ||
+    trimmed.startsWith('blob:')
+  ) {
+    return trimmed;
+  }
+  const cleanPath = trimmed.startsWith('/') ? trimmed : `/${trimmed}`;
+  const backendBase = (typeof window !== 'undefined' && window.location.port === '5173')
+    ? 'http://127.0.0.1:3000'
+    : '';
+  return `${backendBase}${cleanPath}`;
+};
+
 export const ChallengeInspectorEvidenceTab = ({ challenge = {} }) => {
   const [selectedPreview, setSelectedPreview] = useState(null);
 
@@ -26,12 +44,13 @@ export const ChallengeInspectorEvidenceTab = ({ challenge = {} }) => {
 
   for (let idx = 0; idx < rawMedia.length; idx++) {
     const item = rawMedia[idx];
-    const url = typeof item === 'string' ? item.trim() : (item.url || item.src || item.link || '').trim();
-    if (!url || seenUrls.has(url)) continue;
-    seenUrls.add(url);
+    const rawUrl = typeof item === 'string' ? item.trim() : (item.url || item.src || item.link || item.accessUrl || '').trim();
+    if (!rawUrl || seenUrls.has(rawUrl)) continue;
+    seenUrls.add(rawUrl);
 
-    const isVid = Boolean(item.fileType === 'video' || item.type === 'video' || url.match(/\.(mp4|webm|ogg|mov|m4v)(\?.*)?$/i) || url.includes('/video/'));
-    const isPdf = Boolean(item.fileType === 'pdf' || item.type === 'pdf' || url.match(/\.pdf(\?.*)?$/i) || url.includes('/raw/'));
+    const url = resolveMediaUrl(rawUrl);
+    const isVid = Boolean(item.fileType === 'video' || item.type === 'video' || rawUrl.match(/\.(mp4|webm|ogg|mov|m4v)(\?.*)?$/i) || rawUrl.includes('/video/'));
+    const isPdf = Boolean(item.fileType === 'pdf' || item.type === 'pdf' || rawUrl.match(/\.pdf(\?.*)?$/i) || rawUrl.includes('/raw/'));
 
     normalizedMedia.push({
       url,

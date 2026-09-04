@@ -57,7 +57,8 @@ export const AdminManagement = () => {
     }
   };
 
-  const handleToggleStatus = async (id) => {
+  const handleToggleStatus = async (idOrAdmin) => {
+    const id = typeof idOrAdmin === 'object' ? (idOrAdmin?.id || idOrAdmin?._id) : idOrAdmin;
     const target = admins.find(a => (a.id === id || a._id === id));
     if (!target) return;
     const targetId = target.id || target._id;
@@ -69,7 +70,8 @@ export const AdminManagement = () => {
     }
   };
 
-  const handleDeleteAdmin = async (id) => {
+  const handleDeleteAdmin = async (idOrAdmin) => {
+    const id = typeof idOrAdmin === 'object' ? (idOrAdmin?.id || idOrAdmin?._id) : idOrAdmin;
     const target = admins.find(a => (a.id === id || a._id === id));
     const targetId = target?.id || target?._id || id;
     if (!window.confirm(`Are you sure you want to delete ${target?.fullName || 'this administrator'} from the database?`)) return;

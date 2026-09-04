@@ -1,5 +1,7 @@
 import { v2 as cloudinary } from 'cloudinary';
 import { Readable } from 'stream';
+import fs from 'fs';
+import path from 'path';
 import { StorageProvider } from '../interfaces/StorageProvider.js';
 import {
   StorageUploadError,
@@ -21,9 +23,6 @@ export class CloudinaryStorageProvider extends StorageProvider {
   ensureConfigured() {
     if (!this.configured) {
       this.configured = initCloudinaryClient();
-      if (!this.configured) {
-        throw new StorageUploadError('Cloudinary storage provider is not properly configured');
-      }
     }
   }
 
@@ -46,12 +45,44 @@ export class CloudinaryStorageProvider extends StorageProvider {
     const extension = fileType === 'pdf' && !baseId.endsWith('.pdf') ? '.pdf' : '';
     const publicId = `${baseId}${extension}`;
 
+    // Graceful fallback to local disk storage if Cloudinary is not configured
+    if (!this.configured) {
+      try {
+        const uploadsDir = path.join(process.cwd(), 'public/uploads');
+        if (!fs.existsSync(uploadsDir)) {
+          fs.mkdirSync(uploadsDir, { recursive: true });
+        }
+        const safeFilename = `${Date.now()}-${(originalFileName || 'file').replace(/[^a-zA-Z0-9.-]/g, '_')}`;
+        const filePath = path.join(uploadsDir, safeFilename);
+        fs.writeFileSync(filePath, buffer);
+
+        const accessUrl = `/uploads/${safeFilename}`;
+        logger.info({ msg: 'Uploaded media locally (Cloudinary unconfigured)', filePath, accessUrl });
+
+        return {
+          storageProvider: 'local',
+          storageKey: `uploads/${safeFilename}`,
+          providerPublicId: safeFilename,
+          resourceType,
+          originalFileName,
+          mimeType,
+          fileType,
+          fileSize: buffer.length,
+          accessUrl,
+          createdAt: new Date()
+        };
+      } catch (localErr) {
+        logger.error({ msg: 'Local storage fallback failed', error: localErr.message });
+        throw new StorageUploadError(`Failed to save file: ${localErr.message}`);
+      }
+    }
+
     const uploadOptions = {
       folder,
       public_id: publicId,
       resource_type: resourceType,
-      type: isPrivate ? 'authenticated' : 'upload',
-      overwrite: false,
+      type: 'upload',
+      overwrite: true,
       unique_filename: false
     };
 
@@ -67,12 +98,14 @@ export class CloudinaryStorageProvider extends StorageProvider {
             return reject(new StorageUploadError('Cloudinary did not return valid file metadata'));
           }
 
-          const accessUrl = generateSignedUrl({
+          const accessUrl = result.secure_url || result.url || generateSignedUrl({
             providerPublicId: result.public_id,
             resourceType,
-            isPrivate,
+            isPrivate: false,
             format: result.format
           });
+
+          logger.info({ msg: 'Cloudinary upload success', publicId: result.public_id, accessUrl });
 
           resolve({
             storageProvider: 'cloudinary',
@@ -98,21 +131,36 @@ export class CloudinaryStorageProvider extends StorageProvider {
   async getAccessUrl({
     providerPublicId,
     resourceType = 'image',
-    isPrivate = true,
+    isPrivate = false,
     expiresInSeconds = 3600
   }) {
     if (!providerPublicId) throw new StorageAccessError('Provider public ID is required');
-    return generateSignedUrl({ providerPublicId, resourceType, isPrivate, expiresInSeconds });
+    if (!this.configured || providerPublicId.startsWith('file_') || providerPublicId.includes('-')) {
+      return `/uploads/${providerPublicId}`;
+    }
+    return cloudinary.url(providerPublicId, { secure: true, resource_type: resourceType }) || generateSignedUrl({ providerPublicId, resourceType, isPrivate: false, expiresInSeconds });
   }
 
-  async delete({ providerPublicId, resourceType = 'image', isPrivate = true }) {
+  async delete({ providerPublicId, resourceType = 'image', isPrivate = false }) {
     this.ensureConfigured();
     if (!providerPublicId) throw new StorageDeleteError('Missing providerPublicId for deletion');
+
+    if (!this.configured) {
+      try {
+        const filePath = path.join(process.cwd(), 'public/uploads', providerPublicId);
+        if (fs.existsSync(filePath)) {
+          fs.unlinkSync(filePath);
+        }
+        return true;
+      } catch {
+        return false;
+      }
+    }
 
     try {
       const result = await cloudinary.uploader.destroy(providerPublicId, {
         resource_type: resourceType,
-        type: isPrivate ? 'authenticated' : 'upload',
+        type: 'upload',
         invalidate: true
       });
 

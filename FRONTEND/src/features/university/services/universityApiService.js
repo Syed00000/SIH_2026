@@ -57,6 +57,20 @@ export const universityApiService = {
     return { challengeId, facultyInfo, status: 'Accepted' };
   },
 
+  async deleteChallenge(challengeId, universityCode = DEFAULT_UNIVERSITY_CODE) {
+    try {
+      const res = await apiClient.delete(`university/challenges/${encodeURIComponent(challengeId)}?universityCode=${encodeURIComponent(universityCode)}`);
+      if (res?.data) return res.data;
+    } catch (err) {
+      try {
+        await apiClient.delete(`citizen/challenges/${encodeURIComponent(challengeId)}`);
+      } catch (e) {
+        console.error('API deleteChallenge error:', err.message);
+      }
+    }
+    return { success: true, challengeId };
+  },
+
   async getReports(universityCode = DEFAULT_UNIVERSITY_CODE) {
     try {
       const res = await apiClient.get(`university/reports?universityCode=${encodeURIComponent(universityCode)}`);

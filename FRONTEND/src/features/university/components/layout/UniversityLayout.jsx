@@ -6,7 +6,50 @@ import { UniversityTabContent } from './UniversityTabContent.jsx';
 import { universityApiService } from '../../services/universityApiService.js';
 
 export const UniversityLayout = ({ user, onLogout }) => {
-  const [activeTab, setActiveTab] = useState('dashboard');
+  const getInitialTab = () => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const urlTab = params.get('tab');
+      if (urlTab) return urlTab;
+      const stored = localStorage.getItem('joharsetu_uni_active_tab');
+      if (stored) return stored;
+    } catch {
+      // fallback
+    }
+    return 'dashboard';
+  };
+
+  const [activeTab, setActiveTab] = useState(getInitialTab);
+
+  const handleSetActiveTab = (tab) => {
+    setActiveTab(tab);
+    try {
+      localStorage.setItem('joharsetu_uni_active_tab', tab);
+      const url = new URL(window.location.href);
+      url.searchParams.set('tab', tab);
+      window.history.replaceState({}, '', url.toString());
+    } catch {
+      // ignore
+    }
+  };
+
+  useEffect(() => {
+    const handlePopState = () => {
+      try {
+        const params = new URLSearchParams(window.location.search);
+        const urlTab = params.get('tab');
+        if (urlTab) {
+          setActiveTab(urlTab);
+        }
+      } catch {
+        // ignore
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
   const [isSidebarExpanded, setIsSidebarExpanded] = useState(true);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [selectedDistrict, setSelectedDistrict] = useState('All');
@@ -106,7 +149,7 @@ export const UniversityLayout = ({ user, onLogout }) => {
       <div className="flex flex-1 min-h-0 overflow-hidden relative">
         <UniversitySidebar
           activeTab={activeTab}
-          setActiveTab={setActiveTab}
+          setActiveTab={handleSetActiveTab}
           isSidebarExpanded={isSidebarExpanded}
           setIsSidebarExpanded={setIsSidebarExpanded}
           isMobileMenuOpen={isMobileMenuOpen}
@@ -125,7 +168,7 @@ export const UniversityLayout = ({ user, onLogout }) => {
             ) : (
               <UniversityTabContent
                 activeTab={activeTab}
-                setActiveTab={setActiveTab}
+                setActiveTab={handleSetActiveTab}
                 dashboardData={dashboardData}
                 adminName={adminName}
                 uniName={uniName}

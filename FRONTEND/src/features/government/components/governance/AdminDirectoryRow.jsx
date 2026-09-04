@@ -96,7 +96,7 @@ export const AdminDirectoryRow = ({
           </button>
           <button
             type="button"
-            onClick={() => onToggleStatus(admin)}
+            onClick={() => onToggleStatus(admin.id || admin._id)}
             className={`p-1.5 rounded-md transition-colors cursor-pointer ${
               !isSuspended
                 ? 'text-slate-400 hover:text-amber-600 hover:bg-amber-50'
@@ -108,7 +108,7 @@ export const AdminDirectoryRow = ({
           </button>
           <button
             type="button"
-            onClick={() => onDeleteAdmin(admin.id)}
+            onClick={() => onDeleteAdmin(admin.id || admin._id)}
             className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors cursor-pointer"
             title="Delete Admin"
           >
