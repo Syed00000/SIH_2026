@@ -61,9 +61,9 @@ export const createPartnerApprovalHandler = (service) => {
   const updateIndustryRequestStatus = async (req, res, next) => {
     try {
       const { id } = req.params;
-      const { status } = req.body;
+      const { status, ...extra } = req.body;
       const code = extractUniversityCode(req, 'RU001');
-      const data = await service.updateIndustryRequestStatus(id, status, code);
+      const data = await service.updateIndustryRequestStatus(id, status, code, extra);
       res.status(200).json({ status: 'SUCCESS', message: 'Industry request status updated', data });
     } catch (error) { next(error); }
   };

@@ -35,8 +35,8 @@ export class UniversityPartnerApprovalService {
     return await this.repository.getIndustryRequests(universityCode);
   }
 
-  async updateIndustryRequestStatus(requestId, status, universityCode) {
-    return await this.repository.updateIndustryRequestStatus(requestId, status, universityCode);
+  async updateIndustryRequestStatus(requestId, status, universityCode, extra = {}) {
+    return await this.repository.updateIndustryRequestStatus(requestId, status, universityCode, extra);
   }
 
   async deleteIndustryRequest(requestId, universityCode) {

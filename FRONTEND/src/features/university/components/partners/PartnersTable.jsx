@@ -3,7 +3,7 @@ import { Factory, ChevronLeft, ChevronRight, ShieldCheck, MapPin, Lock, Clock } 
 import { PartnerActionCell } from './PartnerActionCell.jsx';
 
 export const PartnersTable = ({
-  partners = [], requests = [], selectedPartnerId, onSelectPartner, onOpenSendRequest, loading = false
+  partners = [], requests = [], selectedPartnerId, onSelectPartner, onOpenSendRequest, onApproveAmount, loading = false
 }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 8;
@@ -149,6 +149,7 @@ export const PartnersTable = ({
                           request={matchedReq}
                           onSelectPartner={onSelectPartner}
                           onOpenSendRequest={onOpenSendRequest}
+                          onApproveAmount={onApproveAmount}
                         />
                       </td>
                     </tr>

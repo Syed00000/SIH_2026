@@ -2,11 +2,13 @@ import { UniversityProject, UniversityIndustryRequest, UniversityActivity } from
 
 export async function syncIndustryApprovedProject(request) {
   if (!request || request.status !== 'Approved') return null;
+  if (request.labChargesQuoted && request.quoteStatus !== 'Accepted') return null;
 
   try {
     const uniCode = (request.universityCode || 'RU001').toUpperCase();
     const cleanBudgetNum = Number(String(request.estimatedBudget || '').replace(/[^\d]/g, '')) || 0;
     const formattedBudget = cleanBudgetNum > 0 ? `₹ ${cleanBudgetNum.toLocaleString('en-IN')}` : '₹ 0';
+    const finalBudget = request.labChargesQuoted || formattedBudget;
     const cleanDisbursedNum = Number(String(request.fundedAmount || '').replace(/[^\d]/g, '')) || 0;
     const formattedDisbursed = cleanDisbursedNum > 0 ? `₹ ${cleanDisbursedNum.toLocaleString('en-IN')}` : '₹ 0';
 
@@ -27,7 +29,7 @@ export async function syncIndustryApprovedProject(request) {
           universityCode: uniCode,
           title: request.projectTitle,
           domain: 'Industry Collaboration',
-          problemStatement: request.executionOutcome || request.projectTitle,
+          problemStatement: request.problemStatement || request.executionOutcome || request.projectTitle,
           leadMentor: request.facultyName || 'Faculty Nodal Officer',
           facultyMentor: {
             name: request.facultyName || 'Faculty Nodal Officer',
@@ -45,11 +47,15 @@ export async function syncIndustryApprovedProject(request) {
         $set: {
           status: 'In Progress',
           budgetStatus: cleanDisbursedNum > 0 ? 'Industry Funded' : 'Industry Approved',
-          proposedBudget: formattedBudget,
-          sanctionedBudget: formattedBudget,
+          proposedBudget: finalBudget,
+          sanctionedBudget: finalBudget,
           disbursedAmount: formattedDisbursed,
+          labChargesQuoted: request.labChargesQuoted || '',
+          quoteStatus: request.quoteStatus || '',
+          quoteTerms: request.quoteTerms || '',
           partnerName: request.partnerName || 'Industry Partner',
           partnerId: request.partnerId || '',
+          testingStages: request.testingStages || [],
           updatedAt: new Date()
         }
       },
@@ -88,7 +94,13 @@ export async function syncIndustryApprovedProject(request) {
 
 export async function syncAllApprovedIndustryProjects() {
   try {
-    const approvedRequests = await UniversityIndustryRequest.find({ status: 'Approved' }).lean();
+    const approvedRequests = await UniversityIndustryRequest.find({
+      status: 'Approved',
+      $or: [
+        { labChargesQuoted: { $in: ['', null] } },
+        { quoteStatus: 'Accepted' }
+      ]
+    }).lean();
     const synced = [];
     for (const req of approvedRequests) {
       const proj = await syncIndustryApprovedProject(req);

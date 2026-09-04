@@ -36,14 +36,21 @@ export const UniversitySidebar = ({
   setIsMobileMenuOpen,
   onLogout,
   universityName = 'Ranchi University',
-  approvalCount = 0
+  approvalCount = 0,
+  partnerNotificationCount = 0
 }) => {
   const navItems = [
     { id: 'dashboard', label: 'Dashboard', icon: Home },
     { id: 'challenges', label: 'Assigned Challenges', icon: Layers },
     { id: 'faculty', label: 'Faculty Mentors', icon: GraduationCap },
     { id: 'projects', label: 'Projects Portfolio', icon: Briefcase },
-    { id: 'partners', label: 'Industry Partners', icon: Handshake },
+    {
+      id: 'partners',
+      label: 'Industry Partners',
+      icon: Handshake,
+      badge: partnerNotificationCount > 0 ? partnerNotificationCount : null,
+      badgeColor: 'amber'
+    },
     {
       id: 'approvals',
       label: 'Approvals',

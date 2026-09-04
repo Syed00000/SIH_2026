@@ -71,8 +71,22 @@ export const UniversityLayout = ({ user, onLogout }) => {
   const adminName = user?.fullName || dashboardData?.adminUser?.name || dashboardData?.university?.nodalOfficer?.name || 'Dr. Ankit Verma';
   const uniName = dashboardData?.name || dashboardData?.university?.name || 'Ranchi University';
 
+  const pendingIndustryAmountCount = industryRequestsList.filter(
+    (r) => r.labChargesQuoted && r.quoteStatus !== 'Accepted' && r.quoteStatus !== 'Declined'
+  ).length;
+
   // Build real-time institutional notifications from live database records
   const notificationsList = [
+    ...industryRequestsList.filter(r => r.labChargesQuoted && r.quoteStatus !== 'Accepted' && r.quoteStatus !== 'Declined').map(r => ({
+      id: `quote-${r.requestId || r._id}`,
+      type: 'INDUSTRY',
+      category: 'Fee Approval Required',
+      title: `${r.partnerName || 'Industry'} Quoted Lab Fee: ${r.labChargesQuoted}`,
+      message: `Industry partner requested ${r.labChargesQuoted} for testing access on "${r.projectTitle}". Approve or decline amount.`,
+      time: r.updatedAt ? new Date(r.updatedAt).toLocaleDateString('en-GB') : 'Recent',
+      actionLabel: 'Approve Amount in Partners',
+      targetTab: 'partners'
+    })),
     ...industryRequestsList.filter(r => r.status === 'Approved').map(r => ({
       id: `ind-${r.requestId || r._id}`,
       type: 'INDUSTRY',
@@ -130,6 +144,7 @@ export const UniversityLayout = ({ user, onLogout }) => {
           onLogout={onLogout}
           universityName={uniName}
           approvalCount={pendingApprovalsCount}
+          partnerNotificationCount={pendingIndustryAmountCount}
         />
 
         <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden bg-[#f8fafc]">

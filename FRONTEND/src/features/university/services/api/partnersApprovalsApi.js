@@ -80,11 +80,12 @@ export const partnersApprovalsApi = {
     return [];
   },
 
-  async updateIndustryRequestStatus(requestId, status, universityCode = DEFAULT_UNIVERSITY_CODE) {
+  async updateIndustryRequestStatus(requestId, status, universityCode = DEFAULT_UNIVERSITY_CODE, extra = {}) {
     try {
+      const payload = typeof status === 'object' ? status : { status, ...extra };
       const res = await apiClient.patch(
         `university/industry-requests/${encodeURIComponent(requestId)}/status?universityCode=${encodeURIComponent(universityCode)}`,
-        { status }
+        payload
       );
       if (res?.data) return res.data;
     } catch (err) { console.error('API updateIndustryRequestStatus error:', err.message); }

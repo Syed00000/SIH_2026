@@ -71,10 +71,10 @@ export const useIndustryData = (user) => {
 
       // 3. Extract Real Incoming Collaboration Requests from MongoDB
       let fallbackReqs = [];
-      if (!liveFunds?.incomingRequests?.length) {
-        try {
-          fallbackReqs = await universityApiService.getIndustryRequests();
-        } catch {}
+      try {
+        fallbackReqs = await universityApiService.getIndustryRequests('RU001');
+      } catch (e) {
+        console.warn('Could not fetch industry requests:', e);
       }
       const formattedRequests = formatIncomingRequests(liveFunds, fallbackReqs);
       setCollaborationRequests({ received: formattedRequests, sent: [], matched: [] });

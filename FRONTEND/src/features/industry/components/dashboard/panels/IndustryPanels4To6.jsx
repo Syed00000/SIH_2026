@@ -110,7 +110,7 @@ export const Panel5_Projects = ({ data = {}, onViewAll, onViewProject }) => (
                   <td className="px-4 py-2.5 text-slate-600">{proj.stage}</td>
                   <td className="px-4 py-2.5">
                     <span className="font-bold text-[10px] text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-100">
-                      {proj.disbursed && proj.disbursed !== '₹ 0' ? proj.disbursed : (proj.budget || 'In Progress')}
+                      {proj.labChargesQuoted || (proj.disbursed && proj.disbursed !== '₹ 0' ? proj.disbursed : (proj.budget || 'In Progress'))}
                     </span>
                   </td>
                 </tr>
