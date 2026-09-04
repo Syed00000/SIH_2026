@@ -19,20 +19,24 @@ export const UniversityLayout = ({ user, onLogout }) => {
   const universityCode = rawCode;
   const [dashboardData, setDashboardData] = useState(null);
   const [approvalsList, setApprovalsList] = useState([]);
+  const [industryRequestsList, setIndustryRequestsList] = useState([]);
   const [pendingApprovalsCount, setPendingApprovalsCount] = useState(0);
   const [loading, setLoading] = useState(true);
 
   const loadData = async (isBackground = false) => {
     if (!isBackground) setLoading(true);
     try {
-      const [data, approvalsData] = await Promise.all([
+      const [data, approvalsData, indReqsData] = await Promise.all([
         universityApiService.getDashboardSummary(universityCode),
-        universityApiService.getApprovals(universityCode)
+        universityApiService.getApprovals(universityCode),
+        universityApiService.getIndustryRequests(universityCode)
       ]);
       setDashboardData(data);
       const appList = Array.isArray(approvalsData) ? approvalsData : [];
       setApprovalsList(appList);
       setPendingApprovalsCount(appList.filter(a => a.status === 'Pending').length);
+      const indList = Array.isArray(indReqsData) ? indReqsData : (Array.isArray(indReqsData?.data) ? indReqsData.data : []);
+      setIndustryRequestsList(indList);
     } catch (err) {
       console.error('Failed to load university dashboard layout data:', err);
     } finally {
@@ -67,6 +71,16 @@ export const UniversityLayout = ({ user, onLogout }) => {
 
   // Build real-time institutional notifications from live database records
   const notificationsList = [
+    ...industryRequestsList.filter(r => r.status === 'Approved').map(r => ({
+      id: `ind-${r.requestId || r._id}`,
+      type: 'INDUSTRY',
+      category: 'Industry Approved',
+      title: `${r.partnerName || 'Industry Partner'} Approved Proposal`,
+      message: `Industry Partner "${r.partnerName}" approved collaboration for "${r.projectTitle}" (${r.estimatedBudget || 'CSR Grant'}). Lab testing & R&D facilities unlocked.`,
+      time: r.updatedAt ? new Date(r.updatedAt).toLocaleDateString('en-GB') : 'Recent',
+      actionLabel: 'View in Industry Partners',
+      targetTab: 'partners'
+    })),
     ...approvalsList.filter(a => a.status === 'Pending').map(a => ({
       id: `app-${a.approvalId || a._id}`,
       type: 'APPROVAL',
@@ -81,11 +95,11 @@ export const UniversityLayout = ({ user, onLogout }) => {
       id: `act-${act._id || idx}`,
       type: 'ACTIVITY',
       category: 'Audit Notice',
-      title: act.type || 'SYSTEM LOG',
+      title: act.type === 'INDUSTRY_APPROVED' || act.type === 'INDUSTRY_REQUEST' ? 'Industry Approved' : (act.type || 'SYSTEM LOG'),
       message: act.text,
       time: act.relativeTime || 'Recently',
-      actionLabel: 'Open Dashboard',
-      targetTab: 'dashboard'
+      actionLabel: act.type?.includes('INDUSTRY') ? 'View Partners' : 'Open Dashboard',
+      targetTab: act.type?.includes('INDUSTRY') ? 'partners' : 'dashboard'
     }))
   ];
 

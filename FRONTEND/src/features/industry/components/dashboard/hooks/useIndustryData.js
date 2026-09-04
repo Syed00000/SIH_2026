@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { universityApiService } from '../../../../university/services/universityApiService.js';
 import { industryFundService } from '../../../services/industryFundService.js';
+import { formatIncomingRequests, extractActiveProjectsList } from './industryDataHelpers.js';
 
 export const useIndustryData = (user) => {
   const [loading, setLoading] = useState(true);
@@ -69,76 +70,22 @@ export const useIndustryData = (user) => {
       }
 
       // 3. Extract Real Incoming Collaboration Requests from MongoDB
-      let formattedRequests = [];
-      if (liveFunds?.incomingRequests && liveFunds.incomingRequests.length > 0) {
-        formattedRequests = liveFunds.incomingRequests.map((r) => {
-          let requiredParts = [];
-          if (r.fundingRequested) requiredParts.push('Funding');
-          if (r.labAccessRequested) requiredParts.push('Testing & Lab');
-          if (r.mentorshipRequested) requiredParts.push('Mentorship');
-          return {
-            id: r.requestId || r._id,
-            requestId: r.requestId,
-            title: r.projectTitle || 'N/A',
-            university: r.universityName || r.universityCode || 'Ranchi University',
-            universityCode: r.universityCode,
-            required: requiredParts.join(' + ') || (r.fundingRequested ? 'Funding Support' : 'Research Collaboration'),
-            budget: r.estimatedBudget || '₹ 0',
-            amountNumber: r.amountNumber || 0,
-            status: r.status || 'Pending',
-            faculty: r.facultyName || 'Faculty Nodal Officer',
-            date: r.submittedAt ? new Date(r.submittedAt).toLocaleDateString('en-IN') : 'Recent'
-          };
-        });
-      } else {
+      let fallbackReqs = [];
+      if (!liveFunds?.incomingRequests?.length) {
         try {
-          const reqs = await universityApiService.getIndustryRequests();
-          if (Array.isArray(reqs)) {
-            formattedRequests = reqs.map((r) => ({
-              id: r.requestId || r._id,
-              requestId: r.requestId,
-              title: r.projectTitle || 'N/A',
-              university: r.universityName || r.universityCode || 'Ranchi University',
-              universityCode: r.universityCode,
-              required: r.fundingRequested ? 'Funding Support' : 'Research Collaboration',
-              budget: r.estimatedBudget || '₹ 0',
-              status: r.status || 'Pending',
-              date: r.submittedAt ? new Date(r.submittedAt).toLocaleDateString('en-IN') : 'Recent'
-            }));
-          }
+          fallbackReqs = await universityApiService.getIndustryRequests();
         } catch {}
       }
-
-      setCollaborationRequests({
-        received: formattedRequests,
-        sent: [],
-        matched: []
-      });
+      const formattedRequests = formatIncomingRequests(liveFunds, fallbackReqs);
+      setCollaborationRequests({ received: formattedRequests, sent: [], matched: [] });
 
       // 4. Extract Real Active Projects from MongoDB (Zero Mock Data)
-      let activeProjectsList = [];
-      if (liveFunds?.availableUniversities && liveFunds.availableUniversities.length > 0) {
-        liveFunds.availableUniversities.forEach((uni) => {
-          if (Array.isArray(uni.activeProjects)) {
-            uni.activeProjects.forEach((proj) => {
-              activeProjectsList.push({
-                id: proj.id,
-                title: proj.title,
-                university: uni.name,
-                stage: proj.status || 'In Progress',
-                budget: proj.sanctionedBudget || '₹ 0',
-                disbursed: proj.disbursedAmount || '₹ 0',
-                status: proj.disbursedAmount && proj.disbursedAmount !== '₹ 0' ? 'Funded' : 'Active'
-              });
-            });
-          }
-        });
-      }
-
-      setProjects({
-        ongoing: activeProjectsList,
-        completed: []
-      });
+      const activeProjectsList = extractActiveProjectsList(liveFunds, formattedRequests);
+      setProjects({ ongoing: activeProjectsList, completed: [] });
+      setStats((prev) => ({
+        ...prev,
+        activeProjectsCount: Math.max(prev?.activeProjectsCount || 0, activeProjectsList.length)
+      }));
 
     } catch (error) {
       console.error('Error loading real industry data:', error);

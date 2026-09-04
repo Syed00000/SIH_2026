@@ -11,6 +11,7 @@ import {
 } from './panels/IndustryPanels7To16.jsx';
 import { IndustryRequestActionModal } from './IndustryRequestActionModal.jsx';
 import { IndustryFundingView } from '../funding/IndustryFundingView.jsx';
+import { IndustryActiveProjectsView } from '../projects/IndustryActiveProjectsView.jsx';
 
 export const IndustryDashboard = ({ activeTab, setActiveTab, user }) => {
   const [selectedRequest, setSelectedRequest] = useState(null);
@@ -53,10 +54,17 @@ export const IndustryDashboard = ({ activeTab, setActiveTab, user }) => {
             <Panel3_Capabilities data={capabilitiesData} industry={industryProfile} />
           </div>
           <div className="grid grid-cols-1 xl:grid-cols-8 gap-4">
-            <Panel4_Collaboration data={collaborationRequests} onViewRequest={setSelectedRequest} />
+            <Panel4_Collaboration 
+              data={collaborationRequests} 
+              onViewRequest={setSelectedRequest}
+              onViewAll={() => setActiveTab && setActiveTab('collaboration')}
+            />
           </div>
           <div className="grid grid-cols-1 xl:grid-cols-12 gap-4">
-            <Panel5_Projects data={projects} />
+            <Panel5_Projects 
+              data={projects} 
+              onViewAll={() => setActiveTab && setActiveTab('projects')}
+            />
             <Panel6_Funding data={fundingData} onNavigateToFunding={() => setActiveTab && setActiveTab('funding')} />
           </div>
           <div className="grid grid-cols-1 xl:grid-cols-10 gap-4">
@@ -84,7 +92,7 @@ export const IndustryDashboard = ({ activeTab, setActiveTab, user }) => {
       case 'profile': return <div className="grid grid-cols-1 xl:grid-cols-4 gap-4"><Panel2_Profile user={user} industry={industryProfile} /></div>;
       case 'capabilities': return <div className="grid grid-cols-1 xl:grid-cols-4 gap-4"><Panel3_Capabilities data={capabilitiesData} industry={industryProfile} /></div>;
       case 'collaboration': return <div className="grid grid-cols-1 xl:grid-cols-8 gap-4"><Panel4_Collaboration data={collaborationRequests} onViewRequest={setSelectedRequest} /></div>;
-      case 'projects': return <div className="grid grid-cols-1 xl:grid-cols-6 gap-4"><Panel5_Projects data={projects} /></div>;
+      case 'projects': return <IndustryActiveProjectsView projects={projects} onNavigateToFunding={() => setActiveTab && setActiveTab('funding')} />;
       case 'funding': return <IndustryFundingView user={user} />;
       case 'testing': return <div className="grid grid-cols-1 xl:grid-cols-6 gap-4"><Panel7_Labs data={labsData} /></div>;
       case 'experts': return <div className="grid grid-cols-1 xl:grid-cols-6 gap-4"><Panel8_Experts data={expertsData} /></div>;

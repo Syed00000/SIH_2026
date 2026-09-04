@@ -2,6 +2,7 @@ import { IndustryFund, IndustryDisbursement } from './model.js';
 import { MongooseUniversity } from '../../government/heis/infrastructure/model.js';
 import { MongooseIndustry } from '../../government/industries/infrastructure/model.js';
 import { UniversityIndustryRequest, UniversityProject, UniversityActivity } from '../../university/infrastructure/model.js';
+import { syncAllApprovedIndustryProjects } from '../../university/infrastructure/helpers/industry-project-sync.helper.js';
 
 const DEFAULT_CATEGORY_COLORS = {
   'Research Funding': '#007A61',
@@ -31,8 +32,14 @@ export class IndustryFundService {
       industry = await MongooseIndustry.findOne({ status: 'Active' }).lean();
     }
 
+    try {
+      await syncAllApprovedIndustryProjects();
+    } catch (e) {
+      console.warn('Sync industry projects warning:', e);
+    }
+
     const [activeProjectsCount, collaborationsCount, fundsAgg] = await Promise.all([
-      UniversityProject.countDocuments({ status: { $in: ['In Progress', 'Testing', 'Prototype'] } }),
+      UniversityProject.countDocuments({ status: { $in: ['In Progress', 'Testing', 'Prototype', 'Active'] }, isDeleted: { $ne: true } }),
       UniversityIndustryRequest.countDocuments({ status: 'Approved' }),
       IndustryFund.aggregate([
         { $match: { status: 'Active' } },
@@ -61,6 +68,12 @@ export class IndustryFundService {
    * Returns live overview of all funds, disbursements, real university requests, and eligible HEIs
    */
   async getFundsOverview({ industryName, userId, email } = {}) {
+    try {
+      await syncAllApprovedIndustryProjects();
+    } catch (e) {
+      console.warn('Sync industry projects warning in getFundsOverview:', e);
+    }
+
     // 1. Fetch real Industry Funds
     const funds = await IndustryFund.find({ status: { $ne: 'Closed' } }).sort({ createdAt: -1 }).lean();
 
@@ -74,7 +87,7 @@ export class IndustryFundService {
     const realUniversities = await MongooseUniversity.find({ status: { $ne: 'Disabled' } }).lean();
 
     // 5. Fetch real University Projects to link with universities
-    const allProjects = await UniversityProject.find({}).lean();
+    const allProjects = await UniversityProject.find({ isDeleted: { $ne: true } }).lean();
 
     // Map eligible universities with their real active projects
     const availableUniversities = realUniversities.map((u) => {
@@ -146,6 +159,27 @@ export class IndustryFundService {
     const totalCommittedCr = (totalCommitted / 10000000).toFixed(2);
     const totalCommittedFormatted = totalCommitted >= 10000000 ? `${totalCommittedCr} Cr` : `₹ ${(totalCommitted / 100000).toFixed(2)} L`;
 
+    const activeProjects = allProjects
+      .filter((p) => ['In Progress', 'Testing', 'Prototype', 'Active', 'Approved'].includes(p.status))
+      .map((p) => {
+        const uni = realUniversities.find((u) => u.code === p.universityCode || String(u._id) === String(p.universityId));
+        return {
+          id: p.projectId || String(p._id),
+          projectId: p.projectId,
+          title: p.title,
+          university: uni?.name || (p.universityCode === 'RU001' ? 'Ranchi University' : p.universityCode),
+          universityCode: p.universityCode,
+          stage: p.status || 'In Progress',
+          budget: p.sanctionedBudget || p.proposedBudget || '₹ 0',
+          disbursed: p.disbursedAmount || '₹ 0',
+          status: p.disbursedAmount && p.disbursedAmount !== '₹ 0' ? 'Funded' : 'Active',
+          leadMentor: p.leadMentor || p.facultyMentor?.name || 'Faculty Nodal Officer',
+          studentTeam: p.studentTeam || 'Student Innovation Team',
+          problemStatement: p.problemStatement || '',
+          deadline: p.deadline || '3 Months'
+        };
+      });
+
     return {
       totalCommitted,
       totalCommittedFormatted,
@@ -155,7 +189,8 @@ export class IndustryFundService {
       funds,
       disbursements,
       incomingRequests,
-      availableUniversities
+      availableUniversities,
+      activeProjects
     };
   }
 

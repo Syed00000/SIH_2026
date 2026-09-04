@@ -1,9 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  X, Building2, Factory, MapPin, 
-  ExternalLink, ShieldCheck, HandCoins, FlaskConical, 
-  Users, Send, Award, CheckCircle2, Globe
-} from 'lucide-react';
+import { X, Factory, ShieldCheck, CheckCircle2, Send, Lock, MapPin, ExternalLink } from 'lucide-react';
 import { universityApiService } from '../../services/universityApiService.js';
 import { PartnerRequestsHistory } from './PartnerRequestsHistory.jsx';
 import { PartnerSpocCard } from './PartnerSpocCard.jsx';
@@ -39,17 +35,12 @@ export const PartnerDetailModal = ({
   const partnerName = partner.name || partner.legalName || 'Industry Partner';
   const category = partner.industryType || partner.type || partner.category || 'Private Industry';
   const spoc = partner.contactPerson || {
-    name: partner.spocName || 'Nodal Officer',
-    role: partner.designation || 'Chief of CSR / Nodal Lead',
+    name: partner.spocName || 'Nodal Officer', role: partner.designation || 'Nodal Lead',
     email: partner.officialEmail || partner.credentials?.loginEmail || 'corporate@partner.org',
     phone: partner.mobileNumber || '+91 98350 00000'
   };
-  const domains = Array.isArray(partner.domains) && partner.domains.length > 0 
-    ? partner.domains 
-    : [partner.focusArea || partner.thematicDomain || 'Technology & R&D'];
-  const supportModes = Array.isArray(partner.supportOffered) && partner.supportOffered.length > 0 
-    ? partner.supportOffered 
-    : (Array.isArray(partner.supportModes) ? partner.supportModes : ['CSR Funding', 'Lab Testing', 'Mentorship']);
+  const domains = partner.domains?.length ? partner.domains : [partner.focusArea || partner.thematicDomain || 'Technology & R&D'];
+  const supportModes = partner.supportOffered?.length ? partner.supportOffered : (partner.supportModes || ['CSR Funding', 'Lab Testing', 'Mentorship']);
   const location = partner.location || (partner.address?.city ? `${partner.address.city}, ${partner.address.district || ''}, Jharkhand` : 'Jharkhand, India');
 
   return (
@@ -178,17 +169,24 @@ export const PartnerDetailModal = ({
             >
               Close
             </button>
-            <button
-              type="button"
-              onClick={() => {
-                onClose();
-                onOpenSendRequest && onOpenSendRequest(partner);
-              }}
-              className="px-5 py-2.5 bg-[#007A61] hover:bg-[#00604c] text-white text-xs font-bold rounded-xl flex items-center space-x-2 transition-all shadow-md cursor-pointer"
-            >
-              <Send className="w-4 h-4" />
-              <span>Initiate CSR / Partnership Request</span>
-            </button>
+            {partnerRequests.some((r) => r.status === 'Approved') ? (
+              <div className="px-4 py-2 bg-emerald-50 text-emerald-800 border border-emerald-300 rounded-xl text-xs font-black flex items-center space-x-1.5 shadow-2xs select-none">
+                <Lock className="w-4 h-4 text-[#007A61]" />
+                <span>Approved from University</span>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => {
+                  onClose();
+                  onOpenSendRequest && onOpenSendRequest(partner);
+                }}
+                className="px-5 py-2.5 bg-[#007A61] hover:bg-[#00604c] text-white text-xs font-bold rounded-xl flex items-center space-x-2 transition-all shadow-md cursor-pointer"
+              >
+                <Send className="w-4 h-4" />
+                <span>Initiate CSR / Partnership Request</span>
+              </button>
+            )}
           </div>
         </div>
       </div>
