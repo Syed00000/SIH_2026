@@ -1,6 +1,7 @@
 import { UniversityPartner, UniversityIndustryRequest, UniversityActivity } from '../model.js';
 import MongooseIndustry from '../../../government/industries/infrastructure/model.js';
 import { findUniversityIdentity } from '../helpers/lookup.helper.js';
+import { syncIndustryApprovedProject } from '../helpers/industry-project-sync.helper.js';
 
 export class PartnerRequestRepository {
   async getPartnersByUniversity(universityCode) {
@@ -147,10 +148,7 @@ export class PartnerRequestRepository {
   async updateIndustryRequestStatus(requestId, status, universityCode) {
     try {
       const code = (universityCode || 'RU001').toUpperCase();
-      
-      const query = requestId.startsWith('IND-REQ-') 
-        ? { requestId, universityCode: code }
-        : { _id: requestId, universityCode: code };
+      const query = requestId.startsWith('IND-REQ-') ? { requestId } : { _id: requestId };
 
       const updatedReq = await UniversityIndustryRequest.findOneAndUpdate(
         query,
@@ -158,11 +156,17 @@ export class PartnerRequestRepository {
         { new: true }
       );
       if (updatedReq) {
+        if (status === 'Approved') {
+          await syncIndustryApprovedProject(updatedReq);
+        }
+        const actText = status === 'Approved'
+          ? `Industry Partner "${updatedReq.partnerName}" approved collaboration & lab access for "${updatedReq.projectTitle}" (${updatedReq.estimatedBudget || 'CSR Grant'}).`
+          : `Industry request "${updatedReq.projectTitle}" status updated to ${status}`;
         await UniversityActivity.create({
           universityCode: code,
-          text: `Industry request "${updatedReq.projectTitle}" status updated to ${status}`,
-          type: 'INDUSTRY_REQUEST',
-          user: 'Industry Partner',
+          text: actText,
+          type: status === 'Approved' ? 'INDUSTRY_APPROVED' : 'INDUSTRY_REQUEST',
+          user: updatedReq.partnerName || 'Industry Partner',
           time: `${new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}`,
           timestamp: new Date()
         });

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Bell, CheckCircle2, Clock, Loader2, ArrowLeft, Trash2, FileText, ChevronRight } from 'lucide-react';
+import { Bell, CheckCircle2, Clock, Loader2, ArrowLeft, Trash2, FileText, ChevronRight, Building2 } from 'lucide-react';
 import { universityApiService } from '../../services/universityApiService.js';
 
 export const UniversityNotificationsPanel = ({
@@ -15,11 +15,22 @@ export const UniversityNotificationsPanel = ({
   const load = async () => {
     if (isFirstLoad.current) setLoading(true);
     try {
-      const [summary, approvals] = await Promise.all([
+      const [summary, approvals, indReqs] = await Promise.all([
         universityApiService.getDashboardSummary(universityCode),
-        universityApiService.getApprovals(universityCode)
+        universityApiService.getApprovals(universityCode),
+        universityApiService.getIndustryRequests(universityCode)
       ]);
       const actItems = summary?.recentActivities || [];
+      const indItems = (Array.isArray(indReqs) ? indReqs : (Array.isArray(indReqs?.data) ? indReqs.data : []))
+        .filter((r) => r.status === 'Approved')
+        .map((r) => ({
+          _id: `ind-${r.requestId || r._id}`,
+          text: `Industry Partner Approved: "${r.partnerName}" approved collaboration for "${r.projectTitle}" (${r.estimatedBudget || 'CSR Grant'}). Industry testing labs and facilities are now accessible.`,
+          type: 'INDUSTRY_APPROVED',
+          relativeTime: r.updatedAt ? new Date(r.updatedAt).toLocaleDateString('en-GB') : 'Recent',
+          isIndustry: true,
+          targetTab: 'partners'
+        }));
       const appItems = (Array.isArray(approvals) ? approvals : [])
         .filter((a) => a.status === 'Pending')
         .map((a) => ({
@@ -30,7 +41,7 @@ export const UniversityNotificationsPanel = ({
           isApproval: true,
           targetTab: 'approvals'
         }));
-      const combined = [...appItems, ...actItems];
+      const combined = [...indItems, ...appItems, ...actItems];
       setActivities((prev) => {
         const prevIds = prev.map((p) => p._id).join(',');
         const newIds = combined.map((m) => m._id).join(',');
@@ -98,11 +109,11 @@ export const UniversityNotificationsPanel = ({
             <div
               key={a._id || idx}
               onClick={() => { if (a.targetTab && onNavigateTab) onNavigateTab(a.targetTab); }}
-              className={`p-4 rounded-xl border transition-all flex items-start justify-between gap-3 ${a.isApproval ? 'bg-amber-50/50 border-amber-200 hover:bg-amber-50/80 cursor-pointer' : 'bg-slate-50/50 border-slate-200/80 hover:bg-slate-50'}`}
+              className={`p-4 rounded-xl border transition-all flex items-start justify-between gap-3 ${a.isApproval ? 'bg-amber-50/50 border-amber-200 hover:bg-amber-50/80 cursor-pointer' : a.isIndustry ? 'bg-emerald-50/60 border-emerald-300 hover:bg-emerald-50/90 cursor-pointer shadow-2xs' : 'bg-slate-50/50 border-slate-200/80 hover:bg-slate-50'}`}
             >
               <div className="flex items-start gap-3">
-                <div className={`p-2 rounded-xl shrink-0 mt-0.5 ${a.isApproval ? 'bg-amber-100 text-amber-700' : 'bg-emerald-100 text-[#007A61]'}`}>
-                  {a.isApproval ? <FileText className="w-4 h-4" /> : <CheckCircle2 className="w-4 h-4" />}
+                <div className={`p-2 rounded-xl shrink-0 mt-0.5 ${a.isApproval ? 'bg-amber-100 text-amber-700' : a.isIndustry ? 'bg-emerald-100 text-[#007A61] ring-2 ring-emerald-300' : 'bg-emerald-100 text-[#007A61]'}`}>
+                  {a.isApproval ? <FileText className="w-4 h-4" /> : a.isIndustry ? <Building2 className="w-4 h-4" /> : <CheckCircle2 className="w-4 h-4" />}
                 </div>
                 <div>
                   <h3 className="text-xs font-bold text-slate-900 leading-snug">{a.text}</h3>

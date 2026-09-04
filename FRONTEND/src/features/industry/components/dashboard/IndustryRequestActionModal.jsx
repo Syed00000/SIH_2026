@@ -8,7 +8,9 @@ export const IndustryRequestActionModal = ({ request, onClose, onSuccess }) => {
   const handleAction = async (status) => {
     setIsSubmitting(true);
     try {
-      await universityApiService.updateIndustryRequestStatus(request.id, status);
+      const targetId = request.requestId || request.id;
+      const targetCode = request.universityCode || 'RU001';
+      await universityApiService.updateIndustryRequestStatus(targetId, status, targetCode);
       if (onSuccess) onSuccess();
     } catch (error) {
       console.error('Failed to update status', error);

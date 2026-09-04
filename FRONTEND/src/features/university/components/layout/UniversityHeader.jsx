@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Bell, CheckCircle2, Layers, Clock, X, ChevronRight, AlertCircle, FileText, Trash2 } from 'lucide-react';
+import { Bell, CheckCircle2, Layers, Clock, X, ChevronRight, AlertCircle, FileText, Trash2, Building2 } from 'lucide-react';
 import { universityApiService } from '../../services/universityApiService.js';
 export const UniversityHeader = ({
   universityName = 'Ranchi University', adminName = 'Dr. Ankit Verma', adminRole = 'University Nodal Officer',
@@ -106,6 +106,8 @@ export const UniversityHeader = ({
                       <div className="flex items-center space-x-1.5 min-w-0">
                         {item.type === 'APPROVAL' ? (
                           <FileText className="w-3.5 h-3.5 text-amber-600 shrink-0" />
+                        ) : item.type === 'INDUSTRY' ? (
+                          <Building2 className="w-3.5 h-3.5 text-[#007A61] shrink-0" />
                         ) : item.type === 'CHALLENGE' ? (
                           <Layers className="w-3.5 h-3.5 text-[#007A61] shrink-0" />
                         ) : (

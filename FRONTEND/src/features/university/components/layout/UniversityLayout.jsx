@@ -3,52 +3,11 @@ import { UniversityHeader } from './UniversityHeader.jsx';
 import { UniversitySidebar } from './UniversitySidebar.jsx';
 import { UniversityFooter } from './UniversityFooter.jsx';
 import { UniversityTabContent } from './UniversityTabContent.jsx';
+import { useUniversityActiveTab } from './useUniversityActiveTab.js';
 import { universityApiService } from '../../services/universityApiService.js';
 
 export const UniversityLayout = ({ user, onLogout }) => {
-  const getInitialTab = () => {
-    try {
-      const params = new URLSearchParams(window.location.search);
-      const urlTab = params.get('tab');
-      if (urlTab) return urlTab;
-      const stored = localStorage.getItem('joharsetu_uni_active_tab');
-      if (stored) return stored;
-    } catch {
-      // fallback
-    }
-    return 'dashboard';
-  };
-
-  const [activeTab, setActiveTab] = useState(getInitialTab);
-
-  const handleSetActiveTab = (tab) => {
-    setActiveTab(tab);
-    try {
-      localStorage.setItem('joharsetu_uni_active_tab', tab);
-      const url = new URL(window.location.href);
-      url.searchParams.set('tab', tab);
-      window.history.replaceState({}, '', url.toString());
-    } catch {
-      // ignore
-    }
-  };
-
-  useEffect(() => {
-    const handlePopState = () => {
-      try {
-        const params = new URLSearchParams(window.location.search);
-        const urlTab = params.get('tab');
-        if (urlTab) {
-          setActiveTab(urlTab);
-        }
-      } catch {
-        // ignore
-      }
-    };
-
-    window.addEventListener('popstate', handlePopState);
-    return () => window.removeEventListener('popstate', handlePopState);
-  }, []);
+  const [activeTab, handleSetActiveTab] = useUniversityActiveTab('dashboard');
 
   const [isSidebarExpanded, setIsSidebarExpanded] = useState(true);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -62,20 +21,24 @@ export const UniversityLayout = ({ user, onLogout }) => {
   const universityCode = rawCode;
   const [dashboardData, setDashboardData] = useState(null);
   const [approvalsList, setApprovalsList] = useState([]);
+  const [industryRequestsList, setIndustryRequestsList] = useState([]);
   const [pendingApprovalsCount, setPendingApprovalsCount] = useState(0);
   const [loading, setLoading] = useState(true);
 
   const loadData = async (isBackground = false) => {
     if (!isBackground) setLoading(true);
     try {
-      const [data, approvalsData] = await Promise.all([
+      const [data, approvalsData, indReqsData] = await Promise.all([
         universityApiService.getDashboardSummary(universityCode),
-        universityApiService.getApprovals(universityCode)
+        universityApiService.getApprovals(universityCode),
+        universityApiService.getIndustryRequests(universityCode)
       ]);
       setDashboardData(data);
       const appList = Array.isArray(approvalsData) ? approvalsData : [];
       setApprovalsList(appList);
       setPendingApprovalsCount(appList.filter(a => a.status === 'Pending').length);
+      const indList = Array.isArray(indReqsData) ? indReqsData : (Array.isArray(indReqsData?.data) ? indReqsData.data : []);
+      setIndustryRequestsList(indList);
     } catch (err) {
       console.error('Failed to load university dashboard layout data:', err);
     } finally {
@@ -110,6 +73,16 @@ export const UniversityLayout = ({ user, onLogout }) => {
 
   // Build real-time institutional notifications from live database records
   const notificationsList = [
+    ...industryRequestsList.filter(r => r.status === 'Approved').map(r => ({
+      id: `ind-${r.requestId || r._id}`,
+      type: 'INDUSTRY',
+      category: 'Industry Approved',
+      title: `${r.partnerName || 'Industry Partner'} Approved Proposal`,
+      message: `Industry Partner "${r.partnerName}" approved collaboration for "${r.projectTitle}" (${r.estimatedBudget || 'CSR Grant'}). Lab testing & R&D facilities unlocked.`,
+      time: r.updatedAt ? new Date(r.updatedAt).toLocaleDateString('en-GB') : 'Recent',
+      actionLabel: 'View in Industry Partners',
+      targetTab: 'partners'
+    })),
     ...approvalsList.filter(a => a.status === 'Pending').map(a => ({
       id: `app-${a.approvalId || a._id}`,
       type: 'APPROVAL',
@@ -124,11 +97,11 @@ export const UniversityLayout = ({ user, onLogout }) => {
       id: `act-${act._id || idx}`,
       type: 'ACTIVITY',
       category: 'Audit Notice',
-      title: act.type || 'SYSTEM LOG',
+      title: act.type === 'INDUSTRY_APPROVED' || act.type === 'INDUSTRY_REQUEST' ? 'Industry Approved' : (act.type || 'SYSTEM LOG'),
       message: act.text,
       time: act.relativeTime || 'Recently',
-      actionLabel: 'Open Dashboard',
-      targetTab: 'dashboard'
+      actionLabel: act.type?.includes('INDUSTRY') ? 'View Partners' : 'Open Dashboard',
+      targetTab: act.type?.includes('INDUSTRY') ? 'partners' : 'dashboard'
     }))
   ];
 

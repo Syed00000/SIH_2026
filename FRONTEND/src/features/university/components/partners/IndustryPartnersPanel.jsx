@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, Factory, Sparkles, Building2 } from 'lucide-react';
+import { IndustryApprovalBanner } from './IndustryApprovalBanner.jsx';
 import { PartnersKpis } from './PartnersKpis.jsx';
 import { PartnersFilterBar } from './PartnersFilterBar.jsx';
 import { PartnersTable } from './PartnersTable.jsx';
@@ -9,6 +10,7 @@ import { universityApiService } from '../../services/universityApiService.js';
 
 export const IndustryPartnersPanel = () => {
   const [partners, setPartners] = useState([]);
+  const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [industryFilter, setIndustryFilter] = useState('All');
@@ -23,8 +25,14 @@ export const IndustryPartnersPanel = () => {
   const fetchPartners = async () => {
     setLoading(true);
     try {
-      const data = await universityApiService.getPartners('RU001');
-      setPartners(Array.isArray(data) ? data : (Array.isArray(data?.data) ? data.data : []));
+      const [partnersData, reqsData] = await Promise.all([
+        universityApiService.getPartners('RU001'),
+        universityApiService.getIndustryRequests('RU001')
+      ]);
+      const rawPartners = Array.isArray(partnersData) ? partnersData : (Array.isArray(partnersData?.data) ? partnersData.data : []);
+      const rawReqs = Array.isArray(reqsData) ? reqsData : (Array.isArray(reqsData?.data) ? reqsData.data : []);
+      setPartners(rawPartners);
+      setRequests(rawReqs);
     } catch (err) {
       console.error('Failed to load partners:', err);
     } finally {
@@ -37,8 +45,9 @@ export const IndustryPartnersPanel = () => {
   }, []);
 
   const totalCount = partners.length;
-  const activeCount = partners.filter((p) => p.status === 'Active' || p.verificationStatus === 'Verified').length;
-  const pendingCount = partners.filter((p) => p.status === 'Pending').length;
+  const approvedReqs = requests.filter((r) => r.status === 'Approved');
+  const activeCount = approvedReqs.length > 0 ? approvedReqs.length : partners.filter((p) => p.status === 'Active' || p.verificationStatus === 'Verified').length;
+  const pendingCount = requests.filter((r) => r.status === 'Pending').length;
 
   const handleResetFilters = () => {
     setSearch('');
@@ -95,6 +104,13 @@ export const IndustryPartnersPanel = () => {
         </button>
       </div>
 
+      {/* Top Industry Approval Notification Banner */}
+      <IndustryApprovalBanner
+        approvedRequests={approvedReqs}
+        partners={partners}
+        onSelectPartner={(partner) => setDetailPartner(partner)}
+      />
+
       {/* KPIs Bar */}
       <PartnersKpis
         total={totalCount}
@@ -119,6 +135,7 @@ export const IndustryPartnersPanel = () => {
       {/* Partners Table */}
       <PartnersTable
         partners={filtered}
+        requests={requests}
         loading={loading}
         onSelectPartner={(partner) => setDetailPartner(partner)}
         onOpenSendRequest={(partner) => {
