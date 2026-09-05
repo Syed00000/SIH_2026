@@ -8,7 +8,8 @@ import { TeamRosterList } from './components/TeamRosterList.jsx';
 import { AddTeamMemberForm } from './components/AddTeamMemberForm.jsx';
 import { TeamGuidelinesCard } from './components/TeamGuidelinesCard.jsx';
 import { ReadonlyTeamTable } from './components/ReadonlyTeamTable.jsx';
-import { ArrowLeft, Users, Plus, Sparkles } from 'lucide-react';
+import { SendPrototypeModal } from './components/SendPrototypeModal.jsx';
+import { ArrowLeft, Sparkles } from 'lucide-react';
 
 export const FacultyTeamsPanel = ({
   projects = [],
@@ -19,33 +20,24 @@ export const FacultyTeamsPanel = ({
   initialProjectId = null,
   hideHeader = false
 }) => {
-  const [viewMode, setViewMode] = useState('list'); // 'list' | 'editor'
+  const [viewMode, setViewMode] = useState('list');
+  const [prototypeModalTeam, setPrototypeModalTeam] = useState(null);
 
   const {
-    editingTeamId,
-    selectedProjectId,
-    setSelectedProjectId,
-    teamName,
-    setTeamName,
-    teamMembers,
-    newMember,
-    setNewMember,
-    saving,
-    savedSuccess,
-    allTeams,
-    handleStartCreate,
-    handleStartEdit,
-    handleAddMember,
-    handleToggleLead,
-    handleRemoveMember,
-    handleDeleteTeam,
-    handleSaveTeam
+    editingTeamId, selectedProjectId, setSelectedProjectId, teamName, setTeamName,
+    teamMembers, newMember, setNewMember, saving, savedSuccess, allTeams,
+    handleStartCreate, handleStartEdit, handleAddMember, handleToggleLead,
+    handleRemoveMember, handleDeleteTeam, handleSaveTeam
   } = useFacultyTeams({ projects, challenges, teams, faculty, onRefresh, initialProjectId });
 
   const onSaveAndReturn = async () => {
     const ok = await handleSaveTeam();
     if (ok) setViewMode('list');
   };
+
+  const matchedProject = projects.find(
+    (p) => (p.projectId || p.challengeId) === (prototypeModalTeam?.projectId || selectedProjectId)
+  ) || projects[0];
 
   return (
     <div className={`space-y-4 max-w-7xl mx-auto select-none ${hideHeader ? '' : 'pb-12'}`}>
@@ -62,15 +54,11 @@ export const FacultyTeamsPanel = ({
           ) : viewMode === 'list' ? (
             <FacultyTeamsListTable
               teams={allTeams}
-              onSelectTeam={(t) => {
-                handleStartEdit(t);
-                setViewMode('editor');
-              }}
-              onAddNewTeam={() => {
-                handleStartCreate();
-                setViewMode('editor');
-              }}
+              onSelectTeam={(t) => { handleStartEdit(t); setViewMode('editor'); }}
+              onAddNewTeam={() => { handleStartCreate(); setViewMode('editor'); }}
               onDeleteTeam={handleDeleteTeam}
+              onSendPrototype={(t) => setPrototypeModalTeam(t)}
+              onRefresh={onRefresh}
             />
           ) : (
             <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-200">
@@ -95,12 +83,7 @@ export const FacultyTeamsPanel = ({
                 selectedProjectId={selectedProjectId}
                 onProjectSelect={setSelectedProjectId}
               />
-
-              <TeamNameConfigCard
-                teamName={teamName}
-                setTeamName={setTeamName}
-              />
-
+              <TeamNameConfigCard teamName={teamName} setTeamName={setTeamName} />
               <TeamRosterList
                 teamName={teamName}
                 teamMembers={teamMembers}
@@ -111,18 +94,24 @@ export const FacultyTeamsPanel = ({
                 onToggleLead={handleToggleLead}
                 onRemoveMember={handleRemoveMember}
               />
-
-              <AddTeamMemberForm
-                newMember={newMember}
-                setNewMember={setNewMember}
-                onAddMember={handleAddMember}
-              />
+              <AddTeamMemberForm newMember={newMember} setNewMember={setNewMember} onAddMember={handleAddMember} />
             </div>
           )}
         </div>
 
         {!hideHeader && <TeamGuidelinesCard />}
       </div>
+
+      {prototypeModalTeam && (
+        <SendPrototypeModal
+          team={prototypeModalTeam}
+          project={matchedProject}
+          faculty={faculty}
+          isOpen={Boolean(prototypeModalTeam)}
+          onClose={() => setPrototypeModalTeam(null)}
+          onSuccess={onRefresh}
+        />
+      )}
     </div>
   );
 };

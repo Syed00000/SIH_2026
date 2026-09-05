@@ -2,8 +2,14 @@ import React from 'react';
 import { IndianRupee, Layers, ShieldCheck, FileText, CheckCircle2, Sparkles } from 'lucide-react';
 import { projectCsrSyncService } from '../../../services/projectCsrSyncService.js';
 import { formatRupeesINR, parseGrantRupees } from '../../projects/GrantPaymentModal.jsx';
+import { TrancheAmountAdjuster } from './TrancheAmountAdjuster.jsx';
 
-export const ProposalOverviewTab = ({ proposal, linkedProject }) => {
+export const ProposalOverviewTab = ({
+  proposal,
+  linkedProject,
+  disburseAmount = 40000,
+  setDisburseAmount
+}) => {
   const projId = proposal.projectId || proposal.id?.replace('PROP-', '') || proposal.id;
   const rawDisbursed =
     projectCsrSyncService.getProjectDisbursed(proposal.id) ||
@@ -74,7 +80,7 @@ export const ProposalOverviewTab = ({ proposal, linkedProject }) => {
       )}
 
       {/* University Tranche 2 EMI Request Banner */}
-      {!isFullyDisbursed && trancheReq?.status === 'Pending' && additionalAmountNum === 0 && (
+      {!isFullyDisbursed && trancheReq?.status === 'Pending' && (
         <div className="bg-blue-50 border border-blue-200 rounded-xl p-3.5 flex items-center justify-between shadow-2xs">
           <div className="flex items-center space-x-2.5">
             <div className="w-8 h-8 rounded-lg bg-blue-600 text-white flex items-center justify-center font-black shrink-0">
@@ -82,7 +88,7 @@ export const ProposalOverviewTab = ({ proposal, linkedProject }) => {
             </div>
             <div>
               <h4 className="font-extrabold text-xs text-blue-950">
-                University Requested Second EMI (Tranche {trancheReq.requestedTranche || 2})
+                University Requested {trancheReq.requestedTranche === 1 ? 'Initial Grant Release' : 'Second EMI (Tranche 2)'}
               </h4>
               <p className="text-[11px] text-blue-800">
                 Requested Amount: <span className="font-bold font-mono">₹ {(Number(trancheReq.amount) || remainingBudgetNum).toLocaleString('en-IN')}</span> &bull; Pending Government Release
@@ -140,39 +146,36 @@ export const ProposalOverviewTab = ({ proposal, linkedProject }) => {
         </div>
       </div>
 
+      {/* Interactive Tranche Disbursal Amount Adjuster */}
+      <TrancheAmountAdjuster
+        totalBudgetVal={totalBudgetNum}
+        rawDisbursed={rawDisbursed}
+        remainingBudget={remainingBudgetNum}
+        disburseAmount={disburseAmount}
+        setDisburseAmount={setDisburseAmount}
+        isFullyDisbursed={isFullyDisbursed}
+        hasTrancheRequest={Boolean(trancheReq?.status === 'Pending')}
+      />
+
       {/* Challenge Dossier Summary */}
       <div className="border border-slate-200/90 rounded-xl p-4 bg-slate-50/60 space-y-2 shadow-2xs">
-        <h4 className="text-xs font-extrabold text-slate-900 uppercase tracking-wider">
-          Problem Description & Institutional Context
-        </h4>
-        <p className="text-slate-800 leading-relaxed font-semibold text-xs">
-          {proposal.projectTitle || proposal.title || 'Societal Problem Resolution Project'}
-        </p>
+        <h4 className="text-xs font-extrabold text-slate-900 uppercase tracking-wider">Problem Description & Context</h4>
+        <p className="text-slate-800 font-semibold text-xs leading-relaxed">{proposal.projectTitle || proposal.title || 'Societal Problem Resolution Project'}</p>
         <div className="pt-2 border-t border-slate-200/60 flex flex-wrap gap-4 text-xs text-slate-600">
           <span><strong>Lead Investigator:</strong> {proposal.leadMentor || proposal.teamLead || 'Dr. Amitabh Verma'}</span>
           <span><strong>Institution:</strong> {proposal.institutionName || 'Ranchi University (RU001)'}</span>
           <span><strong>District:</strong> {proposal.district || 'Ranchi'}</span>
         </div>
-
         {additionalAmountNum > 0 && (
-          <div className="mt-2.5 pt-2.5 border-t border-slate-200/80 flex flex-wrap items-center justify-between gap-2 bg-amber-50/80 p-2.5 rounded-lg border border-amber-200">
-            <div className="flex items-center space-x-2">
-              <Sparkles className="w-3.5 h-3.5 text-amber-600 shrink-0" />
-              <span className="font-extrabold text-xs text-amber-950">Faculty Supplemental Grant Allocation:</span>
-              <span className="text-[11px] text-amber-900">Faculty added supplemental prototype & research budget.</span>
-            </div>
-            <div className="flex items-center space-x-2">
-              <span className="text-[11px] text-slate-500 font-medium">Extra Amount:</span>
-              <span className="font-mono font-black text-amber-900 bg-amber-100 px-2 py-0.5 rounded border border-amber-300 text-xs">
-                +₹ {additionalAmountNum.toLocaleString('en-IN')}
-              </span>
-            </div>
+          <div className="mt-2.5 pt-2 border-t border-amber-200 flex flex-wrap items-center justify-between gap-2 bg-amber-50/80 p-2.5 rounded-lg">
+            <span className="font-extrabold text-xs text-amber-950">Faculty Supplemental Grant Allocation</span>
+            <span className="font-mono font-black text-amber-900 bg-amber-100 px-2 py-0.5 rounded border border-amber-300 text-xs">+₹ {additionalAmountNum.toLocaleString('en-IN')}</span>
           </div>
         )}
       </div>
 
       {/* Statutory Registrations */}
-      <div className="border border-slate-200/90 rounded-xl p-4 bg-white space-y-2.5 shadow-2xs">
+      <div className="border border-slate-200/90 rounded-xl p-4 bg-white space-y-2 shadow-2xs">
         <h4 className="text-xs font-extrabold text-slate-900 uppercase tracking-wider">Statutory Registrations & Governance</h4>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
           <div><span className="text-[10px] text-slate-400 font-bold block">MCA CSR-1 NO.</span><span className="font-mono font-extrabold text-slate-800">CSR00018921</span></div>

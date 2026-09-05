@@ -14,6 +14,7 @@ import {
   Zap
 } from 'lucide-react';
 import { projectCsrSyncService } from '../../services/projectCsrSyncService.js';
+import apiClient from '../../../../infrastructure/api/client.js';
 
 export const parseGrantRupees = (grantStr) => {
   if (typeof grantStr === 'number') return grantStr;
@@ -148,17 +149,31 @@ export const GrantPaymentModal = ({ project, isOpen, onClose, onConfirmPayment }
 
     setTimeout(() => {
       try {
-        projectCsrSyncService.disburseGrantPayment({
+        projectCsrSyncService.recordDisbursal({
           projectId: project.id,
-          amountRupees: payingNum,
-          trancheName,
-          paymentMode,
+          projectRef: project.id,
+          amount: formatRupeesINR(payingNum),
+          rawAmount: payingNum,
+          disbursedAmount: formatRupeesINR(payingNum),
+          mode: paymentMode,
           sourceBank,
           destAccount,
           voucherRef,
           utrNumber,
+          purpose: trancheName,
           remarks
         });
+        const pId = project.id;
+        const totalNum = parseGrantRupees(project.sanctionedGrant || project.sanctionedBudget || project.budget || 80000);
+        const isFullNow = projectedDisbursed >= totalNum;
+        const payload = {
+          disbursedAmount: newDisbursedStr,
+          budgetStatus: isFullNow ? 'Grant Fully Disbursed' : 'Grant Disbursed',
+          trancheRequest: { status: 'Approved', amount: payingNum, approvedAt: new Date() }
+        };
+        apiClient.put(`university/projects/${pId}?universityCode=RU001`, payload).catch(() => {});
+        apiClient.patch(`university/approvals/${pId}?universityCode=RU001`, payload).catch(() => {});
+        apiClient.patch(`university/approvals/APP-${pId}?universityCode=RU001`, payload).catch(() => {});
       } catch (err) {
         console.error('Failed to sync payment into CSR ledger:', err);
       }

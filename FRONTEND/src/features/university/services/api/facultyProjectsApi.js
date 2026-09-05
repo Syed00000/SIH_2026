@@ -123,6 +123,16 @@ export const facultyProjectsApi = {
       if (res?.data) return res.data;
     } catch (err) { console.error('API requestProjectTranche error:', err.message); }
     return { success: true };
+  },
+
+  async uploadProjectPdf(projectId, file, universityCode = DEFAULT_UNIVERSITY_CODE) {
+    const formData = new FormData();
+    formData.append('pdf', file);
+    const res = await apiClient.upload(
+      `university/projects/${encodeURIComponent(projectId)}/upload-pdf?universityCode=${encodeURIComponent(universityCode)}`,
+      formData
+    );
+    return res?.data?.data || res?.data || { success: true };
   }
 };
 

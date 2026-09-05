@@ -6,8 +6,8 @@ import { ProposalPaymentsTab } from './dossier/ProposalPaymentsTab.jsx';
 import { ProposalDueDiligenceTab } from './dossier/ProposalDueDiligenceTab.jsx';
 import { ProposalModalHeader } from './dossier/ProposalModalHeader.jsx';
 import { ProposalModalFooter } from './dossier/ProposalModalFooter.jsx';
+import { executeTrancheDisbursal, executeApproveAndSanction } from './dossier/disbursalActionHelper.js';
 import { projectCsrSyncService } from '../../services/projectCsrSyncService.js';
-import apiClient from '../../../../infrastructure/api/client.js';
 
 export const ProposalDetailModal = ({
   isOpen,
@@ -47,13 +47,26 @@ export const ProposalDetailModal = ({
   );
   const remainingBudget = Math.max(0, totalBudgetVal - rawDisbursed);
   const isFullyDisbursed = totalBudgetVal > 0 && rawDisbursed >= totalBudgetVal;
-  const hasTrancheRequest = Boolean(
-    proposal.trancheRequest?.status === 'Pending' || linkedProject?.trancheRequest?.status === 'Pending'
+  const trancheReq = proposal.trancheRequest || linkedProject?.trancheRequest;
+  const hasTrancheRequest = Boolean(trancheReq?.status === 'Pending');
+  const reqAmt = Number(trancheReq?.amount) || 0;
+
+  // User-adjusted disbursal amount (auto-fills to University requested amount if pending)
+  const [disburseAmount, setDisburseAmount] = useState(
+    hasTrancheRequest && reqAmt > 0 ? reqAmt : rawDisbursed === 0 ? Math.round(remainingBudget * 0.5) : remainingBudget
   );
+
+  React.useEffect(() => {
+    if (hasTrancheRequest && reqAmt > 0) {
+      setDisburseAmount(reqAmt);
+    } else {
+      setDisburseAmount(rawDisbursed === 0 ? Math.round(remainingBudget * 0.5) : remainingBudget);
+    }
+  }, [proposal.id, remainingBudget, rawDisbursed, hasTrancheRequest, reqAmt]);
 
   const handleSaveStatus = async () => {
     const isFailed = localDueDiligence.includes('Failed') || localBoardApproval.includes('Rejected');
-    const updated = {
+    onUpdateProposal({
       ...proposal,
       dueDiligence: localDueDiligence,
       dueDiligenceStatus: isFailed ? 'failed' : 'passed',
@@ -61,80 +74,44 @@ export const ProposalDetailModal = ({
       boardApprovalStatus: isFailed ? 'rejected' : 'approved',
       mouExecution: localMouExecution,
       adminNote: adminNote || proposal.adminNote
-    };
-    onUpdateProposal(updated);
+    });
     setIsSaved(true);
     setTimeout(() => { setIsSaved(false); onClose(); }, 1200);
   };
 
   const handleApproveAndSanction = async () => {
     setIsProcessing(true);
-    const sanctionOrderNo = `JH-GOV-RD-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`;
-    const sanctionedAmount = proposal.fundingRequested || proposal.allocatedAmount || '₹ 80,000';
-
-    const updated = {
-      ...proposal,
-      dueDiligence: 'Passed (All Checks)',
-      boardApproval: 'Approved (A-Grade)',
-      mouExecution: 'Signed & Active',
-      budgetStatus: 'Grant Sanctioned by Government',
-      sanctionOrderNo,
-      sanctionedAmount
-    };
-
     try {
-      const projId = proposal.projectId || proposal.id?.replace('PROP-', '');
-      if (projId) {
-        await apiClient.put(`university/projects/${projId}`, {
-          budgetStatus: 'Grant Sanctioned by Government',
-          sanctionOrderNo,
-          sanctionedBudget: sanctionedAmount,
-          progressPercentage: 57,
-          milestonesCompleted: 4
-        });
-      }
-    } catch (e) {
-      console.warn('Sync grant sanction error:', e);
+      const updated = await executeApproveAndSanction({ proposal });
+      onUpdateProposal(updated);
+      setIsSaved(true);
+      setTimeout(() => { setIsSaved(false); onClose(); }, 1200);
+    } finally {
+      setIsProcessing(false);
     }
-
-    onUpdateProposal(updated);
-    setIsProcessing(false);
-    setIsSaved(true);
-    setTimeout(() => { setIsSaved(false); onClose(); }, 1200);
   };
 
-  const handleDisburseSecondEmi = async () => {
+  const handleDisburseTranche = async () => {
     setIsProcessing(true);
     try {
-      const utr = `JH-PFMS-${Math.floor(1000000000 + Math.random() * 9000000000)}`;
-      const pId = proposal.projectId || proposal.id?.replace('PROP-', '') || proposal.id;
-      const newPayment = {
-        id: `PAY-${Math.floor(90000 + Math.random() * 9999)}`,
-        payer: 'Govt State Treasury (PFMS Escrow)',
-        payee: proposal.institutionName || 'Ranchi University (RU001)',
-        amount: `₹ ${remainingBudget.toLocaleString('en-IN')}`,
-        rawAmount: remainingBudget,
-        disbursedAmount: `₹ ${remainingBudget.toLocaleString('en-IN')}`,
-        mode: 'Direct PFMS',
-        utrNumber: utr,
-        makerCheckerSign: 'Authorized by State Nodal Officer',
-        makerCheckerStatus: 'Approved',
-        bankAckStatus: 'Credited to University Escrow',
-        bankStatus: 'success',
-        timestamp: new Date().toLocaleDateString('en-IN'),
-        scheme: proposal.sourceScheme || 'State Innovation Grant',
-        projectRef: pId,
-        projectTitle: proposal.projectTitle || proposal.title,
-        challengeId: proposal.challengeId || '',
-        tdsAmount: '₹ 0',
-        netDisbursed: `₹ ${remainingBudget.toLocaleString('en-IN')}`,
-        purpose: 'Second EMI / Final Tranche Grant Disbursal'
-      };
-
-      await projectCsrSyncService.recordDisbursal(newPayment);
-      setIsSaved(true);
+      const amountToSend = Math.min(remainingBudget, Math.max(1000, Number(disburseAmount) || remainingBudget));
+      const res = await executeTrancheDisbursal({
+        proposal,
+        amountToSend,
+        rawDisbursed,
+        totalBudgetVal
+      });
+      if (res?.success) {
+        onUpdateProposal({
+          ...proposal,
+          disbursedAmount: `₹ ${res.newDisbursedTotal.toLocaleString('en-IN')}`,
+          budgetStatus: res.isFullNow ? 'Grant Fully Disbursed' : 'Grant Disbursed'
+        });
+        setIsSaved(true);
+        setTimeout(() => { setIsSaved(false); onClose(); }, 1200);
+      }
     } catch (e) {
-      console.warn('Disburse second EMI error:', e);
+      console.warn('Disburse tranche error:', e);
     } finally {
       setIsProcessing(false);
     }
@@ -161,7 +138,14 @@ export const ProposalDetailModal = ({
         />
 
         <div className="p-6 overflow-y-auto space-y-4 max-h-[calc(92vh-140px)]">
-          {activeSubTab === 'overview' && <ProposalOverviewTab proposal={proposal} linkedProject={linkedProject} />}
+          {activeSubTab === 'overview' && (
+            <ProposalOverviewTab
+              proposal={proposal}
+              linkedProject={linkedProject}
+              disburseAmount={disburseAmount}
+              setDisburseAmount={setDisburseAmount}
+            />
+          )}
           {activeSubTab === 'methodology' && <ProposalTechnicalTab proposal={proposal} />}
           {activeSubTab === 'budget' && <ProposalBudgetTab proposal={proposal} />}
           {activeSubTab === 'payments' && <ProposalPaymentsTab proposal={proposal} linkedPayments={linkedPayments} onInitiateDisbursal={onInitiateDisbursal} />}
@@ -182,10 +166,13 @@ export const ProposalDetailModal = ({
           isFullyDisbursed={isFullyDisbursed}
           hasTrancheRequest={hasTrancheRequest}
           remainingBudget={remainingBudget}
+          rawDisbursed={rawDisbursed}
+          disburseAmount={disburseAmount}
+          setDisburseAmount={setDisburseAmount}
           handleSaveStatus={handleSaveStatus}
           handleRequestRevision={handleRequestRevision}
           handleApproveAndSanction={handleApproveAndSanction}
-          handleDisburseSecondEmi={handleDisburseSecondEmi}
+          handleDisburseSecondEmi={handleDisburseTranche}
         />
       </div>
     </div>

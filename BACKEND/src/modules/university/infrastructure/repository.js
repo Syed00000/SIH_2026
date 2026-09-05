@@ -79,6 +79,18 @@ export class UniversityDashboardRepository {
     return this.facultyTeamRepo.getTeamsByUniversity(universityCode);
   }
 
+  createTeam(universityCode, data) {
+    return this.facultyTeamRepo.createTeam(universityCode, data);
+  }
+
+  updateTeam(universityCode, id, data) {
+    return this.facultyTeamRepo.updateTeam(universityCode, id, data);
+  }
+
+  deleteTeam(universityCode, id) {
+    return this.facultyTeamRepo.deleteTeam(universityCode, id);
+  }
+
   getPartnersByUniversity(universityCode) {
     return this.partnerRequestRepo.getPartnersByUniversity(universityCode);
   }
@@ -105,6 +117,10 @@ export class UniversityDashboardRepository {
 
   updateGovernmentPrototypeStatus(projectId, status, trlLevel, remarks) {
     return this.projectPrototypeRepo.updateGovernmentPrototypeStatus(projectId, status, trlLevel, remarks);
+  }
+
+  uploadProjectPdf(projectId, universityCode, file) {
+    return this.projectPrototypeRepo.uploadProjectPdf(projectId, universityCode, file);
   }
 
   getActivitiesByUniversity(universityCode, limit) {

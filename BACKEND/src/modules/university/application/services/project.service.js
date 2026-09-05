@@ -34,6 +34,10 @@ export class UniversityProjectService {
   async updateGovernmentPrototypeStatus(projectId, status, trlLevel, remarks) {
     return await this.repository.updateGovernmentPrototypeStatus(projectId, status, trlLevel, remarks);
   }
+
+  async uploadProjectPdf(projectId, universityCode, file) {
+    return await this.repository.uploadProjectPdf(projectId, universityCode, file);
+  }
 }
 
 export default UniversityProjectService;

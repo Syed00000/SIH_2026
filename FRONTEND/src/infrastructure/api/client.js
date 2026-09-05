@@ -96,6 +96,9 @@ const request = async (endpoint, options = {}, isRetry = false, isNetworkRetry =
     ...(token && { Authorization: `Bearer ${token}` }),
     ...options.headers,
   };
+  if (isFormData && headers['Content-Type']) {
+    delete headers['Content-Type'];
+  }
 
   try {
     const response = await fetch(url, {
@@ -171,7 +174,10 @@ const request = async (endpoint, options = {}, isRetry = false, isNetworkRetry =
 
 export const apiClient = {
   get: (endpoint, options) => request(endpoint, { method: 'GET', ...options }),
-  post: (endpoint, body, options) => request(endpoint, { method: 'POST', body: JSON.stringify(body), ...options }),
+  post: (endpoint, body, options) => {
+    const isFD = typeof FormData !== 'undefined' && body instanceof FormData;
+    return request(endpoint, { method: 'POST', body: isFD ? body : JSON.stringify(body), ...options });
+  },
   upload: (endpoint, formData, options) => request(endpoint, { method: 'POST', body: formData, ...options }),
   put: (endpoint, body, options) => request(endpoint, { method: 'PUT', body: JSON.stringify(body), ...options }),
   patch: (endpoint, body, options) => request(endpoint, { method: 'PATCH', body: body ? JSON.stringify(body) : undefined, ...options }),

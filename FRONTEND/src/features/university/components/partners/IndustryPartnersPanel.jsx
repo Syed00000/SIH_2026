@@ -7,11 +7,13 @@ import { PartnersTable } from './PartnersTable.jsx';
 import { PartnerDetailModal } from './PartnerDetailModal.jsx';
 import { CreatePartnershipModal } from './CreatePartnershipModal.jsx';
 import { ApproveIndustryAmountModal } from './ApproveIndustryAmountModal.jsx';
+import { MentoredPrototypesIndustryCard } from './MentoredPrototypesIndustryCard.jsx';
 import { universityApiService } from '../../services/universityApiService.js';
 
 export const IndustryPartnersPanel = () => {
   const [partners, setPartners] = useState([]);
   const [requests, setRequests] = useState([]);
+  const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [industryFilter, setIndustryFilter] = useState('All');
@@ -28,12 +30,14 @@ export const IndustryPartnersPanel = () => {
   const fetchPartners = async () => {
     setLoading(true);
     try {
-      const [partnersData, reqsData] = await Promise.all([
+      const [partnersData, reqsData, prjsData] = await Promise.all([
         universityApiService.getPartners('RU001'),
-        universityApiService.getIndustryRequests('RU001')
+        universityApiService.getIndustryRequests('RU001'),
+        universityApiService.getProjects('RU001')
       ]);
       setPartners(Array.isArray(partnersData) ? partnersData : (partnersData?.data || []));
       setRequests(Array.isArray(reqsData) ? reqsData : (reqsData?.data || []));
+      setProjects(Array.isArray(prjsData) ? prjsData : (prjsData?.data || []));
     } catch (err) {
       console.error('Failed to load partners:', err);
     } finally {
@@ -50,6 +54,7 @@ export const IndustryPartnersPanel = () => {
   const activeCount = approvedReqs.length > 0 ? approvedReqs.length : partners.filter((p) => p.status === 'Active' || p.verificationStatus === 'Verified').length;
   const pendingCount = requests.filter((r) => r.status === 'Pending').length;
   const pendingQuotes = requests.filter((r) => r.labChargesQuoted && r.quoteStatus !== 'Accepted' && r.quoteStatus !== 'Declined');
+  const submittedPrototypes = projects.filter((p) => p.sentToUniversity === true || p.prototypeStatus === 'In Review' || p.prototypeStatus === 'Approved');
 
   const filtered = partners.filter((p) => {
     if (industryFilter !== 'All' && (p.industryType || p.type || p.category) !== industryFilter) return false;
@@ -120,6 +125,16 @@ export const IndustryPartnersPanel = () => {
 
       {/* Top Industry Approval Notification Banner */}
       <IndustryApprovalBanner approvedRequests={approvedReqs} partners={partners} onSelectPartner={setDetailPartner} />
+
+      {/* Mentored Prototypes Submitted by Faculty Teams */}
+      <MentoredPrototypesIndustryCard
+        prototypes={submittedPrototypes}
+        onConnectIndustry={(p) => {
+          setRequestPartner(null);
+          setRequestProblem(p);
+          setIsCreateModalOpen(true);
+        }}
+      />
 
       {/* KPIs Bar */}
       <PartnersKpis total={totalCount} active={activeCount} pending={pendingCount} loading={loading} />

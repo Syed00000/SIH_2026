@@ -1,18 +1,35 @@
-import { UniversityProject, UniversityApproval, UniversityActivity } from '../model.js';
+import { UniversityProject, UniversityApproval, UniversityActivity, UniversityTeam } from '../model.js';
 import { CitizenChallenge } from '../../../citizen/infrastructure/model.js';
 import { buildPrototypeApprovalDocument } from '../helpers/prototype-approval-builder.helper.js';
+import { uploadProjectPdfDocument } from '../helpers/project-pdf-upload.helper.js';
 
 export class ProjectPrototypeRepository {
+  async uploadProjectPdf(projectId, universityCode, file) {
+    return await uploadProjectPdfDocument({ projectId, universityCode, file });
+  }
   async submitPrototype(projectId, universityCode, prototypeData) {
     try {
       const code = (universityCode || 'RU001').toUpperCase();
       const project = await UniversityProject.findOneAndUpdate(
         { $or: [{ projectId }, { challengeId: projectId }] },
-        { $set: { prototypeStatus: 'In Review', prototypeData } },
+        { 
+          $set: { 
+            prototypeStatus: 'In Review', 
+            prototypeData,
+            sentToUniversity: true,
+            submittedToUniversityAt: new Date(),
+            ...(prototypeData?.pdfUrl ? { pdfUrl: prototypeData.pdfUrl, pdfName: prototypeData.pdfName } : {})
+          } 
+        },
         { new: true }
       );
 
       if (project) {
+        await UniversityTeam.updateMany(
+          { $or: [{ projectId: project.projectId }, { challengeId: project.challengeId }] },
+          { $set: { workStatus: 'Prototype Sent to University (In Review)' } }
+        );
+
         const approvalPayload = buildPrototypeApprovalDocument({ code, project, prototypeData });
         const newApproval = await UniversityApproval.create(approvalPayload);
 
