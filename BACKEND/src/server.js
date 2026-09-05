@@ -4,9 +4,62 @@ import config from './shared/config/index.js';
 import logger from './shared/logger/index.js';
 import { connectMongo, closeMongo } from './infrastructure/database/mongo/client.js';
 import { initializeWorkers } from './infrastructure/queue/workers/email.worker.js';
-import { initializeSocketServer } from './infrastructure/socket/socketServer.js';
+import { initializeSocketServer, closeSocketServer } from './infrastructure/socket/socketServer.js';
 
 let server;
+
+// Prevent unhandled promise rejections or exceptions from crashing the server loop
+// Resilient process listeners initialized
+process.on('unhandledRejection', (reason) => {
+  logger.error({ reason: reason instanceof Error ? reason.message : reason, stack: reason?.stack }, '🚨 Unhandled Promise Rejection');
+});
+
+process.on('uncaughtException', (error) => {
+  logger.error({ error: error.message, stack: error.stack }, '🚨 Uncaught Exception');
+});
+
+const listenWithRetry = (httpServer, port, host = '0.0.0.0', maxRetries = 5, retryDelay = 600) => {
+  return new Promise((resolve, reject) => {
+    let attempts = 0;
+
+    const tryListen = () => {
+      attempts++;
+
+      const onError = (err) => {
+        httpServer.removeListener('listening', onListening);
+
+        if (err.code === 'EADDRINUSE') {
+          if (attempts < maxRetries) {
+            logger.warn(`⚠️ Port ${port} is currently busy (attempt ${attempts}/${maxRetries}). Waiting ${retryDelay}ms for lingering process to release...`);
+            setTimeout(() => {
+              tryListen();
+            }, retryDelay);
+          } else {
+            logger.error(`❌ Port ${port} is already in use by another process after ${maxRetries} attempts.`);
+            logger.error(`👉 Run 'npm run kill-port' to terminate any zombie process on port ${port}.`);
+            process.exit(1);
+          }
+        } else {
+          logger.error('HTTP server encountered an error:', err);
+          reject(err);
+        }
+      };
+
+      const onListening = () => {
+        httpServer.removeListener('error', onError);
+        logger.info(`🚀 Server running and listening on http://localhost:${port}`);
+        resolve();
+      };
+
+      httpServer.once('error', onError);
+      httpServer.once('listening', onListening);
+
+      httpServer.listen(port, host);
+    };
+
+    tryListen();
+  });
+};
 
 const start = async () => {
   logger.info(`Starting server in ${config.NODE_ENV} mode...`);
@@ -23,23 +76,10 @@ const start = async () => {
     server = http.createServer(app);
     initializeSocketServer(server);
 
-    server.on('error', (err) => {
-      if (err.code === 'EADDRINUSE') {
-        logger.error(`❌ Port ${config.PORT} is already in use by another process. Please terminate the existing process or use another port.`);
-        process.exit(1);
-      } else {
-        logger.error('HTTP server encountered an error:', err);
-      }
-    });
+    // 3. Listen on port with auto-retry if port was lingering from previous reload
+    await listenWithRetry(server, config.PORT, '0.0.0.0', 5, 600);
 
-    await new Promise((resolve) => {
-      server.listen(config.PORT, () => {
-        logger.info(`🚀 Server running and listening on port ${config.PORT}`);
-        resolve();
-      });
-    });
-
-    // 3. Initialize Background Workers
+    // 4. Initialize Background Workers
     initializeWorkers();
 
     // Handle process events for Graceful Shutdown
@@ -47,27 +87,38 @@ const start = async () => {
       logger.info(`Received ${signal}. Starting graceful shutdown...`);
 
       const forceShutdownTimeout = setTimeout(() => {
-        logger.error('Shutdown timed out. Forcing exit...');
+        logger.error('Shutdown timed out. Forcing immediate exit...');
         process.exit(1);
-      }, 10000);
-
-      if (server) {
-        logger.info('Stopping HTTP server from accepting new traffic...');
-        await new Promise((resolve) => {
-          server.close(() => {
-            logger.info('HTTP server stopped.');
-            resolve();
-          });
-        });
-      }
+      }, 3000);
 
       try {
+        // 1. Forcibly disconnect all Socket.IO clients and stop socket server
+        await closeSocketServer();
+
+        // 2. Forcibly close all active client HTTP connections (Keep-Alive) so the port is freed instantly
+        if (server) {
+          logger.info('Stopping HTTP server from accepting new traffic...');
+          if (typeof server.closeAllConnections === 'function') {
+            server.closeAllConnections();
+          }
+          if (typeof server.closeIdleConnections === 'function') {
+            server.closeIdleConnections();
+          }
+          await new Promise((resolve) => {
+            server.close(() => {
+              logger.info('HTTP server stopped.');
+              resolve();
+            });
+          });
+        }
+
+        // 3. Disconnect database cleanly
         await closeMongo();
         clearTimeout(forceShutdownTimeout);
         logger.info('Graceful shutdown completed successfully.');
         process.exit(0);
       } catch (err) {
-        logger.error('Error during shutdown connections cleanup', err);
+        logger.error('Error during shutdown connections cleanup:', err);
         process.exit(1);
       }
     };
@@ -82,8 +133,3 @@ const start = async () => {
 
 start();
 export default server;
-
-
-// Restart triggered by AI
-// Server reloaded at 2026-09-03T17:27:06.034Z
-// Server reloaded at 2026-09-03T17:32:41.062Z

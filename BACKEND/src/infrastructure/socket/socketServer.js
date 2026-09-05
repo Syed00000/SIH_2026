@@ -232,4 +232,23 @@ export const getSocketIO = () => {
   return io;
 };
 
-export default { initializeSocketServer, getSocketIO };
+export const closeSocketServer = async () => {
+  if (io) {
+    try {
+      logger.info('Closing Socket.IO server and disconnecting clients...');
+      io.disconnectSockets(true);
+      await new Promise((resolve) => {
+        io.close(() => {
+          logger.info('Socket.IO server closed.');
+          resolve();
+        });
+      });
+    } catch (err) {
+      logger.warn(`Error during Socket.IO closure: ${err.message}`);
+    } finally {
+      io = null;
+    }
+  }
+};
+
+export default { initializeSocketServer, getSocketIO, closeSocketServer };
