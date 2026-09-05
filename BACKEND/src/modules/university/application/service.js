@@ -57,6 +57,7 @@ export class UniversityService {
   submitPrototype(projectId, universityCode, prototypeData) { return this.projectService.submitPrototype(projectId, universityCode, prototypeData); }
   forwardPrototypeToGovernment(projectId, universityCode, remarks) { return this.projectService.forwardPrototypeToGovernment(projectId, universityCode, remarks); }
   updateGovernmentPrototypeStatus(projectId, status, trlLevel, remarks) { return this.projectService.updateGovernmentPrototypeStatus(projectId, status, trlLevel, remarks); }
+  uploadProjectPdf(projectId, universityCode, file) { return this.projectService.uploadProjectPdf(projectId, universityCode, file); }
 
   getFaculty(universityCode) { return this.facultyService.getFaculty(universityCode); }
   createFaculty(universityCode, data) { return this.facultyService.createFaculty(universityCode, data); }

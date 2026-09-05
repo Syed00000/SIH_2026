@@ -132,7 +132,11 @@ export const createChallengeProjectHandler = (service) => {
       };
       const updated = await service.updateProject(code, id, { trancheRequest });
       
-      const { UniversityActivity } = await import('../../infrastructure/model.js');
+      const { UniversityApproval, UniversityActivity } = await import('../../infrastructure/model.js');
+      await UniversityApproval.updateMany(
+        { $or: [{ projectId: id }, { challengeId: id }, { approvalId: id }, { approvalId: `APP-${id}` }] },
+        { $set: { trancheRequest } }
+      ).catch(() => {});
       await UniversityActivity.create({
         universityCode: code,
         text: `🏛️ University requested Second Installment / EMI (${trancheRequest.formattedAmount}) from Government for project.`,
@@ -141,6 +145,18 @@ export const createChallengeProjectHandler = (service) => {
       }).catch(() => {});
 
       res.status(200).json({ status: 'SUCCESS', message: 'Second EMI (Tranche) requested successfully', data: updated });
+    } catch (error) { next(error); }
+  };
+
+  const uploadProjectPdf = async (req, res, next) => {
+    try {
+      const { id } = req.params;
+      const code = extractUniversityCode(req, 'RU001');
+      if (!req.file) {
+        return res.status(400).json({ success: false, error: { message: 'No PDF file uploaded' } });
+      }
+      const data = await service.uploadProjectPdf(id, code, req.file);
+      res.status(200).json({ status: 'SUCCESS', message: 'PDF uploaded to Cloudinary successfully', data });
     } catch (error) { next(error); }
   };
 
@@ -157,7 +173,8 @@ export const createChallengeProjectHandler = (service) => {
     submitPrototype,
     forwardPrototypeToGovernment,
     updateGovernmentPrototypeStatus,
-    requestTranche
+    requestTranche,
+    uploadProjectPdf
   };
 };
 

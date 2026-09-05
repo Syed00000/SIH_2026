@@ -7,12 +7,18 @@ export const ProposalModalFooter = ({
   isProcessing,
   isFullyDisbursed,
   hasTrancheRequest,
-  remainingBudget,
+  remainingBudget = 80000,
+  rawDisbursed = 0,
+  disburseAmount = 40000,
+  setDisburseAmount,
   handleSaveStatus,
   handleRequestRevision,
   handleApproveAndSanction,
   handleDisburseSecondEmi
 }) => {
+  const isFirstTime = rawDisbursed === 0;
+  const currentReleaseAmt = Math.min(remainingBudget, Math.max(1000, disburseAmount || remainingBudget));
+
   return (
     <div className="px-6 py-3.5 border-t border-slate-200 bg-white flex flex-col sm:flex-row items-center justify-between gap-3 shrink-0">
       <div className="text-[11px] font-bold text-slate-700 flex items-center space-x-1.5">
@@ -22,7 +28,13 @@ export const ProposalModalFooter = ({
             <span>Approved DPR Budget Fully Disbursed & Completed ✓</span>
           </span>
         ) : isSaved ? (
-          <span className="text-emerald-700 font-bold">✓ Proposal status updated and synchronized with University!</span>
+          <span className="text-emerald-700 font-bold">✓ Disbursal & status updated and synchronized with University!</span>
+        ) : remainingBudget > 0 ? (
+          <div className="flex items-center space-x-2 text-slate-500">
+            <span>Escrow Balance: <strong className="text-slate-800 font-mono">₹ {remainingBudget.toLocaleString('en-IN')}</strong></span>
+            <span>&bull;</span>
+            <span className="text-blue-700 font-extrabold">Ready to Send: ₹ {currentReleaseAmt.toLocaleString('en-IN')}</span>
+          </div>
         ) : null}
       </div>
 
@@ -71,15 +83,17 @@ export const ProposalModalFooter = ({
         ) : hasTrancheRequest || remainingBudget > 0 ? (
           <button
             type="button"
-            disabled={isProcessing}
+            disabled={isProcessing || currentReleaseAmt <= 0}
             onClick={handleDisburseSecondEmi}
-            className="px-5 py-2 rounded-xl text-xs font-extrabold bg-blue-600 hover:bg-blue-700 text-white cursor-pointer shadow-2xs flex items-center space-x-1.5 transition-all"
+            className="px-5 py-2 rounded-xl text-xs font-extrabold bg-blue-600 hover:bg-blue-700 text-white cursor-pointer shadow-2xs flex items-center space-x-1.5 transition-all hover:shadow-xs disabled:opacity-50"
           >
             <Coins className="w-4 h-4" />
             <span>
-              {hasTrancheRequest
-                ? `Approve & Disburse Second EMI (₹ ${remainingBudget.toLocaleString('en-IN')})`
-                : `Approve & Disburse Supplemental Grant (₹ ${remainingBudget.toLocaleString('en-IN')})`}
+              {isFirstTime
+                ? `Approve & Disburse 1st Tranche (₹ ${currentReleaseAmt.toLocaleString('en-IN')})`
+                : hasTrancheRequest
+                ? `Approve & Disburse Second EMI (₹ ${currentReleaseAmt.toLocaleString('en-IN')})`
+                : `Approve & Disburse Supplemental Grant (₹ ${currentReleaseAmt.toLocaleString('en-IN')})`}
             </span>
           </button>
         ) : (

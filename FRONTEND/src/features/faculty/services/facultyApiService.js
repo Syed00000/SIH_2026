@@ -176,29 +176,23 @@ export const facultyApiService = {
   async deleteProject(projectId, universityCode = 'RU001') {
     return universityApiService.deleteProject(projectId, universityCode);
   },
-
-  async dropChallenge(challengeId, universityCode = 'RU001') {
-    return universityApiService.deleteChallenge(challengeId, universityCode);
-  },
-
   async deleteChallenge(challengeId, universityCode = 'RU001') {
     return universityApiService.deleteChallenge(challengeId, universityCode);
   },
-
   async getTeams(universityCode = 'RU001') {
     return universityApiService.getTeams(universityCode);
   },
-
   async createTeam(teamData, universityCode = 'RU001') {
     return universityApiService.createTeam(teamData, universityCode);
   },
-
   async updateTeam(teamId, teamData, universityCode = 'RU001') {
     return universityApiService.updateTeam(teamId, teamData, universityCode);
   },
-
   async deleteTeam(teamId, universityCode = 'RU001') {
     return universityApiService.deleteTeam(teamId, universityCode);
+  },
+  async uploadProjectPdf(projectId, file, universityCode = 'RU001') {
+    return universityApiService.uploadProjectPdf(projectId, file, universityCode);
   }
 };
 

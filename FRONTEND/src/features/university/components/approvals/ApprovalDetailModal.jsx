@@ -22,6 +22,9 @@ import {
   Rocket
 } from 'lucide-react';
 import { universityApiService } from '../../services/universityApiService.js';
+import { PrototypeLabTestingSection } from './PrototypeLabTestingSection.jsx';
+import { PrototypeApprovalActions } from './PrototypeApprovalActions.jsx';
+import { GovernmentGrantStatusCard } from './GovernmentGrantStatusCard.jsx';
 
 const statusBadge = (s = '') => {
   if (s === 'Approved') return 'bg-emerald-50 text-emerald-800 border-emerald-300';
@@ -219,12 +222,34 @@ export const ApprovalDetailModal = ({
   const handleForwardToGov = async () => {
     setIsForwarding(true);
     try {
-      const projId = approval.projectId || approval.approvalId.replace('APP-', '');
+      const projId = approval.projectId || approval.approvalId.replace('APP-PROTO-', '').replace('APP-', '');
       await universityApiService.forwardPrototypeToGovernment(projId, 'RU001', remarks);
       setForwarded(true);
       setRemarks('');
     } catch (err) {
       console.error('Failed to forward prototype to government:', err);
+    } finally {
+      setIsForwarding(false);
+    }
+  };
+
+  const handleSendToGovernment = async () => {
+    setIsForwarding(true);
+    try {
+      const projId = approval.projectId || approval.approvalId.replace('APP-PROTO-', '').replace('APP-', '');
+      await universityApiService.forwardPrototypeToGovernment(projId, 'RU001', remarks);
+      if (onApprove) {
+        await onApprove(approval, remarks, {
+          sentToGovernment: true,
+          governmentStatus: 'Under State Evaluation',
+          status: 'Approved'
+        });
+      }
+      setForwarded(true);
+      setRemarks('');
+      onClose();
+    } catch (err) {
+      console.error('Failed to send prototype to government:', err);
     } finally {
       setIsForwarding(false);
     }
@@ -355,7 +380,10 @@ export const ApprovalDetailModal = ({
 
           {/* Conditional Rendering for Prototype vs Proposal */}
           {approval.type === 'Prototype Approval' ? (
-            <PrototypePhasesView approval={approval} />
+            <div className="space-y-4">
+              <PrototypeLabTestingSection approval={approval} />
+              <PrototypePhasesView approval={approval} />
+            </div>
           ) : (
             <>
               {/* Technical Methodology & Research Plan */}
@@ -454,6 +482,9 @@ export const ApprovalDetailModal = ({
               </div>
             )}
           </div>
+
+          {/* Government Grant Sanction & Escrow Status */}
+          <GovernmentGrantStatusCard approval={approval} />
           </>
           )}
 
@@ -485,92 +516,79 @@ export const ApprovalDetailModal = ({
 
         {/* ── Action Footer ── */}
         <div className="px-6 py-4 bg-white border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-3 shrink-0">
-          <div className="text-xs text-slate-500">
-            Current Status: <strong>{approval.status}</strong>
-          </div>
-
-          {canAct ? (
-            <div className="flex items-center space-x-2 w-full sm:w-auto justify-end">
-              <button
-                type="button"
-                onClick={() => handleAction(onReject)}
-                disabled={isProcessing}
-                className="px-4 py-2 bg-white hover:bg-rose-50 border border-rose-200 text-rose-700 text-xs font-bold rounded-xl flex items-center space-x-1.5 transition-all shadow-2xs cursor-pointer"
-              >
-                <XCircle className="w-4 h-4 text-rose-500" />
-                <span>Reject</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => handleAction(onRequestChanges)}
-                disabled={isProcessing}
-                className="px-4 py-2 bg-white hover:bg-amber-50 border border-amber-300 text-amber-800 text-xs font-bold rounded-xl flex items-center space-x-1.5 transition-all shadow-2xs cursor-pointer"
-              >
-                <RotateCcw className="w-4 h-4 text-amber-600" />
-                <span>Request Revision</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => handleAction(onApprove)}
-                disabled={isProcessing}
-                className="px-5 py-2 bg-[#007A61] hover:bg-[#006650] text-white text-xs font-bold rounded-xl flex items-center space-x-1.5 transition-all shadow-2xs cursor-pointer"
-              >
-                <CheckCircle2 className="w-4 h-4 text-emerald-300" />
-                <span>
-                  {approval.type === 'Prototype Approval' ? 'Approve Prototype' : 'Approve & Forward to Government'}
-                </span>
-              </button>
-            </div>
+          {approval.type === 'Prototype Approval' ? (
+            <PrototypeApprovalActions
+              approval={approval}
+              remarks={remarks}
+              setRemarks={setRemarks}
+              isProcessing={isProcessing}
+              isForwarding={isForwarding}
+              forwarded={forwarded}
+              onRequestReview={() => handleAction(onRequestChanges)}
+              onSendToGovernment={handleSendToGovernment}
+              onClose={handleClose}
+            />
           ) : (
-            <div className="flex items-center space-x-2 w-full sm:w-auto justify-end">
-              {approval.status !== 'Pending' && (
-                <button
-                  type="button"
-                  onClick={() => onDelete(approval)}
-                  className="px-4 py-2 bg-white hover:bg-rose-50 border border-rose-200 text-rose-700 text-xs font-bold rounded-xl flex items-center space-x-1.5 transition-all shadow-2xs cursor-pointer"
-                >
-                  <XCircle className="w-4 h-4 text-rose-500" />
-                  <span>Delete Record</span>
-                </button>
-              )}
-              
-              {approval.type === 'Prototype Approval' && approval.status === 'Approved' && (
-                <>
+            <>
+              <div className="text-xs text-slate-500">
+                Current Status: <strong>{approval.status}</strong>
+              </div>
+
+              {canAct ? (
+                <div className="flex items-center space-x-2 w-full sm:w-auto justify-end">
                   <button
                     type="button"
-                    onClick={handleForwardToGov}
-                    disabled={isForwarding}
-                    className={`px-4 py-2 text-xs font-bold rounded-xl flex items-center space-x-1.5 transition-all shadow-2xs cursor-pointer ${
-                      forwarded
-                        ? 'bg-blue-50 border border-blue-200 text-blue-800'
-                        : 'bg-slate-900 hover:bg-slate-800 text-white'
-                    }`}
+                    onClick={() => handleAction(onReject)}
+                    disabled={isProcessing}
+                    className="px-4 py-2 bg-white hover:bg-rose-50 border border-rose-200 text-rose-700 text-xs font-bold rounded-xl flex items-center space-x-1.5 transition-all shadow-2xs cursor-pointer"
                   >
-                    <Send className="w-3.5 h-3.5 text-blue-400" />
-                    <span>{forwarded ? '✓ Shipped to Government (DHTE)' : 'Ship to Government'}</span>
+                    <XCircle className="w-4 h-4 text-rose-500" />
+                    <span>Reject</span>
                   </button>
 
                   <button
                     type="button"
-                    onClick={() => onOpenIndustryModal(approval)}
-                    className="px-4 py-2 bg-[#007A61] hover:bg-[#00604c] text-white text-xs font-bold rounded-xl flex items-center space-x-1.5 transition-all shadow-2xs cursor-pointer"
+                    onClick={() => handleAction(onRequestChanges)}
+                    disabled={isProcessing}
+                    className="px-4 py-2 bg-white hover:bg-amber-50 border border-amber-300 text-amber-800 text-xs font-bold rounded-xl flex items-center space-x-1.5 transition-all shadow-2xs cursor-pointer"
                   >
-                    <Building2 className="w-4 h-4 text-emerald-200" />
-                    <span>Request Industry Partnership</span>
+                    <RotateCcw className="w-4 h-4 text-amber-600" />
+                    <span>Request Revision</span>
                   </button>
-                </>
+
+                  <button
+                    type="button"
+                    onClick={() => handleAction(onApprove)}
+                    disabled={isProcessing}
+                    className="px-5 py-2 bg-[#007A61] hover:bg-[#006650] text-white text-xs font-bold rounded-xl flex items-center space-x-1.5 transition-all shadow-2xs cursor-pointer"
+                  >
+                    <CheckCircle2 className="w-4 h-4 text-emerald-300" />
+                    <span>Approve & Forward to Government</span>
+                  </button>
+                </div>
+              ) : (
+                <div className="flex items-center space-x-2 w-full sm:w-auto justify-end">
+                  {approval.status !== 'Pending' && (
+                    <button
+                      type="button"
+                      onClick={() => onDelete(approval)}
+                      className="px-4 py-2 bg-white hover:bg-rose-50 border border-rose-200 text-rose-700 text-xs font-bold rounded-xl flex items-center space-x-1.5 transition-all shadow-2xs cursor-pointer"
+                    >
+                      <XCircle className="w-4 h-4 text-rose-500" />
+                      <span>Delete Record</span>
+                    </button>
+                  )}
+                  
+                  <button
+                    type="button"
+                    onClick={onClose}
+                    className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold rounded-xl transition-all shadow-2xs cursor-pointer"
+                  >
+                    Close Dossier
+                  </button>
+                </div>
               )}
-              
-              <button
-                type="button"
-                onClick={onClose}
-                className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold rounded-xl transition-all shadow-2xs cursor-pointer"
-              >
-                Close Dossier
-              </button>
-            </div>
+            </>
           )}
         </div>
       </div>

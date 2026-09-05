@@ -2,6 +2,7 @@ import { UniversityProject, UniversityPartner, UniversityIndustryRequest, Univer
 import MongooseIndustry from '../../../government/industries/infrastructure/model.js';
 import { findUniversityIdentity } from '../helpers/lookup.helper.js';
 import { syncIndustryApprovedProject } from '../helpers/industry-project-sync.helper.js';
+import { handleIndustryTestingCompletion } from '../helpers/industry-testing-sync.helper.js';
 
 export class PartnerRequestRepository {
   async getPartnersByUniversity(universityCode) {
@@ -161,8 +162,7 @@ export class PartnerRequestRepository {
       );
       if (updatedReq) {
         if (extra.testingStages) {
-          const pFilter = updatedReq.projectId ? { projectId: updatedReq.projectId } : { title: updatedReq.projectTitle };
-          await UniversityProject.updateOne(pFilter, { $set: { testingStages: extra.testingStages } });
+          await handleIndustryTestingCompletion({ updatedReq, testingStages: extra.testingStages, code });
         }
         if (status === 'Approved' && (!updatedReq.quoteStatus || updatedReq.quoteStatus === 'Accepted')) {
           await syncIndustryApprovedProject(updatedReq);

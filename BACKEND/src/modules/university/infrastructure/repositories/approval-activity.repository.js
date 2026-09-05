@@ -1,11 +1,14 @@
 import mongoose from 'mongoose';
 import { UniversityApproval, UniversityProject, UniversityActivity } from '../model.js';
 import { findUniversityIdentity } from '../helpers/lookup.helper.js';
+import { syncBidirectionalProjectApprovals } from '../helpers/project-approval-sync.helper.js';
 export class ApprovalActivityRepository {
   async getApprovalsByUniversity(universityCode) {
-    const code = (universityCode || '').toUpperCase();
+    const code = (universityCode || 'RU001').toUpperCase();
     try {
-      const approvals = (await UniversityApproval.find({ universityCode: code }).sort({ date: -1 }).lean()) || [];
+      await syncBidirectionalProjectApprovals(code);
+      const identity = await findUniversityIdentity(code);
+      const approvals = (await UniversityApproval.find({ universityCode: { $in: identity?.validIdentifiers || [code, 'RU001', 'U-0205'] } }).sort({ date: -1 }).lean()) || [];
       if (!approvals.length) return [];
 
       const pids = approvals.map((a) => a.projectId || a.challengeId).filter(Boolean);
@@ -13,7 +16,7 @@ export class ApprovalActivityRepository {
 
       const projects = await UniversityProject.find({
         $or: [{ projectId: { $in: pids } }, { challengeId: { $in: pids } }]
-      }).select('projectId challengeId milestoneRoadmap methodology').lean();
+      }).select('projectId challengeId milestoneRoadmap methodology sanctionedBudget disbursedAmount budgetStatus trancheRequest').lean();
 
       const projMap = new Map();
       projects.forEach((p) => {
@@ -32,24 +35,26 @@ export class ApprovalActivityRepository {
           budgetBreakdown: bBreakdown,
           proposedBudget: bTotal,
           estimatedBudget: bTotal,
+          sanctionedBudget: a.sanctionedBudget || proj?.sanctionedBudget || bTotal,
+          disbursedAmount: a.disbursedAmount || proj?.disbursedAmount || '₹ 0',
+          budgetStatus: a.budgetStatus || proj?.budgetStatus || (a.status === 'Approved' ? 'Grant Sanctioned by Government' : 'Pending Review'),
+          trancheRequest: a.trancheRequest || proj?.trancheRequest || null,
           additionalAmount: bExtra,
           milestoneRoadmap: roadmap,
           methodology: a.methodology || proj?.methodology || ''
         };
       });
-    } catch {
-      return [];
-    }
+    } catch { return []; }
   }
 
   async updateApprovalStatus(approvalId, universityCode, status, remarks = '', extraData = {}) {
     try {
-      const setFields = {
-        status,
-        adminRemarks: remarks,
-        ...(status === 'Approved' ? { sentToGovernment: true, governmentStatus: 'Under State Evaluation' } : {})
-      };
+      const setFields = { status, adminRemarks: remarks, ...(status === 'Approved' ? { sentToGovernment: true, governmentStatus: 'Under State Evaluation' } : {}) };
       if (extraData.additionalAmount) setFields.additionalAmount = extraData.additionalAmount;
+      if (extraData.trancheRequest) setFields.trancheRequest = extraData.trancheRequest;
+      if (extraData.disbursedAmount) setFields.disbursedAmount = extraData.disbursedAmount;
+      if (extraData.sanctionedBudget) setFields.sanctionedBudget = extraData.sanctionedBudget;
+      if (extraData.budgetStatus) setFields.budgetStatus = extraData.budgetStatus;
       if (extraData.proposedBudget || extraData.budget) {
         setFields.proposedBudget = extraData.proposedBudget || extraData.budget;
         setFields.estimatedBudget = extraData.proposedBudget || extraData.budget;
@@ -112,12 +117,13 @@ export class ApprovalActivityRepository {
             projectUpdate.forwardedToGovAt = new Date();
             const bVal = res.proposedBudget || res.estimatedBudget || res.budget;
             if (bVal) { projectUpdate.budget = bVal; projectUpdate.proposedBudget = bVal; projectUpdate.sanctionedBudget = bVal; }
-            if (res.budgetBreakdown?.length) projectUpdate.budgetBreakdown = res.budgetBreakdown;
             if (res.additionalAmount) projectUpdate.additionalAmount = res.additionalAmount;
             if (res.methodology) projectUpdate.methodology = res.methodology;
             if (res.milestoneRoadmap?.length) projectUpdate.milestoneRoadmap = res.milestoneRoadmap;
-          }
-        }
+            if (extraData.trancheRequest) projectUpdate.trancheRequest = extraData.trancheRequest;
+            if (extraData.disbursedAmount) projectUpdate.disbursedAmount = extraData.disbursedAmount;
+            if (extraData.sanctionedBudget) projectUpdate.sanctionedBudget = extraData.sanctionedBudget;
+          } }
 
         if (isPrototype) {
           projectUpdate.prototypeStatus = status;
@@ -155,9 +161,7 @@ export class ApprovalActivityRepository {
         }).catch(() => {});
       }
       if (res) return res;
-    } catch (err) {
-      console.error('updateApprovalStatus error:', err);
-    }
+    } catch (err) { console.error('updateApprovalStatus error:', err); }
     return { approvalId, status };
   }
 
@@ -167,9 +171,7 @@ export class ApprovalActivityRepository {
         $or: [{ approvalId }, { projectId: approvalId }, { challengeId: approvalId }, ...(mongoose.Types.ObjectId.isValid(approvalId) ? [{ _id: approvalId }] : [])]
       });
       return { success: true };
-    } catch (err) {
-      return { success: false, error: err.message };
-    }
+    } catch (err) { return { success: false, error: err.message }; }
   }
 
   async getActivitiesByUniversity(code, limit = 100) {

@@ -49,10 +49,19 @@ export const CSRFundingSources = ({ onFilterBySource, selectedSourceFilter }) =>
     }
   };
 
+  const [financials, setFinancials] = useState(() => projectCsrSyncService.getFinancials());
+
   useEffect(() => {
     fetchLiveFunds();
+    const unsub = projectCsrSyncService.subscribe(() => {
+      fetchLiveFunds();
+      setFinancials(projectCsrSyncService.getFinancials());
+    });
     const interval = setInterval(fetchLiveFunds, 4000);
-    return () => clearInterval(interval);
+    return () => {
+      clearInterval(interval);
+      unsub();
+    };
   }, []);
 
   const handleFundChange = () => {
@@ -73,7 +82,7 @@ export const CSRFundingSources = ({ onFilterBySource, selectedSourceFilter }) =>
     return '₹ 0.00';
   };
 
-  const fin = projectCsrSyncService.getFinancials();
+  const fin = financials;
   const totalDisbursed = fin.totalDisbursed || 0;
   const remainingStateGrants = Math.max(0, (fundsData.stateGrantsTotal || 0) - totalDisbursed);
   const remainingTotalCorpus = Math.max(0, (fundsData.totalJointCorpus || 0) - totalDisbursed);

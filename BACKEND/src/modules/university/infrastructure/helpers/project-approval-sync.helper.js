@@ -117,3 +117,56 @@ export async function syncGovernmentDirectives({ res, updateData, projectId, uni
     });
   }
 }
+
+export async function syncBidirectionalProjectApprovals(uniCode = 'RU001') {
+  try {
+    const code = (uniCode || 'RU001').toUpperCase();
+    const { UniversityProject } = await import('../model.js');
+    const { GovernmentGrantPayment } = await import('../../../government/grants/model.js');
+    const [projects, approvals, payments] = await Promise.all([
+      UniversityProject.find({ $or: [{ universityCode: code }, { universityCode: 'RU001' }] }).lean(),
+      UniversityApproval.find({ $or: [{ universityCode: code }, { universityCode: 'RU001' }] }).lean(),
+      GovernmentGrantPayment.find({ bankStatus: 'success' }).lean().catch(() => [])
+    ]);
+
+    for (const p of projects) {
+      const paySum = payments.filter((t) => t.projectRef === p.projectId || t.challengeId === p.challengeId).reduce((s, t) => s + (t.rawAmount || 0), 0);
+      const disbStr = paySum > 0 ? `₹ ${paySum.toLocaleString('en-IN')}` : (p.disbursedAmount || '₹ 0');
+      await UniversityApproval.findOneAndUpdate(
+        { $or: [{ projectId: p.projectId }, { challengeId: p.challengeId }] },
+        {
+          $setOnInsert: {
+            approvalId: `APP-${p.projectId}`, universityCode: code, project: p.title || 'Grassroots Innovation Solution',
+            projectId: p.projectId, challengeId: p.challengeId || '', title: `R&D Grant Proposal: ${p.title || p.projectId}`,
+            type: 'R&D Grant Proposal', status: 'Approved', proposedBudget: p.sanctionedBudget || p.proposedBudget || '₹ 80,000',
+            estimatedBudget: p.sanctionedBudget || p.proposedBudget || '₹ 80,000', sanctionedBudget: p.sanctionedBudget || '₹ 80,000',
+            disbursedAmount: disbStr, budgetStatus: paySum > 0 ? 'Grant Disbursed' : (p.budgetStatus || 'Pending Review'),
+            trancheRequest: p.trancheRequest || null, requestedBy: p.leadMentor || 'binod',
+            faculty: { name: p.leadMentor || 'binod', department: 'Civil & Environmental Engineering' },
+            sentToGovernment: true, governmentStatus: 'Under State Evaluation', date: '05 Sept 2026', documentsCount: 3
+          }
+        },
+        { upsert: true }
+      ).catch(() => {});
+    }
+
+    for (const a of approvals) {
+      if (a.status === 'Approved' && a.projectId) {
+        await UniversityProject.findOneAndUpdate(
+          { $or: [{ projectId: a.projectId }, { challengeId: a.challengeId }] },
+          {
+            $setOnInsert: {
+              projectId: a.projectId, challengeId: a.challengeId || '', title: a.project || a.title || 'Grassroots Innovation Solution',
+              domain: 'Urban Development', status: 'In Progress', budgetStatus: a.budgetStatus || 'Grant Disbursed',
+              sanctionedBudget: a.sanctionedBudget || a.proposedBudget || '₹ 80,000', proposedBudget: a.proposedBudget || '₹ 80,000',
+              budget: a.sanctionedBudget || a.proposedBudget || '₹ 80,000', disbursedAmount: a.disbursedAmount || '₹ 80,000',
+              sentToGovernment: true, governmentStatus: 'Under State Evaluation', leadMentor: a.requestedBy || a.faculty?.name || 'binod',
+              universityCode: code, trancheRequest: a.trancheRequest || null, progressPercentage: 100, milestonesCompleted: 7, milestonesTotal: 7
+            }
+          },
+          { upsert: true }
+        ).catch(() => {});
+      }
+    }
+  } catch (err) { console.warn('Bidirectional sync warning:', err.message); }
+}

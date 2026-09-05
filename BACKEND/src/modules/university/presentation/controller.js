@@ -37,6 +37,7 @@ export class UniversityController {
   forwardPrototypeToGovernment(req, res, next) { return this.challengeProjectHandler.forwardPrototypeToGovernment(req, res, next); }
   updateGovernmentPrototypeStatus(req, res, next) { return this.challengeProjectHandler.updateGovernmentPrototypeStatus(req, res, next); }
   requestTranche(req, res, next) { return this.challengeProjectHandler.requestTranche(req, res, next); }
+  uploadProjectPdf(req, res, next) { return this.challengeProjectHandler.uploadProjectPdf(req, res, next); }
 
   getPartners(req, res, next) { return this.partnerApprovalHandler.getPartners(req, res, next); }
   getActivities(req, res, next) { return this.dashboardProfileHandler.getActivities(req, res, next); }
