@@ -8,6 +8,11 @@ import { cascadeDeleteProblemOrProject } from '../helpers/cascade-delete.helper.
 
 export class ProjectCrudRepository {
   async getProjectsByUniversity(universityCode, includeDeleted = false) {
+    if (universityCode === 'ALL' || !universityCode) {
+      const query = includeDeleted ? {} : { isDeleted: { $ne: true } };
+      return (await UniversityProject.find(query).sort({ updatedAt: -1 }).lean()) || [];
+    }
+
     const identity = await findUniversityIdentity(universityCode);
     if (!identity) {
       // Fail closed
@@ -42,8 +47,8 @@ export class ProjectCrudRepository {
           { $or: citizenOrConditions },
           {
             $or: [
-              { 'assignedUniversity.acceptanceStatus': 'Accepted' },
-              { status: { $in: ['In Progress', 'Accepted'] } }
+              { 'assignedUniversity.mentorName': { $exists: true, $ne: '' } },
+              { 'assignedFaculty.name': { $exists: true, $ne: '' } }
             ]
           },
           { 'assignedUniversity.acceptanceStatus': { $ne: 'Declined' } },
@@ -70,7 +75,11 @@ export class ProjectCrudRepository {
         }
       }
 
-      return projects;
+      return projects.filter((p) => {
+        if (!p.challengeId) return true;
+        const mentor = p.leadMentor || p.facultyMentor?.name;
+        return mentor && mentor !== 'Unassigned' && mentor !== 'Lead Faculty Mentor';
+      });
     } catch {
       return [];
     }
@@ -139,6 +148,14 @@ export class ProjectCrudRepository {
       console.error('Error assigning faculty to project:', err);
       return { projectId, ...facultyInfo };
     }
+  }
+
+  async getProjectById(projectId) {
+    if (!projectId) return null;
+    const isObjId = typeof projectId === 'string' && /^[0-9a-fA-F]{24}$/.test(projectId);
+    const conds = [{ projectId }, { challengeId: projectId }];
+    if (isObjId) conds.push({ _id: projectId });
+    return await UniversityProject.findOne({ $or: conds }).lean();
   }
 }
 

@@ -9,43 +9,29 @@ export async function syncProjectApprovalRequest({ res, updateData, projectId, u
     { approvalId },
     {
       $set: {
-        approvalId,
-        universityCode: uniCode,
+        approvalId, universityCode: uniCode,
         title: `${isRevision ? 'Revised ' : ''}R&D Grant Proposal & Line-Item Budget: ${res?.title || updateData.title || 'Innovation Project'}`,
-        type: approvalType,
-        isRevised: isRevision,
-        revisionCount: updateData.revisionCount || (isRevision ? 2 : 1),
-        project: res?.title || updateData.title || 'Innovation Project',
-        projectId: res?.projectId || projectId,
-        challengeId: res?.challengeId || '',
+        type: approvalType, isRevised: isRevision, revisionCount: updateData.revisionCount || (isRevision ? 2 : 1),
+        project: res?.title || updateData.title || 'Innovation Project', projectId: res?.projectId || projectId, challengeId: res?.challengeId || '',
         requestedBy: res?.leadMentor || updateData.leadMentor || res?.facultyMentor?.name || 'Faculty Mentor',
         requestedByDept: res?.facultyMentor?.department || 'Engineering',
         date: new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }),
         dateTime: new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }),
-        status: 'Pending',
-        adminRemarks: '',
-        universityRemarks: '',
+        status: 'Pending', adminRemarks: '', universityRemarks: '',
         faculty: { name: res?.leadMentor || res?.facultyMentor?.name || 'Faculty Mentor', department: res?.facultyMentor?.department || 'Engineering' },
         team: { name: res?.studentTeam || 'Student Research Team', membersCount: res?.teamMembers?.length || 4 },
-        startDate: res?.startDate || '20 May 2026',
-        estimatedBudget: updateData.proposedBudget || updateData.budget || '₹ 80,000',
+        startDate: res?.startDate || '20 May 2026', estimatedBudget: updateData.proposedBudget || updateData.budget || '₹ 80,000',
         proposedBudget: updateData.proposedBudget || updateData.budget || '₹ 80,000',
-        additionalAmount: updateData.additionalAmount || 0,
-        baselineBudget: updateData.baselineBudget || '₹ 80,000',
-        methodology: updateData.methodology || res?.methodology || '',
-        milestoneRoadmap: updateData.milestoneRoadmap || res?.milestoneRoadmap || [],
-        budgetBreakdown: updateData.budgetBreakdown || res?.budgetBreakdown || [],
-        supportTypes: ['Government Grant Funding', 'Lab Testing Bench'],
-        documentsCount: 3
+        additionalAmount: updateData.additionalAmount || 0, baselineBudget: updateData.baselineBudget || '₹ 80,000',
+        methodology: updateData.methodology || res?.methodology || '', milestoneRoadmap: updateData.milestoneRoadmap || res?.milestoneRoadmap || [],
+        budgetBreakdown: updateData.budgetBreakdown || res?.budgetBreakdown || [], supportTypes: ['Government Grant Funding', 'Lab Testing Bench'], documentsCount: 3
       },
       $push: {
         history: {
           action: isRevision ? `Re-Proposal Submitted (v${updateData.revisionCount || 2})` : 'Proposal Submitted by Faculty',
           performedBy: res?.leadMentor || 'Faculty Mentor',
           timestamp: `${new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}, ${new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}`,
-          note: isRevision
-            ? 'Faculty submitted revised research proposal & budget in response to University Authority feedback.'
-            : `Itemized R&D Budget of ${updateData.proposedBudget || updateData.budget || '₹ 80,000'} submitted for review.`
+          note: isRevision ? 'Faculty submitted revised research proposal & budget.' : `Itemized R&D Budget of ${updateData.proposedBudget || updateData.budget || '₹ 80,000'} submitted for review.`
         }
       }
     },
@@ -57,8 +43,7 @@ export async function syncProjectApprovalRequest({ res, updateData, projectId, u
     text: isRevision
       ? `Re-Proposal (Revised v${updateData.revisionCount || 2}) submitted by Faculty for "${res?.title || projectId}". Action required by University Authority.`
       : `R&D Grant Proposal & Line-Item Budget (${updateData.proposedBudget || updateData.budget || 'Submitted'}) formulated for project ${res?.projectId || projectId}.`,
-    type: isRevision ? 'RE_PROPOSAL_SUBMITTED' : 'PROPOSAL_SUBMITTED',
-    timestamp: new Date()
+    type: isRevision ? 'RE_PROPOSAL_SUBMITTED' : 'PROPOSAL_SUBMITTED', timestamp: new Date()
   });
 }
 
@@ -72,20 +57,16 @@ export async function syncGovernmentDirectives({ res, updateData, projectId, uni
         $set: { status: 'Changes Required', adminRemarks: `Government Directive: ${note}`, governmentRemarks: note },
         $push: {
           history: {
-            action: 'Clarification Requested by Government',
-            performedBy: 'Government Authority',
+            action: 'Clarification Requested by Government', performedBy: 'Government Authority',
             timestamp: `${new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}, ${new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}`,
             note
           }
         }
       }
     );
-
     await UniversityActivity.create({
-      universityCode: uniCode,
-      text: `⚠️ Government Authority requested proposal revision for "${res?.title || projectId}": ${note}`,
-      type: 'GOVERNMENT_REVISION_REQUESTED',
-      timestamp: new Date()
+      universityCode: uniCode, text: `⚠️ Government Authority requested proposal revision for "${res?.title || projectId}": ${note}`,
+      type: 'GOVERNMENT_REVISION_REQUESTED', timestamp: new Date()
     });
   }
 
@@ -93,27 +74,22 @@ export async function syncGovernmentDirectives({ res, updateData, projectId, uni
     const approvalId = `APP-${res?.projectId || projectId || ''}`;
     const orderNo = updateData.sanctionOrderNo || 'JH-GOV-RD-2026-8842';
     const grantAmt = updateData.sanctionedBudget || updateData.budget || '₹ 75,000';
-
     await UniversityApproval.findOneAndUpdate(
       { approvalId },
       {
         $set: { status: 'Approved', sanctionOrderNo: orderNo, sanctionedBudget: grantAmt, adminRemarks: `Grant Sanctioned under Sanction Order ${orderNo}` },
         $push: {
           history: {
-            action: 'Grant Sanctioned & Disbursed by Government',
-            performedBy: 'State Innovation Council (Govt of Jharkhand)',
+            action: 'Grant Sanctioned & Disbursed by Government', performedBy: 'State Innovation Council (Govt of Jharkhand)',
             timestamp: `${new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}, ${new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}`,
             note: `Sanction Order ${orderNo} approved for ${grantAmt}. Escrow funds active.`
           }
         }
       }
     );
-
     await UniversityActivity.create({
-      universityCode: uniCode,
-      text: `🏛️ Grant sanctioned and funds released under Order ${orderNo} for "${res?.title || projectId}" (${grantAmt}).`,
-      type: 'GRANT_SANCTIONED_BY_GOVERNMENT',
-      timestamp: new Date()
+      universityCode: uniCode, text: `🏛️ Grant sanctioned and funds released under Order ${orderNo} for "${res?.title || projectId}" (${grantAmt}).`,
+      type: 'GRANT_SANCTIONED_BY_GOVERNMENT', timestamp: new Date()
     });
   }
 }
@@ -123,27 +99,66 @@ export async function syncBidirectionalProjectApprovals(uniCode = 'RU001') {
     const code = (uniCode || 'RU001').toUpperCase();
     const { UniversityProject } = await import('../model.js');
     const { GovernmentGrantPayment } = await import('../../../government/grants/model.js');
+    const { findUniversityIdentity } = await import('./lookup.helper.js');
+    const identity = await findUniversityIdentity(code);
+    const validCodes = identity?.validIdentifiers || [code];
+
     const [projects, approvals, payments] = await Promise.all([
-      UniversityProject.find({ $or: [{ universityCode: code }, { universityCode: 'RU001' }] }).lean(),
-      UniversityApproval.find({ $or: [{ universityCode: code }, { universityCode: 'RU001' }] }).lean(),
+      UniversityProject.find({ universityCode: { $in: validCodes } }).lean(),
+      UniversityApproval.find({ universityCode: { $in: validCodes } }).lean(),
       GovernmentGrantPayment.find({ bankStatus: 'success' }).lean().catch(() => [])
     ]);
 
     for (const p of projects) {
+      if (p.isDeleted || p.status === 'Transferred') {
+        await UniversityApproval.deleteMany({ $or: [{ projectId: p.projectId }, { challengeId: p.challengeId }] });
+        continue;
+      }
+
+      const hasFaculty = Boolean(p.leadMentor || p.facultyMentor?.name);
+      const isProposalSubmitted = hasFaculty && (
+        p.budgetStatus === 'Submitted to University for Review' ||
+        p.budgetStatus === 'Grant Sanctioned by Government' ||
+        p.budgetStatus === 'Grant Disbursed' ||
+        p.budgetStatus === 'Changes Required by Government' ||
+        p.isRevised === true ||
+        (Array.isArray(p.budgetBreakdown) && p.budgetBreakdown.length > 0) ||
+        (Array.isArray(p.milestoneRoadmap) && p.milestoneRoadmap.length > 0)
+      );
+
+      if (!isProposalSubmitted) {
+        await UniversityApproval.deleteMany({
+          $or: [{ projectId: p.projectId }, { challengeId: p.challengeId }],
+          type: { $ne: 'Prototype Approval' }
+        });
+        continue;
+      }
+
       const paySum = payments.filter((t) => t.projectRef === p.projectId || t.challengeId === p.challengeId).reduce((s, t) => s + (t.rawAmount || 0), 0);
       const disbStr = paySum > 0 ? `₹ ${paySum.toLocaleString('en-IN')}` : (p.disbursedAmount || '₹ 0');
+      const isGovtApproved = paySum > 0 || p.budgetStatus === 'Grant Sanctioned by Government' || p.budgetStatus === 'Grant Disbursed' || Boolean(p.sanctionOrderNo);
+      const isChangesReq = p.budgetStatus === 'Changes Required by Government';
+      const isRejected = p.status === 'Rejected' || p.budgetStatus === 'Rejected';
+      const realStatus = isGovtApproved ? 'Approved' : isChangesReq ? 'Changes Required' : isRejected ? 'Rejected' : 'Pending';
+
       await UniversityApproval.findOneAndUpdate(
         { $or: [{ projectId: p.projectId }, { challengeId: p.challengeId }] },
         {
           $setOnInsert: {
             approvalId: `APP-${p.projectId}`, universityCode: code, project: p.title || 'Grassroots Innovation Solution',
             projectId: p.projectId, challengeId: p.challengeId || '', title: `R&D Grant Proposal: ${p.title || p.projectId}`,
-            type: 'R&D Grant Proposal', status: 'Approved', proposedBudget: p.sanctionedBudget || p.proposedBudget || '₹ 80,000',
-            estimatedBudget: p.sanctionedBudget || p.proposedBudget || '₹ 80,000', sanctionedBudget: p.sanctionedBudget || '₹ 80,000',
-            disbursedAmount: disbStr, budgetStatus: paySum > 0 ? 'Grant Disbursed' : (p.budgetStatus || 'Pending Review'),
-            trancheRequest: p.trancheRequest || null, requestedBy: p.leadMentor || 'binod',
-            faculty: { name: p.leadMentor || 'binod', department: 'Civil & Environmental Engineering' },
-            sentToGovernment: true, governmentStatus: 'Under State Evaluation', date: '05 Sept 2026', documentsCount: 3
+            type: 'R&D Grant Proposal', proposedBudget: p.proposedBudget || '₹ 80,000',
+            estimatedBudget: p.proposedBudget || '₹ 80,000', trancheRequest: p.trancheRequest || null,
+            requestedBy: p.leadMentor || 'Faculty Lead', faculty: { name: p.leadMentor || 'Faculty Lead', department: 'Engineering' },
+            sentToGovernment: true, governmentStatus: isGovtApproved ? 'Grant Sanctioned' : 'Under State Evaluation',
+            date: new Date(p.createdAt || Date.now()).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }),
+            documentsCount: 3
+          },
+          $set: {
+            status: realStatus,
+            budgetStatus: isGovtApproved ? (paySum > 0 ? 'Grant Disbursed' : 'Grant Sanctioned by Government') : (p.budgetStatus || 'Pending Review'),
+            sanctionedBudget: isGovtApproved ? (p.sanctionedBudget || p.proposedBudget || '₹ 80,000') : null,
+            disbursedAmount: disbStr
           }
         },
         { upsert: true }
@@ -151,7 +166,7 @@ export async function syncBidirectionalProjectApprovals(uniCode = 'RU001') {
     }
 
     for (const a of approvals) {
-      if (a.status === 'Approved' && a.projectId) {
+      if (a.status === 'Approved' && a.projectId && (a.sanctionOrderNo || a.budgetStatus === 'Grant Sanctioned by Government')) {
         await UniversityProject.findOneAndUpdate(
           { $or: [{ projectId: a.projectId }, { challengeId: a.challengeId }] },
           {
@@ -160,7 +175,7 @@ export async function syncBidirectionalProjectApprovals(uniCode = 'RU001') {
               domain: 'Urban Development', status: 'In Progress', budgetStatus: a.budgetStatus || 'Grant Disbursed',
               sanctionedBudget: a.sanctionedBudget || a.proposedBudget || '₹ 80,000', proposedBudget: a.proposedBudget || '₹ 80,000',
               budget: a.sanctionedBudget || a.proposedBudget || '₹ 80,000', disbursedAmount: a.disbursedAmount || '₹ 80,000',
-              sentToGovernment: true, governmentStatus: 'Under State Evaluation', leadMentor: a.requestedBy || a.faculty?.name || 'binod',
+              sentToGovernment: true, governmentStatus: 'Under State Evaluation', leadMentor: a.requestedBy || a.faculty?.name || 'Faculty Lead',
               universityCode: code, trancheRequest: a.trancheRequest || null, progressPercentage: 100, milestonesCompleted: 7, milestonesTotal: 7
             }
           },

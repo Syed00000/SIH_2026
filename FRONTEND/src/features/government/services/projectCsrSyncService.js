@@ -41,13 +41,15 @@ class ProjectCsrSyncService {
       }
       this.csrLedger = Array.isArray(backendLedger) ? backendLedger : [];
 
-      // 2. Fetch live projects from MongoDB
-      const res = await apiClient.get('university/projects?universityCode=RU001');
+      // 2. Fetch live projects from MongoDB (Statewide across all HEIs)
+      const res = await apiClient.get('university/projects?universityCode=ALL');
       const data = res.data?.data || res.data || [];
       const projectsList = Array.isArray(data) ? data : [];
 
-      // 3. Map Solution Proposals
-      this.solutionProposals = projectsList.map((p, idx) => {
+      // 3. Map Solution Proposals (Only projects approved & forwarded to Government by University)
+      this.solutionProposals = projectsList
+        .filter((p) => Boolean(p.sentToGovernment))
+        .map((p, idx) => {
         const bBreakdownSum = Array.isArray(p.budgetBreakdown) && p.budgetBreakdown.length > 0
           ? p.budgetBreakdown.reduce((sum, it) => sum + (typeof it.amount === 'number' ? it.amount : Number(String(it.amount || '0').replace(/[^\d]/g, '')) || 0), 0)
           : 0;
@@ -75,7 +77,7 @@ class ProjectCsrSyncService {
         const finalDisbursedStr = finalDisbursedNum > 0 ? `₹ ${finalDisbursedNum.toLocaleString('en-IN')}` : '₹ 0';
 
         const isFunded = finalDisbursedNum > 0 || p.budgetStatus === 'Grant Sanctioned by Government' || p.budgetStatus === 'Grant Disbursed';
-        const isApproved = isFunded || p.budgetStatus === 'Forwarded to CSR Grants Pipeline' || p.status === 'Approved' || p.status === 'Active';
+        const isApproved = isFunded || p.budgetStatus === 'Forwarded to CSR Grants Pipeline' || Boolean(p.sentToGovernment);
 
         return {
           id: `PROP-${pId || idx + 1}`,
@@ -97,8 +99,8 @@ class ProjectCsrSyncService {
           proposedBudget: effectiveBudgetStr,
           rawBudget: effectiveBudgetNum,
           additionalAmount: effectiveAdditional,
-          status: isApproved ? 'Approved' : (p.status || 'Pending'),
-          budgetStatus: isFunded ? 'Grant Sanctioned by Government' : isApproved ? 'Forwarded to CSR Grants Pipeline' : (p.budgetStatus || 'Pending Review'),
+          status: isFunded ? 'Grant Sanctioned' : 'Approved',
+          budgetStatus: isFunded ? 'Grant Sanctioned by Government' : 'Forwarded to CSR Grants Pipeline',
           sourceScheme: p.domain ? `${p.domain} State Innovation Grant` : 'Govt State R&D & CSR Pool',
           stage: p.stage || 'Stage 1: Formulation & DPR',
           trlLevel: p.trlLevel || 'TRL-4',
@@ -130,7 +132,15 @@ class ProjectCsrSyncService {
       this.activeProjects = this.solutionProposals
         .filter((p) => {
           const disbNum = Number(String(p.disbursedAmount || '0').replace(/[^\d]/g, '')) || 0;
-          return disbNum > 0 || p.budgetStatus === 'Grant Sanctioned by Government' || p.prototypeStatus === 'Approved' || p.sentToGovernment;
+          return (
+            disbNum > 0 ||
+            p.budgetStatus === 'Grant Sanctioned by Government' ||
+            p.budgetStatus === 'Grant Disbursed' ||
+            p.status === 'Active' ||
+            p.status === 'Deployed' ||
+            p.isDeployed ||
+            p.prototypeStatus === 'Approved'
+          );
         })
         .map((p) => {
           const isProtoDone = Boolean(p.testingCompleted || p.testingReportPdfUrl || p.prototypeStatus === 'Pending Approval' || p.prototypeStatus === 'Approved' || p.status === 'Deployed' || p.isDeployed);
@@ -237,6 +247,7 @@ class ProjectCsrSyncService {
 
   async approveProposalFromProjects(proposal, remarks = '') {
     const pId = proposal.projectId || (proposal.id ? proposal.id.replace('PROP-', '') : '');
+    const uniCode = proposal.universityCode || 'RU001';
     
     // Update local state
     this.solutionProposals = this.solutionProposals.map((p) => {
@@ -244,9 +255,12 @@ class ProjectCsrSyncService {
         return {
           ...p,
           status: 'Approved',
+          governmentStatus: 'Approved',
           budgetStatus: 'Forwarded to CSR Grants Pipeline',
+          milestonesCompleted: 5,
+          progressPercentage: 71,
           reviewedAt: new Date().toISOString(),
-          reviewerNotes: remarks || 'Proposal approved by Government Review Board.'
+          reviewerNotes: remarks || 'Proposal approved by Government Review Board and forwarded to CSR Grants Pipeline.'
         };
       }
       return p;
@@ -256,15 +270,22 @@ class ProjectCsrSyncService {
     this.addOrUpdateCsrProposal({
       ...proposal,
       status: 'Approved',
-      budgetStatus: 'Forwarded to CSR Grants Pipeline'
+      governmentStatus: 'Approved',
+      budgetStatus: 'Forwarded to CSR Grants Pipeline',
+      milestonesCompleted: 5,
+      progressPercentage: 71
     });
 
     // Save directly to backend MongoDB
     if (pId) {
       try {
-        await apiClient.put(`university/projects/${pId}`, {
+        await apiClient.put(`university/projects/${pId}?universityCode=${uniCode}`, {
+          universityCode: uniCode,
           budgetStatus: 'Forwarded to CSR Grants Pipeline',
-          status: 'In Progress',
+          governmentStatus: 'Approved',
+          status: 'Approved',
+          milestonesCompleted: 5,
+          progressPercentage: 71,
           adminRemarks: remarks || 'Approved by Government Review Board and forwarded to CSR Grants.'
         });
       } catch (err) {
@@ -441,8 +462,10 @@ class ProjectCsrSyncService {
     // Sync directly to backend MongoDB
     if (pId) {
       try {
+        const uniCode = payment.universityCode || 'RU001';
         const projectTranches = this.csrLedger.filter(t => t.projectRef === pId || t.projectRef === payment.projectRef || t.projectRef === `PROP-${pId}`);
-        await apiClient.put(`university/projects/${pId}`, {
+        await apiClient.put(`university/projects/${pId}?universityCode=${uniCode}`, {
+          universityCode: uniCode,
           disbursedAmount: cumulativeDisbursedStr,
           budgetStatus: 'Grant Sanctioned by Government',
           status: 'Active',

@@ -15,7 +15,8 @@ import {
   MapPin,
   Clock,
   ExternalLink,
-  ChevronRight
+  ChevronRight,
+  Lock
 } from 'lucide-react';
 import { projectCsrSyncService } from '../../services/projectCsrSyncService.js';
 import { formatRupeesINR, parseGrantRupees } from './GrantPaymentModal.jsx';
@@ -107,7 +108,7 @@ export const ProposalDetailView = ({
                 <ChevronRight className="w-3.5 h-3.5 text-slate-300" />
               </a>
             </div>
-          ) : isAlreadyInCsr ? (
+          ) : (
             <div className="flex items-center space-x-2">
               <span className="px-3 py-1.5 rounded-lg text-xs font-bold bg-blue-50 text-blue-800 border border-blue-200 flex items-center space-x-1.5">
                 <CheckCircle2 className="w-4 h-4 text-blue-600" />
@@ -120,27 +121,6 @@ export const ProposalDetailView = ({
                 <span>Open CSR Grants & Disbursal</span>
                 <ChevronRight className="w-3.5 h-3.5 text-slate-300" />
               </a>
-            </div>
-          ) : (
-            <div className="flex items-center space-x-2">
-              <button
-                type="button"
-                onClick={handleReject}
-                disabled={isSubmitting}
-                className="px-4 py-2 bg-white text-rose-600 hover:bg-rose-50 border border-rose-200 rounded-lg text-xs font-bold transition-colors cursor-pointer disabled:opacity-50"
-              >
-                Request Revision / Reject
-              </button>
-
-              <button
-                type="button"
-                onClick={handleApprove}
-                disabled={isSubmitting}
-                className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-lg text-xs font-bold transition-colors cursor-pointer flex items-center space-x-1.5 shadow-2xs disabled:opacity-50"
-              >
-                <Check className="w-4 h-4 text-emerald-400" />
-                <span>Approve & Forward to CSR Grants Pipeline ➔</span>
-              </button>
             </div>
           )}
         </div>

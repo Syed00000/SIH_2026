@@ -1,6 +1,9 @@
-export function extractUniversityCode(req, defaultCode = 'RUNI-JH') {
+export function extractUniversityCode(req, defaultCode = 'RU001') {
+  if (req.user?.role === 'GOVERNMENT' && !req.query?.universityCode && !req.body?.universityCode) {
+    return 'ALL';
+  }
   return (
-    req.query.universityCode ||
+    req.query?.universityCode ||
     req.body?.universityCode ||
     req.user?.profile?.aisheCode ||
     req.user?.profile?.code ||

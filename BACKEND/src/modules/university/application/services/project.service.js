@@ -7,6 +7,10 @@ export class UniversityProjectService {
     return await this.repository.getProjectsByUniversity(universityCode);
   }
 
+  async getProjectById(projectId) {
+    return await this.repository.getProjectById(projectId);
+  }
+
   async createProject(universityCode, data) {
     return await this.repository.createProject(universityCode, data);
   }

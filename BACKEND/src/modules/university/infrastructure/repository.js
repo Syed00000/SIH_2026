@@ -43,6 +43,10 @@ export class UniversityDashboardRepository {
     return this.projectCrudRepo.getProjectsByUniversity(universityCode, includeDeleted);
   }
 
+  getProjectById(projectId) {
+    return this.projectCrudRepo.getProjectById(projectId);
+  }
+
   createProject(universityCode, projectData) {
     return this.projectCrudRepo.createProject(universityCode, projectData);
   }

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Send, Clock, Coins } from 'lucide-react';
+import { Clock, Coins } from 'lucide-react';
 
 export const GrantRequestForm = ({
   pendingVal,
@@ -93,19 +93,10 @@ export const GrantRequestForm = ({
         </div>
       </div>
 
-      <div className="flex items-center justify-between pt-1">
+      <div className="pt-1">
         <p className="text-[10.5px] text-blue-800 font-medium">
-          Once submitted, State Government Officers will review and release funds directly via PFMS Escrow.
+          State Government Officers review and release funds directly via PFMS Escrow.
         </p>
-        <button
-          type="button"
-          disabled={isRequesting || requestedAmount <= 0}
-          onClick={() => onSubmitRequest(requestedAmount, reason)}
-          className="px-3.5 py-1.5 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white text-xs font-black rounded-lg flex items-center space-x-1.5 shadow-xs cursor-pointer transition-all shrink-0 hover:shadow-sm"
-        >
-          <Send className="w-3.5 h-3.5" />
-          <span>{isRequesting ? 'Submitting...' : `Send Request to Govt (₹ ${requestedAmount.toLocaleString('en-IN')})`}</span>
-        </button>
       </div>
     </div>
   );

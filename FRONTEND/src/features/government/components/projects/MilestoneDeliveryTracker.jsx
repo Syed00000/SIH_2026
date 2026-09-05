@@ -1,20 +1,62 @@
 import React from 'react';
-import { Box, CheckCircle2, Building2, MapPin, Banknote, ChevronDown, Layers, Check, Rocket } from 'lucide-react';
+import { Box, CheckCircle2, Building2, MapPin, Banknote, ChevronDown, Layers } from 'lucide-react';
 
-export const MilestoneDeliveryTracker = ({ project, isExpanded, onToggleExpand, onVerifyMilestone, onOpenDeployTerms, onViewDeployedSuccess }) => {
-  const isCompleted = project.status === 'Completed' || project.status === 'Deployed' || (project.progress || 0) >= 100;
-  
-  const milestonesList = (project.milestones || []).map((m, idx) => {
-    let mStatus = m.status;
-    const hasFunds = project.disbursedAmount && project.disbursedAmount !== '₹ 0' && project.disbursedAmount !== '0';
-    if ((m.title?.toLowerCase().includes('disbursal') || m.title?.toLowerCase().includes('budget') || idx === 4) && hasFunds) {
-      if (mStatus !== 'Completed' && mStatus !== 'COMPLETED') mStatus = 'Completed';
+export function computeDynamicMilestones(project) {
+  const hasFaculty = Boolean(project.teamLead || project.leadMentor || project.facultyMentor?.name);
+  const facultyName = project.teamLead || project.leadMentor || project.facultyMentor?.name || 'binod';
+  const hasProposal = Boolean(
+    (project.budgetBreakdown && project.budgetBreakdown.length > 0) ||
+    project.methodology ||
+    project.proposedBudget ||
+    project.sentToGovernment ||
+    (project.milestonesCompleted || 0) >= 3
+  );
+  const isForwarded = Boolean(project.sentToGovernment || project.forwardedToGovAt || (project.milestonesCompleted || 0) >= 4);
+  const disbNum = Number(String(project.disbursedAmount || '0').replace(/[^\d]/g, '')) || 0;
+  const isFunded = disbNum > 0 || project.budgetStatus === 'Grant Sanctioned by Government' || project.budgetStatus === 'Grant Disbursed' || (project.milestonesCompleted || 0) >= 5;
+  const isPrototypeDone = Boolean(
+    project.prototypeStatus === 'Approved' ||
+    project.prototypeStatus === 'Ready for Deployment' ||
+    project.testingCompleted ||
+    project.testingReportPdfUrl ||
+    (project.milestonesCompleted || 0) >= 6
+  );
+  const isDeployed = Boolean(project.isDeployed || project.status === 'Deployed' || (project.milestonesCompleted || 0) >= 7 || (project.progress || 0) >= 100);
+
+  const s1 = 'Completed';
+  const s2 = hasFaculty ? 'Completed' : 'In Progress';
+  const s3 = hasProposal ? 'Completed' : (hasFaculty ? 'In Progress' : 'Pending');
+  const s4 = isForwarded ? 'Completed' : (hasProposal ? 'In Progress' : 'Pending');
+  const s5 = isFunded ? 'Completed' : (isForwarded ? 'In Progress' : 'Pending');
+  const s6 = isPrototypeDone ? 'Completed' : (isFunded ? 'In Progress' : 'Pending');
+  const s7 = isDeployed ? 'Completed' : (isPrototypeDone ? 'In Progress' : 'Pending');
+
+  return [
+    { id: 1, title: 'Problem Statement Allocated & Scoped', status: s1, description: 'Phase 1 deliverable execution' },
+    { id: 2, title: `Lead Faculty Mentor Assigned (${facultyName})`, status: s2, description: 'Phase 2 deliverable execution' },
+    { id: 3, title: 'Faculty Solution Analysis & Budget Proposal', status: s3, description: 'Phase 3 deliverable execution' },
+    { id: 4, title: 'University Review & Submission to Government', status: s4, description: 'Phase 4 deliverable execution' },
+    { id: 5, title: 'Government Budget Sanction & Grant Disbursal', status: s5, description: 'Phase 5 deliverable execution' },
+    { id: 6, title: 'Prototype Development & Field Testing', status: s6, description: 'Phase 6 deliverable execution' },
+    { id: 7, title: 'Government Handover & Final Audit', status: s7, description: 'Phase 7 deliverable execution' }
+  ];
+}
+
+export const MilestoneDeliveryTracker = ({ project, isExpanded, onToggleExpand, onVerifyMilestone }) => {
+  const dynamicMilestones = computeDynamicMilestones(project);
+  const milestonesList = dynamicMilestones.map((dm) => {
+    const existing = (project.milestones || []).find((m) => m.id === dm.id || m.title === dm.title);
+    if (existing?.status === 'Completed' || existing?.status === 'COMPLETED') {
+      return { ...dm, status: 'Completed' };
     }
-    return { ...m, status: mStatus };
+    return dm;
   });
 
-  const allMilestonesCompleted = milestonesList.length > 0 && milestonesList.every(m => m.status === 'Completed' || m.status === 'COMPLETED');
-  const isDeployed = project.isDeployed || project.status === 'Deployed';
+  const completedCount = milestonesList.filter((m) => m.status === 'Completed').length;
+  const computedProgress = Math.round((completedCount / 7) * 100);
+  const displayProgress = project.progress ? Math.max(project.progress, computedProgress) : computedProgress;
+  const isCompleted = displayProgress >= 100;
+  const isDeployed = Boolean(project.isDeployed || project.status === 'Deployed' || isCompleted);
 
   return (
     <div className={`bg-white border rounded-2xl transition-all duration-200 shadow-2xs overflow-hidden ${isExpanded ? 'border-slate-400 ring-4 ring-slate-100' : 'border-slate-200 hover:border-slate-300'}`}>
@@ -35,7 +77,7 @@ export const MilestoneDeliveryTracker = ({ project, isExpanded, onToggleExpand, 
               <div className="flex items-center space-x-1.5 text-[11px] font-bold ml-1">
                 <span className={`w-1.5 h-1.5 rounded-full ${isCompleted ? 'bg-emerald-500' : 'bg-amber-500 animate-pulse'}`} />
                 <span className={isCompleted ? 'text-emerald-700' : 'text-amber-700'}>
-                  {isDeployed ? 'Deployed' : (isCompleted ? 'Completed' : 'In Progress')} ({project.progress || 0}%)
+                  {isDeployed ? 'Deployed' : (isCompleted ? 'Completed' : 'In Progress')} ({displayProgress}%)
                 </span>
               </div>
             </div>
@@ -88,15 +130,6 @@ export const MilestoneDeliveryTracker = ({ project, isExpanded, onToggleExpand, 
                             <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full border whitespace-nowrap ${mCompleted ? 'bg-emerald-100 text-emerald-800 border-emerald-200' : mInProgress ? 'bg-amber-100 text-amber-800 border-amber-200' : 'bg-slate-100 text-slate-500 border-slate-200'}`}>
                               {m.status}
                             </span>
-                            {!mCompleted && (
-                              <button
-                                type="button"
-                                onClick={(e) => { e.stopPropagation(); onVerifyMilestone(project.id, m.id); }}
-                                className="px-3 py-1.5 text-[11px] font-bold text-white bg-slate-900 hover:bg-slate-800 rounded-lg cursor-pointer flex items-center gap-1.5 shadow-2xs"
-                              >
-                                <Check className="w-3.5 h-3.5 text-emerald-400" /><span>Verify</span>
-                              </button>
-                            )}
                           </div>
                         </div>
                       </div>
@@ -106,54 +139,6 @@ export const MilestoneDeliveryTracker = ({ project, isExpanded, onToggleExpand, 
               </div>
             </div>
           )}
-
-          {/* Ready to Deploy Action Box */}
-          <div className="pt-4 border-t border-slate-200">
-            {isDeployed ? (
-              <div className="p-3.5 bg-emerald-100 border border-emerald-300 rounded-xl flex items-center justify-between text-emerald-950 text-xs shadow-2xs">
-                <div className="flex items-center space-x-2.5">
-                  <CheckCircle2 className="w-5 h-5 text-[#007A61] shrink-0" />
-                  <div>
-                    <span className="font-black block">✓ State Solution Successfully Deployed &amp; Active</span>
-                    <span className="text-[11px] text-emerald-800">Live citizen telemetry and prototype dossier published to Citizen Registry.</span>
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  onClick={(e) => { e.stopPropagation(); onViewDeployedSuccess(project); }}
-                  className="px-3 py-1.5 bg-white hover:bg-emerald-50 text-[#007A61] border border-emerald-300 rounded-lg text-xs font-bold shrink-0 cursor-pointer shadow-2xs"
-                >
-                  View Deployment
-                </button>
-              </div>
-            ) : (
-              <div className="p-4 bg-white border border-slate-200 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs">
-                <div>
-                  <h5 className="text-xs font-black text-slate-900 uppercase tracking-wider flex items-center space-x-1.5">
-                    <Rocket className="w-4 h-4 text-[#007A61]" /><span>Public Rollout &amp; State Deployment Gate</span>
-                  </h5>
-                  <p className="text-[11px] text-slate-500 mt-0.5">
-                    {allMilestonesCompleted
-                      ? 'All milestone stages and testing validations are 100% verified. Clear for State Deployment.'
-                      : 'Complete and verify all milestone stages above to activate official state deployment.'}
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  disabled={!allMilestonesCompleted}
-                  onClick={(e) => { e.stopPropagation(); onOpenDeployTerms(project); }}
-                  className={`px-4 py-2.5 rounded-xl text-xs font-black flex items-center space-x-2 transition-all shrink-0 ${
-                    allMilestonesCompleted
-                      ? 'bg-[#007A61] hover:bg-[#00604c] text-white shadow-md cursor-pointer animate-pulse'
-                      : 'bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed'
-                  }`}
-                >
-                  <Rocket className="w-4 h-4" />
-                  <span>{allMilestonesCompleted ? 'Ready to Deploy' : 'Deployment Locked'}</span>
-                </button>
-              </div>
-            )}
-          </div>
         </div>
       )}
     </div>

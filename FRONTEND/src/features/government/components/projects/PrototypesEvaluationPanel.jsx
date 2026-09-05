@@ -477,8 +477,8 @@ export const PrototypesEvaluationPanel = () => {
   const prototypeProjects = React.useMemo(() => {
     return projects.filter((p) => {
       const hasPhases = p.prototypeData?.phases && Object.values(p.prototypeData.phases).some(v => v && v.replace(/<[^>]*>/g, '').trim().length > 0);
-      const isProtoApproved = p.prototypeStatus === 'Approved' || p.sentToGovernment || p.budgetStatus === 'Prototype Approved & Shipped to Government' || p.governmentStatus;
-      return isProtoApproved || hasPhases || p.prototypeStatus === 'In Review';
+      const isProtoApproved = p.prototypeStatus === 'Approved' || p.budgetStatus === 'Prototype Approved & Shipped to Government' || p.prototypeStatus === 'In Review';
+      return isProtoApproved || hasPhases;
     });
   }, [projects]);
 

@@ -5,6 +5,7 @@ import { findUniversityIdentity } from '../helpers/lookup.helper.js';
 import { formatChallengeItem } from '../helpers/challenge-formatter.helper.js';
 import { buildChallengeStatusUpdatePayload } from '../helpers/challenge-status-builder.helper.js';
 import { cascadeDeleteProblemOrProject } from '../helpers/cascade-delete.helper.js';
+import { buildProjectStubFromCitizenChallenge } from '../helpers/project-stub.helper.js';
 
 export class ChallengeRepository {
   async getChallengesByUniversity(universityCode, { status, domain, district, search, page = 1, limit = 100 } = {}) {
@@ -18,38 +19,16 @@ export class ChallengeRepository {
     const uniName = identity.name;
     const validUniIdentifiers = identity.validIdentifiers;
 
-    const citizenOrConditions = [
-      { 'assignedUniversity.id': { $in: validUniIdentifiers } }
-    ];
-    if (uniName) {
-      const escapedName = uniName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-      citizenOrConditions.push({ 'assignedUniversity.name': { $regex: new RegExp(`^${escapedName}$`, 'i') } });
-    }
+    const citizenOrConditions = [{ 'assignedUniversity.id': { $in: validUniIdentifiers } }];
+    if (uniName) citizenOrConditions.push({ 'assignedUniversity.name': { $regex: new RegExp(`^${uniName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i') } });
 
-    const query = {
-      $or: citizenOrConditions,
-      isDeleted: { $ne: true }
-    };
+    const query = { $or: citizenOrConditions, isDeleted: { $ne: true } };
     if (status && status !== 'All Status' && status !== 'All') {
-      if (status === 'Accepted') {
-        query.$and = [{
-          $or: [
-            { 'assignedUniversity.acceptanceStatus': 'Accepted' },
-            { acceptanceStatus: 'Accepted' },
-            { status: 'In Progress' }
-          ]
-        }];
-      } else {
-        query.status = status;
-      }
+      if (status === 'Accepted') query.$and = [{ $or: [{ 'assignedUniversity.acceptanceStatus': 'Accepted' }, { acceptanceStatus: 'Accepted' }, { status: 'In Progress' }] }];
+      else query.status = status;
     }
     if (domain && domain !== 'All Domains' && domain !== 'All') query.domain = domain;
-    if (district && district !== 'All Districts' && district !== 'All') {
-      query.$or = [
-        { 'location.district': district },
-        { 'locationDetails.district': district }
-      ];
-    }
+    if (district && district !== 'All Districts' && district !== 'All') query.$or = [{ 'location.district': district }, { 'locationDetails.district': district }];
     if (search?.trim()) {
       const regex = new RegExp(search.trim(), 'i');
       const searchOr = [
@@ -168,8 +147,28 @@ export class ChallengeRepository {
 
       const projId = challengeId.replace('CHL-JH-2026-', 'PRJ-');
       const pMatch = { $or: [{ challengeId }, { projectId: challengeId }, { projectId: projId }] };
+      const stub = buildProjectStubFromCitizenChallenge({
+        ...chlDoc,
+        assignedUniversity: { id: universityCode, name: resolvedUniName, department: resolvedFaculty.department, mentorName: resolvedFaculty.name, mentorEmail: resolvedFaculty.email, acceptanceStatus: 'Accepted' }
+      }, universityCode);
+      delete stub.universityCode;
+      delete stub.leadMentor;
+      delete stub.facultyMentor;
       await Promise.all([
-        UniversityProject.updateMany(pMatch, { $set: { leadMentor: resolvedFaculty.name, facultyMentor: resolvedFaculty } }),
+        UniversityProject.findOneAndUpdate(
+          pMatch,
+          {
+            $set: {
+              ...stub,
+              leadMentor: resolvedFaculty.name,
+              facultyMentor: resolvedFaculty,
+              universityCode: (universityCode || 'RU001').toUpperCase(),
+              isDeleted: false,
+              status: 'Proposal Stage'
+            }
+          },
+          { upsert: true, new: true }
+        ),
         UniversityApproval.updateMany(pMatch, { $set: { requestedBy: resolvedFaculty.name, requestedByEmail: resolvedFaculty.email, faculty: resolvedFaculty } }),
         UniversityActivity.create({
           universityCode: (universityCode || 'RU001').toUpperCase(),

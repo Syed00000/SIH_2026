@@ -154,8 +154,6 @@ export const MilestonesMonitoringPanel = () => {
               isExpanded={expandedProjectId === project.id}
               onToggleExpand={(id) => setExpandedProjectId(expandedProjectId === id ? null : id)}
               onVerifyMilestone={handleVerifyMilestone}
-              onOpenDeployTerms={(prj) => { setDeployTermsProject(prj); setIsDeployTermsOpen(true); }}
-              onViewDeployedSuccess={(prj) => setDeployedSuccessProject(prj)}
             />
           ))}
         </div>

@@ -14,12 +14,13 @@ export const createChallengeProjectHandler = (service) => {
       const { id } = req.params;
       const code = extractUniversityCode(req, 'RUNI-JH');
       const { status, actionLabel, remarks, query, declineReason, clarificationQuery } = req.body;
+      const note = remarks || query || clarificationQuery || '';
       const updated = await service.updateChallengeStatus(id, code, status, actionLabel, {
-        clarificationQuery: clarificationQuery || query || remarks || '',
-        query: query || clarificationQuery || remarks || '',
+        clarificationQuery: clarificationQuery || query || note,
+        query: query || clarificationQuery || note,
         declineReason: declineReason || '',
         declineRemarks: remarks || '',
-        remarks: remarks || query || clarificationQuery || ''
+        remarks: note
       });
       res.status(200).json({ status: 'SUCCESS', message: 'Challenge status updated', data: updated });
     } catch (error) { next(error); }
@@ -29,8 +30,7 @@ export const createChallengeProjectHandler = (service) => {
     try {
       const { id } = req.params;
       const code = extractUniversityCode(req, 'RUNI-JH');
-      const { facultyInfo } = req.body;
-      const updated = await service.assignFaculty(id, code, facultyInfo);
+      const updated = await service.assignFaculty(id, code, req.body.facultyInfo);
       res.status(200).json({ status: 'SUCCESS', message: 'Faculty assigned successfully', data: updated });
     } catch (error) { next(error); }
   };
@@ -48,6 +48,16 @@ export const createChallengeProjectHandler = (service) => {
     try {
       const code = extractUniversityCode(req, 'RUNI-JH');
       const data = await service.getProjects(code);
+      res.status(200).json({ status: 'SUCCESS', data });
+    } catch (error) { next(error); }
+  };
+
+  const getProjectById = async (req, res, next) => {
+    try {
+      const { id } = req.params;
+      const code = extractUniversityCode(req, 'RUNI-JH');
+      const data = await service.getProjectById(code, id);
+      if (!data) return res.status(404).json({ status: 'ERROR', message: 'Project not found' });
       res.status(200).json({ status: 'SUCCESS', data });
     } catch (error) { next(error); }
   };
@@ -101,8 +111,7 @@ export const createChallengeProjectHandler = (service) => {
     try {
       const { id } = req.params;
       const code = extractUniversityCode(req, 'RU001');
-      const { remarks } = req.body;
-      const data = await service.forwardPrototypeToGovernment(id, code, remarks);
+      const data = await service.forwardPrototypeToGovernment(id, code, req.body.remarks);
       res.status(200).json({ status: 'SUCCESS', message: 'Prototype forwarded to Government successfully', data });
     } catch (error) { next(error); }
   };
@@ -131,7 +140,6 @@ export const createChallengeProjectHandler = (service) => {
         requestedBy: code === 'RU001' ? 'Ranchi University (RU001)' : `Nodal University (${code})`
       };
       const updated = await service.updateProject(code, id, { trancheRequest });
-      
       const { UniversityApproval, UniversityActivity } = await import('../../infrastructure/model.js');
       await UniversityApproval.updateMany(
         { $or: [{ projectId: id }, { challengeId: id }, { approvalId: id }, { approvalId: `APP-${id}` }] },
@@ -143,7 +151,6 @@ export const createChallengeProjectHandler = (service) => {
         type: 'directive',
         timestamp: new Date()
       }).catch(() => {});
-
       res.status(200).json({ status: 'SUCCESS', message: 'Second EMI (Tranche) requested successfully', data: updated });
     } catch (error) { next(error); }
   };
@@ -152,9 +159,7 @@ export const createChallengeProjectHandler = (service) => {
     try {
       const { id } = req.params;
       const code = extractUniversityCode(req, 'RU001');
-      if (!req.file) {
-        return res.status(400).json({ success: false, error: { message: 'No PDF file uploaded' } });
-      }
+      if (!req.file) return res.status(400).json({ success: false, error: { message: 'No PDF file uploaded' } });
       const uploadType = req.body?.type || req.query?.type || 'prototype';
       const data = await service.uploadProjectPdf(id, code, req.file, uploadType);
       res.status(200).json({ status: 'SUCCESS', message: 'PDF uploaded to Cloudinary successfully', data });
@@ -181,22 +186,11 @@ export const createChallengeProjectHandler = (service) => {
   };
 
   return {
-    getChallenges,
-    updateChallengeStatus,
-    assignFaculty,
-    deleteChallenge,
-    getProjects,
-    createProject,
-    updateProject,
-    deleteProject,
-    assignFacultyToProject,
-    submitPrototype,
-    forwardPrototypeToGovernment,
-    updateGovernmentPrototypeStatus,
-    requestTranche,
-    uploadProjectPdf,
-    deleteProjectPdf,
-    deployProject
+    getChallenges, updateChallengeStatus, assignFaculty, deleteChallenge,
+    getProjects, getProjectById, createProject, updateProject, deleteProject,
+    assignFacultyToProject, submitPrototype, forwardPrototypeToGovernment,
+    updateGovernmentPrototypeStatus, requestTranche, uploadProjectPdf,
+    deleteProjectPdf, deployProject
   };
 };
 

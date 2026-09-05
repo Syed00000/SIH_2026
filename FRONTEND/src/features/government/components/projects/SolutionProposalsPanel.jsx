@@ -21,7 +21,8 @@ import {
   Trash2,
   RotateCcw,
   Sparkles,
-  PlayCircle
+  PlayCircle,
+  Lock
 } from 'lucide-react';
 import { ProposalDetailView } from './ProposalDetailView.jsx';
 import { SECTOR_OPTIONS, DISTRICT_OPTIONS } from '../../data/projectConstants.js';
@@ -101,7 +102,10 @@ export const SolutionProposalsPanel = () => {
         ? {
             ...p,
             status: 'Approved',
+            governmentStatus: 'Approved',
             budgetStatus: 'Forwarded to CSR Grants Pipeline',
+            milestonesCompleted: 5,
+            progressPercentage: 71,
             reviewedAt: new Date().toISOString(),
             reviewerNotes: remarks || 'Proposal approved by Government Review Board and forwarded to CSR Grants.'
           }
@@ -347,7 +351,7 @@ export const SolutionProposalsPanel = () => {
                       <PlayCircle className="w-3.5 h-3.5 text-emerald-400" />
                       <span>View Active Project</span>
                     </a>
-                  ) : isApproved ? (
+                  ) : (
                     <a
                       href="?tab=csr"
                       className="px-3.5 py-1.5 text-xs font-bold text-white bg-slate-900 hover:bg-slate-800 rounded-xl transition-colors cursor-pointer flex items-center space-x-1.5 shadow-2xs"
@@ -355,15 +359,6 @@ export const SolutionProposalsPanel = () => {
                       <span>Open CSR Disbursal</span>
                       <ChevronRight className="w-3.5 h-3.5 text-slate-300" />
                     </a>
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={() => handleApproveGrant(proposal)}
-                      className="px-3.5 py-1.5 text-xs font-bold text-white bg-slate-900 hover:bg-slate-800 rounded-xl transition-colors cursor-pointer flex items-center space-x-1.5 shadow-2xs"
-                    >
-                      <Check className="w-3.5 h-3.5 text-emerald-400" />
-                      <span>Approve & Forward</span>
-                    </button>
                   )}
 
                   <button
@@ -409,7 +404,8 @@ export const SolutionProposalsPanel = () => {
                         {prop.hei || 'Ranchi University (RU001)'}
                       </td>
                       <td className="py-3.5 px-4 text-slate-600">
-                        {prop.sector} • {prop.district || 'Ranchi'}
+                        <div>{prop.sector}</div>
+                        <div className="text-[10px] text-slate-500">{prop.district || 'Ranchi'}</div>
                       </td>
                       <td className="py-3.5 px-4 font-mono font-bold text-slate-900">
                         {prop.requestedGrant || '₹ 73,000'}
@@ -432,23 +428,15 @@ export const SolutionProposalsPanel = () => {
                               href="?tab=projects_active"
                               className="px-2.5 py-1 text-xs font-bold text-white bg-slate-900 hover:bg-slate-800 rounded-lg"
                             >
-                              Active Project
+                              Active
                             </a>
-                          ) : isApproved ? (
+                          ) : (
                             <a
                               href="?tab=csr"
                               className="px-2.5 py-1 text-xs font-bold text-white bg-slate-900 hover:bg-slate-800 rounded-lg"
                             >
                               CSR Disbursal
                             </a>
-                          ) : (
-                            <button
-                              type="button"
-                              onClick={() => handleApproveGrant(prop)}
-                              className="px-2.5 py-1 text-xs font-bold text-white bg-slate-900 hover:bg-slate-800 rounded-lg"
-                            >
-                              Approve
-                            </button>
                           )}
 
                           <button

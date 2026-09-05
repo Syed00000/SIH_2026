@@ -25,6 +25,7 @@ import {
 
 import { ActiveProjectDetailView } from './ActiveProjectDetailView.jsx';
 import { GrantPaymentModal, parseGrantRupees, formatRupeesINR } from './GrantPaymentModal.jsx';
+import { ActiveProjectsStatsCards } from './ActiveProjectsStatsCards.jsx';
 import { SECTOR_OPTIONS, DISTRICT_OPTIONS } from '../../data/projectConstants.js';
 import { projectCsrSyncService } from '../../services/projectCsrSyncService.js';
 
@@ -73,28 +74,39 @@ export const ActiveProjectsPanel = () => {
     });
   }, [projects]);
 
-  // Aggregate Financial Statistics across active projects
-  const financialTotals = useMemo(() => {
-    let totalSanctionedRupees = 0;
-    let totalDisbursedRupees = 0;
+  // Execution & Institution Statistics across active projects
+  const projectExecutionStats = useMemo(() => {
+    let inTestingCount = 0;
+    let deployedOrReadyCount = 0;
+    const heiSet = new Set();
 
     activeExecutionProjects.forEach((p) => {
-      const sancVal = parseGrantRupees(p.sanctionedGrant || p.budget) || 0;
-      const disbVal = parseGrantRupees(p.disbursedAmount || p.disbursedGrant) || 0;
-      totalSanctionedRupees += sancVal;
-      totalDisbursedRupees += disbVal;
+      const heiKey = p.hei || p.universityCode;
+      if (heiKey) heiSet.add(heiKey);
+
+      const isProto = Boolean(
+        p.prototypeStatus === 'Approved' ||
+        p.prototypeStatus === 'In Review' ||
+        p.testingCompleted ||
+        p.stage?.includes('Prototype') ||
+        p.stage?.includes('Lab') ||
+        p.isProtoDone
+      );
+      if (isProto) inTestingCount++;
+
+      const isReadyOrDeployed = Boolean(
+        p.status === 'Deployed' ||
+        p.isDeployed ||
+        (p.progress || 0) >= 100
+      );
+      if (isReadyOrDeployed) deployedOrReadyCount++;
     });
 
-    const totalPendingRupees = Math.max(0, totalSanctionedRupees - totalDisbursedRupees);
-
     return {
-      totalSanctionedRupees,
-      totalDisbursedRupees,
-      totalPendingRupees,
-      sanctionedFormatted: totalSanctionedRupees > 0 ? formatRupeesINR(totalSanctionedRupees) : '₹ 0',
-      disbursedFormatted: totalDisbursedRupees > 0 ? formatRupeesINR(totalDisbursedRupees) : '₹ 0',
-      pendingFormatted: totalPendingRupees > 0 ? formatRupeesINR(totalPendingRupees) : '₹ 0',
-      activeCount: activeExecutionProjects.length
+      totalActive: activeExecutionProjects.length,
+      participatingHeisCount: heiSet.size,
+      inTestingCount,
+      deployedOrReadyCount
     };
   }, [activeExecutionProjects]);
 
@@ -221,97 +233,7 @@ export const ActiveProjectsPanel = () => {
       </div>
 
       {/* Top Metric Summary Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* Card 1: TOTAL ACTIVE PROJECTS */}
-        <div className="bg-white border border-slate-200/90 rounded-2xl p-5 shadow-2xs flex flex-col justify-between h-[135px]">
-          <div>
-            <div className="flex items-center justify-between">
-              <span className="text-[10px] font-extrabold text-slate-500 uppercase tracking-wider">
-                Total Active Projects
-              </span>
-              <Layers className="w-4 h-4 text-slate-400" />
-            </div>
-            <div className="mt-3 flex items-baseline justify-between">
-              <span className="text-3xl font-black text-slate-900 tracking-tight font-mono">
-                {financialTotals.activeCount}
-              </span>
-              <span className="text-[11px] text-slate-600 font-bold flex items-center">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#007A61] mr-1.5"></span>
-                Funded & Live
-              </span>
-            </div>
-          </div>
-          <div className="pt-2 border-t border-slate-100 text-[11px] text-slate-400 font-medium">
-            Projects with released grant tranches
-          </div>
-        </div>
-
-        {/* Card 2: TOTAL SANCTIONED GRANTS */}
-        <div className="bg-white border border-slate-200/90 rounded-2xl p-5 shadow-2xs flex flex-col justify-between h-[135px]">
-          <div>
-            <div className="flex items-center justify-between">
-              <span className="text-[10px] font-extrabold text-slate-500 uppercase tracking-wider">
-                Total Sanctioned Grants
-              </span>
-              <IndianRupee className="w-4 h-4 text-slate-400" />
-            </div>
-            <div className="mt-3 flex items-baseline justify-between">
-              <span className="text-2xl font-black text-slate-900 tracking-tight font-mono whitespace-nowrap">
-                {financialTotals.sanctionedFormatted}
-              </span>
-            </div>
-          </div>
-          <div className="pt-2 border-t border-slate-100 text-[11px] text-slate-400 font-medium">
-            Committed state innovation corpus
-          </div>
-        </div>
-
-        {/* Card 3: DISBURSED SO FAR */}
-        <div className="bg-white border border-slate-200/90 rounded-2xl p-5 shadow-2xs flex flex-col justify-between h-[135px]">
-          <div>
-            <div className="flex items-center justify-between">
-              <span className="text-[10px] font-extrabold text-slate-500 uppercase tracking-wider">
-                Disbursed to Escrow
-              </span>
-              <CheckCircle2 className="w-4 h-4 text-[#007A61]" />
-            </div>
-            <div className="mt-3 flex items-baseline justify-between">
-              <span className="text-2xl font-black text-[#007A61] tracking-tight font-mono whitespace-nowrap">
-                {financialTotals.disbursedFormatted}
-              </span>
-              <span className="text-[11px] text-[#007A61] font-bold">
-                PFMS Released
-              </span>
-            </div>
-          </div>
-          <div className="pt-2 border-t border-slate-100 text-[11px] text-slate-400 font-medium">
-            Credited to university escrow accounts
-          </div>
-        </div>
-
-        {/* Card 4: PENDING NEXT TRANCHES */}
-        <div className="bg-white border border-slate-200/90 rounded-2xl p-5 shadow-2xs flex flex-col justify-between h-[135px]">
-          <div>
-            <div className="flex items-center justify-between">
-              <span className="text-[10px] font-extrabold text-slate-500 uppercase tracking-wider">
-                Pending Next Tranches
-              </span>
-              <Clock className="w-4 h-4 text-amber-500" />
-            </div>
-            <div className="mt-3 flex items-baseline justify-between">
-              <span className="text-2xl font-black text-amber-700 tracking-tight font-mono whitespace-nowrap">
-                {financialTotals.pendingFormatted}
-              </span>
-              <span className="text-[11px] text-slate-500 font-bold">
-                Stage 2/3 Tranches
-              </span>
-            </div>
-          </div>
-          <div className="pt-2 border-t border-slate-100 text-[11px] text-slate-400 font-medium">
-            Release subject to milestone verification
-          </div>
-        </div>
-      </div>
+      <ActiveProjectsStatsCards stats={projectExecutionStats} />
 
       {/* Filter Toolbar & Status Filter Tabs */}
       <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-2xs space-y-4">
@@ -420,7 +342,7 @@ export const ActiveProjectsPanel = () => {
                   <th className="py-3.5 px-4">Institution & Mentor</th>
                   <th className="py-3.5 px-4">Stage & Telemetry</th>
                   <th className="py-3.5 px-4">Sanctioned & Disbursed</th>
-                  <th className="py-3.5 px-4 text-right">Tranche Actions</th>
+                  <th className="py-3.5 px-4 text-right">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
@@ -484,27 +406,19 @@ export const ActiveProjectsPanel = () => {
                         </div>
                       </td>
 
-                      {/* Tranche Action Button */}
+                      {/* Actions */}
                       <td className="py-4 px-4 text-right whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
                         <div className="flex items-center justify-end space-x-2">
                           <button
                             type="button"
                             onClick={() => setViewingProject(prj)}
-                            className="inline-flex items-center space-x-1 px-3 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-bold text-xs shadow-2xs"
+                            className="inline-flex items-center space-x-1 px-3 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-bold text-xs shadow-2xs cursor-pointer"
                           >
                             <Eye className="w-3.5 h-3.5 text-slate-400" />
                             <span>View Details</span>
                           </button>
 
-                          {!isFullyDisbursed ? (
-                            <a
-                              href="?tab=csr"
-                              className="inline-flex items-center space-x-1.5 px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-white rounded-lg font-bold text-xs shadow-2xs cursor-pointer"
-                            >
-                              <IndianRupee className="w-3.5 h-3.5 text-slate-300" />
-                              <span>Disburse Next Tranche</span>
-                            </a>
-                          ) : (
+                          {isFullyDisbursed && (
                             <span className="px-2.5 py-1 rounded-md text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
                               Fully Funded ✓
                             </span>
