@@ -64,6 +64,36 @@ export async function cascadeDeleteProblemOrProject(universityCode, identifier, 
     deletedBy
   });
 
+  // 2b. Clean up all Cloudinary assets (PDFs, lab reports, evidence photos, media)
+  try {
+    const { getStorageProvider } = await import('../../../../infrastructure/storage/index.js');
+    const storageProvider = getStorageProvider();
+
+    // Collect project PDF URLs
+    const projectFiles = [
+      project?.pdfUrl,
+      project?.prototypeData?.pdfUrl,
+      project?.testingReportPdfUrl,
+      ...(Array.isArray(project?.documents) ? project.documents.map(d => d.url) : [])
+    ].filter(Boolean);
+
+    for (const fileUrl of projectFiles) {
+      if (typeof fileUrl === 'string' && (fileUrl.includes('cloudinary.com') || fileUrl.includes('/api/v1/media/pdf'))) {
+        try {
+          await storageProvider.delete({ providerPublicId: fileUrl, resourceType: 'raw' });
+        } catch (_) {}
+      }
+    }
+
+    // Cascade delete all challenge evidence media, photos, videos from Cloudinary
+    if (resolvedChallengeId || challengeDbId) {
+      const { handleCascadeDeleteChallengeMedia } = await import('../../../citizen/application/services/media/media-delete.subservice.js');
+      await handleCascadeDeleteChallengeMedia(storageProvider, resolvedChallengeId || challengeDbId);
+    }
+  } catch (cleanErr) {
+    console.warn('[CascadeDelete] Non-blocking Cloudinary media cleanup warning:', cleanErr.message);
+  }
+
   // 3. HARD DELETE matching UniversityProject records
   try {
     const projectDeleteConditions = [];
@@ -86,24 +116,31 @@ export async function cascadeDeleteProblemOrProject(universityCode, identifier, 
         { challengeId: resolvedChallengeId },
         {
           $set: {
+            isDeleted: true,
+            deletedAt: new Date(),
+            deletedBy,
             status: 'Declined',
             acceptanceStatus: 'Declined',
             'milestones.2.status': 'PENDING',
             'milestones.2.completedAt': null,
-            'milestones.2.remarks': `Declined and removed by University (${universityCode}). Ready for Nodal reallocation.`,
+            'milestones.2.remarks': `Declined and permanently removed by University (${universityCode}).`,
             'milestones.3.status': 'PENDING',
             'milestones.3.completedAt': null,
-            'milestones.3.remarks': 'Awaiting State reallocation.'
+            'milestones.3.remarks': 'Removed.'
           },
           $unset: {
             assignedUniversity: 1,
             assignedFaculty: 1,
             mentorName: 1,
-            mentorEmail: 1
+            mentorEmail: 1,
+            media: 1,
+            mediaUrls: 1,
+            evidence: 1,
+            attachments: 1
           }
         }
       );
-      console.log(`[CascadeDelete] Unlinked and reset CitizenChallenge ${resolvedChallengeId}`);
+      console.log(`[CascadeDelete] Unlinked, purged media, and soft-deleted CitizenChallenge ${resolvedChallengeId}`);
     } catch (err) {
       console.error('[CascadeDelete] Error unlinking CitizenChallenge:', err);
     }

@@ -1,6 +1,7 @@
 import React from 'react';
 import { FileText, ExternalLink, Users, Sparkles, MapPin, Lock, Clock, ShieldCheck, XCircle } from 'lucide-react';
 import { PartnerActionCell } from './PartnerActionCell.jsx';
+import { getPdfViewUrl } from '../../../../shared/utils/openPdf.js';
 
 export const PartnerPrototypeRow = ({
   partner,
@@ -116,11 +117,11 @@ export const PartnerPrototypeRow = ({
         {pdfUrl ? (
           <div className="space-y-1">
             <a
-              href={pdfUrl}
+              href={getPdfViewUrl(pdfUrl, pdfName)}
               target="_blank"
-              rel="noreferrer"
+              rel="noopener noreferrer"
               onClick={(e) => e.stopPropagation()}
-              className="inline-flex items-center space-x-1 px-2.5 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-lg text-[11px] font-bold transition-all shadow-2xs group/btn"
+              className="inline-flex items-center space-x-1 px-2.5 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-lg text-[11px] font-bold transition-all shadow-2xs group/btn cursor-pointer"
               title={pdfName}
             >
               <FileText className="w-3.5 h-3.5 text-rose-600 shrink-0" />

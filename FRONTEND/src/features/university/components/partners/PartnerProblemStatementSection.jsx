@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { FolderGit2, FileText, UserCheck, Lock, Clock, ExternalLink, Users, Sparkles, FlaskConical } from 'lucide-react';
 import { universityApiService } from '../../services/universityApiService.js';
+import { getPdfViewUrl } from '../../../../shared/utils/openPdf.js';
 
 export const PartnerProblemStatementSection = ({
   partner, partnerRequests = [], selectedProblem, onSelectProblem
@@ -140,10 +141,10 @@ export const PartnerProblemStatementSection = ({
                 </div>
               </div>
               <a
-                href={activeProblem.pdfUrl}
+                href={getPdfViewUrl(activeProblem.pdfUrl, activeProblem.pdfName)}
                 target="_blank"
-                rel="noreferrer"
-                className="px-3 py-1 bg-white hover:bg-rose-100 text-rose-700 border border-rose-300 rounded-lg text-xs font-bold transition-all flex items-center space-x-1 shadow-2xs"
+                rel="noopener noreferrer"
+                className="px-3 py-1 bg-white hover:bg-rose-100 text-rose-700 border border-rose-300 rounded-lg text-xs font-bold transition-all flex items-center space-x-1 shadow-2xs cursor-pointer"
               >
                 <span>View Attached PDF</span>
                 <ExternalLink className="w-3 h-3" />

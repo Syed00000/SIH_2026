@@ -145,9 +145,11 @@ export class CloudinaryStorageProvider extends StorageProvider {
     this.ensureConfigured();
     if (!providerPublicId) throw new StorageDeleteError('Missing providerPublicId for deletion');
 
-    if (!this.configured) {
+    // Local disk storage fallback
+    if (!this.configured || providerPublicId.startsWith('file_') || providerPublicId.startsWith('/uploads/')) {
       try {
-        const filePath = path.join(process.cwd(), 'public/uploads', providerPublicId);
+        const cleanFile = providerPublicId.replace(/^\/uploads\//, '');
+        const filePath = path.join(process.cwd(), 'public/uploads', cleanFile);
         if (fs.existsSync(filePath)) {
           fs.unlinkSync(filePath);
         }
@@ -157,22 +159,46 @@ export class CloudinaryStorageProvider extends StorageProvider {
       }
     }
 
-    try {
-      const result = await cloudinary.uploader.destroy(providerPublicId, {
-        resource_type: resourceType,
-        type: 'upload',
-        invalidate: true
-      });
-
-      const isSuccess = result.result === 'ok' || result.result === 'not found';
-      if (!isSuccess) {
-        logger.warn({ msg: 'Cloudinary deletion returned non-ok result', providerPublicId, result: result.result });
-      }
-      return isSuccess;
-    } catch (err) {
-      logger.error({ msg: 'Cloudinary asset deletion failed', providerPublicId, error: sanitizeErrorMessage(err.message) });
-      throw new StorageDeleteError(sanitizeErrorMessage(err.message));
+    // Extract publicId if a full URL was supplied
+    let cleanId = providerPublicId;
+    if (cleanId.includes('cloudinary.com')) {
+      const match = cleanId.match(/\/(?:upload|authenticated)(?:\/s--[^/]+--)?\/(?:v\d+\/)?(.+?)(?:\?|$)/);
+      if (match) cleanId = decodeURIComponent(match[1]);
     }
+
+    const isPdfOrRaw = cleanId.toLowerCase().endsWith('.pdf') || resourceType === 'raw';
+    const isVideo = cleanId.toLowerCase().match(/\.(mp4|webm|mov|m4v|ogg)$/) || resourceType === 'video';
+    const targetResourceType = isPdfOrRaw ? 'raw' : isVideo ? 'video' : 'image';
+
+    // Strip image extension because Cloudinary stores image public IDs without extensions
+    const imagePublicId = cleanId.replace(/\.(png|jpg|jpeg|webp|gif|svg)$/i, '');
+
+    const candidates = [
+      { id: cleanId, type: isPrivate ? 'authenticated' : 'upload', resType: targetResourceType },
+      { id: cleanId, type: isPrivate ? 'upload' : 'authenticated', resType: targetResourceType },
+      { id: imagePublicId, type: isPrivate ? 'authenticated' : 'upload', resType: 'image' },
+      { id: imagePublicId, type: isPrivate ? 'upload' : 'authenticated', resType: 'image' }
+    ];
+
+    let deleted = false;
+    for (const cand of candidates) {
+      try {
+        const result = await cloudinary.uploader.destroy(cand.id, {
+          resource_type: cand.resType,
+          type: cand.type,
+          invalidate: true
+        });
+        if (result?.result === 'ok') {
+          deleted = true;
+          logger.info({ msg: 'Cloudinary asset deleted successfully', publicId: cand.id, type: cand.type, resType: cand.resType });
+          break;
+        }
+      } catch (err) {
+        // Continue to fallback candidates
+      }
+    }
+
+    return deleted;
   }
 }
 

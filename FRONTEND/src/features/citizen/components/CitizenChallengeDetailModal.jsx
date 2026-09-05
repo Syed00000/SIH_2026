@@ -5,6 +5,7 @@ import { citizenService } from '../services/citizenService.js';
 import { CitizenChallengeEvidenceSection } from './detail/CitizenChallengeEvidenceSection.jsx';
 import { CitizenTimelineMilestones } from './detail/CitizenTimelineMilestones.jsx';
 import { CitizenChallengeActionAlerts } from './detail/CitizenChallengeActionAlerts.jsx';
+import { openPdfDocument } from '../../../shared/utils/openPdf.js';
 
 export const CitizenChallengeDetailModal = ({ challenge = null, isOpen, onClose, onChallengeDeleted, onChallengeUpdated }) => {
   const [isProcessing, setIsProcessing] = useState(false);
@@ -125,7 +126,7 @@ export const CitizenChallengeDetailModal = ({ challenge = null, isOpen, onClose,
               </p>
               <button
                 type="button"
-                onClick={() => window.open(protoPdf, '_blank', 'noopener,noreferrer')}
+                onClick={() => openPdfDocument(protoPdf, `${challenge.title || 'Prototype'}_Blueprint.pdf`)}
                 className="px-3.5 py-1.5 bg-[#007A61] hover:bg-[#00604c] text-white rounded-lg text-xs font-bold flex items-center space-x-1.5 shadow-2xs cursor-pointer"
               >
                 <FileText className="w-3.5 h-3.5" />

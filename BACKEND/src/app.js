@@ -20,6 +20,7 @@ import citizenRoutes from './modules/citizen/presentation/routes.js';
 import clarificationRoutes from './modules/clarification/presentation/routes.js';
 import grantRoutes from './modules/government/grants/routes.js';
 import industryFundRoutes from './modules/industry/funds/routes.js';
+import mediaRoutes from './modules/media/presentation/routes.js';
 
 const app = express();
 
@@ -83,6 +84,7 @@ app.use('/api/v1/government/overview', overviewRoutes);
 app.use('/api/v1/government/funds', grantRoutes);
 app.use('/api/v1/university', universityRoutes);
 app.use('/api/v1/citizen', citizenRoutes);
+app.use('/api/v1/media', mediaRoutes);
 app.use('/api/v1/clarification-chat', clarificationRoutes);
 app.use('/api/clarification-chat', clarificationRoutes);
 

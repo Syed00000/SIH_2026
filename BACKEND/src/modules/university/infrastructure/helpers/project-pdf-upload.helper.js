@@ -22,9 +22,14 @@ export async function uploadProjectPdfDocument({ projectId, universityCode = 'RU
     isPrivate: false
   });
 
-  const pdfUrl = uploadResult.accessUrl;
+  const rawUrl = uploadResult.accessUrl;
   const fileName = file.originalname;
   const fileSize = file.size;
+
+  // Viewable PDF URL that streams authenticated data and opens natively in browser
+  const pdfUrl = rawUrl.includes('cloudinary.com')
+    ? `http://localhost:3000/api/v1/media/pdf?url=${encodeURIComponent(rawUrl)}&filename=${encodeURIComponent(fileName)}`
+    : rawUrl;
 
   if (isTestingReport) {
     const projectDoc = await UniversityProject.findOneAndUpdate(

@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { Upload, FileText, CheckCircle2, Lock, ExternalLink, Loader2, AlertCircle, RefreshCw } from 'lucide-react';
 import { universityApiService } from '../../../university/services/universityApiService.js';
+import { getPdfViewUrl } from '../../../../shared/utils/openPdf.js';
 
 export const IndustryTestingReportUploadCard = ({ project, stages = [], allStagesCompleted = false, onDossierSubmitted }) => {
   const [pdfFile, setPdfFile] = useState(null);
@@ -143,7 +144,7 @@ export const IndustryTestingReportUploadCard = ({ project, stages = [], allStage
             </div>
           </div>
           <div className="flex items-center space-x-2 shrink-0">
-            <a href={pdfUrl} target="_blank" rel="noreferrer" className="px-2.5 py-1 bg-white hover:bg-emerald-100 text-emerald-800 border border-emerald-300 rounded-lg text-xs font-bold flex items-center space-x-1 shadow-2xs">
+            <a href={getPdfViewUrl(pdfUrl, pdfName)} target="_blank" rel="noopener noreferrer" className="px-2.5 py-1 bg-white hover:bg-emerald-100 text-emerald-800 border border-emerald-300 rounded-lg text-xs font-bold flex items-center space-x-1 shadow-2xs cursor-pointer">
               <span>View PDF</span>
               <ExternalLink className="w-3 h-3" />
             </a>

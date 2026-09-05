@@ -1,5 +1,6 @@
 import React from 'react';
 import { FlaskConical, CheckCircle2, Building2, ShieldCheck, FileCheck, FileText, ExternalLink } from 'lucide-react';
+import { getPdfViewUrl } from '../../../../shared/utils/openPdf.js';
 
 export const PrototypeLabTestingSection = ({ approval }) => {
   const testingStages = approval?.testingStages || approval?.metadata?.testingStages || [];
@@ -113,10 +114,10 @@ export const PrototypeLabTestingSection = ({ approval }) => {
                 </div>
               </div>
               <a
-                href={approval.reportPdfUrl || approval.testingReportPdfUrl}
+                href={getPdfViewUrl(approval.reportPdfUrl || approval.testingReportPdfUrl, approval.reportPdfName || approval.testingReportPdfName || 'Certified_Lab_Report.pdf')}
                 target="_blank"
-                rel="noreferrer"
-                className="px-3 py-1.5 bg-white hover:bg-rose-100 text-rose-700 border border-rose-300 rounded-lg text-xs font-bold flex items-center space-x-1 shrink-0 shadow-2xs"
+                rel="noopener noreferrer"
+                className="px-3 py-1.5 bg-white hover:bg-rose-100 text-rose-700 border border-rose-300 rounded-lg text-xs font-bold flex items-center space-x-1 shrink-0 shadow-2xs cursor-pointer"
               >
                 <span>View Report</span>
                 <ExternalLink className="w-3.5 h-3.5" />
@@ -138,10 +139,10 @@ export const PrototypeLabTestingSection = ({ approval }) => {
                 </div>
               </div>
               <a
-                href={approval.pdfUrl}
+                href={getPdfViewUrl(approval.pdfUrl, approval.pdfName || 'Technical_Blueprint.pdf')}
                 target="_blank"
-                rel="noreferrer"
-                className="px-3 py-1.5 bg-white hover:bg-blue-100 text-blue-700 border border-blue-300 rounded-lg text-xs font-bold flex items-center space-x-1 shrink-0 shadow-2xs"
+                rel="noopener noreferrer"
+                className="px-3 py-1.5 bg-white hover:bg-blue-100 text-blue-700 border border-blue-300 rounded-lg text-xs font-bold flex items-center space-x-1 shrink-0 shadow-2xs cursor-pointer"
               >
                 <span>View Blueprint</span>
                 <ExternalLink className="w-3.5 h-3.5" />

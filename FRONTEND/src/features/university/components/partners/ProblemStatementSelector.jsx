@@ -1,5 +1,6 @@
 import React from 'react';
 import { FolderGit2, FileText, UserCheck, Sparkles, Users, ExternalLink, FlaskConical } from 'lucide-react';
+import { getPdfViewUrl } from '../../../../shared/utils/openPdf.js';
 
 export const ProblemStatementSelector = ({
   problemStatements = [], selectedItem = null, onSelect,
@@ -101,10 +102,10 @@ export const ProblemStatementSelector = ({
                 </div>
               </div>
               <a
-                href={selectedItem.pdfUrl}
+                href={getPdfViewUrl(selectedItem.pdfUrl, selectedItem.pdfName)}
                 target="_blank"
-                rel="noreferrer"
-                className="px-3 py-1 bg-white hover:bg-rose-100 text-rose-700 border border-rose-300 rounded-lg text-xs font-bold transition-all flex items-center space-x-1 shadow-2xs"
+                rel="noopener noreferrer"
+                className="px-3 py-1 bg-white hover:bg-rose-100 text-rose-700 border border-rose-300 rounded-lg text-xs font-bold transition-all flex items-center space-x-1 shadow-2xs cursor-pointer"
               >
                 <span>View Attached PDF</span>
                 <ExternalLink className="w-3 h-3" />

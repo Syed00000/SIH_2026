@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { X, CheckCircle2, XCircle, FileText, Building2, IndianRupee, ExternalLink } from 'lucide-react';
 import { universityApiService } from '../../../university/services/universityApiService.js';
+import { getPdfViewUrl } from '../../../../shared/utils/openPdf.js';
 
 export const IndustryRequestActionModal = ({ request, onClose, onSuccess }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -103,7 +104,7 @@ export const IndustryRequestActionModal = ({ request, onClose, onSuccess }) => {
                     <span className="text-[9.5px] text-emerald-700 font-semibold block">✓ Verified Cloudinary Blueprint</span>
                   </div>
                 </div>
-                <a href={request.pdfUrl} target="_blank" rel="noreferrer" className="px-3 py-1 bg-white hover:bg-rose-100 text-rose-700 border border-rose-300 rounded-lg text-xs font-bold flex items-center space-x-1 shadow-2xs">
+                <a href={getPdfViewUrl(request.pdfUrl, request.pdfName || 'Blueprint.pdf')} target="_blank" rel="noopener noreferrer" className="px-3 py-1 bg-white hover:bg-rose-100 text-rose-700 border border-rose-300 rounded-lg text-xs font-bold flex items-center space-x-1 shadow-2xs cursor-pointer">
                   <span>View PDF</span>
                   <ExternalLink className="w-3 h-3" />
                 </a>

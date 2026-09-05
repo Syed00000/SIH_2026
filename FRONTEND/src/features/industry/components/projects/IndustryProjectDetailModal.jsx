@@ -1,5 +1,6 @@
 import React from 'react';
 import { X, Briefcase, Building2, UserCheck, Users, Banknote, Calendar, ArrowRight, ShieldCheck, FileText, ExternalLink } from 'lucide-react';
+import { getPdfViewUrl } from '../../../../shared/utils/openPdf.js';
 
 export const IndustryProjectDetailModal = ({ project, onClose, onNavigateToFunding }) => {
   if (!project) return null;
@@ -60,7 +61,7 @@ export const IndustryProjectDetailModal = ({ project, onClose, onNavigateToFundi
                     <p className="text-[9.5px] text-emerald-700 font-semibold">✓ Verified Technical Blueprint</p>
                   </div>
                 </div>
-                <a href={project.pdfUrl} target="_blank" rel="noreferrer" className="px-3 py-1 bg-white hover:bg-rose-100 text-rose-700 border border-rose-300 rounded-lg text-xs font-bold transition-all flex items-center space-x-1 shadow-2xs">
+                <a href={getPdfViewUrl(project.pdfUrl, project.pdfName || 'Prototype_Blueprint.pdf')} target="_blank" rel="noopener noreferrer" className="px-3 py-1 bg-white hover:bg-rose-100 text-rose-700 border border-rose-300 rounded-lg text-xs font-bold transition-all flex items-center space-x-1 shadow-2xs cursor-pointer">
                   <span>View PDF</span>
                   <ExternalLink className="w-3 h-3" />
                 </a>

@@ -1,5 +1,6 @@
 import React from 'react';
 import { CheckCircle2, Rocket, ExternalLink, FileText, X, ArrowRight } from 'lucide-react';
+import { openPdfDocument } from '../../../../shared/utils/openPdf.js';
 
 export const ProjectDeployedSuccessModal = ({ project, isOpen, onClose, onViewCitizenPortal }) => {
   if (!isOpen || !project) return null;
@@ -9,7 +10,7 @@ export const ProjectDeployedSuccessModal = ({ project, isOpen, onClose, onViewCi
 
   const handleOpenPdf = () => {
     if (pdfUrl) {
-      window.open(pdfUrl, '_blank', 'noopener,noreferrer');
+      openPdfDocument(pdfUrl, pdfName);
     }
   };
 

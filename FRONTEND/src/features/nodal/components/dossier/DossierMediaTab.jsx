@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Camera, Video, FileText, Eye, ExternalLink, X, Download } from 'lucide-react';
+import { getPdfViewUrl } from '../../../../shared/utils/openPdf.js';
 
 const resolveMediaUrl = (rawUrl) => {
   if (!rawUrl || typeof rawUrl !== 'string') return '';
@@ -103,10 +104,10 @@ export const DossierMediaTab = ({ evidenceMedia = [] }) => {
                     <span className="text-[10px] text-slate-500 font-medium">{media.size}</span>
                   )}
                   <a
-                    href={media.url}
+                    href={getPdfViewUrl(media.url, media.name)}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="mt-2 inline-flex items-center space-x-1 text-[10px] font-bold text-[#007A61] bg-emerald-50 hover:bg-emerald-100 px-2 py-0.5 rounded-full border border-emerald-200 transition-colors"
+                    className="mt-2 inline-flex items-center space-x-1 text-[10px] font-bold text-[#007A61] bg-emerald-50 hover:bg-emerald-100 px-2 py-0.5 rounded-full border border-emerald-200 transition-colors cursor-pointer"
                   >
                     <ExternalLink className="w-3 h-3" />
                     <span>Open Document</span>
@@ -123,10 +124,10 @@ export const DossierMediaTab = ({ evidenceMedia = [] }) => {
                   </p>
                 </div>
                 <a
-                  href={media.url}
+                  href={media.type === 'pdf' ? getPdfViewUrl(media.url, media.name) : media.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="p-1 text-slate-400 hover:text-slate-900 rounded transition-colors"
+                  className="p-1 text-slate-400 hover:text-slate-900 rounded transition-colors cursor-pointer"
                   title="Open Asset in New Tab"
                 >
                   <ExternalLink className="w-3.5 h-3.5" />

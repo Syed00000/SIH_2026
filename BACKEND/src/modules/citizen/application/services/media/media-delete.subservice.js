@@ -54,19 +54,47 @@ export const handleCascadeDeleteChallengeMedia = async (storageProvider, challen
     const targetIds = [challengeId, challenge?.challengeId, challenge?._id].filter(Boolean);
 
     const mediaItems = await CitizenMedia.find({ challengeId: { $in: targetIds } }).lean();
-    const inlineMedia = Array.isArray(challenge?.media) ? challenge.media : [];
+    const rawArrays = [
+      ...(Array.isArray(challenge?.media) ? challenge.media : []),
+      ...(Array.isArray(challenge?.mediaUrls) ? challenge.mediaUrls : []),
+      ...(Array.isArray(challenge?.evidence) ? challenge.evidence : []),
+      ...(Array.isArray(challenge?.attachments) ? challenge.attachments : []),
+      ...(Array.isArray(challenge?.photos) ? challenge.photos : []),
+      ...(Array.isArray(challenge?.images) ? challenge.images : [])
+    ];
 
     const allPublicIds = new Map();
 
     mediaItems.forEach((m) => {
-      if (m.providerPublicId) {
-        allPublicIds.set(m.providerPublicId, { resourceType: m.resourceType || 'image', isPrivate: m.isPrivate !== false });
+      const pId = m.providerPublicId || m.storageKey;
+      if (pId) {
+        allPublicIds.set(pId, { resourceType: m.resourceType || 'image', isPrivate: m.isPrivate !== false });
       }
     });
 
-    inlineMedia.forEach((m) => {
-      if (m.providerPublicId && !allPublicIds.has(m.providerPublicId)) {
-        allPublicIds.set(m.providerPublicId, { resourceType: m.fileType === 'video' ? 'video' : m.fileType === 'pdf' ? 'raw' : 'image', isPrivate: true });
+    rawArrays.forEach((item) => {
+      if (!item) return;
+      if (typeof item === 'object' && item.providerPublicId) {
+        if (!allPublicIds.has(item.providerPublicId)) {
+          const resType = item.fileType === 'video' ? 'video' : item.fileType === 'pdf' ? 'raw' : 'image';
+          allPublicIds.set(item.providerPublicId, { resourceType: resType, isPrivate: true });
+        }
+      }
+      const rawUrl = typeof item === 'string' ? item : (item.url || item.accessUrl || item.src || '');
+      if (rawUrl && typeof rawUrl === 'string' && rawUrl.includes('cloudinary.com')) {
+        const match = rawUrl.match(/\/(?:upload|authenticated)(?:\/s--[^/]+--)?\/(?:v\d+\/)?(.+?)(?:\?|$)/);
+        if (match) {
+          const extractedId = decodeURIComponent(match[1]);
+          if (!allPublicIds.has(extractedId)) {
+            const isPdf = rawUrl.toLowerCase().includes('.pdf') || rawUrl.includes('/raw/');
+            const isVid = rawUrl.toLowerCase().match(/\.(mp4|webm|mov|m4v|ogg)$/) || rawUrl.includes('/video/');
+            const isPriv = rawUrl.includes('/authenticated/');
+            allPublicIds.set(extractedId, {
+              resourceType: isPdf ? 'raw' : isVid ? 'video' : 'image',
+              isPrivate: isPriv
+            });
+          }
+        }
       }
     });
 

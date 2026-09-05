@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { ShieldCheck, Phone, Mail, Quote, Camera, ImageOff } from 'lucide-react';
 import { ChallengeInspectorEvidenceCard } from './ChallengeInspectorEvidenceCard.jsx';
 import { ChallengeInspectorEvidenceLightbox } from './ChallengeInspectorEvidenceLightbox.jsx';
+import { getPdfViewUrl } from '../../../../../shared/utils/openPdf.js';
 
 const resolveMediaUrl = (rawUrl) => {
   if (!rawUrl || typeof rawUrl !== 'string') return '';
@@ -48,14 +49,16 @@ export const ChallengeInspectorEvidenceTab = ({ challenge = {} }) => {
     if (!rawUrl || seenUrls.has(rawUrl)) continue;
     seenUrls.add(rawUrl);
 
-    const url = resolveMediaUrl(rawUrl);
+    const rawFinalUrl = resolveMediaUrl(rawUrl);
     const isVid = Boolean(item.fileType === 'video' || item.type === 'video' || rawUrl.match(/\.(mp4|webm|ogg|mov|m4v)(\?.*)?$/i) || rawUrl.includes('/video/'));
     const isPdf = Boolean(item.fileType === 'pdf' || item.type === 'pdf' || rawUrl.match(/\.pdf(\?.*)?$/i) || rawUrl.includes('/raw/'));
+    const caption = item.caption || item.fileName || item.name || `Evidence Item #${normalizedMedia.length + 1}`;
+    const url = isPdf ? getPdfViewUrl(rawFinalUrl, caption) : rawFinalUrl;
 
     normalizedMedia.push({
       url,
       type: isVid ? 'video' : isPdf ? 'pdf' : 'photo',
-      caption: item.caption || item.fileName || item.name || `Evidence Item #${normalizedMedia.length + 1}`,
+      caption,
       uploadedAt: item.uploadedAt || item.date
     });
   }

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Camera, Eye, FileText, X, ExternalLink, Download, ImageOff } from 'lucide-react';
+import { getPdfViewUrl } from '../../../../shared/utils/openPdf.js';
 
 const resolveMediaUrl = (rawUrl) => {
   if (!rawUrl || typeof rawUrl !== 'string') return '';
@@ -102,7 +103,7 @@ export const CitizenChallengeEvidenceSection = ({ challenge = {} }) => {
                   </div>
                   <span className="text-xs font-bold text-slate-900 line-clamp-1">{item.name}</span>
                   {item.size && <span className="text-[10px] text-slate-500 font-medium mt-0.5">{item.size}</span>}
-                  <a href={item.url} target="_blank" rel="noopener noreferrer" className="mt-2 text-[10px] font-extrabold text-emerald-800 bg-emerald-100/80 hover:bg-emerald-200 px-3 py-1 rounded-lg inline-flex items-center space-x-1 transition-colors">
+                  <a href={getPdfViewUrl(item.url, item.name)} target="_blank" rel="noopener noreferrer" className="mt-2 text-[10px] font-extrabold text-emerald-800 bg-emerald-100/80 hover:bg-emerald-200 px-3 py-1 rounded-lg inline-flex items-center space-x-1 transition-colors cursor-pointer">
                     <Download className="w-3 h-3" />
                     <span>View Document</span>
                   </a>
@@ -114,7 +115,7 @@ export const CitizenChallengeEvidenceSection = ({ challenge = {} }) => {
                   <p className="font-bold text-slate-900 truncate text-[11px]">{item.name}</p>
                   <p className="text-[10px] text-slate-400 capitalize font-medium">{item.type} {item.size ? `• ${item.size}` : ''}</p>
                 </div>
-                <a href={item.url} target="_blank" rel="noopener noreferrer" className="p-1.5 rounded-lg text-slate-400 hover:text-slate-900 hover:bg-slate-50 transition-colors" title="Open in new tab">
+                <a href={item.type === 'pdf' ? getPdfViewUrl(item.url, item.name) : item.url} target="_blank" rel="noopener noreferrer" className="p-1.5 rounded-lg text-slate-400 hover:text-slate-900 hover:bg-slate-50 transition-colors cursor-pointer" title="Open in new tab">
                   <ExternalLink className="w-3.5 h-3.5" />
                 </a>
               </div>

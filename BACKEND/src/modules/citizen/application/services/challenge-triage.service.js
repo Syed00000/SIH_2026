@@ -45,10 +45,10 @@ export class ChallengeTriageService {
     return updated;
   }
 
-  async deleteChallenge(challengeId) {
+  async deleteChallenge(challengeId, deletedBy = 'Citizen') {
     if (!challengeId) throw new Error('Challenge ID is required');
 
-    // Cascade delete any uploaded Cloudinary assets and citizen media records
+    // 1. Cascade delete any uploaded Cloudinary assets and citizen media records
     try {
       const { citizenMediaService } = await import('./citizen-media.service.js');
       await citizenMediaService.cascadeDeleteChallengeMedia(challengeId);
@@ -60,7 +60,19 @@ export class ChallengeTriageService {
       });
     }
 
-    const deleted = await this.repository.deleteById(challengeId);
+    // 2. Cascade delete linked University projects, faculty assignments, approvals, and teams
+    try {
+      const { cascadeDeleteProblemOrProject } = await import('../../../university/infrastructure/helpers/cascade-delete.helper.js');
+      await cascadeDeleteProblemOrProject('RUNI-JH', challengeId, deletedBy);
+    } catch (uniErr) {
+      logger.warn({
+        msg: 'Warning: Failed to cascade delete university project during challenge deletion',
+        challengeId,
+        error: uniErr.message
+      });
+    }
+
+    const deleted = await this.repository.deleteById(challengeId, deletedBy);
     if (!deleted) throw new Error(`Challenge ${challengeId} not found`);
     return { success: true, message: `Challenge ${challengeId} deleted successfully` };
   }
