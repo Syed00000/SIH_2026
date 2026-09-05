@@ -93,7 +93,7 @@ export const useFacultyTeams = ({
   const handleStartCreate = () => {
     setEditingTeamId(null);
     setTeamName('');
-    setSelectedProjectId('');
+    setSelectedProjectId(initialProjectId || (projects.length === 1 ? (projects[0]?.projectId || projects[0]?.challengeId) : ''));
     setTeamMembers([]);
   };
 
@@ -146,22 +146,23 @@ export const useFacultyTeams = ({
       const leadMember = teamMembers.find((m) => m.isLead) || teamMembers[0];
       const finalTeamName = teamName.trim() || `${faculty?.name?.split(' ')[0] || 'Research'} Innovation Team`;
       const leadName = leadMember?.name || 'Unassigned';
-      const targetProj = projects.find((p) => p.projectId === selectedProjectId || p.challengeId === selectedProjectId);
-      const projTitle = targetProj?.title || (selectedProjectId ? selectedProjectId : 'Not Assigned Yet (Independent Lab)');
+      const targetProj = projects.find((p) => p.projectId === selectedProjectId || p.challengeId === selectedProjectId) || (projects.length === 1 ? projects[0] : null);
+      const effectivePid = selectedProjectId || targetProj?.projectId || targetProj?.challengeId || '';
+      const projTitle = targetProj?.title || (effectivePid ? effectivePid : 'Not Assigned Yet (Independent Lab)');
       const teamCode = editingTeamId || `TEAM-RU-${Date.now().toString().slice(-4)}`;
 
       const payload = {
         teamCode, id: teamCode, name: finalTeamName, teamName: finalTeamName,
         leader: leadName, studentLead: leadName, membersCount: teamMembers.length,
-        members: teamMembers, project: projTitle, projectId: selectedProjectId || '',
+        members: teamMembers, project: projTitle, projectId: effectivePid,
         mentor: faculty?.name || 'Faculty Mentor', status: 'Active'
       };
 
       if (targetProj) {
         await facultyApiService.updateProject(targetProj.projectId || targetProj._id, {
           ...targetProj, teamMembers, teamMembersCount: teamMembers.length,
-          studentLead: leadName, studentTeam: finalTeamName, teamName: finalTeamName
-        });
+          studentLead: leadName, studentTeam: finalTeamName, teamName: finalTeamName, teamCode
+        }).catch(() => {});
       }
       if (editingTeamId) await facultyApiService.updateTeam(teamCode, payload);
       else await facultyApiService.createTeam(payload);

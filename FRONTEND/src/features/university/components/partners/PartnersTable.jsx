@@ -14,10 +14,13 @@ export const PartnersTable = ({
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 6;
 
-  // Real data only appears when student team has submitted their prototype!
+  // Real data appears when faculty has submitted prototype dossier!
   const items = [];
   if (submittedPrototypes && submittedPrototypes.length > 0) {
-    partners.forEach((partner) => {
+    const activePartners = partners.length > 0 ? partners : [
+      { partnerId: 'IND-DEFAULT-01', name: 'Tata Steel R&D Hub (Jamshedpur)', category: 'Industrial Testing Facility', location: 'Jamshedpur, Jharkhand' }
+    ];
+    activePartners.forEach((partner) => {
       submittedPrototypes.forEach((proto) => {
         const matchedReq = requests.find((r) => 
           (r.projectId === proto.id || r.projectId === proto.projectId || r.projectTitle?.toLowerCase() === proto.title?.toLowerCase()) &&

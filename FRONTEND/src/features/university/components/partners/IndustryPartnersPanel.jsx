@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Factory, IndianRupee, AlertCircle } from 'lucide-react';
+import { Plus, Factory, IndianRupee } from 'lucide-react';
 import { IndustryApprovalBanner } from './IndustryApprovalBanner.jsx';
 import { PartnersKpis } from './PartnersKpis.jsx';
 import { PartnersFilterBar } from './PartnersFilterBar.jsx';
 import { PartnersTable } from './PartnersTable.jsx';
+import { MentoredPrototypesIndustryCard } from './MentoredPrototypesIndustryCard.jsx';
 import { PartnerDetailModal } from './PartnerDetailModal.jsx';
 import { CreatePartnershipModal } from './CreatePartnershipModal.jsx';
 import { ApproveIndustryAmountModal } from './ApproveIndustryAmountModal.jsx';
@@ -19,7 +20,6 @@ export const IndustryPartnersPanel = () => {
   const [supportFilter, setSupportFilter] = useState('All');
   const [statusFilter, setStatusFilter] = useState('All');
 
-  // Modals state
   const [detailPartner, setDetailPartner] = useState(null);
   const [requestPartner, setRequestPartner] = useState(null);
   const [requestProblem, setRequestProblem] = useState(null);
@@ -44,11 +44,11 @@ export const IndustryPartnersPanel = () => {
     }
   };
 
-  useEffect(() => {
-    fetchPartners();
-  }, []);
+  useEffect(() => { fetchPartners(); }, []);
 
-  const submittedPrototypes = projects.filter((p) => p.sentToUniversity === true || p.prototypeStatus === 'In Review' || p.prototypeStatus === 'Approved');
+  const submittedPrototypes = projects.filter((p) => 
+    p.sentToUniversity === true || p.prototypeStatus === 'In Review' || p.prototypeStatus === 'Approved' || Boolean(p.prototypeData?.title)
+  );
   const totalCount = submittedPrototypes.length > 0 ? partners.length : 0;
   const approvedReqs = requests.filter((r) => r.status === 'Approved');
   const activeCount = approvedReqs.length > 0 ? approvedReqs.length : (submittedPrototypes.length > 0 ? partners.filter((p) => p.status === 'Active' || p.verificationStatus === 'Verified').length : 0);
@@ -70,14 +70,11 @@ export const IndustryPartnersPanel = () => {
   });
 
   return (
-    <div className="space-y-4 max-w-7xl mx-auto select-none pb-12">
-      {/* Top Header */}
+    <div className="space-y-4 max-w-7xl mx-auto select-none pb-12 text-left">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-200">
         <div>
           <div className="flex items-center space-x-2 text-xs font-semibold text-slate-500 mb-1">
-            <span>University Nodal Center</span>
-            <span>/</span>
-            <span className="text-slate-900 font-bold">Industry Collaborations</span>
+            <span>University Nodal Center</span><span>/</span><span className="text-slate-900 font-bold">Industry Collaborations</span>
           </div>
           <h1 className="text-xl font-bold text-slate-900 tracking-tight flex items-center space-x-2">
             <Factory className="w-5 h-5 text-[#007A61]" />
@@ -89,11 +86,7 @@ export const IndustryPartnersPanel = () => {
         </div>
 
         <button
-          onClick={() => {
-            setRequestPartner(null);
-            setRequestProblem(submittedPrototypes[0] || null);
-            setIsCreateModalOpen(true);
-          }}
+          onClick={() => { setRequestPartner(null); setRequestProblem(submittedPrototypes[0] || null); setIsCreateModalOpen(true); }}
           className="px-4 py-2.5 bg-[#007A61] hover:bg-[#00604c] text-white text-xs font-bold rounded-xl flex items-center space-x-2 shadow-sm cursor-pointer"
         >
           <Plus className="w-4 h-4" />
@@ -101,92 +94,63 @@ export const IndustryPartnersPanel = () => {
         </button>
       </div>
 
-      {/* Pending Fee Quotes Alert Notification Banner */}
       {pendingQuotes.length > 0 && (
         <div className="p-3.5 bg-amber-50 border-2 border-amber-300 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs">
           <div className="flex items-center space-x-3">
-            <div className="w-9 h-9 rounded-xl bg-amber-500 text-white flex items-center justify-center font-black shrink-0">
-              <IndianRupee className="w-5 h-5" />
-            </div>
+            <div className="w-9 h-9 rounded-xl bg-amber-500 text-white flex items-center justify-center font-black shrink-0"><IndianRupee className="w-5 h-5" /></div>
             <div>
-              <h4 className="text-xs font-black text-amber-950">
-                {pendingQuotes.length} Industry Fee Proposal(s) Awaiting University Approval
-              </h4>
-              <p className="text-[11px] text-amber-800 font-medium">
-                Industry requested laboratory testing charges. Review and click "Approve Amount from Industry" to lock.
-              </p>
+              <h4 className="text-xs font-black text-amber-950">{pendingQuotes.length} Industry Fee Proposal(s) Awaiting University Approval</h4>
+              <p className="text-[11px] text-amber-800 font-medium">Industry requested laboratory testing charges. Review and click "Approve Amount from Industry" to lock.</p>
             </div>
           </div>
-          <span className="px-3 py-1 bg-amber-200 text-amber-900 rounded-lg text-xs font-black self-start sm:self-auto shrink-0">
-            Action Required
-          </span>
+          <span className="px-3 py-1 bg-amber-200 text-amber-900 rounded-lg text-xs font-black self-start sm:self-auto shrink-0">Action Required</span>
         </div>
       )}
 
-      {/* Top Industry Approval Notification Banner */}
       <IndustryApprovalBanner approvedRequests={approvedReqs} partners={partners} onSelectPartner={setDetailPartner} />
-
-      {/* KPIs Bar */}
       <PartnersKpis total={totalCount} active={activeCount} pending={pendingCount} loading={loading} />
 
-      {/* Filter Bar */}
+      {/* Mentored Prototypes Submitted by Faculty for Industry Pilot & Testing */}
+      <MentoredPrototypesIndustryCard
+        prototypes={submittedPrototypes}
+        onConnectIndustry={(proto) => {
+          setRequestPartner(null);
+          setRequestProblem(proto || null);
+          setIsCreateModalOpen(true);
+        }}
+      />
+
       <PartnersFilterBar
         search={search} setSearch={setSearch} industryFilter={industryFilter} setIndustryFilter={setIndustryFilter}
         supportFilter={supportFilter} setSupportFilter={setSupportFilter} statusFilter={statusFilter} setStatusFilter={setStatusFilter}
         onResetFilters={() => { setSearch(''); setIndustryFilter('All'); setSupportFilter('All'); setStatusFilter('All'); }}
       />
 
-      {/* Partners Table with Submitted Student Prototypes, Problem Statements & Attached PDFs */}
       <PartnersTable
         partners={filtered}
         submittedPrototypes={submittedPrototypes}
         requests={requests}
         loading={loading}
-        onSelectPartner={(p, proto) => {
-          setDetailPartner(p);
-          setRequestProblem(proto || null);
-        }}
-        onOpenSendRequest={(p, proto) => {
-          setRequestPartner(p);
-          setRequestProblem(proto || null);
-          setIsCreateModalOpen(true);
-        }}
+        onSelectPartner={(p, proto) => { setDetailPartner(p); setRequestProblem(proto || null); }}
+        onOpenSendRequest={(p, proto) => { setRequestPartner(p); setRequestProblem(proto || null); setIsCreateModalOpen(true); }}
         onApproveAmount={(p, req) => setAmountModalData({ partner: p, request: req })}
       />
 
-      {/* Partner Detail Modal */}
       <PartnerDetailModal
-        partner={detailPartner}
-        initialProblem={requestProblem}
-        isOpen={Boolean(detailPartner)}
-        onClose={() => {
-          setDetailPartner(null);
-          setRequestProblem(null);
-        }}
-        onOpenSendRequest={(p, prob) => {
-          setDetailPartner(null);
-          setRequestPartner(p);
-          setRequestProblem(prob || null);
-          setIsCreateModalOpen(true);
-        }}
+        partner={detailPartner} initialProblem={requestProblem} isOpen={Boolean(detailPartner)}
+        onClose={() => { setDetailPartner(null); setRequestProblem(null); }}
+        onOpenSendRequest={(p, prob) => { setDetailPartner(null); setRequestPartner(p); setRequestProblem(prob || null); setIsCreateModalOpen(true); }}
       />
 
-      {/* Create / Send Partnership Request Modal */}
       <CreatePartnershipModal
-        isOpen={isCreateModalOpen}
-        partner={requestPartner}
-        initialProblem={requestProblem}
+        isOpen={isCreateModalOpen} partner={requestPartner} initialProblem={requestProblem}
         onClose={() => { setIsCreateModalOpen(false); setRequestPartner(null); setRequestProblem(null); }}
         onSuccess={fetchPartners}
       />
 
-      {/* Approve Amount from Industry Modal */}
       <ApproveIndustryAmountModal
-        isOpen={Boolean(amountModalData)}
-        partner={amountModalData?.partner}
-        request={amountModalData?.request}
-        onClose={() => setAmountModalData(null)}
-        onSuccess={fetchPartners}
+        isOpen={Boolean(amountModalData)} partner={amountModalData?.partner} request={amountModalData?.request}
+        onClose={() => setAmountModalData(null)} onSuccess={fetchPartners}
       />
     </div>
   );

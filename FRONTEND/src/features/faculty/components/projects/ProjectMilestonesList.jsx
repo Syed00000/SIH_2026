@@ -1,22 +1,23 @@
 import React from 'react';
 import { CheckCircle2 } from 'lucide-react';
+import { computeDynamicMilestones } from '../../../../shared/utils/milestonesHelper.js';
 
 export const ProjectMilestonesList = ({ project }) => {
-  const isAllDone = project.governmentStatus === 'Approved' || project.status === 'Completed';
+  const dynamicMilestones = computeDynamicMilestones(project);
 
   return (
     <div className="space-y-2.5 pt-2 text-left">
       <h3 className="text-xs font-extrabold text-slate-900 uppercase tracking-wider">
-        Work Breakdown & Task Progress
+        Work Breakdown &amp; Task Progress
       </h3>
 
-      {(project.milestones || []).map((m, idx) => {
-        const isDone = isAllDone || m.status === 'Completed';
-        const isCurrent = !isAllDone && m.status === 'In Progress';
+      {dynamicMilestones.map((m, idx) => {
+        const isDone = m.status === 'Completed';
+        const isCurrent = m.status === 'In Progress';
 
         return (
           <div
-            key={idx}
+            key={m.id || idx}
             className={`p-3 rounded-xl border flex items-center justify-between transition-all ${
               isDone
                 ? 'bg-emerald-50/70 border-emerald-200 text-emerald-950'
@@ -39,9 +40,23 @@ export const ProjectMilestonesList = ({ project }) => {
               </div>
               <div>
                 <span className="font-extrabold text-xs block leading-tight">{m.title}</span>
-                <span className="text-[10px] text-slate-500">Status: {isDone ? 'Completed' : m.status}</span>
+                <span className="text-[10px] text-slate-500 font-medium">
+                  {m.description || `Phase ${idx + 1} deliverable execution`}
+                </span>
               </div>
             </div>
+
+            <span
+              className={`text-[10px] font-bold px-2 py-0.5 rounded-full border whitespace-nowrap ${
+                isDone
+                  ? 'bg-emerald-100 text-emerald-800 border-emerald-200'
+                  : isCurrent
+                  ? 'bg-amber-100 text-amber-800 border-amber-200'
+                  : 'bg-slate-100 text-slate-500 border-slate-200'
+              }`}
+            >
+              {m.status}
+            </span>
           </div>
         );
       })}

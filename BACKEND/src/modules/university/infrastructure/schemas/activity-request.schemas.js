@@ -5,10 +5,15 @@ export const universityActivitySchema = new mongoose.Schema(
     universityId: { type: mongoose.Schema.Types.ObjectId, ref: 'University', default: null, index: true },
     universityCode: { type: String, required: true, index: true },
     text: { type: String, required: true },
+    title: { type: String, default: '' },
+    description: { type: String, default: '' },
+    projectId: { type: String, default: '' },
+    challengeId: { type: String, default: '' },
+    actionUrl: { type: String, default: '' },
     type: { type: String, default: 'info' },
     timestamp: { type: Date, default: Date.now }
   },
-  { timestamps: true, collection: 'university_activities' }
+  { timestamps: true, collection: 'university_activities', strict: false }
 );
 
 universityActivitySchema.index({ universityCode: 1, timestamp: -1 });

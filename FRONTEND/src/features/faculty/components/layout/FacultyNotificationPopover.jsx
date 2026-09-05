@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect, useRef, useMemo } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import { Bell, BellOff, Trash2, AlertCircle, GitPullRequestArrow, Layers, CheckCircle2 } from "lucide-react";
 
 const DISMISSED_KEY = "fac_notif_dismissed_";
@@ -16,73 +16,66 @@ function timeAgo(iso) {
 function buildNotifications(revisions, projects, challenges) {
   const items = [];
 
-  // Revision requests — highest priority
-  (revisions || []).forEach((r, i) => {
-    items.push({
-      id: `rev-${r._id || r.id || i}`,
-      type: "revision",
-      label: "Revision Request",
-      icon: GitPullRequestArrow,
-      iconColor: "text-amber-600",
-      iconBg: "bg-amber-50",
-      dot: "bg-amber-500",
-      title: r.title || `Revision #${i + 1}`,
-      body: r.remarks || r.message || "A revision has been requested for your proposal.",
-      time: r.createdAt || r.date || null,
-    });
-  });
-
-  // Projects with changes required
+  // 1. Prototype Directives from University Authority (Highest Priority)
   (projects || []).forEach((p) => {
-    const statuses = [p.budgetStatus, p.prototypeStatus, p.governmentStatus, p.status];
-    const needsChange = statuses.some((s) => String(s || "").toLowerCase().includes("changes required"));
-    if (!needsChange) return;
+    if (!p.prototypeWorkRequested) return;
     items.push({
-      id: `proj-chg-${p.projectId || p.challengeId || p._id}`,
-      type: "changes",
-      label: "Changes Required",
-      icon: AlertCircle,
-      iconColor: "text-rose-600",
-      iconBg: "bg-rose-50",
-      dot: "bg-rose-500",
-      title: p.title || p.challengeTitle || "Project Needs Attention",
-      body: p.adminRemarks || "Changes have been requested. Review and update your submission.",
-      time: p.updatedAt || null,
-    });
-  });
-
-  // Active / in-progress projects
-  (projects || []).forEach((p) => {
-    const s = String(p.status || "").toLowerCase();
-    if (s.includes("changes required") || s.includes("rejected")) return;
-    if (!p.status) return;
-    items.push({
-      id: `proj-${p.projectId || p.challengeId || p._id}`,
-      type: "project",
-      label: "Project Update",
-      icon: Layers,
-      iconColor: "text-blue-600",
-      iconBg: "bg-blue-50",
-      dot: "bg-blue-400",
-      title: p.title || p.challengeTitle || "Project Active",
-      body: `Status: ${p.status}${p.budgetStatus ? " · Budget: " + p.budgetStatus : ""}`,
-      time: p.updatedAt || null,
-    });
-  });
-
-  // Assigned challenges
-  (challenges || []).forEach((c, i) => {
-    items.push({
-      id: `ch-${c._id || c.challengeId || i}`,
-      type: "challenge",
-      label: "Assigned Challenge",
+      id: `proto-dir-${p.projectId || p.challengeId || p._id}`,
+      type: "directive",
+      label: "Prototype Directive",
       icon: CheckCircle2,
       iconColor: "text-emerald-600",
       iconBg: "bg-emerald-50",
       dot: "bg-emerald-500",
+      title: `Start Prototype Work: ${p.title || p.challengeTitle || p.projectId}`,
+      body: "1st Grant Installment received in University Escrow. University Authority requests you to start work on the prototype!",
+      time: p.prototypeWorkRequestedAt || p.updatedAt || null,
+      projectId: p.projectId || p.challengeId
+    });
+  });
+
+  // 2. Revision requests
+  (revisions || []).forEach((r, i) => {
+    items.push({
+      id: `rev-${r._id || r.id || i}`, type: "revision", label: "Revision Request",
+      icon: GitPullRequestArrow, iconColor: "text-amber-600", iconBg: "bg-amber-50", dot: "bg-amber-500",
+      title: r.title || `Revision #${i + 1}`, body: r.remarks || r.message || "A revision has been requested for your proposal.",
+      time: r.createdAt || r.date || null
+    });
+  });
+
+  // 3. Projects with changes required
+  (projects || []).forEach((p) => {
+    const statuses = [p.budgetStatus, p.prototypeStatus, p.governmentStatus, p.status];
+    if (!statuses.some((s) => String(s || "").toLowerCase().includes("changes required"))) return;
+    items.push({
+      id: `proj-chg-${p.projectId || p.challengeId || p._id}`, type: "changes", label: "Changes Required",
+      icon: AlertCircle, iconColor: "text-rose-600", iconBg: "bg-rose-50", dot: "bg-rose-500",
+      title: p.title || p.challengeTitle || "Project Needs Attention",
+      body: p.adminRemarks || "Changes have been requested. Review and update your submission.", time: p.updatedAt || null
+    });
+  });
+
+  // 4. Active / in-progress projects
+  (projects || []).forEach((p) => {
+    const s = String(p.status || "").toLowerCase();
+    if (s.includes("changes required") || s.includes("rejected") || !p.status) return;
+    items.push({
+      id: `proj-${p.projectId || p.challengeId || p._id}`, type: "project", label: "Project Update",
+      icon: Layers, iconColor: "text-blue-600", iconBg: "bg-blue-50", dot: "bg-blue-400",
+      title: p.title || p.challengeTitle || "Project Active",
+      body: `Status: ${p.status}${p.budgetStatus ? " · Budget: " + p.budgetStatus : ""}`, time: p.updatedAt || null
+    });
+  });
+
+  // 5. Assigned challenges
+  (challenges || []).forEach((c, i) => {
+    items.push({
+      id: `ch-${c._id || c.challengeId || i}`, type: "challenge", label: "Assigned Challenge",
+      icon: CheckCircle2, iconColor: "text-emerald-600", iconBg: "bg-emerald-50", dot: "bg-emerald-500",
       title: c.title || c.challengeTitle || `Challenge ${i + 1}`,
       body: c.description ? c.description.slice(0, 90) + "…" : "You have been assigned a new challenge to mentor.",
-      time: c.assignedAt || c.createdAt || null,
+      time: c.assignedAt || c.createdAt || null
     });
   });
 

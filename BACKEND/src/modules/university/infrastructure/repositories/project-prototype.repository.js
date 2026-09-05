@@ -37,17 +37,15 @@ export class ProjectPrototypeRepository {
           { $set: { workStatus: 'Prototype Sent to University (In Review)' } }
         );
 
-        const approvalPayload = buildPrototypeApprovalDocument({ code, project, prototypeData });
-        const newApproval = await UniversityApproval.create(approvalPayload);
-
+        // Prototype approval in University Approvals is created ONLY after Industry Partner testing is completed
         await UniversityActivity.create({
           universityCode: code,
-          text: `Prototype blueprint for "${project.title}" submitted by Faculty Mentor.`,
+          text: `Prototype blueprint for "${project.title}" submitted by Faculty Mentor to Industry Testing Pipeline.`,
           type: 'PROTOTYPE_SUBMITTED',
           timestamp: new Date()
         });
 
-        return { success: true, projectId, approvalId: newApproval.approvalId };
+        return { success: true, projectId };
       }
       return { success: false, message: 'Project not found' };
     } catch (err) {
