@@ -3,6 +3,7 @@ import { FolderGit2, Trash2 } from 'lucide-react';
 import { universityApiService } from '../../../university/services/universityApiService.js';
 import { ProjectFundingBreakdown } from './ProjectFundingBreakdown.jsx';
 import { ProjectMilestonesList } from './ProjectMilestonesList.jsx';
+import { computeDynamicMilestones } from '../../../../shared/utils/milestonesHelper.js';
 
 export const FacultyProjectsPanel = ({
   projects = [],
@@ -67,7 +68,9 @@ export const FacultyProjectsPanel = ({
               </h3>
               {projects.map((p, idx) => {
                 const isSelected = (selectedProject?.projectId || selectedProject?.challengeId) === (p.projectId || p.challengeId);
-                const pct = p.progressPercentage || Math.round(((p.milestonesCompleted || 1) / 7) * 100);
+                const dynamicM = computeDynamicMilestones(p);
+                const doneM = dynamicM.filter((m) => m.status === 'Completed').length;
+                const pct = Math.round((doneM / 7) * 100);
 
                 return (
                   <div
@@ -155,15 +158,18 @@ export const FacultyProjectsPanel = ({
 
                   <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl col-span-2 sm:col-span-1">
                     <span className="text-[10px] text-slate-400 font-bold uppercase block tracking-wider">Tasks Status</span>
-                    <span className="font-extrabold text-slate-900 text-xs mt-0.5 block">
-                      <span className="text-[#007A61]">
-                        {selectedProject.governmentStatus === 'Approved' || selectedProject.status === 'Completed' ? 7 : (selectedProject.milestonesCompleted || 1)} Completed
-                      </span>
-                      {' • '}
-                      <span className="text-amber-600">
-                        {selectedProject.governmentStatus === 'Approved' || selectedProject.status === 'Completed' ? 0 : 7 - (selectedProject.milestonesCompleted || 1)} Pending
-                      </span>
-                    </span>
+                    {(() => {
+                      const selM = computeDynamicMilestones(selectedProject);
+                      const selDone = selM.filter((m) => m.status === 'Completed').length;
+                      const selPending = selM.length - selDone;
+                      return (
+                        <span className="font-extrabold text-slate-900 text-xs mt-0.5 block">
+                          <span className="text-[#007A61]">{selDone} Completed</span>
+                          {' • '}
+                          <span className="text-amber-600">{selPending} Pending</span>
+                        </span>
+                      );
+                    })()}
                   </div>
                 </div>
 

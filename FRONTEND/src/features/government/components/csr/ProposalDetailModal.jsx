@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ProposalOverviewTab } from './dossier/ProposalOverviewTab.jsx';
 import { ProposalTechnicalTab } from './dossier/ProposalTechnicalTab.jsx';
 import { ProposalBudgetTab } from './dossier/ProposalBudgetTab.jsx';
@@ -10,13 +10,13 @@ import { executeTrancheDisbursal, executeApproveAndSanction } from './dossier/di
 import { projectCsrSyncService } from '../../services/projectCsrSyncService.js';
 
 export const ProposalDetailModal = ({
-  isOpen,
+  isOpen = true,
   onClose,
   proposal,
   onUpdateProposal,
   onInitiateDisbursal
 }) => {
-  if (!isOpen || !proposal) return null;
+  if (!proposal) return null;
 
   const [activeSubTab, setActiveSubTab] = useState('overview');
   const [localDueDiligence, setLocalDueDiligence] = useState(proposal.dueDiligence || 'Passed (Technical Review)');
@@ -51,12 +51,11 @@ export const ProposalDetailModal = ({
   const hasTrancheRequest = Boolean(trancheReq?.status === 'Pending');
   const reqAmt = Number(trancheReq?.amount) || 0;
 
-  // User-adjusted disbursal amount (auto-fills to University requested amount if pending)
   const [disburseAmount, setDisburseAmount] = useState(
     hasTrancheRequest && reqAmt > 0 ? reqAmt : rawDisbursed === 0 ? Math.round(remainingBudget * 0.5) : remainingBudget
   );
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (hasTrancheRequest && reqAmt > 0) {
       setDisburseAmount(reqAmt);
     } else {
@@ -73,19 +72,31 @@ export const ProposalDetailModal = ({
       boardApproval: localBoardApproval,
       boardApprovalStatus: isFailed ? 'rejected' : 'approved',
       mouExecution: localMouExecution,
-      adminNote: adminNote || proposal.adminNote
+      reviewerNotes: adminNote || proposal.reviewerNotes
     });
     setIsSaved(true);
-    setTimeout(() => { setIsSaved(false); onClose(); }, 1200);
+    setTimeout(() => setIsSaved(false), 2000);
   };
 
   const handleApproveAndSanction = async () => {
     setIsProcessing(true);
     try {
-      const updated = await executeApproveAndSanction({ proposal });
-      onUpdateProposal(updated);
-      setIsSaved(true);
-      setTimeout(() => { setIsSaved(false); onClose(); }, 1200);
+      const updated = await executeApproveAndSanction({
+        proposal,
+        linkedProject,
+        disburseAmount,
+        localDueDiligence,
+        localBoardApproval,
+        localMouExecution,
+        adminNote,
+        onUpdateProposal
+      });
+      if (updated) {
+        setIsSaved(true);
+        setTimeout(() => { setIsSaved(false); onClose(); }, 1200);
+      }
+    } catch (e) {
+      console.warn('Approve & Sanction error:', e);
     } finally {
       setIsProcessing(false);
     }
@@ -94,19 +105,14 @@ export const ProposalDetailModal = ({
   const handleDisburseTranche = async () => {
     setIsProcessing(true);
     try {
-      const amountToSend = Math.min(remainingBudget, Math.max(1000, Number(disburseAmount) || remainingBudget));
-      const res = await executeTrancheDisbursal({
+      const updated = await executeTrancheDisbursal({
         proposal,
-        amountToSend,
-        rawDisbursed,
-        totalBudgetVal
+        linkedProject,
+        disburseAmount,
+        trancheReq,
+        onUpdateProposal
       });
-      if (res?.success) {
-        onUpdateProposal({
-          ...proposal,
-          disbursedAmount: `₹ ${res.newDisbursedTotal.toLocaleString('en-IN')}`,
-          budgetStatus: res.isFullNow ? 'Grant Fully Disbursed' : 'Grant Disbursed'
-        });
+      if (updated) {
         setIsSaved(true);
         setTimeout(() => { setIsSaved(false); onClose(); }, 1200);
       }
@@ -122,22 +128,18 @@ export const ProposalDetailModal = ({
     onClose();
   };
 
-  const handlePrintSanctionOrder = () => {
-    window.print();
-  };
-
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-slate-900/60 backdrop-blur-xs select-none animate-in fade-in duration-200">
-      <div className="bg-white border border-slate-200 rounded-2xl shadow-2xl w-full max-w-4xl max-h-[92vh] flex flex-col overflow-hidden transition-all" onClick={(e) => e.stopPropagation()}>
+    <div className="w-full space-y-4 max-w-7xl mx-auto pb-12 select-none animate-fadeIn text-left">
+      <div className="bg-white border border-slate-200/90 rounded-2xl shadow-sm flex flex-col overflow-hidden transition-all">
         <ProposalModalHeader
           proposal={proposal}
           onClose={onClose}
-          handlePrintSanctionOrder={handlePrintSanctionOrder}
+          handlePrintSanctionOrder={() => window.print()}
           activeSubTab={activeSubTab}
           setActiveSubTab={setActiveSubTab}
         />
 
-        <div className="p-6 overflow-y-auto space-y-4 max-h-[calc(92vh-140px)]">
+        <div className="p-6 sm:p-8 space-y-6 min-h-[500px]">
           {activeSubTab === 'overview' && (
             <ProposalOverviewTab
               proposal={proposal}
@@ -148,7 +150,13 @@ export const ProposalDetailModal = ({
           )}
           {activeSubTab === 'methodology' && <ProposalTechnicalTab proposal={proposal} />}
           {activeSubTab === 'budget' && <ProposalBudgetTab proposal={proposal} />}
-          {activeSubTab === 'payments' && <ProposalPaymentsTab proposal={proposal} linkedPayments={linkedPayments} onInitiateDisbursal={onInitiateDisbursal} />}
+          {activeSubTab === 'payments' && (
+            <ProposalPaymentsTab
+              proposal={proposal}
+              linkedPayments={linkedPayments}
+              onInitiateDisbursal={onInitiateDisbursal}
+            />
+          )}
           {activeSubTab === 'statutory' && (
             <ProposalDueDiligenceTab
               localBoardApproval={localBoardApproval} setLocalBoardApproval={setLocalBoardApproval}

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useFacultyTeams } from './hooks/useFacultyTeams.js';
 import { TeamsHeader } from './components/TeamsHeader.jsx';
 import { FacultyTeamsListTable } from './components/FacultyTeamsListTable.jsx';
@@ -8,7 +8,7 @@ import { TeamRosterList } from './components/TeamRosterList.jsx';
 import { AddTeamMemberForm } from './components/AddTeamMemberForm.jsx';
 import { TeamGuidelinesCard } from './components/TeamGuidelinesCard.jsx';
 import { ReadonlyTeamTable } from './components/ReadonlyTeamTable.jsx';
-import { SendPrototypeModal } from './components/SendPrototypeModal.jsx';
+import { facultyApiService } from '../../services/facultyApiService.js';
 import { ArrowLeft, Sparkles } from 'lucide-react';
 
 export const FacultyTeamsPanel = ({
@@ -21,7 +21,6 @@ export const FacultyTeamsPanel = ({
   hideHeader = false
 }) => {
   const [viewMode, setViewMode] = useState('list');
-  const [prototypeModalTeam, setPrototypeModalTeam] = useState(null);
 
   const {
     editingTeamId, selectedProjectId, setSelectedProjectId, teamName, setTeamName,
@@ -35,21 +34,70 @@ export const FacultyTeamsPanel = ({
     if (ok) setViewMode('list');
   };
 
-  const matchedProject = projects.find(
-    (p) => (p.projectId || p.challengeId) === (prototypeModalTeam?.projectId || selectedProjectId)
+  const currentProject = projects.find(
+    (p) => (p.projectId || p.challengeId || p._id) === initialProjectId
   ) || projects[0];
+
+  const matchedTeam =
+    allTeams.find((t) => (t.projectId && t.projectId === initialProjectId) || (t.id && t.id === initialProjectId)) ||
+    allTeams.find((t) => currentProject?.title && t.project && t.project.toLowerCase() === currentProject.title.toLowerCase()) ||
+    (currentProject?.teamMembers?.length > 0 ? {
+      name: currentProject.studentTeam || currentProject.teamName || 'Innovation Lab',
+      members: currentProject.teamMembers,
+      studentLead: currentProject.studentLead,
+      teamCode: currentProject.teamCode
+    } : null) ||
+    allTeams[0] ||
+    null;
+
+  const displayTeamName = matchedTeam?.name || currentProject?.studentTeam || currentProject?.teamName || teamName || 'Innovation Lab';
+  const displayMembers = (matchedTeam?.members && matchedTeam.members.length > 0)
+    ? matchedTeam.members
+    : (currentProject?.teamMembers && currentProject.teamMembers.length > 0)
+    ? currentProject.teamMembers
+    : teamMembers;
+
+  // Auto-sync matched team to project if not yet linked
+  useEffect(() => {
+    if (hideHeader && currentProject && matchedTeam && matchedTeam.members?.length > 0 && (!currentProject.teamMembers || currentProject.teamMembers.length === 0)) {
+      const pId = currentProject.projectId || currentProject.challengeId || currentProject._id;
+      facultyApiService.updateProject(pId, {
+        studentTeam: matchedTeam.name,
+        teamMembers: matchedTeam.members,
+        studentLead: matchedTeam.studentLead || matchedTeam.members?.find((m) => m.isLead)?.name || 'Lead',
+        teamCode: matchedTeam.teamCode
+      }).then(() => {
+        if (onRefresh) onRefresh();
+      }).catch(() => {});
+    }
+  }, [hideHeader, currentProject?.projectId, matchedTeam?.teamCode]);
 
   return (
     <div className={`space-y-4 max-w-7xl mx-auto select-none ${hideHeader ? '' : 'pb-12'}`}>
       {!hideHeader && <TeamsHeader />}
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <div className={hideHeader ? 'space-y-4' : 'lg:col-span-2 space-y-4'}>
+      <div className={hideHeader ? 'w-full space-y-4' : 'grid grid-cols-1 lg:grid-cols-3 gap-4'}>
+        <div className={hideHeader ? 'w-full space-y-4' : 'lg:col-span-2 space-y-4'}>
           {hideHeader ? (
             <ReadonlyTeamTable
-              teamName={teamName || projects[0]?.studentTeam}
-              teamMembers={teamMembers.length ? teamMembers : (projects[0]?.teamMembers || [])}
+              teamName={displayTeamName}
+              teamMembers={displayMembers}
+              teamCode={matchedTeam?.teamCode}
+              studentLead={matchedTeam?.studentLead}
               faculty={faculty}
+              allTeams={allTeams}
+              projectId={initialProjectId || currentProject?.projectId}
+              onAssignTeam={async (teamToAssign) => {
+                const pId = initialProjectId || currentProject?.projectId;
+                if (!pId || !teamToAssign) return;
+                await facultyApiService.updateProject(pId, {
+                  studentTeam: teamToAssign.name,
+                  teamMembers: teamToAssign.members,
+                  studentLead: teamToAssign.studentLead,
+                  teamCode: teamToAssign.teamCode
+                }).catch(() => {});
+                if (onRefresh) onRefresh();
+              }}
             />
           ) : viewMode === 'list' ? (
             <FacultyTeamsListTable
@@ -57,8 +105,6 @@ export const FacultyTeamsPanel = ({
               onSelectTeam={(t) => { handleStartEdit(t); setViewMode('editor'); }}
               onAddNewTeam={() => { handleStartCreate(); setViewMode('editor'); }}
               onDeleteTeam={handleDeleteTeam}
-              onSendPrototype={(t) => setPrototypeModalTeam(t)}
-              onRefresh={onRefresh}
             />
           ) : (
             <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-200">
@@ -101,17 +147,6 @@ export const FacultyTeamsPanel = ({
 
         {!hideHeader && <TeamGuidelinesCard />}
       </div>
-
-      {prototypeModalTeam && (
-        <SendPrototypeModal
-          team={prototypeModalTeam}
-          project={matchedProject}
-          faculty={faculty}
-          isOpen={Boolean(prototypeModalTeam)}
-          onClose={() => setPrototypeModalTeam(null)}
-          onSuccess={onRefresh}
-        />
-      )}
     </div>
   );
 };
