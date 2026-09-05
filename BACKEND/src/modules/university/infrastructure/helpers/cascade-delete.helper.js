@@ -111,8 +111,8 @@ export async function cascadeDeleteProblemOrProject(universityCode, identifier, 
 
     // Cascade delete all challenge evidence media, photos, videos from Cloudinary
     if (resolvedChallengeId || challengeDbId) {
-      const { handleCascadeDeleteChallengeMedia } = await import('../../../citizen/application/services/media/media-delete.subservice.js');
-      await handleCascadeDeleteChallengeMedia(storageProvider, resolvedChallengeId || challengeDbId);
+      const { purgeChallengeAndAllMedia } = await import('../../../citizen/application/services/media/challenge-cascade-cleaner.helper.js');
+      await purgeChallengeAndAllMedia(storageProvider, resolvedChallengeId || challengeDbId, deletedBy);
     }
   } catch (cleanErr) {
     console.warn('[CascadeDelete] Non-blocking Cloudinary media cleanup warning:', cleanErr.message);

@@ -1,85 +1,62 @@
 import mongoose from 'mongoose';
-import { CitizenMedia } from '../../../infrastructure/model.js';
-import { NotFoundError, AuthorizationError, BadRequestError } from '../../../../../shared/errors/AppError.js';
+import { CitizenChallenge } from '../../../infrastructure/model.js';
+import { NotFoundError, BadRequestError } from '../../../../../shared/errors/AppError.js';
 
-export const handleGetMediaById = async (storageProvider, mediaId, user = null) => {
+export const handleGetMediaById = async (storageProvider, mediaId) => {
   if (!mediaId) throw new BadRequestError('Media identifier is required');
 
-  const isObjId = mongoose.isValidObjectId(mediaId);
-  const media = await CitizenMedia.findOne(
-    isObjId ? { $or: [{ mediaId }, { _id: mediaId }] } : { mediaId }
+  const challenge = await CitizenChallenge.findOne(
+    { 'media.mediaId': mediaId },
+    { 'media.$': 1, challengeId: 1, citizenId: 1 }
   ).lean();
 
-  if (!media) throw new NotFoundError(`Citizen media record ${mediaId} not found`);
-
-  if (media.isPrivate && user) {
-    const isOwner = media.citizenId && String(media.citizenId) === String(user.id);
-    const isAuthorized = ['ADMIN', 'GOVERNMENT', 'NODAL', 'UNIVERSITY', 'FACULTY'].includes(user.role);
-    if (!isOwner && !isAuthorized) {
-      throw new AuthorizationError('You are not authorized to access this private media record');
-    }
+  if (!challenge || !challenge.media?.[0]) {
+    throw new NotFoundError(`Media item ${mediaId} not found in challenges`);
   }
 
-  const accessUrl = await storageProvider.getAccessUrl({
-    providerPublicId: media.providerPublicId,
-    resourceType: media.resourceType,
-    isPrivate: media.isPrivate
-  });
+  const item = challenge.media[0];
+  const accessUrl = item.url || (item.providerPublicId ? await storageProvider.getAccessUrl({
+    providerPublicId: item.providerPublicId,
+    resourceType: item.fileType === 'video' ? 'video' : item.fileType === 'pdf' ? 'raw' : 'image',
+    isPrivate: false
+  }) : '');
 
   return {
-    id: media._id,
-    mediaId: media.mediaId,
-    citizenId: media.citizenId,
-    challengeId: media.challengeId,
-    fileName: media.originalFileName,
-    mimeType: media.mimeType,
-    fileType: media.fileType,
-    fileSize: media.fileSize,
-    caption: media.caption,
+    mediaId: item.mediaId,
+    citizenId: challenge.citizenId,
+    challengeId: challenge.challengeId,
+    fileName: item.fileName,
+    mimeType: item.mimeType,
+    fileType: item.fileType,
+    fileSize: item.fileSize,
+    caption: item.caption,
     accessUrl,
-    createdAt: media.createdAt,
-    uploadedBy: media.uploadedBy
+    createdAt: item.uploadedAt
   };
 };
 
 export const handleGetMediaByChallenge = async (storageProvider, challengeId) => {
   if (!challengeId) return [];
 
-  const mediaList = await CitizenMedia.find({ challengeId }).sort({ createdAt: 1 }).lean();
+  const isObjId = mongoose.isValidObjectId(challengeId);
+  const challenge = await CitizenChallenge.findOne(
+    isObjId ? { $or: [{ challengeId }, { _id: challengeId }] } : { challengeId },
+    { media: 1, challengeId: 1 }
+  ).lean();
 
-  return Promise.all(
-    mediaList.map(async (item) => {
-      try {
-        const accessUrl = await storageProvider.getAccessUrl({
-          providerPublicId: item.providerPublicId,
-          resourceType: item.resourceType,
-          isPrivate: item.isPrivate
-        });
-        return {
-          id: item._id,
-          mediaId: item.mediaId,
-          fileName: item.originalFileName,
-          mimeType: item.mimeType,
-          fileType: item.fileType,
-          fileSize: item.fileSize,
-          caption: item.caption,
-          accessUrl,
-          createdAt: item.createdAt
-        };
-      } catch (_) {
-        return {
-          id: item._id,
-          mediaId: item.mediaId,
-          fileName: item.originalFileName,
-          fileType: item.fileType,
-          fileSize: item.fileSize,
-          caption: item.caption,
-          accessUrl: '',
-          createdAt: item.createdAt
-        };
-      }
-    })
-  );
+  if (!challenge || !Array.isArray(challenge.media)) return [];
+
+  return challenge.media.map((item) => ({
+    mediaId: item.mediaId,
+    challengeId: challenge.challengeId,
+    fileName: item.fileName,
+    mimeType: item.mimeType,
+    fileType: item.fileType,
+    fileSize: item.fileSize,
+    caption: item.caption,
+    accessUrl: item.url,
+    createdAt: item.uploadedAt
+  }));
 };
 
 export default {
