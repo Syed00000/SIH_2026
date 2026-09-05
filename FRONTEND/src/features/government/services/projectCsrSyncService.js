@@ -68,7 +68,10 @@ class ProjectCsrSyncService {
           .reduce((acc, t) => acc + (Number(t.rawAmount) || Number(String(t.amount || '0').replace(/[^\d]/g, '')) || 0), 0);
 
         const backendDisbursed = p.disbursedAmount ? (Number(String(p.disbursedAmount).replace(/[^\d.]/g, '')) || 0) : 0;
-        const finalDisbursedNum = Math.max(ledgerDisbursed, backendDisbursed);
+        const testingFeeNum = Number(String(p.testingLabFee || '0').replace(/[^\d]/g, '')) || 0;
+        const rawGovtGrant = p.originalGovernmentGrant || '₹ 80,000';
+        const govtGrantNum = Number(String(rawGovtGrant).replace(/[^\d]/g, '')) || 80000;
+        const finalDisbursedNum = testingFeeNum > 0 ? Math.max(0, govtGrantNum - testingFeeNum) : Math.max(ledgerDisbursed, backendDisbursed);
         const finalDisbursedStr = finalDisbursedNum > 0 ? `₹ ${finalDisbursedNum.toLocaleString('en-IN')}` : '₹ 0';
 
         const isFunded = finalDisbursedNum > 0 || p.budgetStatus === 'Grant Sanctioned by Government' || p.budgetStatus === 'Grant Disbursed';
@@ -113,6 +116,8 @@ class ProjectCsrSyncService {
           milestones: p.milestones || [],
           budgetBreakdown: p.budgetBreakdown || [],
           disbursedAmount: finalDisbursedStr,
+          originalGovernmentGrant: p.originalGovernmentGrant || (govtGrantNum > 0 ? `₹ ${govtGrantNum.toLocaleString('en-IN')}` : '₹ 80,000'),
+          testingLabFee: p.testingLabFee || (testingFeeNum > 0 ? `₹ ${testingFeeNum.toLocaleString('en-IN')}` : ''),
           trancheRequest: p.trancheRequest || null,
           createdAt: p.createdAt || new Date()
         };
@@ -128,16 +133,28 @@ class ProjectCsrSyncService {
           return disbNum > 0 || p.budgetStatus === 'Grant Sanctioned by Government' || p.prototypeStatus === 'Approved' || p.sentToGovernment;
         })
         .map((p) => {
+          const isProtoDone = Boolean(p.testingCompleted || p.testingReportPdfUrl || p.prototypeStatus === 'Pending Approval' || p.prototypeStatus === 'Approved' || p.status === 'Deployed' || p.isDeployed);
+          const isDeployed = Boolean(p.status === 'Deployed' || p.isDeployed);
           return {
             id: p.projectId || p.id.replace('PROP-', ''),
+            projectId: p.projectId,
+            challengeId: p.challengeId,
             title: p.title,
+            problemStatement: p.problemStatement,
             sector: p.sector,
             district: p.district,
             hei: p.hei,
-            progress: p.prototypeStatus === 'Approved' ? 85 : 57,
-            status: 'Active',
-            stage: p.prototypeStatus === 'Approved' ? 'Prototype Testing & Validation (TRL-4 to TRL-7)' : 'R&D Lab Phase',
-            trlLevel: p.trlLevel || 'TRL-4',
+            progress: isDeployed ? 100 : (isProtoDone ? 100 : (p.prototypeStatus === 'Approved' ? 85 : 57)),
+            status: isDeployed ? 'Deployed' : (isProtoDone ? 'Completed' : 'Active'),
+            stage: isDeployed ? 'Deployed to Citizen Registry' : (isProtoDone ? 'Prototype Done & Lab Verified (TRL-8/9)' : (p.prototypeStatus === 'Approved' ? 'Prototype Testing & Validation (TRL-4 to TRL-7)' : 'R&D Lab Phase')),
+            trlLevel: isProtoDone ? 'TRL-9' : (p.trlLevel || 'TRL-4'),
+            isProtoDone,
+            isDeployed,
+            testingCompleted: p.testingCompleted,
+            testingReportPdfUrl: p.testingReportPdfUrl,
+            testingReportPdfName: p.testingReportPdfName,
+            pdfUrl: p.pdfUrl,
+            pdfName: p.pdfName,
             sanctionedGrant: p.allocatedAmount || p.requestedGrant,
             disbursedGrant: p.disbursedAmount,
             disbursedAmount: p.disbursedAmount,
@@ -146,7 +163,7 @@ class ProjectCsrSyncService {
             additionalAmount: p.additionalAmount || 0,
             proposedBudget: p.proposedBudget,
             budget: p.budget,
-            telemetryStatus: 'Active Telemetry',
+            telemetryStatus: isDeployed ? 'Live Citizen Telemetry' : 'Active Telemetry',
             hardwareSpecs: p.hardwareSpecs || '',
             teamLead: p.teamLead,
             studentTeam: p.studentTeam,

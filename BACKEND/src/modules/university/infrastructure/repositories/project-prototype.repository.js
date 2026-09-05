@@ -2,10 +2,14 @@ import { UniversityProject, UniversityApproval, UniversityActivity, UniversityTe
 import { CitizenChallenge } from '../../../citizen/infrastructure/model.js';
 import { buildPrototypeApprovalDocument } from '../helpers/prototype-approval-builder.helper.js';
 import { uploadProjectPdfDocument } from '../helpers/project-pdf-upload.helper.js';
+import { deployProjectToPublicRegistry } from '../helpers/project-deployment.helper.js';
 
 export class ProjectPrototypeRepository {
-  async uploadProjectPdf(projectId, universityCode, file) {
-    return await uploadProjectPdfDocument({ projectId, universityCode, file });
+  async deployProject(projectId, universityCode, payload = {}) {
+    return await deployProjectToPublicRegistry({ projectId, code: universityCode, payload });
+  }
+  async uploadProjectPdf(projectId, universityCode, file, type = 'prototype') {
+    return await uploadProjectPdfDocument({ projectId, universityCode, file, type });
   }
   async submitPrototype(projectId, universityCode, prototypeData) {
     try {

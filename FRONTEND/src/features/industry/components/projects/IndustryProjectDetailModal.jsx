@@ -1,5 +1,5 @@
 import React from 'react';
-import { X, Briefcase, Building2, UserCheck, Users, Banknote, Calendar, ArrowRight, ShieldCheck } from 'lucide-react';
+import { X, Briefcase, Building2, UserCheck, Users, Banknote, Calendar, ArrowRight, ShieldCheck, FileText, ExternalLink } from 'lucide-react';
 
 export const IndustryProjectDetailModal = ({ project, onClose, onNavigateToFunding }) => {
   if (!project) return null;
@@ -48,6 +48,22 @@ export const IndustryProjectDetailModal = ({ project, onClose, onNavigateToFundi
                 <p className="text-xs font-medium text-slate-800 bg-slate-50 p-3 rounded-xl border border-slate-100 italic">
                   "{project.problemStatement}"
                 </p>
+              </div>
+            )}
+
+            {project.pdfUrl && (
+              <div className="flex items-center justify-between p-2.5 bg-rose-50/80 border border-rose-200 rounded-xl">
+                <div className="flex items-center space-x-2">
+                  <FileText className="w-4 h-4 text-rose-600 shrink-0" />
+                  <div>
+                    <p className="text-xs font-bold text-slate-900 line-clamp-1">{project.pdfName || 'Prototype_Blueprint.pdf'}</p>
+                    <p className="text-[9.5px] text-emerald-700 font-semibold">✓ Verified Technical Blueprint</p>
+                  </div>
+                </div>
+                <a href={project.pdfUrl} target="_blank" rel="noreferrer" className="px-3 py-1 bg-white hover:bg-rose-100 text-rose-700 border border-rose-300 rounded-lg text-xs font-bold transition-all flex items-center space-x-1 shadow-2xs">
+                  <span>View PDF</span>
+                  <ExternalLink className="w-3 h-3" />
+                </a>
               </div>
             )}
 

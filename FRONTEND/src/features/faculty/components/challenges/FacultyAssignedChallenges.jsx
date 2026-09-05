@@ -319,7 +319,12 @@ export const FacultyAssignedChallenges = ({
                   </div>
 
                   <div className="flex items-center space-x-2">
-                    {status.isAssignedToMe ? (
+                    {c.status === 'Resolved' || c.isDeployed ? (
+                      <div className="px-3.5 py-1.5 bg-emerald-50 text-emerald-800 border border-emerald-300 rounded-xl text-[11px] font-bold flex items-center space-x-1 shadow-2xs">
+                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                        <span>✓ Publicly Deployed (Locked)</span>
+                      </div>
+                    ) : status.isAssignedToMe ? (
                       <button
                         type="button"
                         onClick={() => onDraftProposal ? onDraftProposal(c) : null}

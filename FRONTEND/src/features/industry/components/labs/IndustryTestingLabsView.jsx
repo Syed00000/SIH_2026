@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { FlaskConical, Building2 } from 'lucide-react';
 import { universityApiService } from '../../../university/services/universityApiService.js';
 import { IndustryTestingStageCard } from './IndustryTestingStageCard.jsx';
+import { IndustryTestingReportUploadCard } from './IndustryTestingReportUploadCard.jsx';
 
 export const IndustryTestingLabsView = ({ projects = {} }) => {
   const activeProjects = projects?.ongoing || [];
@@ -18,17 +19,13 @@ export const IndustryTestingLabsView = ({ projects = {} }) => {
   ];
 
   const currentStages = stagesState[currentProject?.id] || (currentProject?.testingStages?.length ? currentProject.testingStages : defaultStages);
+  const allStagesCompleted = currentStages.length > 0 && currentStages.every((s) => s.status === 'Completed');
 
   const handleUpdateStage = async (stageIdx, newStatus, newNotes = null) => {
     if (!currentProject) return;
     const updated = currentStages.map((s, idx) => {
       if (idx === stageIdx) {
-        return {
-          ...s,
-          status: newStatus,
-          notes: newNotes !== null ? newNotes : (s.notes || ''),
-          updatedAt: new Date()
-        };
+        return { ...s, status: newStatus, notes: newNotes !== null ? newNotes : (s.notes || ''), updatedAt: new Date() };
       }
       return s;
     });
@@ -133,7 +130,7 @@ export const IndustryTestingLabsView = ({ projects = {} }) => {
             <div className="p-3 bg-emerald-50/70 border border-emerald-200/80 rounded-xl space-y-1">
               <div className="flex items-center justify-between text-xs">
                 <span className="font-bold text-emerald-950">Agreed Lab Fee:</span>
-                <span className="font-black text-emerald-700">{currentProject.labChargesQuoted || currentProject.budget || '₹ 25,000'}</span>
+                <span className="font-black text-emerald-700">{currentProject.labChargesQuoted || currentProject.testingLabFee || '₹ 25,000'}</span>
               </div>
               <span className="text-[10px] font-extrabold text-emerald-800 bg-white px-2 py-0.5 rounded border border-emerald-200 inline-block">
                 ✓ University Fee Accepted
@@ -152,7 +149,7 @@ export const IndustryTestingLabsView = ({ projects = {} }) => {
             </div>
           </div>
 
-          {/* Right Column: Stage-wise Testing Execution */}
+          {/* Right Column: Stage-wise Testing Execution & Certified Dossier Upload */}
           <div className="lg:col-span-2 space-y-3">
             <div className="flex items-center justify-between">
               <h4 className="text-xs font-black uppercase tracking-wider text-slate-700">
@@ -171,6 +168,13 @@ export const IndustryTestingLabsView = ({ projects = {} }) => {
                 />
               ))}
             </div>
+
+            {/* Certified Lab Report Upload Card */}
+            <IndustryTestingReportUploadCard
+              project={currentProject}
+              stages={currentStages}
+              allStagesCompleted={allStagesCompleted}
+            />
           </div>
         </div>
       )}

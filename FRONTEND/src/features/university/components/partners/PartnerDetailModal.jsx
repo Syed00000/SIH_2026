@@ -7,13 +7,20 @@ import { PartnerProblemStatementSection } from './PartnerProblemStatementSection
 
 export const PartnerDetailModal = ({
   partner,
+  initialProblem = null,
   isOpen,
   onClose,
   onOpenSendRequest
 }) => {
   const [partnerRequests, setPartnerRequests] = useState([]);
   const [loadingRequests, setLoadingRequests] = useState(false);
-  const [selectedProblem, setSelectedProblem] = useState(null);
+  const [selectedProblem, setSelectedProblem] = useState(initialProblem);
+
+  useEffect(() => {
+    if (initialProblem) {
+      setSelectedProblem(initialProblem);
+    }
+  }, [initialProblem]);
 
   useEffect(() => {
     if (isOpen && partner) {
@@ -157,11 +164,16 @@ export const PartnerDetailModal = ({
             ) : (
               <button
                 type="button"
+                disabled={!selectedProblem}
                 onClick={() => {
+                  if (!selectedProblem) return;
                   onClose();
                   onOpenSendRequest && onOpenSendRequest(partner, selectedProblem);
                 }}
-                className="px-5 py-2.5 bg-[#007A61] hover:bg-[#00604c] text-white text-xs font-bold rounded-xl flex items-center space-x-2 transition-all shadow-md cursor-pointer"
+                className={`px-5 py-2.5 text-xs font-bold rounded-xl flex items-center space-x-2 transition-all shadow-md ${
+                  selectedProblem ? 'bg-[#007A61] hover:bg-[#00604c] text-white cursor-pointer' : 'bg-slate-200 text-slate-400 cursor-not-allowed border border-slate-300'
+                }`}
+                title={selectedProblem ? 'Request Lab Access for Problem' : 'No submitted prototype available yet'}
               >
                 <Send className="w-4 h-4" />
                 <span>Request Lab Access for Problem</span>

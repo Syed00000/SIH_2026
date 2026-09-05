@@ -4,8 +4,6 @@ import { FlaskConical, HandCoins, Briefcase, Sparkles, Building2 } from 'lucide-
 export const PartnershipModalFormFields = ({
   outcome,
   onChangeOutcome,
-  budget,
-  onChangeBudget,
   duration,
   onChangeDuration,
   funding,
@@ -42,37 +40,30 @@ export const PartnershipModalFormFields = ({
         />
       </div>
 
-      {/* Budget & Duration */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <div className="bg-white border border-slate-200/90 rounded-2xl p-4 shadow-2xs space-y-2">
+      {/* Collaboration Duration */}
+      <div className="bg-white border border-slate-200/90 rounded-2xl p-4 shadow-2xs space-y-2">
+        <div className="flex items-center justify-between">
           <label className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 block">
-            Estimated CSR / Lab Grant (₹)
+            Collaboration Duration *
           </label>
-          <input
-            type="text"
-            value={budget}
-            onChange={(e) => onChangeBudget(e.target.value)}
-            placeholder="e.g. ₹ 5,00,000"
-            className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-800 focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#007A61] focus:border-[#007A61] shadow-2xs"
-          />
+          <span className="text-[10px] font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
+            Testing fee quoted by industry upon acceptance
+          </span>
         </div>
-
-        <div className="bg-white border border-slate-200/90 rounded-2xl p-4 shadow-2xs space-y-2">
-          <label className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 block">
-            Collaboration Duration
-          </label>
-          <select
-            value={duration}
-            onChange={(e) => onChangeDuration(e.target.value)}
-            className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-800 focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#007A61] focus:border-[#007A61] shadow-2xs cursor-pointer"
-          >
-            <option>1 Month</option>
-            <option>3 Months</option>
-            <option>6 Months</option>
-            <option>1 Year</option>
-            <option>Permanent MoU</option>
-          </select>
-        </div>
+        <select
+          value={duration}
+          onChange={(e) => onChangeDuration(e.target.value)}
+          className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-800 focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#007A61] focus:border-[#007A61] shadow-2xs cursor-pointer"
+        >
+          <option>1 Month</option>
+          <option>3 Months</option>
+          <option>6 Months</option>
+          <option>1 Year</option>
+          <option>Permanent MoU</option>
+        </select>
+        <p className="text-[10.5px] text-slate-500 italic">
+          * Note: Laboratory testing charges and facility access fees will be reviewed and quoted by the industry partner upon proposal acceptance.
+        </p>
       </div>
 
       {/* Support Modalities */}

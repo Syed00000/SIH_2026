@@ -7,7 +7,6 @@ import { PartnersTable } from './PartnersTable.jsx';
 import { PartnerDetailModal } from './PartnerDetailModal.jsx';
 import { CreatePartnershipModal } from './CreatePartnershipModal.jsx';
 import { ApproveIndustryAmountModal } from './ApproveIndustryAmountModal.jsx';
-import { MentoredPrototypesIndustryCard } from './MentoredPrototypesIndustryCard.jsx';
 import { universityApiService } from '../../services/universityApiService.js';
 
 export const IndustryPartnersPanel = () => {
@@ -49,12 +48,12 @@ export const IndustryPartnersPanel = () => {
     fetchPartners();
   }, []);
 
-  const totalCount = partners.length;
+  const submittedPrototypes = projects.filter((p) => p.sentToUniversity === true || p.prototypeStatus === 'In Review' || p.prototypeStatus === 'Approved');
+  const totalCount = submittedPrototypes.length > 0 ? partners.length : 0;
   const approvedReqs = requests.filter((r) => r.status === 'Approved');
-  const activeCount = approvedReqs.length > 0 ? approvedReqs.length : partners.filter((p) => p.status === 'Active' || p.verificationStatus === 'Verified').length;
+  const activeCount = approvedReqs.length > 0 ? approvedReqs.length : (submittedPrototypes.length > 0 ? partners.filter((p) => p.status === 'Active' || p.verificationStatus === 'Verified').length : 0);
   const pendingCount = requests.filter((r) => r.status === 'Pending').length;
   const pendingQuotes = requests.filter((r) => r.labChargesQuoted && r.quoteStatus !== 'Accepted' && r.quoteStatus !== 'Declined');
-  const submittedPrototypes = projects.filter((p) => p.sentToUniversity === true || p.prototypeStatus === 'In Review' || p.prototypeStatus === 'Approved');
 
   const filtered = partners.filter((p) => {
     if (industryFilter !== 'All' && (p.industryType || p.type || p.category) !== industryFilter) return false;
@@ -92,6 +91,7 @@ export const IndustryPartnersPanel = () => {
         <button
           onClick={() => {
             setRequestPartner(null);
+            setRequestProblem(submittedPrototypes[0] || null);
             setIsCreateModalOpen(true);
           }}
           className="px-4 py-2.5 bg-[#007A61] hover:bg-[#00604c] text-white text-xs font-bold rounded-xl flex items-center space-x-2 shadow-sm cursor-pointer"
@@ -126,16 +126,6 @@ export const IndustryPartnersPanel = () => {
       {/* Top Industry Approval Notification Banner */}
       <IndustryApprovalBanner approvedRequests={approvedReqs} partners={partners} onSelectPartner={setDetailPartner} />
 
-      {/* Mentored Prototypes Submitted by Faculty Teams */}
-      <MentoredPrototypesIndustryCard
-        prototypes={submittedPrototypes}
-        onConnectIndustry={(p) => {
-          setRequestPartner(null);
-          setRequestProblem(p);
-          setIsCreateModalOpen(true);
-        }}
-      />
-
       {/* KPIs Bar */}
       <PartnersKpis total={totalCount} active={activeCount} pending={pendingCount} loading={loading} />
 
@@ -146,21 +136,33 @@ export const IndustryPartnersPanel = () => {
         onResetFilters={() => { setSearch(''); setIndustryFilter('All'); setSupportFilter('All'); setStatusFilter('All'); }}
       />
 
-      {/* Partners Table */}
+      {/* Partners Table with Submitted Student Prototypes, Problem Statements & Attached PDFs */}
       <PartnersTable
         partners={filtered}
+        submittedPrototypes={submittedPrototypes}
         requests={requests}
         loading={loading}
-        onSelectPartner={setDetailPartner}
-        onOpenSendRequest={(p) => { setRequestPartner(p); setIsCreateModalOpen(true); }}
+        onSelectPartner={(p, proto) => {
+          setDetailPartner(p);
+          setRequestProblem(proto || null);
+        }}
+        onOpenSendRequest={(p, proto) => {
+          setRequestPartner(p);
+          setRequestProblem(proto || null);
+          setIsCreateModalOpen(true);
+        }}
         onApproveAmount={(p, req) => setAmountModalData({ partner: p, request: req })}
       />
 
       {/* Partner Detail Modal */}
       <PartnerDetailModal
         partner={detailPartner}
+        initialProblem={requestProblem}
         isOpen={Boolean(detailPartner)}
-        onClose={() => setDetailPartner(null)}
+        onClose={() => {
+          setDetailPartner(null);
+          setRequestProblem(null);
+        }}
         onOpenSendRequest={(p, prob) => {
           setDetailPartner(null);
           setRequestPartner(p);

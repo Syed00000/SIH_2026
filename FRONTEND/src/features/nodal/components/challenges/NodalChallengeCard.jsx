@@ -1,5 +1,5 @@
 import React from 'react';
-import { MapPin, User, Building, Eye, MessageSquare, Trash2, Send } from 'lucide-react';
+import { MapPin, User, Building, Eye, MessageSquare, Trash2, Send, CheckCircle2 } from 'lucide-react';
 
 export const NodalChallengeCard = ({
   chl,
@@ -115,7 +115,12 @@ export const NodalChallengeCard = ({
           </button>
         </div>
 
-        {chl.status === 'Withdrawn' ? (
+        {chl.status === 'Resolved' || chl.isDeployed ? (
+          <div className="flex items-center space-x-1.5 bg-emerald-50 text-emerald-800 border border-emerald-300 text-xs font-bold px-3 py-1.5 rounded-md shadow-3xs cursor-default">
+            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+            <span>✓ Resolved & Deployed (Locked)</span>
+          </div>
+        ) : chl.status === 'Withdrawn' ? (
           <button
             type="button"
             disabled

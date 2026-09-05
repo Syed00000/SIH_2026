@@ -79,6 +79,7 @@ export const GovernmentGrantStatusCard = ({ approval }) => {
   );
 
   const totalSanctionedNum =
+    parseGrantRupees(project?.originalGovernmentGrant) ||
     parseGrantRupees(project?.sanctionedBudget || project?.sanctionedGrant || approval?.sanctionedBudget) ||
     parseGrantRupees(approval?.proposedBudget || approval?.estimatedBudget) ||
     80000;
@@ -148,8 +149,8 @@ export const GovernmentGrantStatusCard = ({ approval }) => {
         <div className="p-3 bg-emerald-50/80 border border-emerald-200 rounded-xl space-y-0.5">
           <span className="text-[10px] font-bold text-emerald-800 uppercase block">Amount Received (Disbursed)</span>
           <span className="text-sm font-black text-[#007A61] font-mono">₹ {rawDisbursed.toLocaleString('en-IN')}</span>
-          <span className="text-[10px] text-[#007A61] font-bold block">
-            {rawDisbursed > 0 ? 'Credited to University Escrow ✓' : 'Initial Release Pending'}
+          <span className="text-[10px] text-[#007A61] font-bold block truncate">
+            {project?.testingLabFee ? `Net after ${project.testingLabFee} Lab Fee` : rawDisbursed > 0 ? 'Credited to University Escrow ✓' : 'Initial Release Pending'}
           </span>
         </div>
 
@@ -169,13 +170,15 @@ export const GovernmentGrantStatusCard = ({ approval }) => {
         </div>
       )}
 
-      {isFullyDisbursed ? (
+      {isFullyDisbursed || project?.isDeployed ? (
         <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center justify-between text-xs">
           <div className="flex items-center space-x-2 text-emerald-900 font-bold">
             <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-            <span>Government Grant 100% Fully Disbursed & Received in Escrow</span>
+            <span>{project?.isDeployed ? '✓ Project Deployed to Public Registry (PFMS Escrow Settled)' : 'Government Grant 100% Fully Disbursed & Received in Escrow'}</span>
           </div>
-          <span className="px-2 py-0.5 bg-emerald-600 text-white font-mono text-[10px] font-bold rounded">SETTLED</span>
+          <span className="px-2 py-0.5 bg-emerald-600 text-white font-mono text-[10px] font-bold rounded">
+            {project?.isDeployed ? 'DEPLOYED' : 'SETTLED'}
+          </span>
         </div>
       ) : pendingVal > 0 ? (
         <GrantRequestForm

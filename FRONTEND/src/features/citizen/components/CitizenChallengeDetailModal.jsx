@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { MapPin, Calendar, Users, Building, X, Download, RotateCcw, Trash2 } from 'lucide-react';
+import { MapPin, Calendar, Users, Building, X, Download, RotateCcw, Trash2, Rocket, FileText, ExternalLink } from 'lucide-react';
 import { exportChallengeDossierPdf } from '../../../shared/utils/pdfExport.js';
 import { citizenService } from '../services/citizenService.js';
 import { CitizenChallengeEvidenceSection } from './detail/CitizenChallengeEvidenceSection.jsx';
@@ -14,9 +14,7 @@ export const CitizenChallengeDetailModal = ({ challenge = null, isOpen, onClose,
   const [localStatus, setLocalStatus] = useState(challenge?.status || 'Submitted');
 
   useEffect(() => {
-    if (challenge?.status) {
-      setLocalStatus(challenge.status);
-    }
+    if (challenge?.status) setLocalStatus(challenge.status);
   }, [challenge?.status]);
 
   if (!isOpen || !challenge || Object.keys(challenge).length === 0) return null;
@@ -24,11 +22,12 @@ export const CitizenChallengeDetailModal = ({ challenge = null, isOpen, onClose,
   const safeChallenge = challenge || {};
   const challengeId = safeChallenge.id || safeChallenge._id || safeChallenge.challengeId;
   const isWithdrawn = localStatus === 'Withdrawn';
-  const isResolved = localStatus === 'Resolved';
+  const isResolved = localStatus === 'Resolved' || localStatus === 'Deployed';
   const assignedUni = safeChallenge.assignedUniversity || {};
   const isAssigned = Boolean(assignedUni.name || assignedUni.universityName);
   const isAccepted = safeChallenge.assignmentStatus === 'ACCEPTED' || safeChallenge.assignmentStatus === 'Accepted';
   const canWithdraw = !isWithdrawn && !isResolved && !isAssigned;
+  const protoPdf = challenge.prototypePdfUrl || challenge.resolutionDossier?.prototypePdfUrl || challenge.solutionPdfUrl;
 
   const handleWithdraw = async () => {
     setIsProcessing(true);
@@ -38,11 +37,8 @@ export const CitizenChallengeDetailModal = ({ challenge = null, isOpen, onClose,
       setLocalStatus('Withdrawn');
       setShowWithdrawConfirm(false);
       if (onChallengeUpdated) onChallengeUpdated({ ...challenge, status: 'Withdrawn' });
-    } catch (err) {
-      setActionError(err.message || 'Failed to withdraw problem.');
-    } finally {
-      setIsProcessing(false);
-    }
+    } catch (err) { setActionError(err.message || 'Failed to withdraw problem.'); }
+    finally { setIsProcessing(false); }
   };
 
   const handleDelete = async () => {
@@ -52,19 +48,16 @@ export const CitizenChallengeDetailModal = ({ challenge = null, isOpen, onClose,
       await citizenService.deleteChallenge(challengeId);
       if (onChallengeDeleted) onChallengeDeleted(challengeId);
       onClose();
-    } catch (err) {
-      setActionError(err.message || 'Failed to delete problem.');
-    } finally {
-      setIsProcessing(false);
-    }
+    } catch (err) { setActionError(err.message || 'Failed to delete problem.'); }
+    finally { setIsProcessing(false); }
   };
 
   const milestones = [
     { step: 1, title: 'Problem Submitted', description: 'Filed with location & citizen verification.', status: 'COMPLETED' },
-    { step: 2, title: 'Under Review', description: 'Government nodal team evaluating problem scope.', status: challenge.status === 'Submitted' ? 'PENDING' : 'CURRENT' },
-    { step: 3, title: 'University Assigned', description: 'Assigned to relevant university research lab.', status: assignedUni.name ? (isAccepted ? 'COMPLETED' : 'CURRENT') : 'PENDING' },
-    { step: 4, title: 'Solution Development', description: 'Faculty and students building targeted solution.', status: challenge.status === 'In Progress' ? 'CURRENT' : 'PENDING' },
-    { step: 5, title: 'Field Deployment & Resolved', description: 'Solution deployed on-ground.', status: challenge.status === 'Resolved' ? 'COMPLETED' : 'PENDING' }
+    { step: 2, title: 'Under Review', description: 'Government nodal team evaluating problem scope.', status: challenge.status === 'Submitted' ? 'PENDING' : 'COMPLETED' },
+    { step: 3, title: 'University Assigned', description: 'Assigned to relevant university research lab.', status: assignedUni.name ? 'COMPLETED' : 'PENDING' },
+    { step: 4, title: 'Solution Development', description: 'Faculty and students building targeted solution.', status: isResolved ? 'COMPLETED' : (challenge.status === 'In Progress' ? 'CURRENT' : 'PENDING') },
+    { step: 5, title: 'Field Deployment & Resolved', description: 'Solution deployed on-ground.', status: isResolved ? 'COMPLETED' : 'PENDING' }
   ];
 
   const formattedDate = challenge.submittedAt
@@ -99,20 +92,9 @@ export const CitizenChallengeDetailModal = ({ challenge = null, isOpen, onClose,
           <div className="space-y-2">
             <h3 className="text-base sm:text-lg font-black text-slate-900 leading-snug">{challenge.title}</h3>
             <div className="flex flex-wrap items-center gap-3 text-xs text-slate-600 font-medium">
-              <span className="flex items-center space-x-1.5">
-                <MapPin className="w-4 h-4 text-emerald-700 shrink-0" />
-                <span>{challenge.location?.district || challenge.district || 'Ranchi'}, Jharkhand</span>
-              </span>
-              <span className="flex items-center space-x-1.5">
-                <Calendar className="w-4 h-4 text-emerald-700 shrink-0" />
-                <span>{formattedDate}</span>
-              </span>
-              {affectedPop && (
-                <span className="flex items-center space-x-1.5 text-emerald-900 font-semibold text-[11px]">
-                  <Users className="w-3.5 h-3.5 text-emerald-700 shrink-0" />
-                  <span>{affectedPop}</span>
-                </span>
-              )}
+              <span className="flex items-center space-x-1.5"><MapPin className="w-4 h-4 text-emerald-700 shrink-0" /><span>{challenge.location?.district || challenge.district || 'Ranchi'}, Jharkhand</span></span>
+              <span className="flex items-center space-x-1.5"><Calendar className="w-4 h-4 text-emerald-700 shrink-0" /><span>{formattedDate}</span></span>
+              {affectedPop && <span className="flex items-center space-x-1.5 text-emerald-900 font-semibold text-[11px]"><Users className="w-3.5 h-3.5 text-emerald-700 shrink-0" /><span>{affectedPop}</span></span>}
             </div>
           </div>
 
@@ -121,8 +103,37 @@ export const CitizenChallengeDetailModal = ({ challenge = null, isOpen, onClose,
             <p className="text-xs text-slate-700 leading-relaxed font-medium whitespace-pre-line">{challenge.description || 'No description provided.'}</p>
           </div>
 
-          {/* Dedicated Attached Evidence Section */}
+          {/* Attached Evidence Section */}
           <CitizenChallengeEvidenceSection challenge={challenge} />
+
+          {/* Deployed Prototype & Resolution Dossier */}
+          {protoPdf && (
+            <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-300 space-y-2.5">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                  <Rocket className="w-4 h-4 text-[#007A61]" />
+                  <span className="text-xs font-black text-emerald-950 uppercase tracking-wide">
+                    Certified Prototype Deployed On-Ground
+                  </span>
+                </div>
+                <span className="px-2 py-0.5 bg-emerald-200 text-emerald-900 rounded font-bold text-[10px]">
+                  SOLVED
+                </span>
+              </div>
+              <p className="text-xs text-emerald-800 leading-relaxed font-medium">
+                The State Government and University Research Team have completed lab testing and deployed the operational prototype solution for citizen benefit.
+              </p>
+              <button
+                type="button"
+                onClick={() => window.open(protoPdf, '_blank', 'noopener,noreferrer')}
+                className="px-3.5 py-1.5 bg-[#007A61] hover:bg-[#00604c] text-white rounded-lg text-xs font-bold flex items-center space-x-1.5 shadow-2xs cursor-pointer"
+              >
+                <FileText className="w-3.5 h-3.5" />
+                <span>View Deployed Prototype PDF</span>
+                <ExternalLink className="w-3 h-3" />
+              </button>
+            </div>
+          )}
 
           {assignedUni.name && !isWithdrawn && (
             <div className="space-y-1.5 text-xs p-3 rounded-xl bg-slate-50 border border-slate-200/80">

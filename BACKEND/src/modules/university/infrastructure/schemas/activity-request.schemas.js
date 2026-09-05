@@ -31,7 +31,11 @@ export const universityIndustryRequestSchema = new mongoose.Schema(
     executionOutcome: { type: String, default: '' },
     facultyName: { type: String, default: '' },
     studentTeam: { type: String, default: '' },
-    status: { type: String, enum: ['Pending', 'Accepted', 'Declined', 'Under Evaluation', 'Approved', 'Rejected'], default: 'Pending' },
+    status: { type: String, enum: ['Pending', 'Accepted', 'Declined', 'Under Evaluation', 'Approved', 'Rejected', 'Fee Declined'], default: 'Pending' },
+    quoteStatus: { type: String, default: '' },
+    labChargesQuoted: { type: String, default: '' },
+    quoteTerms: { type: String, default: '' },
+    declineReason: { type: String, default: '' },
     submittedAt: { type: Date, default: Date.now }
   },
   { timestamps: true, collection: 'university_industry_requests', strict: false }

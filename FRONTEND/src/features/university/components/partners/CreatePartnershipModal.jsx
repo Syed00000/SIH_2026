@@ -17,7 +17,6 @@ export const CreatePartnershipModal = ({ isOpen, onClose, partner: initialPartne
   const [funding, setFunding] = useState(true);
   const [labAccess, setLabAccess] = useState(true);
   const [techMentorship, setTechMentorship] = useState(true);
-  const [budget, setBudget] = useState('₹ 50,000');
   const [duration, setDuration] = useState('3 Months');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -55,11 +54,14 @@ export const CreatePartnershipModal = ({ isOpen, onClose, partner: initialPartne
         fundingRequested: funding,
         labAccessRequested: labAccess,
         mentorshipRequested: techMentorship,
-        estimatedBudget: budget,
+        estimatedBudget: 'Awaiting Industry Lab Fee',
         duration,
         executionOutcome: outcome,
         facultyName: selectedProblem?.facultyName || 'Faculty Nodal Officer',
-        studentTeam: selectedProblem?.studentTeam || 'University Research Team'
+        studentTeam: selectedProblem?.studentTeam || 'University Research Team',
+        pdfUrl: selectedProblem?.pdfUrl || '',
+        pdfName: selectedProblem?.pdfName || '',
+        prototypeData: selectedProblem?.prototypeData || null
       });
       setSuccess(true);
       setTimeout(() => {
@@ -139,7 +141,7 @@ export const CreatePartnershipModal = ({ isOpen, onClose, partner: initialPartne
               )}
 
               <ProblemStatementSelector problemStatements={problemStatements} selectedItem={selectedProblem} onSelect={handleSelectProblem} customTitle={customTitle} onChangeCustomTitle={setCustomTitle} customStatement={customStatement} onChangeCustomStatement={setCustomStatement} />
-              <PartnershipModalFormFields outcome={outcome} onChangeOutcome={setOutcome} budget={budget} onChangeBudget={setBudget} duration={duration} onChangeDuration={setDuration} funding={funding} onChangeFunding={setFunding} labAccess={labAccess} onChangeLabAccess={setLabAccess} techMentorship={techMentorship} onChangeTechMentorship={setTechMentorship} isResearchLab={isResearchLab} />
+              <PartnershipModalFormFields outcome={outcome} onChangeOutcome={setOutcome} duration={duration} onChangeDuration={setDuration} funding={funding} onChangeFunding={setFunding} labAccess={labAccess} onChangeLabAccess={setLabAccess} techMentorship={techMentorship} onChangeTechMentorship={setTechMentorship} isResearchLab={isResearchLab} />
             </form>
           )}
         </div>
