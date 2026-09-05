@@ -128,7 +128,6 @@ export const IndustryTestingReportUploadCard = ({ project, stages = [], allStage
         </div>
         <span className="px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded-full text-[10px] font-black border border-emerald-200">STAGES COMPLETED</span>
       </div>
-      </div>
 
       {errorMsg && (
         <div className="p-2 bg-rose-50 border border-rose-200 rounded-xl text-xs text-rose-800 font-bold flex items-center space-x-2">
