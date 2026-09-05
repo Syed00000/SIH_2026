@@ -182,6 +182,10 @@ export class CloudinaryStorageProvider extends StorageProvider {
     const imagePublicId = cleanId.replace(/\.(png|jpg|jpeg|webp|gif|svg)$/i, '');
 
     const candidates = [
+      ...(!isPdfOrRaw && !isVideo ? [
+        { id: imagePublicId, type: isPrivate ? 'authenticated' : 'upload', resType: 'image' },
+        { id: imagePublicId, type: isPrivate ? 'upload' : 'authenticated', resType: 'image' }
+      ] : []),
       { id: cleanId, type: isPrivate ? 'authenticated' : 'upload', resType: targetResourceType },
       { id: cleanId, type: isPrivate ? 'upload' : 'authenticated', resType: targetResourceType },
       ...(isPdfOrRaw ? [
