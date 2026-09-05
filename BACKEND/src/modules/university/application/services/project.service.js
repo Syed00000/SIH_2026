@@ -39,6 +39,10 @@ export class UniversityProjectService {
     return await this.repository.uploadProjectPdf(projectId, universityCode, file, type);
   }
 
+  async deleteProjectPdf(projectId, universityCode, type = 'prototype') {
+    return await this.repository.deleteProjectPdf(projectId, universityCode, type);
+  }
+
   async deployProject(projectId, universityCode, payload) {
     return await this.repository.deployProject(projectId, universityCode, payload);
   }

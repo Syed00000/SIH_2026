@@ -51,9 +51,10 @@ export const streamPdf = async (req, res, next) => {
 
     let publicId = rawPublicId;
     if (!publicId && cleanUrl) {
-      const match = cleanUrl.match(/\/(?:upload|authenticated)(?:\/s--[^/]+--)?\/(?:v\d+\/)?(.+?)(?:\?|$)/);
+      const match = cleanUrl.match(/\/(?:upload|authenticated)(?:\/s--[^/]+--)?\/(?:v\d+\/)?([^?&#]+)/);
       if (match) {
         publicId = decodeURIComponent(match[1]);
+        publicId = publicId.split('?')[0].split('&')[0].split('#')[0].trim();
       }
     }
 

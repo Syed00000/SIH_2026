@@ -33,7 +33,9 @@ router.post('/projects/:id/forward-to-government', (req, res, next) => universit
 router.patch('/projects/:id/government-prototype-status', (req, res, next) => universityController.updateGovernmentPrototypeStatus(req, res, next));
 router.post('/projects/:id/request-tranche', (req, res, next) => universityController.requestTranche(req, res, next));
 router.post('/projects/:id/upload-pdf', pdfUpload.single('pdf'), handlePdfUploadError, (req, res, next) => universityController.uploadProjectPdf(req, res, next));
+router.delete('/projects/:id/pdf', (req, res, next) => universityController.deleteProjectPdf(req, res, next));
 router.post('/teams/:id/upload-pdf', pdfUpload.single('pdf'), handlePdfUploadError, (req, res, next) => universityController.uploadProjectPdf(req, res, next));
+router.delete('/teams/:id/pdf', (req, res, next) => universityController.deleteProjectPdf(req, res, next));
 router.post('/projects/:id/deploy', (req, res, next) => universityController.deployProject(req, res, next));
 
 router.get('/activities', (req, res, next) => universityController.getActivities(req, res, next));

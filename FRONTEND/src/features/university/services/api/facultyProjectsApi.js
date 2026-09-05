@@ -133,6 +133,18 @@ export const facultyProjectsApi = {
       formData
     );
     return res?.data?.data || res?.data || { success: true };
+  },
+
+  async deleteProjectPdf(projectId, type = 'prototype', universityCode = DEFAULT_UNIVERSITY_CODE) {
+    try {
+      const res = await apiClient.delete(
+        `university/projects/${encodeURIComponent(projectId)}/pdf?type=${encodeURIComponent(type)}&universityCode=${encodeURIComponent(universityCode)}`
+      );
+      return res?.data?.data || res?.data || { success: true };
+    } catch (err) {
+      console.error('API deleteProjectPdf error:', err.message);
+      return { success: false, error: err.message };
+    }
   }
 };
 

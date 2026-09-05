@@ -69,7 +69,7 @@ export async function cascadeDeleteProblemOrProject(universityCode, identifier, 
     const { getStorageProvider } = await import('../../../../infrastructure/storage/index.js');
     const storageProvider = getStorageProvider();
 
-    // Collect project PDF URLs
+    // Collect all project PDF URLs across project, teams, and industry requests
     const projectFiles = [
       project?.pdfUrl,
       project?.prototypeData?.pdfUrl,
@@ -77,8 +77,32 @@ export async function cascadeDeleteProblemOrProject(universityCode, identifier, 
       ...(Array.isArray(project?.documents) ? project.documents.map(d => d.url) : [])
     ].filter(Boolean);
 
+    try {
+      const indRequests = await UniversityIndustryRequest.find({
+        $or: [
+          ...(resolvedProjectId ? [{ projectId: resolvedProjectId }] : []),
+          ...(resolvedChallengeId ? [{ challengeId: resolvedChallengeId }] : [])
+        ]
+      }).lean();
+      indRequests?.forEach(req => {
+        if (req.testingReportPdfUrl) projectFiles.push(req.testingReportPdfUrl);
+      });
+    } catch (_) {}
+
+    try {
+      const teams = await UniversityTeam.find({
+        $or: [
+          ...(resolvedProjectId ? [{ projectId: resolvedProjectId }] : []),
+          ...(resolvedChallengeId ? [{ challengeId: resolvedChallengeId }] : [])
+        ]
+      }).lean();
+      teams?.forEach(t => {
+        if (t.pdfUrl) projectFiles.push(t.pdfUrl);
+      });
+    } catch (_) {}
+
     for (const fileUrl of projectFiles) {
-      if (typeof fileUrl === 'string' && (fileUrl.includes('cloudinary.com') || fileUrl.includes('/api/v1/media/pdf'))) {
+      if (typeof fileUrl === 'string' && (fileUrl.includes('cloudinary.com') || fileUrl.includes('/api/v1/media/pdf') || fileUrl.endsWith('.pdf'))) {
         try {
           await storageProvider.delete({ providerPublicId: fileUrl, resourceType: 'raw' });
         } catch (_) {}

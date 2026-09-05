@@ -161,6 +161,16 @@ export const createChallengeProjectHandler = (service) => {
     } catch (error) { next(error); }
   };
 
+  const deleteProjectPdf = async (req, res, next) => {
+    try {
+      const { id } = req.params;
+      const code = extractUniversityCode(req, 'RU001');
+      const deleteType = req.query?.type || req.body?.type || 'prototype';
+      const data = await service.deleteProjectPdf(id, code, deleteType);
+      res.status(200).json({ status: 'SUCCESS', message: 'PDF permanently deleted from Cloudinary and project', data });
+    } catch (error) { next(error); }
+  };
+
   const deployProject = async (req, res, next) => {
     try {
       const { id } = req.params;
@@ -185,6 +195,7 @@ export const createChallengeProjectHandler = (service) => {
     updateGovernmentPrototypeStatus,
     requestTranche,
     uploadProjectPdf,
+    deleteProjectPdf,
     deployProject
   };
 };

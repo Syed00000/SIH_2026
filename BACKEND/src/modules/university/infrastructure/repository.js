@@ -123,6 +123,10 @@ export class UniversityDashboardRepository {
     return this.projectPrototypeRepo.uploadProjectPdf(projectId, universityCode, file, type);
   }
 
+  deleteProjectPdf(projectId, universityCode, type = 'prototype') {
+    return this.projectPrototypeRepo.deleteProjectPdf(projectId, universityCode, type);
+  }
+
   deployProject(projectId, universityCode, payload) {
     return this.projectPrototypeRepo.deployProject(projectId, universityCode, payload);
   }

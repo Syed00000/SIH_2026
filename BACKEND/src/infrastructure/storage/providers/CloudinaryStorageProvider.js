@@ -161,21 +161,38 @@ export class CloudinaryStorageProvider extends StorageProvider {
 
     // Extract publicId if a full URL was supplied
     let cleanId = providerPublicId;
+    if (cleanId.includes('cloudinary.com') || cleanId.includes('%2F') || cleanId.includes('%3A')) {
+      try {
+        cleanId = decodeURIComponent(cleanId);
+      } catch (_) {}
+    }
     if (cleanId.includes('cloudinary.com')) {
-      const match = cleanId.match(/\/(?:upload|authenticated)(?:\/s--[^/]+--)?\/(?:v\d+\/)?(.+?)(?:\?|$)/);
+      const match = cleanId.match(/\/(?:upload|authenticated)(?:\/s--[^/]+--)?\/(?:v\d+\/)?([^?&#]+)/);
       if (match) cleanId = decodeURIComponent(match[1]);
     }
+    // Clean any remaining query strings, params, or fragments
+    cleanId = cleanId.split('?')[0].split('&')[0].split('#')[0].trim();
 
     const isPdfOrRaw = cleanId.toLowerCase().endsWith('.pdf') || resourceType === 'raw';
     const isVideo = cleanId.toLowerCase().match(/\.(mp4|webm|mov|m4v|ogg)$/) || resourceType === 'video';
     const targetResourceType = isPdfOrRaw ? 'raw' : isVideo ? 'video' : 'image';
 
-    // Strip image extension because Cloudinary stores image public IDs without extensions
+    const rawIdWithoutExt = cleanId.replace(/\.pdf$/i, '');
+    const rawIdWithExt = cleanId.toLowerCase().endsWith('.pdf') ? cleanId : `${cleanId}.pdf`;
     const imagePublicId = cleanId.replace(/\.(png|jpg|jpeg|webp|gif|svg)$/i, '');
 
     const candidates = [
       { id: cleanId, type: isPrivate ? 'authenticated' : 'upload', resType: targetResourceType },
       { id: cleanId, type: isPrivate ? 'upload' : 'authenticated', resType: targetResourceType },
+      ...(isPdfOrRaw ? [
+        { id: rawIdWithExt, type: 'upload', resType: 'raw' },
+        { id: rawIdWithExt, type: 'authenticated', resType: 'raw' },
+        { id: rawIdWithoutExt, type: 'upload', resType: 'raw' },
+        { id: rawIdWithoutExt, type: 'authenticated', resType: 'raw' },
+        { id: rawIdWithoutExt, type: 'upload', resType: 'image' },
+        { id: rawIdWithoutExt, type: 'authenticated', resType: 'image' },
+        { id: cleanId, type: 'upload', resType: 'image' }
+      ] : []),
       { id: imagePublicId, type: isPrivate ? 'authenticated' : 'upload', resType: 'image' },
       { id: imagePublicId, type: isPrivate ? 'upload' : 'authenticated', resType: 'image' }
     ];

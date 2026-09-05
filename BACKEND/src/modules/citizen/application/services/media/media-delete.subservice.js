@@ -80,19 +80,23 @@ export const handleCascadeDeleteChallengeMedia = async (storageProvider, challen
           allPublicIds.set(item.providerPublicId, { resourceType: resType, isPrivate: true });
         }
       }
-      const rawUrl = typeof item === 'string' ? item : (item.url || item.accessUrl || item.src || '');
-      if (rawUrl && typeof rawUrl === 'string' && rawUrl.includes('cloudinary.com')) {
-        const match = rawUrl.match(/\/(?:upload|authenticated)(?:\/s--[^/]+--)?\/(?:v\d+\/)?(.+?)(?:\?|$)/);
-        if (match) {
-          const extractedId = decodeURIComponent(match[1]);
-          if (!allPublicIds.has(extractedId)) {
-            const isPdf = rawUrl.toLowerCase().includes('.pdf') || rawUrl.includes('/raw/');
-            const isVid = rawUrl.toLowerCase().match(/\.(mp4|webm|mov|m4v|ogg)$/) || rawUrl.includes('/video/');
-            const isPriv = rawUrl.includes('/authenticated/');
-            allPublicIds.set(extractedId, {
-              resourceType: isPdf ? 'raw' : isVid ? 'video' : 'image',
-              isPrivate: isPriv
-            });
+      let rawUrl = typeof item === 'string' ? item : (item.url || item.accessUrl || item.src || '');
+      if (rawUrl && typeof rawUrl === 'string' && (rawUrl.includes('cloudinary.com') || rawUrl.includes('/api/v1/media/pdf') || rawUrl.includes('%2F'))) {
+        try { rawUrl = decodeURIComponent(rawUrl); } catch (_) {}
+        if (rawUrl.includes('cloudinary.com')) {
+          const match = rawUrl.match(/\/(?:upload|authenticated)(?:\/s--[^/]+--)?\/(?:v\d+\/)?([^?&#]+)/);
+          if (match) {
+            let extractedId = decodeURIComponent(match[1]);
+            extractedId = extractedId.split('?')[0].split('&')[0].split('#')[0].trim();
+            if (extractedId && !allPublicIds.has(extractedId)) {
+              const isPdf = extractedId.toLowerCase().endsWith('.pdf') || rawUrl.toLowerCase().includes('.pdf') || rawUrl.includes('/raw/');
+              const isVid = extractedId.toLowerCase().match(/\.(mp4|webm|mov|m4v|ogg)$/) || rawUrl.includes('/video/');
+              const isPriv = rawUrl.includes('/authenticated/');
+              allPublicIds.set(extractedId, {
+                resourceType: isPdf ? 'raw' : isVid ? 'video' : 'image',
+                isPrivate: isPriv
+              });
+            }
           }
         }
       }

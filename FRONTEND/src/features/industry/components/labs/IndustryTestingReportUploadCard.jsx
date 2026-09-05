@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
-import { Upload, FileText, CheckCircle2, Lock, ExternalLink, Loader2, AlertCircle, RefreshCw } from 'lucide-react';
+import { Upload, FileText, CheckCircle2, Lock, ExternalLink, Loader2, AlertCircle, RefreshCw, Trash2 } from 'lucide-react';
 import { universityApiService } from '../../../university/services/universityApiService.js';
+import { facultyProjectsApi } from '../../../university/services/api/facultyProjectsApi.js';
 import { getPdfViewUrl } from '../../../../shared/utils/openPdf.js';
 
 export const IndustryTestingReportUploadCard = ({ project, stages = [], allStagesCompleted = false, onDossierSubmitted }) => {
@@ -12,6 +13,18 @@ export const IndustryTestingReportUploadCard = ({ project, stages = [], allStage
   const [submitted, setSubmitted] = useState(Boolean(project?.testingCompleted || project?.prototypeStatus === 'Pending Approval'));
   const [errorMsg, setErrorMsg] = useState('');
   const fileInputRef = useRef(null);
+
+  const handleRemoveOrReplacePdf = async () => {
+    if (submitted) return;
+    const targetId = project?.projectId || project?.id || project?.requestId;
+    const targetCode = project?.universityCode || 'RU001';
+    try {
+      await facultyProjectsApi.deleteProjectPdf(targetId, 'testing-report', targetCode);
+    } catch (_) {}
+    setPdfUrl('');
+    setPdfName('');
+    setPdfFile(null);
+  };
 
   React.useEffect(() => {
     if (project?.testingReportPdfUrl && !pdfUrl) {
@@ -149,7 +162,12 @@ export const IndustryTestingReportUploadCard = ({ project, stages = [], allStage
               <ExternalLink className="w-3 h-3" />
             </a>
             {!submitted && (
-              <button type="button" onClick={() => { setPdfUrl(''); setPdfName(''); setPdfFile(null); }} className="p-1 text-slate-400 hover:text-rose-600" title="Replace PDF">
+              <button
+                type="button"
+                onClick={handleRemoveOrReplacePdf}
+                className="p-1 text-slate-400 hover:text-rose-600 transition-colors cursor-pointer"
+                title="Remove and permanently delete PDF from Cloudinary"
+              >
                 <RefreshCw className="w-3.5 h-3.5" />
               </button>
             )}
