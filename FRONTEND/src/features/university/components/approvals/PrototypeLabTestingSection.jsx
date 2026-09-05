@@ -1,5 +1,5 @@
 import React from 'react';
-import { FlaskConical, CheckCircle2, Building2, ShieldCheck, FileCheck } from 'lucide-react';
+import { FlaskConical, CheckCircle2, Building2, ShieldCheck, FileCheck, FileText, ExternalLink } from 'lucide-react';
 
 export const PrototypeLabTestingSection = ({ approval }) => {
   const testingStages = approval?.testingStages || approval?.metadata?.testingStages || [];
@@ -46,6 +46,18 @@ export const PrototypeLabTestingSection = ({ approval }) => {
         </div>
       </div>
 
+      {/* Target Problem Statement */}
+      {approval?.problemStatement && (
+        <div className="p-3 bg-slate-50 border border-slate-200/90 rounded-xl space-y-1">
+          <span className="text-[10px] font-black uppercase tracking-wider text-slate-500 block">
+            Target Problem Statement
+          </span>
+          <p className="text-xs text-slate-800 italic font-medium leading-relaxed">
+            "{approval.problemStatement}"
+          </p>
+        </div>
+      )}
+
       {/* Testing Stages Grid */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
         {testingStages.map((stage, idx) => {
@@ -83,6 +95,61 @@ export const PrototypeLabTestingSection = ({ approval }) => {
           );
         })}
       </div>
+
+      {/* Attached Certified PDF Report & Technical Blueprint */}
+      {(approval?.reportPdfUrl || approval?.testingReportPdfUrl || approval?.pdfUrl) && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+          {(approval.reportPdfUrl || approval.testingReportPdfUrl) && (
+            <div className="flex items-center justify-between p-3 bg-rose-50 border border-rose-200 rounded-xl">
+              <div className="flex items-center space-x-2.5 min-w-0">
+                <FileText className="w-5 h-5 text-rose-600 shrink-0" />
+                <div className="min-w-0">
+                  <span className="text-xs font-bold text-slate-900 truncate block">
+                    {approval.reportPdfName || approval.testingReportPdfName || 'Certified_Lab_Report.pdf'}
+                  </span>
+                  <span className="text-[10px] text-emerald-700 font-semibold block">
+                    ✓ Verified Industry Lab Report
+                  </span>
+                </div>
+              </div>
+              <a
+                href={approval.reportPdfUrl || approval.testingReportPdfUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="px-3 py-1.5 bg-white hover:bg-rose-100 text-rose-700 border border-rose-300 rounded-lg text-xs font-bold flex items-center space-x-1 shrink-0 shadow-2xs"
+              >
+                <span>View Report</span>
+                <ExternalLink className="w-3.5 h-3.5" />
+              </a>
+            </div>
+          )}
+
+          {approval.pdfUrl && (
+            <div className="flex items-center justify-between p-3 bg-blue-50 border border-blue-200 rounded-xl">
+              <div className="flex items-center space-x-2.5 min-w-0">
+                <FileText className="w-5 h-5 text-blue-600 shrink-0" />
+                <div className="min-w-0">
+                  <span className="text-xs font-bold text-slate-900 truncate block">
+                    {approval.pdfName || 'Technical_Blueprint.pdf'}
+                  </span>
+                  <span className="text-[10px] text-blue-700 font-semibold block">
+                    ✓ Student Prototype Blueprint
+                  </span>
+                </div>
+              </div>
+              <a
+                href={approval.pdfUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="px-3 py-1.5 bg-white hover:bg-blue-100 text-blue-700 border border-blue-300 rounded-lg text-xs font-bold flex items-center space-x-1 shrink-0 shadow-2xs"
+              >
+                <span>View Blueprint</span>
+                <ExternalLink className="w-3.5 h-3.5" />
+              </a>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Footer sign-off notice */}
       <div className="bg-emerald-50/60 border border-emerald-200/80 rounded-xl p-3 flex items-center justify-between text-xs">

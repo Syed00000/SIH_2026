@@ -70,6 +70,20 @@ export const ProjectFundingBreakdown = ({ project: p }) => {
         </div>
       ))}
 
+      {p.testingLabFee && (
+        <div className="flex items-center justify-between text-[10.5px] text-amber-900 font-medium bg-amber-50/80 p-2 rounded-lg border border-amber-200 shadow-2xs">
+          <span>🧪 Industry Lab Testing Fee Paid</span>
+          <span className="font-bold text-amber-800">- {p.testingLabFee}</span>
+        </div>
+      )}
+
+      {p.testingLabFee && (
+        <div className="flex items-center justify-between text-[10.5px] text-emerald-950 font-bold bg-emerald-100/70 p-2 rounded-lg border border-emerald-300 shadow-2xs">
+          <span>Net Innovation Working Capital</span>
+          <span className="font-black text-[#007A61]">{p.disbursedAmount}</span>
+        </div>
+      )}
+
       {pendingVal > 0 && (
         <div className="flex items-center justify-between text-[10.5px] text-amber-800 font-medium bg-amber-50/80 p-2 rounded-lg border border-amber-200/60 shadow-2xs">
           <div className="flex items-center space-x-1.5">

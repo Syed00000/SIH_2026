@@ -14,10 +14,12 @@ import {
   Send,
   CreditCard,
   ChevronRight,
-  ExternalLink
+  ExternalLink,
+  FileText
 } from 'lucide-react';
 import { GrantPaymentModal, parseGrantRupees, formatRupeesINR } from './GrantPaymentModal.jsx';
 import { projectCsrSyncService } from '../../services/projectCsrSyncService.js';
+import { openPdfDocument } from '../../../../shared/utils/openPdf.js';
 
 export const ActiveProjectDetailView = ({
   project,
@@ -172,6 +174,44 @@ export const ActiveProjectDetailView = ({
             </span>
           </div>
         </div>
+
+        {/* Attached Certified PDF Report & Technical Blueprint Strip */}
+        {(project.testingReportPdfUrl || project.pdfUrl) && (
+          <div className="flex flex-wrap items-center gap-3 pt-3 border-t border-slate-100 text-xs">
+            {project.testingReportPdfUrl && (
+              <div className="flex-1 min-w-[240px] p-3 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center justify-between">
+                <div className="flex items-center space-x-2 truncate">
+                  <FileText className="w-4 h-4 text-[#007A61] shrink-0" />
+                  <span className="font-bold text-slate-800 truncate">{project.testingReportPdfName || 'Certified_Lab_Report.pdf'}</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => openPdfDocument(project.testingReportPdfUrl, project.testingReportPdfName || 'Certified_Lab_Report.pdf')}
+                  className="px-2.5 py-1 bg-white hover:bg-emerald-100 text-[#007A61] border border-emerald-300 rounded-lg text-xs font-bold flex items-center space-x-1 shrink-0 shadow-2xs cursor-pointer ml-2"
+                >
+                  <span>View PDF</span>
+                  <ExternalLink className="w-3 h-3" />
+                </button>
+              </div>
+            )}
+            {project.pdfUrl && (
+              <div className="flex-1 min-w-[240px] p-3 bg-blue-50 border border-blue-200 rounded-xl flex items-center justify-between">
+                <div className="flex items-center space-x-2 truncate">
+                  <FileText className="w-4 h-4 text-blue-600 shrink-0" />
+                  <span className="font-bold text-slate-800 truncate">{project.pdfName || 'Technical_Blueprint.pdf'}</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => openPdfDocument(project.pdfUrl, project.pdfName || 'Technical_Blueprint.pdf')}
+                  className="px-2.5 py-1 bg-white hover:bg-blue-100 text-blue-700 border border-blue-300 rounded-lg text-xs font-bold flex items-center space-x-1 shrink-0 shadow-2xs cursor-pointer ml-2"
+                >
+                  <span>View PDF</span>
+                  <ExternalLink className="w-3 h-3" />
+                </button>
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Tabs */}

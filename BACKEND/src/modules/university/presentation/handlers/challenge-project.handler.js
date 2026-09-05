@@ -155,8 +155,18 @@ export const createChallengeProjectHandler = (service) => {
       if (!req.file) {
         return res.status(400).json({ success: false, error: { message: 'No PDF file uploaded' } });
       }
-      const data = await service.uploadProjectPdf(id, code, req.file);
+      const uploadType = req.body?.type || req.query?.type || 'prototype';
+      const data = await service.uploadProjectPdf(id, code, req.file, uploadType);
       res.status(200).json({ status: 'SUCCESS', message: 'PDF uploaded to Cloudinary successfully', data });
+    } catch (error) { next(error); }
+  };
+
+  const deployProject = async (req, res, next) => {
+    try {
+      const { id } = req.params;
+      const code = extractUniversityCode(req, 'RU001');
+      const data = await service.deployProject(id, code, req.body);
+      res.status(200).json({ status: 'SUCCESS', message: 'Project deployed to public registry', data });
     } catch (error) { next(error); }
   };
 
@@ -174,7 +184,8 @@ export const createChallengeProjectHandler = (service) => {
     forwardPrototypeToGovernment,
     updateGovernmentPrototypeStatus,
     requestTranche,
-    uploadProjectPdf
+    uploadProjectPdf,
+    deployProject
   };
 };
 

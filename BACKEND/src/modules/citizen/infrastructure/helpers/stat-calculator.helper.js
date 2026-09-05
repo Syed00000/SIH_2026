@@ -10,10 +10,18 @@ export function calculateActivityStats(challenges = []) {
     rejected: 0,
     clarificationRequested: 0,
     clarified: 0,
-    total: challenges.length
+    total: 0
   };
 
   challenges.forEach((c) => {
+    // If a problem was soft-deleted and was NOT resolved, omit from active stats.
+    // If it was resolved, ALWAYS preserve and count it in resolved statistics and charts!
+    if (c.isDeleted && c.status !== 'Resolved') {
+      return;
+    }
+
+    statMap.total += 1;
+
     const isClarification =
       c.status === 'Clarification Requested' ||
       c.acceptanceStatus === 'Clarification Requested' ||
@@ -30,10 +38,10 @@ export function calculateActivityStats(challenges = []) {
       c.assignedUniversity?.acceptanceStatus === 'Accepted' ||
       (c.status === 'In Progress' && !isClarification);
 
-    if (isClarification) {
-      statMap.clarificationRequested += 1;
-    } else if (c.status === 'Resolved') {
+    if (c.status === 'Resolved') {
       statMap.resolved += 1;
+    } else if (isClarification) {
+      statMap.clarificationRequested += 1;
     } else if (c.status === 'Rejected' || c.status === 'Declined' || c.acceptanceStatus === 'Declined') {
       statMap.rejected += 1;
     } else if (isAccepted) {

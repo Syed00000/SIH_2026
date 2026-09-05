@@ -1,4 +1,4 @@
-import React, { createContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 import { authApi } from './api.js';
 import { setAccessToken, getAccessToken, setRefreshToken, clearTokens, onUnauthorized } from '../../infrastructure/api/client.js';
 
@@ -158,5 +158,25 @@ export const AuthProvider = ({ children }) => {
   );
 };
 
-export { useAuth } from './useAuth.js';
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (!context) {
+    return {
+      user: null,
+      isAuthenticated: false,
+      loading: true,
+      error: null,
+      login: async () => {},
+      register: async () => {},
+      verifyEmail: async () => {},
+      resendOtp: async () => {},
+      forgotPassword: async () => {},
+      resetPassword: async () => {},
+      logout: () => {},
+      fetchCurrentUser: async () => {}
+    };
+  }
+  return context;
+};
+
 export default AuthProvider;

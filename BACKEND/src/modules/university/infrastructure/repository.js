@@ -119,8 +119,12 @@ export class UniversityDashboardRepository {
     return this.projectPrototypeRepo.updateGovernmentPrototypeStatus(projectId, status, trlLevel, remarks);
   }
 
-  uploadProjectPdf(projectId, universityCode, file) {
-    return this.projectPrototypeRepo.uploadProjectPdf(projectId, universityCode, file);
+  uploadProjectPdf(projectId, universityCode, file, type = 'prototype') {
+    return this.projectPrototypeRepo.uploadProjectPdf(projectId, universityCode, file, type);
+  }
+
+  deployProject(projectId, universityCode, payload) {
+    return this.projectPrototypeRepo.deployProject(projectId, universityCode, payload);
   }
 
   getActivitiesByUniversity(universityCode, limit) {

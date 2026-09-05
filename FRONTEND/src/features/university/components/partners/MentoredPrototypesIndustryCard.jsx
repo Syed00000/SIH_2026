@@ -55,6 +55,17 @@ export const MentoredPrototypesIndustryCard = ({ prototypes = [], onConnectIndus
                     💰 1st Grant: {p.sanctionedBudget || p.disbursedAmount || '₹ 80,000'}
                   </span>
                 </div>
+
+                {/* Problem Statement & Solution Prototype Details */}
+                <div className="text-[11px] text-slate-700 bg-slate-50 p-2 rounded-lg border border-slate-200/80 italic">
+                  <strong>Ground Problem:</strong> "{p.problemStatement || p.title}"
+                </div>
+
+                {p.prototypeData?.content && (
+                  <div className="text-[11px] text-emerald-950 bg-emerald-50/60 p-2 rounded-lg border border-emerald-200">
+                    <strong>Solution Prototype:</strong> {p.prototypeData.content}
+                  </div>
+                )}
               </div>
 
               <div className="flex items-center space-x-2 self-start lg:self-auto shrink-0">

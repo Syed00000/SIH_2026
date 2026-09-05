@@ -15,6 +15,21 @@ export async function syncIndustryApprovedProject(request) {
     const generatedProjectId = `PRJ-IND-${request.requestId ? request.requestId.replace(/[^0-9]/g, '').slice(-6) : Date.now().toString().slice(-6)}`;
     const projectId = request.projectId || generatedProjectId;
 
+    const existingProject = await UniversityProject.findOne({
+      $or: [
+        { projectId },
+        { title: request.projectTitle, universityCode: uniCode }
+      ]
+    }).lean();
+
+    const rawGovtGrant = existingProject?.originalGovernmentGrant || existingProject?.disbursedAmount || existingProject?.sanctionedBudget || '₹ 80,000';
+    const govtGrantNum = Number(String(rawGovtGrant).replace(/[^\d]/g, '')) || 80000;
+    const testingFeeNum = Number(String(request.labChargesQuoted || '0').replace(/[^\d]/g, '')) || 0;
+    const netUniversityBalanceNum = Math.max(0, govtGrantNum - testingFeeNum);
+    const formattedNetBalance = `₹ ${netUniversityBalanceNum.toLocaleString('en-IN')}`;
+    const formattedGovtGrant = `₹ ${govtGrantNum.toLocaleString('en-IN')}`;
+    const formattedTestingFee = testingFeeNum > 0 ? `₹ ${testingFeeNum.toLocaleString('en-IN')}` : (request.labChargesQuoted || '₹ 0');
+
     const project = await UniversityProject.findOneAndUpdate(
       {
         $or: [
@@ -46,16 +61,20 @@ export async function syncIndustryApprovedProject(request) {
         },
         $set: {
           status: 'In Progress',
-          budgetStatus: cleanDisbursedNum > 0 ? 'Industry Funded' : 'Industry Approved',
-          proposedBudget: finalBudget,
-          sanctionedBudget: finalBudget,
-          disbursedAmount: formattedDisbursed,
+          budgetStatus: 'Industry Approved',
+          originalGovernmentGrant: formattedGovtGrant,
+          sanctionedBudget: formattedNetBalance,
+          disbursedAmount: formattedNetBalance,
+          testingLabFee: formattedTestingFee,
           labChargesQuoted: request.labChargesQuoted || '',
           quoteStatus: request.quoteStatus || '',
           quoteTerms: request.quoteTerms || '',
           partnerName: request.partnerName || 'Industry Partner',
           partnerId: request.partnerId || '',
           testingStages: request.testingStages || [],
+          'matchingApproval.sanctionedBudget': formattedNetBalance,
+          'matchingApproval.disbursedAmount': formattedNetBalance,
+          'matchingApproval.testingLabFee': formattedTestingFee,
           updatedAt: new Date()
         }
       },
@@ -69,21 +88,14 @@ export async function syncIndustryApprovedProject(request) {
       );
     }
 
-    const existingAct = await UniversityActivity.findOne({
+    await UniversityActivity.create({
       universityCode: uniCode,
-      text: { $regex: request.projectTitle, $options: 'i' },
-      type: 'INDUSTRY_APPROVED'
+      text: `University accepted lab testing fee of ${formattedTestingFee} from "${request.partnerName}". Net government grant balance updated to ${formattedNetBalance} (deducted from initial ${formattedGovtGrant}).`,
+      type: 'INDUSTRY_APPROVED',
+      user: request.partnerName || 'Industry Partner',
+      time: `${new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}`,
+      timestamp: new Date()
     });
-    if (!existingAct) {
-      await UniversityActivity.create({
-        universityCode: uniCode,
-        text: `Industry Partner "${request.partnerName}" approved collaboration & lab access for "${request.projectTitle}" (${formattedBudget}).`,
-        type: 'INDUSTRY_APPROVED',
-        user: request.partnerName || 'Industry Partner',
-        time: `${new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}`,
-        timestamp: new Date()
-      });
-    }
 
     return project;
   } catch (err) {

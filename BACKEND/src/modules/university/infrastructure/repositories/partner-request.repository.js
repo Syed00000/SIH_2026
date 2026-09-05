@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import { UniversityProject, UniversityPartner, UniversityIndustryRequest, UniversityActivity } from '../model.js';
 import MongooseIndustry from '../../../government/industries/infrastructure/model.js';
 import { findUniversityIdentity } from '../helpers/lookup.helper.js';
@@ -7,7 +8,6 @@ import { handleIndustryTestingCompletion } from '../helpers/industry-testing-syn
 export class PartnerRequestRepository {
   async getPartnersByUniversity(universityCode) {
     try {
-      // 1. Fetch real Government Manage Industries directly from MongooseIndustry
       const rawIndustries = await MongooseIndustry.find({ status: { $ne: 'Disabled' } }).sort({ createdAt: -1 }).lean();
       if (rawIndustries && rawIndustries.length > 0) {
         return rawIndustries.map((ind) => ({
@@ -18,7 +18,6 @@ export class PartnerRequestRepository {
           shortName: ind.shortName || ind.legalName,
           logoText: (ind.shortName || ind.legalName || 'IND').slice(0, 3).toUpperCase(),
           type: ind.category || 'Private Industry',
-          industryType: ind.category || 'Private Industry',
           category: ind.category || 'Private Industry',
           committedGrant: ind.financials?.csrCommittedCr ? `₹ ${ind.financials.csrCommittedCr} Cr` : '₹ 0.0 Lakhs',
           grantAmount: ind.financials?.csrCommittedCr ? `₹ ${ind.financials.csrCommittedCr} Cr` : '₹ 0.0 Lakhs',
@@ -28,15 +27,9 @@ export class PartnerRequestRepository {
           activeProjectsCount: ind.financials?.supportedProjectsCount || 0,
           status: ind.status === 'Disabled' ? 'Declined' : ind.status || 'Active',
           mouStatus: ind.verificationStatus === 'Verified' ? 'Active' : 'Pending',
-          contactPerson: {
-            name: ind.spocName || 'Nodal Officer',
-            role: ind.designation || 'Nodal Officer',
-            email: ind.officialEmail || ind.credentials?.loginEmail || '',
-            phone: ind.mobileNumber || ''
-          },
+          contactPerson: { name: ind.spocName || 'Nodal Officer', role: ind.designation || 'Nodal Officer', email: ind.officialEmail || ind.credentials?.loginEmail || '', phone: ind.mobileNumber || '' },
           officialEmail: ind.officialEmail || ind.credentials?.loginEmail || '',
           spocName: ind.spocName || 'Nodal Officer',
-          website: ind.website || '',
           location: ind.address ? `${ind.address.city || ind.address.district || ''}, ${ind.address.state || 'Jharkhand'}, India` : 'Jharkhand, India',
           registeredOn: ind.createdAt ? new Date(ind.createdAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : '',
           engagementStatus: ind.verificationStatus === 'Verified' ? 'Government Verified Partner' : 'Pending Verification',
@@ -46,9 +39,7 @@ export class PartnerRequestRepository {
 
       if (universityCode) {
         const identity = await findUniversityIdentity(universityCode);
-        if (identity) {
-          return (await UniversityPartner.find({ universityCode: { $in: identity.validIdentifiers } }).lean()) || [];
-        }
+        if (identity) return (await UniversityPartner.find({ universityCode: { $in: identity.validIdentifiers } }).lean()) || [];
       }
       return [];
     } catch (err) {
@@ -59,20 +50,15 @@ export class PartnerRequestRepository {
 
   async createIndustryRequest(universityCode, payload) {
     const identity = await findUniversityIdentity(universityCode);
-    if (!identity) {
-      return { success: false, error: 'Unauthorized: Invalid university identity' };
-    }
+    if (!identity) return { success: false, error: 'Unauthorized: Invalid university identity' };
     const code = identity.code;
 
     try {
       let partnerId = payload.partnerId || '';
       let partnerName = payload.partnerName || 'Industry Partner';
 
-      // Ensure stable ID linkage by resolving against canonical MongooseIndustry
       if (!partnerId && partnerName) {
-        const ind = await MongooseIndustry.findOne({
-          $or: [{ legalName: partnerName }, { shortName: partnerName }]
-        }).lean();
+        const ind = await MongooseIndustry.findOne({ $or: [{ legalName: partnerName }, { shortName: partnerName }] }).lean();
         if (ind) {
           partnerId = ind.industryId || ind._id.toString();
           partnerName = ind.legalName || partnerName;
@@ -80,7 +66,6 @@ export class PartnerRequestRepository {
       }
 
       const requestId = `IND-REQ-${Date.now()}`;
-
       const newReq = await UniversityIndustryRequest.create({
         requestId,
         universityCode: code,
@@ -99,6 +84,9 @@ export class PartnerRequestRepository {
         executionOutcome: payload.executionOutcome || '',
         facultyName: payload.facultyName || '',
         studentTeam: payload.studentTeam || '',
+        pdfUrl: payload.pdfUrl || '',
+        pdfName: payload.pdfName || '',
+        prototypeData: payload.prototypeData || null,
         status: 'Pending',
         submittedAt: new Date()
       });
@@ -122,11 +110,8 @@ export class PartnerRequestRepository {
   async getIndustryRequests(universityCode) {
     const identity = await findUniversityIdentity(universityCode);
     if (!identity) return [];
-
     try {
-      return await UniversityIndustryRequest.find({
-        universityCode: { $in: identity.validIdentifiers }
-      }).sort({ createdAt: -1 }).lean();
+      return await UniversityIndustryRequest.find({ universityCode: { $in: identity.validIdentifiers } }).sort({ createdAt: -1 }).lean();
     } catch (err) {
       console.warn('Error fetching industry requests in DB:', err);
       return [];
@@ -136,39 +121,62 @@ export class PartnerRequestRepository {
   async deleteIndustryRequest(requestId, universityCode) {
     const identity = await findUniversityIdentity(universityCode);
     if (!identity) return { success: false, error: 'Unauthorized university' };
-
     try {
-      await UniversityIndustryRequest.deleteOne({
-        requestId,
-        universityCode: { $in: identity.validIdentifiers }
-      });
+      await UniversityIndustryRequest.deleteOne({ requestId, universityCode: { $in: identity.validIdentifiers } });
       return { success: true, requestId };
     } catch (err) {
       console.warn('Error deleting industry request in DB:', err);
       return { success: false, error: err.message };
     }
   }
+
   async updateIndustryRequestStatus(requestId, status, universityCode, extra = {}) {
     try {
       const code = (universityCode || 'RU001').toUpperCase();
-      const query = requestId.startsWith('IND-REQ-') ? { requestId } : { _id: requestId };
+      const isOid = mongoose.Types.ObjectId.isValid(requestId) && String(new mongoose.Types.ObjectId(requestId)) === String(requestId);
+      const query = isOid
+        ? { _id: requestId }
+        : { $or: [{ requestId }, { projectId: requestId }, { projectTitle: requestId }] };
+
       const updateData = { ...extra, updatedAt: new Date() };
       if (status) updateData.status = status;
 
-      const updatedReq = await UniversityIndustryRequest.findOneAndUpdate(
-        query,
-        { $set: updateData },
-        { new: true }
-      );
+      let updatedReq = await UniversityIndustryRequest.findOneAndUpdate(query, { $set: updateData }, { new: true });
+
+      if (!updatedReq && (extra.testingStages || extra.submitDossier)) {
+        const proj = await UniversityProject.findOne({
+          $or: [{ projectId: requestId }, { challengeId: requestId }, { title: requestId }]
+        });
+        if (proj) {
+          updatedReq = {
+            projectId: proj.projectId,
+            projectTitle: proj.title,
+            partnerName: proj.testingPartner || extra.partnerName || 'Industry Testing Laboratory',
+            universityCode: proj.universityCode || code,
+            labChargesQuoted: proj.testingLabFee || '₹ 25,000',
+            problemStatement: proj.problemStatement,
+            pdfUrl: proj.pdfUrl,
+            pdfName: proj.pdfName
+          };
+        }
+      }
+
       if (updatedReq) {
-        if (extra.testingStages) {
-          await handleIndustryTestingCompletion({ updatedReq, testingStages: extra.testingStages, code });
+        if (extra.testingStages || extra.submitDossier) {
+          await handleIndustryTestingCompletion({
+            updatedReq,
+            testingStages: extra.testingStages || updatedReq.testingStages || [],
+            code,
+            extra
+          });
         }
         if (status === 'Approved' && (!updatedReq.quoteStatus || updatedReq.quoteStatus === 'Accepted')) {
           await syncIndustryApprovedProject(updatedReq);
         }
         const actText = status === 'Approved'
           ? `Industry Partner "${updatedReq.partnerName}" approved collaboration & lab access for "${updatedReq.projectTitle}" (${updatedReq.labChargesQuoted ? `Lab Fee: ${updatedReq.labChargesQuoted}` : updatedReq.estimatedBudget || 'CSR Grant'}).`
+          : status === 'Fee Declined'
+          ? `University declined fee request from "${updatedReq.partnerName}". Reason: "${updatedReq.declineReason || 'Budget limit exceeded'}".`
           : `Industry request "${updatedReq.projectTitle}" status updated to ${status}`;
         await UniversityActivity.create({
           universityCode: code,

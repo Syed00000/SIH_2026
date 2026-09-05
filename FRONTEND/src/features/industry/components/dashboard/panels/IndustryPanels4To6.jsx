@@ -41,15 +41,22 @@ export const Panel4_Collaboration = ({ data = {}, onViewRequest }) => (
               data.received.map((req, i) => (
                 <tr key={req.id || i} className="hover:bg-slate-50 transition-colors">
                   <td className="px-4 py-2.5 font-mono text-slate-400">{i + 1}</td>
-                  <td className="px-4 py-2.5 font-bold text-slate-800">{req.title}</td>
+                  <td className="px-4 py-2.5">
+                    <span className="font-bold text-slate-800 block">{req.title}</span>
+                    {(req.status === 'Fee Declined' || req.quoteStatus === 'Declined') && req.declineReason && (
+                      <span className="text-[10px] text-rose-600 font-semibold block line-clamp-1 italic">
+                        Reason: {req.declineReason}
+                      </span>
+                    )}
+                  </td>
                   <td className="px-4 py-2.5 text-slate-600">{req.university}</td>
                   <td className="px-4 py-2.5 text-slate-600">{req.required}</td>
                   <td className="px-4 py-2.5">
                     <span className={`px-2 py-0.5 rounded font-bold text-[9px] uppercase tracking-wider ${
                       req.status === 'Approved' ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' : 
-                      req.status === 'Rejected' ? 'bg-rose-50 text-rose-600 border border-rose-100' : 
+                      req.status === 'Rejected' || req.status === 'Fee Declined' || req.quoteStatus === 'Declined' ? 'bg-rose-50 text-rose-600 border border-rose-100' : 
                       req.status === 'Pending' ? 'bg-amber-50 text-amber-600 border border-amber-100' : 'bg-blue-50 text-blue-600 border border-blue-100'
-                    }`}>{req.status}</span>
+                    }`}>{req.status === 'Fee Declined' || req.quoteStatus === 'Declined' ? 'Fee Declined' : req.status}</span>
                   </td>
                   <td className="px-4 py-2.5 text-right">
                     <button onClick={() => onViewRequest && onViewRequest(req)} className="text-blue-600 font-bold hover:underline cursor-pointer">
@@ -110,7 +117,7 @@ export const Panel5_Projects = ({ data = {}, onViewAll, onViewProject }) => (
                   <td className="px-4 py-2.5 text-slate-600">{proj.stage}</td>
                   <td className="px-4 py-2.5">
                     <span className="font-bold text-[10px] text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-100">
-                      {proj.labChargesQuoted || (proj.disbursed && proj.disbursed !== '₹ 0' ? proj.disbursed : (proj.budget || 'In Progress'))}
+                      {proj.labChargesQuoted ? `${proj.labChargesQuoted} (Lab Fee)` : (proj.disbursed && proj.disbursed !== '₹ 0' ? proj.disbursed : (proj.budget || 'In Progress'))}
                     </span>
                   </td>
                 </tr>

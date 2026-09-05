@@ -144,9 +144,38 @@ export const citizenChallengeSchema = new mongoose.Schema(
       type: Date,
       default: null
     },
+    prototypePdfUrl: {
+      type: String,
+      default: ''
+    },
+    prototypePdfName: {
+      type: String,
+      default: ''
+    },
+    solutionPdfUrl: {
+      type: String,
+      default: ''
+    },
+    resolutionDossier: {
+      type: mongoose.Schema.Types.Mixed,
+      default: null
+    },
     isPublic: {
       type: Boolean,
       default: true
+    },
+    isDeleted: {
+      type: Boolean,
+      default: false,
+      index: true
+    },
+    deletedAt: {
+      type: Date,
+      default: null
+    },
+    deletedBy: {
+      type: String,
+      default: ''
     }
   },
   {

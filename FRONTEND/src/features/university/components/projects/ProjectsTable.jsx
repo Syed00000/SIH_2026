@@ -114,7 +114,18 @@ export const ProjectsTable = ({
                       </div>
                       <div className="text-[10px] text-slate-400 font-mono mt-0.5">
                         {p.disbursedAmount && p.disbursedAmount !== '₹ 0' && p.disbursedAmount !== '0'
-                          ? <span className="text-emerald-600 font-bold">{p.disbursedAmount} (Disbursed)</span>
+                          ? (
+                            <div>
+                              <span className="text-emerald-600 font-bold">{p.disbursedAmount}</span>
+                              {p.testingLabFee ? (
+                                <span className="block text-[9px] text-amber-700 font-sans font-semibold">
+                                  (Net after {p.testingLabFee} Lab Fee)
+                                </span>
+                              ) : (
+                                <span className="text-slate-400 font-sans"> (Disbursed)</span>
+                              )}
+                            </div>
+                          )
                           : p.budget || 'N/A'}
                       </div>
                     </td>

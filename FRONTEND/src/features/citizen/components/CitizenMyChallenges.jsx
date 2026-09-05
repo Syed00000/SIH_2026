@@ -54,7 +54,12 @@ export const CitizenMyChallenges = ({
   const handleDeleteChallenge = async (e, ch) => {
     e.stopPropagation();
     const chlId = ch.challengeId || ch.id || ch._id;
-    if (!window.confirm(`Are you sure you want to permanently delete withdrawn problem statement ${chlId}?`)) {
+    const isResolved = (ch.status || '').toLowerCase() === 'resolved' || Boolean(ch.isDeployed);
+    const confirmMsg = isResolved
+      ? `Remove resolved problem statement ${chlId} from your active list?\n\n(Note: Your solved problem will remain permanently counted in Jharkhand State analytics, solved charts, and public innovation registries).`
+      : `Are you sure you want to permanently delete withdrawn problem statement ${chlId}?`;
+
+    if (!window.confirm(confirmMsg)) {
       return;
     }
     try {
@@ -212,6 +217,7 @@ export const CitizenMyChallenges = ({
                       ? new Date(ch.submittedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
                       : 'N/A';
                     const isWithdrawn = (ch.status || '').toLowerCase() === 'withdrawn';
+                    const isResolved = (ch.status || '').toLowerCase() === 'resolved' || Boolean(ch.isDeployed);
                     const district = ch.location?.district || ch.district || 'N/A';
                     const rowNumber = ((currentPage - 1) * itemsPerPage) + index + 1;
 
@@ -293,11 +299,11 @@ export const CitizenMyChallenges = ({
                             >
                               <MoreVertical className="w-4 h-4" />
                             </button>
-                            {isWithdrawn && (
+                            {(isWithdrawn || isResolved) && (
                               <button 
                                 onClick={(e) => handleDeleteChallenge(e, ch)}
                                 className="p-1 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-md transition-colors"
-                                title="Delete Permanently"
+                                title={isResolved ? "Remove from my list (Preserves solved stats)" : "Delete Permanently"}
                               >
                                 <Trash2 className="w-3.5 h-3.5" />
                               </button>

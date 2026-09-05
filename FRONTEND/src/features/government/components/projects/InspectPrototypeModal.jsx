@@ -26,6 +26,7 @@ import {
   Clock
 } from 'lucide-react';
 import { universityApiService } from '../../../university/services/universityApiService.js';
+import { openPdf } from '../../../../shared/utils/openPdf.js';
 
 const STAGE_CONFIG = [
   { num: 1, key: 'labDesign',    label: '1. Lab Design (TRL 1-3)',    short: 'Lab Design',    icon: FlaskConical, color: 'amber' },
@@ -228,6 +229,16 @@ export const InspectPrototypeModal = ({
           </div>
 
           <div className="flex items-center space-x-2">
+            {(project.testingReportPdfUrl || project.pdfUrl) && (
+              <button
+                type="button"
+                onClick={() => openPdf(project.testingReportPdfUrl || project.pdfUrl)}
+                className="px-3.5 py-1.5 bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-400/40 rounded-xl text-xs font-bold transition-colors cursor-pointer flex items-center space-x-1.5"
+              >
+                <FileCheck2 className="w-3.5 h-3.5" />
+                <span>View Lab Report PDF</span>
+              </button>
+            )}
             <button
               onClick={handlePrintCertificate}
               className="px-3.5 py-1.5 bg-white/10 hover:bg-white/20 text-white rounded-xl text-xs font-bold transition-colors cursor-pointer flex items-center space-x-1.5"

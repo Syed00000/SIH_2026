@@ -23,9 +23,13 @@ export function formatIncomingRequests(liveFunds, fallbackReqs = []) {
       labChargesQuoted: r.labChargesQuoted || '',
       quoteTerms: r.quoteTerms || '',
       quoteStatus: r.quoteStatus || '',
+      declineReason: r.declineReason || r.quoteDeclineReason || '',
       testingStages: r.testingStages || [],
       labAccessRequested: r.labAccessRequested,
       fundingRequested: r.fundingRequested,
+      pdfUrl: r.pdfUrl || r.prototypeData?.pdfUrl || '',
+      pdfName: r.pdfName || r.prototypeData?.pdfName || '',
+      prototypeData: r.prototypeData || null,
       date: r.submittedAt ? new Date(r.submittedAt).toLocaleDateString('en-IN') : 'Recent'
     };
   };
@@ -68,6 +72,8 @@ export function extractActiveProjectsList(liveFunds, formattedRequests = []) {
         labChargesQuoted: p.labChargesQuoted,
         quoteStatus: p.quoteStatus,
         quoteTerms: p.quoteTerms,
+        pdfUrl: p.pdfUrl || p.prototypeData?.pdfUrl || '',
+        pdfName: p.pdfName || p.prototypeData?.pdfName || '',
         testingStages: p.testingStages || []
       }));
   } else if (liveFunds?.availableUniversities?.length > 0) {
@@ -115,6 +121,9 @@ export function extractActiveProjectsList(liveFunds, formattedRequests = []) {
           labChargesQuoted: r.labChargesQuoted,
           quoteStatus: r.quoteStatus,
           quoteTerms: r.quoteTerms,
+          pdfUrl: r.pdfUrl || r.prototypeData?.pdfUrl || '',
+          pdfName: r.pdfName || r.prototypeData?.pdfName || '',
+          prototypeData: r.prototypeData || null,
           testingStages: r.testingStages || []
         });
       }

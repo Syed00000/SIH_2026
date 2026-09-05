@@ -119,7 +119,9 @@ export const ChallengesTableRow = ({
       <td className="py-3 px-3 whitespace-nowrap">
         <span
           className={`inline-flex items-center space-x-1.5 text-[11px] font-extrabold ${
-            normStatus === 'Accepted'
+            normStatus === 'Resolved & Deployed'
+              ? 'text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200'
+              : normStatus === 'Accepted'
               ? 'text-[#007A61]'
               : normStatus === 'Clarified'
               ? 'text-emerald-700'
@@ -132,7 +134,9 @@ export const ChallengesTableRow = ({
         >
           <span
             className={`w-1.5 h-1.5 rounded-full ${
-              normStatus === 'Accepted'
+              normStatus === 'Resolved & Deployed'
+                ? 'bg-emerald-600'
+                : normStatus === 'Accepted'
                 ? 'bg-[#007A61]'
                 : normStatus === 'Clarified'
                 ? 'bg-emerald-500'
@@ -143,7 +147,7 @@ export const ChallengesTableRow = ({
                 : 'bg-rose-500'
             }`}
           />
-          <span>{normStatus}</span>
+          <span>{normStatus === 'Resolved & Deployed' ? '✓ Deployed & Solved' : normStatus}</span>
         </span>
       </td>
 

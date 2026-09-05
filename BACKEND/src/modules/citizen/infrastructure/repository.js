@@ -17,9 +17,10 @@ export class CitizenRepository {
   }
 
   async findWithFilter({ filter = {}, sort = { submittedAt: -1 }, skip = 0, limit = 20 }) {
+    const effectiveFilter = { isDeleted: { $ne: true }, ...filter };
     const [challenges, total] = await Promise.all([
-      CitizenChallenge.find(filter).sort(sort).skip(skip).limit(limit).lean(),
-      CitizenChallenge.countDocuments(filter)
+      CitizenChallenge.find(effectiveFilter).sort(sort).skip(skip).limit(limit).lean(),
+      CitizenChallenge.countDocuments(effectiveFilter)
     ]);
 
     return {
@@ -32,14 +33,18 @@ export class CitizenRepository {
   }
 
   async getRecentChallenges(limit = 5) {
-    return await CitizenChallenge.find({ isPublic: true })
+    return await CitizenChallenge.find({ isPublic: true, isDeleted: { $ne: true } })
       .sort({ submittedAt: -1 })
       .limit(limit)
       .lean();
   }
 
   async getActivitiesStats(filter = {}) {
-    const challenges = (await CitizenChallenge.find(filter).lean()) || [];
+    const query = {
+      ...filter,
+      $or: [{ isDeleted: { $ne: true } }, { status: 'Resolved' }]
+    };
+    const challenges = (await CitizenChallenge.find(query).lean()) || [];
     return calculateActivityStats(challenges);
   }
 
@@ -136,16 +141,26 @@ export class CitizenRepository {
     return challenge.toObject();
   }
 
-  async deleteById(challengeId) {
+  async deleteById(challengeId, deletedBy = 'Citizen') {
     const isObjId = mongoose.isValidObjectId(challengeId);
-    const deleted = await CitizenChallenge.findOneAndDelete(
-      isObjId ? { $or: [{ challengeId }, { _id: challengeId }] } : { challengeId }
+    const query = isObjId ? { $or: [{ challengeId }, { _id: challengeId }] } : { challengeId };
+    return await CitizenChallenge.findOneAndUpdate(
+      query,
+      {
+        $set: {
+          isDeleted: true,
+          deletedAt: new Date(),
+          deletedBy
+        }
+      },
+      { new: true }
     );
-    return deleted;
   }
 
   async countAll() {
-    return await CitizenChallenge.countDocuments();
+    return await CitizenChallenge.countDocuments({
+      $or: [{ isDeleted: { $ne: true } }, { status: 'Resolved' }]
+    });
   }
 }
 
