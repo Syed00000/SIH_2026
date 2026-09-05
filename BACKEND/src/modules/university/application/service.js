@@ -50,6 +50,7 @@ export class UniversityService {
   }
 
   getProjects(universityCode) { return this.projectService.getProjects(universityCode); }
+  getProjectById(universityCode, id) { return this.projectService.getProjectById(id); }
   createProject(universityCode, data) { return this.projectService.createProject(universityCode, data); }
   updateProject(universityCode, id, data) { return this.projectService.updateProject(universityCode, id, data); }
   deleteProject(universityCode, id) { return this.projectService.deleteProject(universityCode, id); }

@@ -20,7 +20,7 @@ export const createPartnerApprovalHandler = (service) => {
   const updateApproval = async (req, res, next) => {
     try {
       const { id } = req.params;
-      const code = extractUniversityCode(req, 'RUNI-JH');
+      const code = extractUniversityCode(req, 'RU001');
       const { status, adminRemarks, remarks, additionalAmount, budget, proposedBudget, budgetBreakdown } = req.body;
       const finalRemarks = adminRemarks || remarks || '';
       const data = await service.updateApproval(id, code, status, finalRemarks, {
@@ -36,7 +36,7 @@ export const createPartnerApprovalHandler = (service) => {
   const deleteApproval = async (req, res, next) => {
     try {
       const { id } = req.params;
-      const code = extractUniversityCode(req, 'RUNI-JH');
+      const code = extractUniversityCode(req, 'RU001');
       const data = await service.deleteApproval(id, code);
       res.status(200).json({ status: 'SUCCESS', message: 'Approval deleted', data });
     } catch (error) { next(error); }

@@ -29,6 +29,7 @@ export class UniversityController {
   deleteTeam(req, res, next) { return this.facultyTeamHandler.deleteTeam(req, res, next); }
 
   getProjects(req, res, next) { return this.challengeProjectHandler.getProjects(req, res, next); }
+  getProjectById(req, res, next) { return this.challengeProjectHandler.getProjectById(req, res, next); }
   createProject(req, res, next) { return this.challengeProjectHandler.createProject(req, res, next); }
   updateProject(req, res, next) { return this.challengeProjectHandler.updateProject(req, res, next); }
   deleteProject(req, res, next) { return this.challengeProjectHandler.deleteProject(req, res, next); }

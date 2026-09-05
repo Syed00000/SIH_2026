@@ -22,6 +22,7 @@ router.patch('/teams/:id', (req, res, next) => universityController.updateTeam(r
 router.put('/teams/:id', (req, res, next) => universityController.updateTeam(req, res, next));
 router.delete('/teams/:id', (req, res, next) => universityController.deleteTeam(req, res, next));
 router.get('/projects', (req, res, next) => universityController.getProjects(req, res, next));
+router.get('/projects/:id', (req, res, next) => universityController.getProjectById(req, res, next));
 router.post('/projects', (req, res, next) => universityController.createProject(req, res, next));
 router.patch('/projects/:id', (req, res, next) => universityController.updateProject(req, res, next));
 router.put('/projects/:id', (req, res, next) => universityController.updateProject(req, res, next));
