@@ -14,6 +14,11 @@ import { NodalPortal } from '../features/nodal/NodalPortal.jsx';
 import { UniversityLayout } from '../features/university/components/layout/UniversityLayout.jsx';
 import { FacultyLayout } from '../features/faculty/components/layout/FacultyLayout.jsx';
 import { GovernmentLayout } from '../features/government/components/layout/GovernmentLayout.jsx';
+import { LandingPage } from '../features/landing/components/LandingPage.jsx';
+import { AboutPage } from '../features/landing/components/AboutPage.jsx';
+import { ImpactPage } from '../features/landing/components/ImpactPage.jsx';
+import { IndustryLandingPage } from '../features/landing/components/IndustryLandingPage.jsx';
+import { InstitutionsPage } from '../features/landing/components/InstitutionsPage.jsx';
 
 export function Router() {
   const { user, isAuthenticated, loading, logout } = useAuth();
@@ -67,8 +72,13 @@ export function Router() {
   }
 
   const renderComponent = () => {
-    // 1. PUBLIC GUEST ROUTES (Redirect to /dashboard if already logged in)
     const publicRoutes = [
+      '/',
+      '/landing',
+      '/about',
+      '/impact',
+      '/industry',
+      '/institutions',
       '/login',
       '/register',
       '/register/industry',
@@ -84,6 +94,17 @@ export function Router() {
       }
 
       switch (currentPath) {
+        case '/':
+        case '/landing':
+          return <LandingPage onNavigate={navigate} />;
+        case '/about':
+          return <AboutPage onNavigate={navigate} />;
+        case '/impact':
+          return <ImpactPage onNavigate={navigate} />;
+        case '/industry':
+          return <IndustryLandingPage onNavigate={navigate} />;
+        case '/institutions':
+          return <InstitutionsPage onNavigate={navigate} />;
         case '/login':
           return <LoginForm onNavigate={navigate} />;
         case '/register':

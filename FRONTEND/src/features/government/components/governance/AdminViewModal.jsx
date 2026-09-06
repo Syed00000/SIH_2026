@@ -429,8 +429,8 @@ export const AdminViewModal = ({ isOpen, onClose, admin, onAdminUpdated }) => {
                 <ShieldCheck className="w-3 h-3 text-slate-400 shrink-0" />
                 <span>Account Status</span>
               </span>
-              <span className={`inline-flex items-center space-x-1.5 text-[11px] font-semibold ${statusStyle.text}`}>
-                <span className={`w-1.5 h-1.5 rounded-full ${statusStyle.dot}`} />
+              <span className={`inline-flex items-center space-x-1.5 text-[11px] font-semibold ${getStatusStyle(currentAdmin.status).text}`}>
+                <span className={`w-1.5 h-1.5 rounded-full ${getStatusStyle(currentAdmin.status).dot}`} />
                 <span>{currentAdmin.status}</span>
               </span>
             </div>

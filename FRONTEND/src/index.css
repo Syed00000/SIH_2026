@@ -200,3 +200,28 @@
   font-style: italic;
   margin-bottom: 1em;
 }
+
+@keyframes marquee {
+  0% { transform: translateX(100%); }
+  100% { transform: translateX(-100%); }
+}
+.animate-marquee {
+  display: inline-block;
+  white-space: nowrap;
+  animation: marquee 30s linear infinite;
+}
+.animate-marquee:hover {
+  animation-play-state: paused;
+}
+
+@keyframes marqueeVertical {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(-50%); }
+}
+.animate-marquee-vertical {
+  animation: marqueeVertical 16s linear infinite;
+}
+.animate-marquee-vertical:hover,
+.marquee-container:hover .animate-marquee-vertical {
+  animation-play-state: paused;
+}
