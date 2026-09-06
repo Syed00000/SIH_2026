@@ -1,5 +1,5 @@
 import React from 'react';
-import { User, LogIn, Building2, Trophy, ChevronDown, UserPlus } from 'lucide-react';
+import { LogIn, Trophy, UserPlus } from 'lucide-react';
 
 export const LandingHeader = ({ onNavigate, currentPath = '/' }) => {
   const handleNav = (path) => {
@@ -9,50 +9,45 @@ export const LandingHeader = ({ onNavigate, currentPath = '/' }) => {
 
   const isCurrent = (path) => currentPath === path;
 
+  const handleZoom = (level) => {
+    if (level === 'sm') {
+      document.documentElement.style.fontSize = '90%';
+    } else if (level === 'md') {
+      document.documentElement.style.fontSize = '100%';
+    } else if (level === 'lg') {
+      document.documentElement.style.fontSize = '110%';
+    }
+  };
+
   return (
     <>
       {/* Top Bar */}
-      <div className="bg-[#1a1a1a] text-white text-[10px] md:text-[11px] py-2 z-50 relative border-b border-black">
-        <div className="w-full max-w-7xl mx-auto px-4 md:px-8 flex flex-col xl:flex-row justify-between items-center font-medium">
-          <div className="flex items-center space-x-4 mb-2 xl:mb-0">
+      <div className="bg-[#1a1a1a] text-white text-[10px] md:text-[11px] py-1.5 z-50 relative border-b border-black">
+        <div className="w-full px-4 md:px-8 lg:px-12 flex flex-row justify-between items-center font-medium">
+          <div className="flex items-center space-x-3">
             <div className="flex items-center space-x-2">
               <div className="w-2.5 h-2.5 bg-white rounded-full"></div>
-              <span className="tracking-wide">GOVERNMENT OF JHARKHAND</span>
+              <span className="tracking-wide font-bold">GOVERNMENT OF JHARKHAND</span>
             </div>
-            <span className="text-gray-600 hidden sm:inline">|</span>
-            <div className="flex items-center space-x-1 cursor-pointer hover:text-gray-300 hidden sm:flex">
-               <span>Select Language</span>
-               <ChevronDown className="w-3 h-3" />
-            </div>
-            <span className="text-gray-600 hidden sm:inline">|</span>
-            <span className="cursor-pointer hover:text-gray-300 hidden sm:inline">Screen Reader</span>
           </div>
 
-          <div className="flex items-center space-x-3 flex-wrap justify-center gap-y-2">
-             <div className="flex items-center space-x-2 hidden sm:flex">
-               <button className="hover:text-gray-300 transition-colors font-bold">A-</button>
-               <button className="hover:text-gray-300 transition-colors font-bold">A</button>
-               <button className="hover:text-gray-300 transition-colors font-bold">A+</button>
+          <div className="flex items-center space-x-3 flex-wrap justify-end">
+             <div className="flex items-center space-x-2">
+               <button onClick={() => handleZoom('sm')} className="hover:text-gray-300 transition-colors font-bold px-1 cursor-pointer">A-</button>
+               <button onClick={() => handleZoom('md')} className="hover:text-gray-300 transition-colors font-bold px-1 cursor-pointer">A</button>
+               <button onClick={() => handleZoom('lg')} className="hover:text-gray-300 transition-colors font-bold px-1 cursor-pointer">A+</button>
              </div>
-             <span className="text-gray-600 hidden sm:inline">|</span>
-             <button onClick={() => handleNav('/register')} className="flex items-center space-x-1.5 hover:text-gray-300 transition-colors">
-               <UserPlus className="w-3 h-3 text-gray-300" /> <span>Register</span>
+             <span className="text-gray-600">|</span>
+             <button onClick={() => handleNav('/register')} className="flex items-center space-x-1.5 hover:text-gray-300 transition-colors cursor-pointer">
+               <UserPlus className="w-3.5 h-3.5 text-gray-300" /> <span>Register</span>
              </button>
-             <span className="text-gray-600 hidden sm:inline">|</span>
-             <button onClick={() => handleNav('/login')} className="flex items-center space-x-1.5 hover:text-gray-300 transition-colors">
-               <LogIn className="w-3 h-3 text-gray-300" /> <span>Login</span>
+             <span className="text-gray-600">|</span>
+             <button onClick={() => handleNav('/login')} className="flex items-center space-x-1.5 hover:text-gray-300 transition-colors cursor-pointer">
+               <LogIn className="w-3.5 h-3.5 text-gray-300" /> <span>Login</span>
              </button>
-             <span className="text-gray-600 hidden sm:inline">|</span>
-             <button onClick={() => handleNav('/citizen')} className="flex items-center space-x-1.5 hover:text-gray-300 transition-colors">
-               <User className="w-3 h-3 text-gray-300" /> <span>Citizen Login</span>
-             </button>
-             <span className="text-gray-600 hidden sm:inline">|</span>
-             <button onClick={() => handleNav('/university')} className="flex items-center space-x-1.5 hover:text-gray-300 transition-colors">
-               <Building2 className="w-3 h-3 text-gray-300" /> <span>Institution Login</span>
-             </button>
-             <span className="text-gray-600 hidden sm:inline">|</span>
-             <button onClick={() => handleNav('/industry')} className="flex items-center space-x-1.5 hover:text-gray-300 transition-colors">
-               <Trophy className="w-3 h-3 text-gray-300" /> <span>Industry Login</span>
+             <span className="text-gray-600">|</span>
+             <button onClick={() => handleNav('/apply-industry')} className="flex items-center space-x-1.5 hover:text-gray-300 transition-colors cursor-pointer">
+               <Trophy className="w-3.5 h-3.5 text-gray-300" /> <span>Industry Login</span>
              </button>
           </div>
         </div>
@@ -60,7 +55,7 @@ export const LandingHeader = ({ onNavigate, currentPath = '/' }) => {
 
       {/* Main Header */}
       <header className="bg-white sticky top-0 z-40 shadow-sm border-b border-gray-200">
-        <div className="w-full max-w-7xl mx-auto px-4 md:px-8 py-1 flex justify-between items-center">
+        <div className="w-full px-4 md:px-8 lg:px-12 py-1 flex justify-between items-center">
           <div className="flex items-center space-x-3 cursor-pointer" onClick={() => handleNav('/')}>
              <img src="https://www.jharkhand.gov.in/images/jhlogo55.PNG" alt="Johar Sethu" className="h-[46px] w-[46px] object-contain" />
              <div className="ml-2 flex flex-col justify-center">

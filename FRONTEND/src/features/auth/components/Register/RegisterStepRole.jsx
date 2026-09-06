@@ -115,29 +115,7 @@ export const RegisterStepRole = ({ role, onRoleSelect, onNext, onNavigate }) => 
         })}
       </div>
 
-      {/* Special Banner for Industry Onboarding */}
-      {role === 'INDUSTRY' && (
-        <div className="p-2.5 bg-[#007A61]/10 border border-[#007A61]/30 rounded-xl text-xs text-[#005a47] flex flex-col sm:flex-row sm:items-center justify-between gap-2 animate-fadeIn shadow-2xs">
-          <div>
-            <p className="font-bold text-[#005a47] text-xs">Official Industry & Partner Application</p>
-            <p className="text-[#007A61] text-[10.5px] mt-0.5">
-              Partner with state universities & student researchers. Credentials provisioned upon application review.
-            </p>
-          </div>
-          <button
-            type="button"
-            onClick={() =>
-              onNavigate
-                ? onNavigate('/register/industry')
-                : (window.location.href = '/register/industry')
-            }
-            className="bg-[#007A61] hover:bg-[#009677] active:bg-[#00604d] text-white font-semibold text-xs px-3 py-1.5 rounded-lg shrink-0 transition-all duration-200 flex items-center justify-center gap-1 cursor-pointer shadow-xs"
-          >
-            <span>Open Application</span>
-            <ExternalLink className="w-3 h-3" />
-          </button>
-        </div>
-      )}
+ 
 
       {/* Bottom CTA Button in #007A61 */}
       <div className="pt-1.5">

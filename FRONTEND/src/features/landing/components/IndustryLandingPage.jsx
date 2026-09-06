@@ -5,7 +5,7 @@ import {
   TrendingUp, MapPin, Droplet, Sun, Heart, Recycle, FlaskConical,
   CircleDollarSign, Settings, Users, Factory, Rocket
 } from 'lucide-react';
-import bannerImage from '../../../assets/industry-banner.png'; // Banner for industry
+import bannerImage from '../assets/hero-banner-industry.jpg';
 
 export const IndustryLandingPage = ({ onNavigate }) => {
   return (
