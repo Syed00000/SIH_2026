@@ -103,7 +103,7 @@ export const PopularChallengeAreas = ({ onSelectArea, selectedArea }) => {
             setShowAll(!showAll);
             if (onSelectArea) onSelectArea(null);
           }}
-          className="flex items-center text-xs font-bold text-emerald-700 hover:text-emerald-800 transition-colors cursor-pointer"
+          className="flex items-center text-xs font-bold text-slate-800 hover:text-slate-900 transition-colors cursor-pointer"
         >
           <span>{showAll ? 'Show Less' : 'View All'}</span>
           <ChevronRight className="w-3.5 h-3.5 ml-0.5" />
@@ -127,7 +127,7 @@ export const PopularChallengeAreas = ({ onSelectArea, selectedArea }) => {
               <div
                 className={`w-13 h-13 sm:w-14 sm:h-14 rounded-2xl overflow-hidden shadow-xs relative flex items-center justify-center transition-all duration-200 ${
                   isSelected
-                    ? 'ring-2 ring-emerald-600 ring-offset-2 scale-105 shadow-md'
+                    ? 'ring-2 ring-slate-900 ring-offset-2 scale-105 shadow-md'
                     : 'border border-slate-200 hover:border-slate-300 hover:shadow-sm'
                 }`}
               >
@@ -144,7 +144,7 @@ export const PopularChallengeAreas = ({ onSelectArea, selectedArea }) => {
                 />
                 <div
                   style={{ display: 'none' }}
-                  className={`w-full h-full items-center justify-center ${area.bgColor}`}
+                  className="w-full h-full items-center justify-center bg-slate-50"
                 >
                   <FallbackIcon className="w-5 h-5 text-slate-600" />
                 </div>
@@ -153,7 +153,7 @@ export const PopularChallengeAreas = ({ onSelectArea, selectedArea }) => {
               {/* Title */}
               <span
                 className={`text-[10px] sm:text-[11px] font-semibold text-center leading-tight mt-1.5 line-clamp-2 ${
-                  isSelected ? 'text-emerald-700 font-bold' : 'text-slate-700 group-hover:text-slate-900'
+                  isSelected ? 'text-slate-900 font-black' : 'text-slate-700 group-hover:text-slate-900'
                 }`}
               >
                 {area.name}

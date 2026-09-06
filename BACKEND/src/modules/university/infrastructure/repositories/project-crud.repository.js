@@ -51,8 +51,15 @@ export class ProjectCrudRepository {
               { 'assignedFaculty.name': { $exists: true, $ne: '' } }
             ]
           },
+          {
+            $or: [
+              { 'assignedUniversity.acceptanceStatus': 'Accepted' },
+              { acceptanceStatus: 'Accepted' },
+              { status: { $in: ['Accepted', 'In Progress', 'Active R&D'] } }
+            ]
+          },
           { 'assignedUniversity.acceptanceStatus': { $ne: 'Declined' } },
-          { status: { $ne: 'Declined' } },
+          { status: { $nin: ['Declined', 'Under Review', 'Pending Review'] } },
           { isDeleted: { $ne: true } }
         ]
       }).lean();

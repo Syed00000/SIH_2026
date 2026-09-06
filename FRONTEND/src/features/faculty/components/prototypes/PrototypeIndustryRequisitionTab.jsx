@@ -1,27 +1,18 @@
-import React from 'react';
-import { Factory, ClipboardCheck, Building2, Truck, AlertCircle, ShieldAlert } from 'lucide-react';
+import React, { useMemo } from 'react';
+import { Factory, Building2, Clock, ShieldCheck, FileCheck2 } from 'lucide-react';
+import { INDUSTRY_TESTING_PARTNERS, STANDARDIZED_TESTING_STAGES } from './industryTestingStages.data.js';
+import { PrototypeTestingStageCard } from './PrototypeTestingStageCard.jsx';
 
-const INDUSTRY_PARTNERS = [
-  'Tata Steel R&D Hub (Jamshedpur)',
-  'BCCL Heavy Equipment & Mine Automation Lab (Dhanbad)',
-  'MECON Ranchi Heavy Industry Testing Facility',
-  'SAIL Bokaro Steel Automation & Embedded Division',
-  'Jharkhand State Industrial Testing Council (JSITC)'
-];
+export const PrototypeIndustryRequisitionTab = ({ project, prototypeData, onChangeData, isLocked }) => {
+  const initialPartner = project?.partnerName || project?.testingPartner || INDUSTRY_TESTING_PARTNERS[0];
+  const allDefaultTestIds = useMemo(() => {
+    return STANDARDIZED_TESTING_STAGES.flatMap((st) => st.tests.map((t) => t.id));
+  }, []);
 
-const DEFAULT_CHECKLIST = [
-  { id: 'thermal', label: 'Environmental Stress & Thermal Range (-10°C to 55°C, 90% RH)' },
-  { id: 'vibration', label: 'Heavy Vibration, Shock & Mechanical Drop Compliance' },
-  { id: 'heavyLoad', label: 'Full Continuous Ground Payload Stress Cycle' },
-  { id: 'reliability', label: '72-Hour Uninterrupted Live Field Reliability Trial' },
-  { id: 'compliance', label: 'Industrial Safety & Electromagnetic Compatibility (EMC/EMI)' }
-];
-
-export const PrototypeIndustryRequisitionTab = ({ prototypeData, onChangeData, isLocked }) => {
   const req = prototypeData?.industryRequisition || {
-    selectedPartner: INDUSTRY_PARTNERS[0],
+    selectedPartner: initialPartner,
     priority: 'High',
-    checklist: ['thermal', 'reliability', 'compliance'],
+    checklist: allDefaultTestIds,
     instructions: '',
     dispatchStatus: 'Drafted'
   };
@@ -30,6 +21,20 @@ export const PrototypeIndustryRequisitionTab = ({ prototypeData, onChangeData, i
     if (isLocked) return;
     const updated = { ...req, [key]: value };
     onChangeData('industryRequisition', updated);
+
+    // Also sync structured testingStages for backend and industry portal consumption
+    const resolvedStages = STANDARDIZED_TESTING_STAGES.map((st) => ({
+      stageNumber: st.stageNumber,
+      title: st.title,
+      description: st.description,
+      expectedDays: st.expectedDays,
+      status: 'Pending',
+      notes: '',
+      selectedTests: (key === 'checklist' ? value : req.checklist || []).filter((id) =>
+        st.tests.some((t) => t.id === id)
+      )
+    }));
+    onChangeData('testingStages', resolvedStages);
   };
 
   const toggleChecklist = (id) => {
@@ -42,35 +47,49 @@ export const PrototypeIndustryRequisitionTab = ({ prototypeData, onChangeData, i
   };
 
   return (
-    <div className="space-y-4 text-left select-none">
-      <div className="bg-white border border-slate-200/90 rounded-2xl p-4 shadow-2xs space-y-4">
-        <div className="flex items-center justify-between pb-2 border-b border-slate-100">
-          <div className="flex items-center space-x-2">
-            <Factory className="w-4 h-4 text-[#007A61]" />
-            <h4 className="text-xs font-black text-slate-900 uppercase tracking-wider">
+    <div className="space-y-4 text-left select-none animate-fadeIn">
+      {/* Overview Banner */}
+      <div className="bg-gradient-to-r from-emerald-50/70 via-teal-50/50 to-blue-50/60 border border-emerald-200 p-4 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs">
+        <div className="flex items-center space-x-3">
+          <div className="w-10 h-10 rounded-xl bg-[#007A61] text-white flex items-center justify-center shrink-0">
+            <Factory className="w-5 h-5" />
+          </div>
+          <div>
+            <h4 className="text-xs font-black text-slate-900 uppercase tracking-tight">
               3. Industry Partner Field-Testing Checklist & Pilot Requisition
             </h4>
+            <p className="text-[11px] text-slate-600 font-medium">
+              Standardized 3-stage NABL industrial testing lifecycle for state engineering certification.
+            </p>
           </div>
-          <span className="text-[10px] font-extrabold px-2.5 py-0.5 rounded-full border bg-emerald-50 text-emerald-700 border-emerald-200">
+        </div>
+        <div className="flex items-center space-x-2 shrink-0">
+          <span className="text-[10px] font-extrabold px-2.5 py-1 rounded-full border bg-white text-emerald-800 border-emerald-200 flex items-center space-x-1">
+            <Clock className="w-3 h-3 text-emerald-600" />
+            <span>22 Days Cycle</span>
+          </span>
+          <span className="text-[10px] font-extrabold px-2.5 py-1 rounded-full border bg-emerald-100 text-emerald-800 border-emerald-300">
             {req.dispatchStatus || 'Drafted'}
           </span>
         </div>
+      </div>
 
-        {/* Partner Selection & Priority */}
+      {/* Top Controls: Partner Selection & Priority */}
+      <div className="bg-white border border-slate-200/90 rounded-2xl p-4 shadow-2xs space-y-3">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
             <label className="text-[10.5px] font-bold text-slate-500 uppercase block mb-1">
-              Designated Industry Testing Facility
+              Designated Industry Testing Facility / Laboratory
             </label>
             <div className="relative">
               <Building2 className="w-4 h-4 text-slate-400 absolute left-3 top-2.5 pointer-events-none" />
               <select
                 disabled={isLocked}
-                value={req.selectedPartner || INDUSTRY_PARTNERS[0]}
+                value={req.selectedPartner || initialPartner}
                 onChange={(e) => updateReq('selectedPartner', e.target.value)}
                 className="w-full text-xs font-bold text-slate-800 bg-slate-50 border border-slate-200 rounded-xl pl-9 pr-3 py-2 focus:bg-white focus:outline-[#007A61]"
               >
-                {INDUSTRY_PARTNERS.map((p) => (
+                {INDUSTRY_TESTING_PARTNERS.map((p) => (
                   <option key={p} value={p}>{p}</option>
                 ))}
               </select>
@@ -88,7 +107,7 @@ export const PrototypeIndustryRequisitionTab = ({ prototypeData, onChangeData, i
                   key={prio}
                   disabled={isLocked}
                   onClick={() => updateReq('priority', prio)}
-                  className={`flex-1 py-1.5 px-2 text-xs font-bold rounded-xl border transition-all ${
+                  className={`flex-1 py-1.5 px-2 text-xs font-bold rounded-xl border transition-all cursor-pointer ${
                     req.priority === prio
                       ? 'bg-[#007A61] text-white border-[#007A61] shadow-xs'
                       : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100'
@@ -100,58 +119,49 @@ export const PrototypeIndustryRequisitionTab = ({ prototypeData, onChangeData, i
             </div>
           </div>
         </div>
+      </div>
 
-        {/* Testing Checklist Matrix */}
-        <div className="space-y-2">
-          <div className="flex items-center space-x-1.5 text-slate-700">
-            <ClipboardCheck className="w-3.5 h-3.5 text-[#007A61]" />
-            <label className="text-[10.5px] font-extrabold uppercase">
-              Mandatory Industrial Field Tests Requested from Partner
-            </label>
+      {/* 3 Sequential Testing Stages */}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between px-1">
+          <div className="flex items-center space-x-2">
+            <FileCheck2 className="w-4 h-4 text-[#007A61]" />
+            <h3 className="text-xs font-black text-slate-900 uppercase tracking-wider">
+              Mandatory Industrial Testing Stages & Checklist (Stage 1 ➔ Stage 2 ➔ Stage 3)
+            </h3>
           </div>
-          <div className="space-y-2">
-            {DEFAULT_CHECKLIST.map((item) => {
-              const isChecked = (req.checklist || []).includes(item.id);
-              return (
-                <label
-                  key={item.id}
-                  className={`flex items-center space-x-3 p-2.5 rounded-xl border transition-all cursor-pointer ${
-                    isChecked
-                      ? 'bg-emerald-50/50 border-emerald-300'
-                      : 'bg-slate-50/70 border-slate-200 hover:bg-slate-50'
-                  }`}
-                >
-                  <input
-                    type="checkbox"
-                    disabled={isLocked}
-                    checked={isChecked}
-                    onChange={() => toggleChecklist(item.id)}
-                    className="w-4 h-4 text-[#007A61] rounded focus:ring-[#007A61]"
-                  />
-                  <span className={`text-xs ${isChecked ? 'font-bold text-slate-900' : 'text-slate-600'}`}>
-                    {item.label}
-                  </span>
-                </label>
-              );
-            })}
-          </div>
+          <span className="text-[10.5px] font-bold text-slate-500">
+            {(req.checklist || []).length}/{allDefaultTestIds.length} Checks Included
+          </span>
         </div>
 
-        {/* Special Instructions */}
-        <div>
-          <label className="text-[10.5px] font-bold text-slate-500 uppercase block mb-1">
-            Special Instructions for Industrial Trial Engineers
-          </label>
-          <textarea
-            disabled={isLocked}
-            rows={3}
-            value={req.instructions || ''}
-            onChange={(e) => updateReq('instructions', e.target.value)}
-            placeholder="Specify test rig calibration, safety clearance requirements, hazardous handling protocols, and live data telemetry reporting frequency..."
-            className="w-full text-xs font-medium text-slate-800 bg-slate-50 border border-slate-200 rounded-xl p-2.5 focus:bg-white focus:outline-[#007A61] focus:ring-1 focus:ring-[#007A61]"
+        {STANDARDIZED_TESTING_STAGES.map((stage) => (
+          <PrototypeTestingStageCard
+            key={stage.stageNumber}
+            stage={stage}
+            selectedTests={req.checklist || []}
+            onToggleTest={toggleChecklist}
+            isLocked={isLocked}
           />
-        </div>
+        ))}
+      </div>
+
+      {/* Special Instructions */}
+      <div className="bg-white border border-slate-200/90 rounded-2xl p-4 shadow-2xs space-y-2">
+        <label className="text-[10.5px] font-bold text-slate-500 uppercase block">
+          Special Instructions for Industrial Trial Engineers
+        </label>
+        <textarea
+          disabled={isLocked}
+          rows={3}
+          value={req.instructions || ''}
+          onChange={(e) => updateReq('instructions', e.target.value)}
+          placeholder="Specify test rig calibration, safety clearance requirements, hazardous handling protocols, and live data telemetry reporting frequency..."
+          className="w-full text-xs font-medium text-slate-800 bg-slate-50 border border-slate-200 rounded-xl p-2.5 focus:bg-white focus:outline-[#007A61] focus:ring-1 focus:ring-[#007A61]"
+        />
       </div>
     </div>
   );
 };
+
+export default PrototypeIndustryRequisitionTab;

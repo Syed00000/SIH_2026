@@ -6,7 +6,7 @@ dotenv.config();
 const configSchema = z.object({
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
   PORT: z.coerce.number().default(3000),
-  MONGO_URI: z.string().url().default(process.env.URL || 'mongodb://localhost:27017/sih_2026'),
+  MONGO_URI: z.string().min(1).default(process.env.URL || 'mongodb://localhost:27017/sih_2026'),
   JWT_ACCESS_SECRET: z.string().min(32).default('a_very_long_secure_default_access_token_secret_32_chars_min'),
   JWT_REFRESH_SECRET: z.string().min(32).default('a_very_long_secure_default_refresh_token_secret_32_chars_min'),
   JWT_ACCESS_EXPIRY: z.string().default(process.env.NODE_ENV === 'production' ? '15m' : '1d'),

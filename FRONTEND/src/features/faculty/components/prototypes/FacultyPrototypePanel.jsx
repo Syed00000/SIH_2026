@@ -165,7 +165,7 @@ export const FacultyPrototypePanel = ({ project, faculty, onRefresh }) => {
       <div>
         {activeTab === 0 && <PrototypeDetailsTab project={project} prototypeData={protoData} onChangeData={handleChangeData} isLocked={isLocked} onRefresh={onRefresh} />}
         {activeTab === 1 && <PrototypeLabTestsTab prototypeData={protoData} onChangeData={handleChangeData} isLocked={isLocked} />}
-        {activeTab === 2 && <PrototypeIndustryRequisitionTab prototypeData={protoData} onChangeData={handleChangeData} isLocked={isLocked} />}
+        {activeTab === 2 && <PrototypeIndustryRequisitionTab project={project} prototypeData={protoData} onChangeData={handleChangeData} isLocked={isLocked} />}
       </div>
     </div>
   );

@@ -120,7 +120,7 @@ export const UniversityLayout = ({ user, onLogout }) => {
   ];
 
   return (
-    <div className="min-h-screen bg-[#f8fafc] flex flex-col h-screen overflow-hidden text-slate-900 font-sans select-none">
+    <div className="min-h-screen bg-white flex flex-col h-screen overflow-hidden text-slate-900 font-sans select-none">
       <UniversityHeader
         universityName={uniName}
         adminName={adminName}
@@ -147,7 +147,7 @@ export const UniversityLayout = ({ user, onLogout }) => {
           partnerNotificationCount={pendingIndustryAmountCount}
         />
 
-        <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden bg-[#f8fafc]">
+        <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden bg-white">
           <main className="flex-1 p-3.5 md:p-5 overflow-y-auto min-h-0">
             {loading ? (
               <div className="flex items-center justify-center h-64 text-xs font-bold text-slate-600">

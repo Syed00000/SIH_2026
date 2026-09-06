@@ -113,7 +113,11 @@ export const useIndustryData = (user) => {
     projects,
     capabilitiesData,
     fundingData,
-    labsData: [],
+    labsData: (projects?.ongoing || []).map((p) => ({
+      name: `${p.title} (Testing Lab)`,
+      location: p.university || 'Jharkhand University Lab',
+      status: 'In Testing'
+    })),
     expertsData: [],
     documentsData: [],
     internshipsData: [],

@@ -17,21 +17,20 @@ export const Panel1_Overview = ({ user, industry, stats }) => {
 
   return (
     <div className="bg-white rounded-2xl shadow-2xs border border-slate-200/90 overflow-hidden flex flex-col md:flex-row items-stretch col-span-full xl:col-span-8">
-      <div className="bg-slate-900 text-white p-6 md:w-1/3 flex flex-col justify-center relative overflow-hidden">
-        <div className="absolute top-0 right-0 p-4 opacity-10"><Building className="w-32 h-32" /></div>
-        <div className="relative z-10 flex items-center space-x-4 mb-4">
-          <div className="w-16 h-16 bg-white text-slate-900 rounded-xl flex items-center justify-center font-black text-2xl shadow-lg">
+      <div className="bg-slate-50 border-b md:border-b-0 md:border-r border-slate-200/80 p-6 md:w-1/3 flex flex-col justify-center relative overflow-hidden">
+        <div className="relative z-10 flex items-center space-x-3.5 mb-2">
+          <div className="w-13 h-13 bg-white border border-slate-200 text-slate-900 rounded-xl flex items-center justify-center font-black text-xl shadow-2xs">
             {initials}
           </div>
           <div>
-            <h2 className="text-xl font-black">{orgName}</h2>
-            <p className="text-emerald-400 text-xs font-bold flex items-center mt-1">
-              <ShieldCheck className="w-3.5 h-3.5 mr-1" /> {industry?.verificationStatus || 'VERIFIED'}
-            </p>
+            <h2 className="text-lg font-black text-slate-900">{orgName}</h2>
+            <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200 inline-flex items-center mt-0.5">
+              <ShieldCheck className="w-3 h-3 mr-1" /> {industry?.verificationStatus || 'VERIFIED'}
+            </span>
           </div>
         </div>
-        <p className="text-slate-300 text-sm italic font-medium relative z-10">
-          {industry?.thematicDomain ? `Focus Area: ${industry.thematicDomain}` : 'Innovating Today, Impacting Tomorrow'}
+        <p className="text-slate-500 text-xs font-medium relative z-10">
+          {industry?.thematicDomain ? `Focus Area: ${industry.thematicDomain}` : 'Industrial Innovation & Testing Partner'}
         </p>
       </div>
       

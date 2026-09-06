@@ -168,23 +168,43 @@ export class IndustryFundService {
     const totalCommittedCr = (totalCommitted / 10000000).toFixed(2);
     const totalCommittedFormatted = totalCommitted >= 10000000 ? `${totalCommittedCr} Cr` : `₹ ${(totalCommitted / 100000).toFixed(2)} L`;
 
+    const acceptedRequests = realReqs.filter((r) => {
+      if (r.status !== 'Approved') return false;
+      if (r.labChargesQuoted && r.quoteStatus !== 'Accepted') return false;
+      return true;
+    });
+
+    const acceptedProjectIds = new Set(acceptedRequests.map((r) => r.projectId).filter(Boolean));
+    const acceptedTitles = new Set(acceptedRequests.map((r) => r.projectTitle?.toLowerCase()).filter(Boolean));
+
     const activeProjects = allProjects
-      .filter((p) => ['In Progress', 'Testing', 'Prototype', 'Active', 'Approved'].includes(p.status))
+      .filter((p) => {
+        const idMatch = p.projectId && acceptedProjectIds.has(p.projectId);
+        const titleMatch = p.title && acceptedTitles.has(p.title?.toLowerCase());
+        const hasAcceptedQuote = p.quoteStatus === 'Accepted';
+        return (idMatch || titleMatch || hasAcceptedQuote) && (!p.labChargesQuoted || p.quoteStatus === 'Accepted');
+      })
       .map((p) => {
         const uni = realUniversities.find((u) => u.code === p.universityCode || String(u._id) === String(p.universityId));
+        const matchedReq = acceptedRequests.find((r) => (p.projectId && r.projectId === p.projectId) || r.projectTitle?.toLowerCase() === p.title?.toLowerCase());
         return {
           id: p.projectId || String(p._id),
           projectId: p.projectId,
+          requestId: matchedReq?.requestId || '',
           title: p.title,
           university: uni?.name || (p.universityCode === 'RU001' ? 'Ranchi University' : p.universityCode),
           universityCode: p.universityCode,
           stage: p.status || 'In Progress',
-          budget: p.sanctionedBudget || p.proposedBudget || '₹ 0',
+          budget: p.labChargesQuoted || p.sanctionedBudget || p.proposedBudget || '₹ 0',
           disbursed: p.disbursedAmount || '₹ 0',
           status: p.disbursedAmount && p.disbursedAmount !== '₹ 0' ? 'Funded' : 'Active',
           leadMentor: p.leadMentor || p.facultyMentor?.name || 'Faculty Nodal Officer',
           studentTeam: p.studentTeam || 'Student Innovation Team',
           problemStatement: p.problemStatement || '',
+          labChargesQuoted: p.labChargesQuoted || matchedReq?.labChargesQuoted || '',
+          quoteStatus: p.quoteStatus || matchedReq?.quoteStatus || '',
+          quoteTerms: p.quoteTerms || matchedReq?.quoteTerms || '',
+          testingStages: p.testingStages || matchedReq?.testingStages || [],
           deadline: p.deadline || '3 Months'
         };
       });

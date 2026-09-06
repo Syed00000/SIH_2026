@@ -3,7 +3,7 @@ import { ApprovalsNotificationBanner } from './ApprovalsNotificationBanner.jsx';
 import { ApprovalsKpis } from './ApprovalsKpis.jsx';
 import { ApprovalsFilterBar } from './ApprovalsFilterBar.jsx';
 import { ApprovalsTable } from './ApprovalsTable.jsx';
-import { ApprovalDetailModal } from './ApprovalDetailModal.jsx';
+import { ApprovalDetailPanel } from './ApprovalDetailPanel.jsx';
 import { IndustryRequestModal } from './IndustryRequestModal.jsx';
 import { universityApiService } from '../../services/universityApiService.js';
 
@@ -49,10 +49,23 @@ export const ApprovalsPanel = () => {
   const handleUpdateStatus = async (approval, newStatus, remarks = '', extraData = {}) => {
     try {
       const id = approval.approvalId || approval._id;
-      await universityApiService.updateApprovalStatus(id, UNIVERSITY_CODE, newStatus, remarks, extraData);
+      const isApproved = newStatus === 'Approved';
+      const payloadExtra = {
+        ...(isApproved ? {
+          sentToGovernment: true,
+          governmentStatus: 'Under State Evaluation',
+          ...(approval.type === 'Prototype Approval' ? { prototypeStatus: 'Approved' } : { budgetStatus: 'Forwarded to CSR Grants Pipeline' })
+        } : {}),
+        ...extraData
+      };
+      await universityApiService.updateApprovalStatus(id, UNIVERSITY_CODE, newStatus, remarks, payloadExtra);
       setApprovals((prev) =>
-        prev.map((a) => (a.approvalId || a._id) === id ? { ...a, status: newStatus, adminRemarks: remarks, ...extraData } : a)
+        prev.map((a) => (a.approvalId || a._id) === id ? { ...a, status: newStatus, adminRemarks: remarks, ...payloadExtra } : a)
       );
+      try {
+        const { projectCsrSyncService } = await import('../../../government/services/projectCsrSyncService.js');
+        await projectCsrSyncService.initializeFromBackend();
+      } catch {}
     } catch (err) {
       console.error('updateApprovalStatus error:', err.message);
     }
@@ -89,14 +102,25 @@ export const ApprovalsPanel = () => {
   const approved = validApprovals.filter((a) => a.status === 'Approved').length;
   const rejected = validApprovals.filter((a) => a.status === 'Rejected').length;
 
+  if (isModalOpen && selected) {
+    return (
+      <div className="space-y-4 max-w-7xl mx-auto select-none pb-12 text-left">
+        <ApprovalDetailPanel
+          approval={selected}
+          onClose={handleCloseModal}
+          onApprove={(app, rem, extra) => handleUpdateStatus(app, 'Approved', rem, extra)}
+          onReject={(app, rem, extra) => handleUpdateStatus(app, 'Rejected', rem, extra)}
+          onRequestChanges={(app, rem, extra) => handleUpdateStatus(app, 'Changes Required', rem, extra)}
+        />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-4 max-w-7xl mx-auto select-none pb-12 text-left">
       <ApprovalsNotificationBanner
         pendingCount={pending}
-        onFilterPending={() => {
-          setStatusFilter('Pending');
-          setActiveTab('budget');
-        }}
+        onFilterPending={() => { setStatusFilter('Pending'); setActiveTab('budget'); }}
       />
 
       <div>
@@ -123,11 +147,7 @@ export const ApprovalsPanel = () => {
         setTypeFilter={setTypeFilter}
         statusFilter={statusFilter}
         setStatusFilter={setStatusFilter}
-        onReset={() => {
-          setSearch('');
-          setTypeFilter('All');
-          setStatusFilter('All');
-        }}
+        onReset={() => { setSearch(''); setTypeFilter('All'); setStatusFilter('All'); }}
       />
 
       {/* Tabs */}
@@ -163,17 +183,6 @@ export const ApprovalsPanel = () => {
           loading={loading}
         />
       </div>
-
-      {/* Centered High-End Detail Popup Modal */}
-      {isModalOpen && selected && (
-        <ApprovalDetailModal
-          approval={selected}
-          isOpen={isModalOpen}
-          onClose={handleCloseModal}
-          onUpdateStatus={handleUpdateStatus}
-          onDelete={handleDelete}
-        />
-      )}
 
       {/* Industry Request Modal */}
       {isIndustryModalOpen && (

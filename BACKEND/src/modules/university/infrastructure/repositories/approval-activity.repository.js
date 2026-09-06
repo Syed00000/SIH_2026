@@ -1,7 +1,9 @@
 import mongoose from 'mongoose';
 import { UniversityApproval, UniversityProject, UniversityActivity } from '../model.js';
+import { CitizenChallenge } from '../../../citizen/infrastructure/model.js';
 import { findUniversityIdentity } from '../helpers/lookup.helper.js';
 import { syncBidirectionalProjectApprovals } from '../helpers/project-approval-sync.helper.js';
+import { isApprovalEligible, formatApprovalRecord } from '../helpers/approval-filter.helper.js';
 
 export class ApprovalActivityRepository {
   async getApprovalsByUniversity(universityCode) {
@@ -13,11 +15,14 @@ export class ApprovalActivityRepository {
       const approvals = (await UniversityApproval.find({ universityCode: { $in: validCodes } }).sort({ date: -1 }).lean()) || [];
       if (!approvals.length) return [];
       const pids = approvals.map((a) => a.projectId || a.challengeId).filter(Boolean);
-      if (!pids.length) return approvals;
+      const cids = approvals.map((a) => a.challengeId).filter(Boolean);
 
-      const projects = await UniversityProject.find({
-        $or: [{ projectId: { $in: pids } }, { challengeId: { $in: pids } }]
-      }).select('projectId challengeId milestoneRoadmap methodology sanctionedBudget disbursedAmount budgetStatus trancheRequest isDeleted status leadMentor facultyMentor budgetBreakdown').lean();
+      const [projects, challenges] = await Promise.all([
+        UniversityProject.find({
+          $or: [{ projectId: { $in: pids } }, { challengeId: { $in: pids } }]
+        }).select('projectId challengeId milestoneRoadmap methodology sanctionedBudget disbursedAmount budgetStatus trancheRequest isDeleted status leadMentor facultyMentor budgetBreakdown testingCompleted').lean(),
+        CitizenChallenge.find({ challengeId: { $in: cids } }).select('challengeId acceptanceStatus assignedUniversity status isDeleted').lean()
+      ]);
 
       const projMap = new Map();
       projects.forEach((p) => {
@@ -25,53 +30,20 @@ export class ApprovalActivityRepository {
         if (p.challengeId) projMap.set(p.challengeId, p);
       });
 
+      const challengeMap = new Map();
+      challenges.forEach((c) => {
+        if (c.challengeId) challengeMap.set(c.challengeId, c);
+      });
+
       return approvals
         .filter((a) => {
-          if (a.type?.includes('Prototype')) return true;
           const proj = projMap.get(a.projectId) || projMap.get(a.challengeId);
-          if (proj && (proj.isDeleted || proj.status === 'Transferred')) return false;
-          const hasFaculty = Boolean(a.requestedBy || a.faculty?.name || proj?.leadMentor || proj?.facultyMentor?.name);
-          const isSubmitted = (
-            a.budgetStatus === 'Submitted to University for Review' ||
-            a.budgetStatus === 'Grant Sanctioned by Government' ||
-            a.budgetStatus === 'Grant Disbursed' ||
-            a.budgetStatus === 'Changes Required by Government' ||
-            proj?.budgetStatus === 'Submitted to University for Review' ||
-            proj?.budgetStatus === 'Grant Sanctioned by Government' ||
-            proj?.budgetStatus === 'Grant Disbursed' ||
-            proj?.budgetStatus === 'Changes Required by Government' ||
-            a.isRevised || proj?.isRevised ||
-            (a.milestoneRoadmap?.length > 0 && a.budgetBreakdown?.length > 0) ||
-            (proj?.milestoneRoadmap?.length > 0 && proj?.budgetBreakdown?.length > 0)
-          );
-          return hasFaculty && isSubmitted;
+          const chl = challengeMap.get(a.challengeId) || challengeMap.get(proj?.challengeId);
+          return isApprovalEligible({ a, proj, chl });
         })
         .map((a) => {
           const proj = projMap.get(a.projectId) || projMap.get(a.challengeId);
-          const roadmap = (a.milestoneRoadmap?.length) ? a.milestoneRoadmap : (proj?.milestoneRoadmap?.length ? proj.milestoneRoadmap : []);
-          const bBreakdown = (a.budgetBreakdown?.length) ? a.budgetBreakdown : (proj?.budgetBreakdown || []);
-          const bSum = bBreakdown.reduce((s, it) => s + (typeof it.amount === 'number' ? it.amount : Number(String(it.amount || '0').replace(/[^\d]/g, '')) || 0), 0);
-          const bTotal = bSum > 0 ? `₹ ${bSum.toLocaleString('en-IN')}` : (a.proposedBudget || a.estimatedBudget || proj?.proposedBudget || '₹ 80,000');
-          const bExtra = bSum > 0 ? Math.max(0, bSum - 80000) : (a.additionalAmount || proj?.additionalAmount || 0);
-          const isSanctioned = proj?.budgetStatus === 'Grant Sanctioned by Government' || proj?.budgetStatus === 'Grant Disbursed' || a.budgetStatus === 'Grant Sanctioned by Government' || a.budgetStatus === 'Grant Disbursed' || Boolean(a.sanctionOrderNo || proj?.sanctionOrderNo);
-          const isChanges = proj?.budgetStatus === 'Changes Required by Government' || a.budgetStatus === 'Changes Required by Government' || a.status === 'Changes Required';
-          const isRejected = proj?.status === 'Rejected' || proj?.budgetStatus === 'Rejected' || a.status === 'Rejected';
-          const realStatus = isSanctioned ? 'Approved' : isChanges ? 'Changes Required' : isRejected ? 'Rejected' : 'Pending';
-
-          return {
-            ...a,
-            status: realStatus,
-            budgetBreakdown: bBreakdown,
-            proposedBudget: bTotal,
-            estimatedBudget: bTotal,
-            sanctionedBudget: isSanctioned ? (a.sanctionedBudget || proj?.sanctionedBudget || bTotal) : null,
-            disbursedAmount: a.disbursedAmount || proj?.disbursedAmount || '₹ 0',
-            budgetStatus: isSanctioned ? (a.budgetStatus || proj?.budgetStatus || 'Grant Sanctioned by Government') : (proj?.budgetStatus || a.budgetStatus || 'Pending Review'),
-            trancheRequest: a.trancheRequest || proj?.trancheRequest || null,
-            additionalAmount: bExtra,
-            milestoneRoadmap: roadmap,
-            methodology: a.methodology || proj?.methodology || ''
-          };
+          return formatApprovalRecord(a, proj);
         });
     } catch { return []; }
   }
@@ -128,10 +100,13 @@ export class ApprovalActivityRepository {
           if (status === 'Approved') {
             projectUpdate.budgetStatus = 'Forwarded to CSR Grants Pipeline';
             projectUpdate.sentToGovernment = true;
-            projectUpdate.governmentStatus = 'Approved';
+            projectUpdate.governmentStatus = 'Under State Evaluation';
             projectUpdate.milestonesCompleted = 4;
             projectUpdate.progressPercentage = 57;
             projectUpdate.forwardedToGovAt = new Date();
+            projectUpdate['milestones.3.status'] = 'Completed';
+            projectUpdate['milestones.3.completedAt'] = new Date();
+            projectUpdate['milestones.4.status'] = 'In Progress';
             if (setFields.proposedBudget) { projectUpdate.proposedBudget = setFields.proposedBudget; projectUpdate.budget = setFields.proposedBudget; }
           } else if (status === 'Changes Required') {
             projectUpdate.budgetStatus = 'Changes Required by University';
@@ -147,6 +122,23 @@ export class ApprovalActivityRepository {
           },
           { $set: projectUpdate }
         );
+
+        if (status === 'Approved') {
+          const { CitizenChallenge } = await import('../../../citizen/infrastructure/model.js');
+          const targetCid = res?.challengeId || projId;
+          await CitizenChallenge.findOneAndUpdate(
+            { $or: [{ challengeId: targetCid }, { challengeId: res?.approvalId?.replace('APP-PRJ-', 'CHL-JH-2026-') }].filter(Boolean) },
+            {
+              $set: {
+                'milestones.3.status': 'COMPLETED',
+                'milestones.3.completedAt': new Date(),
+                'milestones.3.remarks': `R&D Proposal Approved by University Review Board. Forwarded to Government (DHTE) for state grant sanction.`,
+                'milestones.4.status': 'CURRENT',
+                'milestones.4.remarks': 'Under Government (DHTE) State Grant Evaluation.'
+              }
+            }
+          ).catch(() => {});
+        }
 
         const stStr = String(status || 'Approved');
         const activityText = stStr === 'Changes Required'

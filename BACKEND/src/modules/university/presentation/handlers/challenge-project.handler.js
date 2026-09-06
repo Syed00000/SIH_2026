@@ -119,8 +119,8 @@ export const createChallengeProjectHandler = (service) => {
   const updateGovernmentPrototypeStatus = async (req, res, next) => {
     try {
       const { id } = req.params;
-      const { status, trlLevel, remarks } = req.body;
-      const data = await service.updateGovernmentPrototypeStatus(id, status, trlLevel, remarks);
+      const { status, trlLevel, remarks, ...extra } = req.body;
+      const data = await service.updateGovernmentPrototypeStatus(id, status, trlLevel, remarks, extra);
       res.status(200).json({ status: 'SUCCESS', message: 'Government prototype evaluation updated', data });
     } catch (error) { next(error); }
   };

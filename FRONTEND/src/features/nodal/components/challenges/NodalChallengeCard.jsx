@@ -12,6 +12,7 @@ export const NodalChallengeCard = ({
 }) => {
   const chlId = chl.challengeId || chl.id;
   const isDeleting = deletingId === chlId;
+  const isDeployed = chl.status === 'Deployed' || Boolean(chl.isDeployed) || Boolean(chl.isLocked);
 
   return (
     <div
@@ -31,7 +32,9 @@ export const NodalChallengeCard = ({
           </div>
 
           <span className={`text-[10.5px] font-bold px-2 py-0.5 rounded-full border ${
-            chl.status === 'Resolved'
+            isDeployed
+              ? 'bg-emerald-100 text-emerald-900 border-emerald-300'
+              : chl.status === 'Resolved'
               ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
               : chl.status === 'In Progress'
               ? 'bg-blue-50 text-blue-800 border-blue-200'
@@ -43,7 +46,7 @@ export const NodalChallengeCard = ({
               ? 'bg-rose-50 text-rose-800 border-rose-200'
               : 'bg-amber-50 text-amber-800 border-amber-200'
           }`}>
-            {chl.status || 'Under Review'}
+            {isDeployed ? '🔒 Deployed & Locked' : (chl.status || 'Under Review')}
           </span>
         </div>
 
@@ -107,9 +110,13 @@ export const NodalChallengeCard = ({
 
           <button
             onClick={(e) => onQuickDelete(e, chl)}
-            disabled={isDeleting}
-            className="p-1.5 rounded-md hover:bg-rose-50 text-slate-400 hover:text-rose-600 transition-colors"
-            title="Delete Problem"
+            disabled={isDeleting || isDeployed}
+            className={`p-1.5 rounded-md transition-colors ${
+              isDeployed
+                ? 'text-slate-200 cursor-not-allowed'
+                : 'hover:bg-rose-50 text-slate-400 hover:text-rose-600'
+            }`}
+            title={isDeployed ? 'Deployed & Locked — Cannot delete' : 'Delete Problem'}
           >
             <Trash2 className="w-3.5 h-3.5" />
           </button>

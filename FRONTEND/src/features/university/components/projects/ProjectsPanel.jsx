@@ -34,7 +34,8 @@ export const ProjectsPanel = ({ onNavigateTab }) => {
   }, []);
 
   const totalCount = projects.length;
-  const inProgressCount = projects.filter((p) => p.status === 'In Progress' || p.status === 'Active R&D').length;
+  const deployedCount = projects.filter((p) => p.status === 'Deployed' || p.isDeployed || p.isLocked).length;
+  const inProgressCount = projects.filter((p) => (p.status === 'In Progress' || p.status === 'Active R&D') && !p.isDeployed && !p.isLocked && p.status !== 'Deployed').length;
   const planningCount = projects.filter((p) => p.status === 'Proposal Stage' || p.status === 'Planning' || p.status === 'Pending Proposal' || !p.status).length;
   const completedCount = projects.filter((p) => p.status === 'Completed').length;
 
@@ -96,6 +97,8 @@ export const ProjectsPanel = ({ onNavigateTab }) => {
     if (statusFilter !== 'All') {
       if (statusFilter === 'Planning' || statusFilter === 'Proposal Stage') {
         if (p.status !== 'Proposal Stage' && p.status !== 'Planning' && p.status !== 'Pending Proposal') return false;
+      } else if (statusFilter === 'Deployed') {
+        if (p.status !== 'Deployed' && !p.isDeployed && !p.isLocked) return false;
       } else if (p.status !== statusFilter) {
         return false;
       }
@@ -129,6 +132,7 @@ export const ProjectsPanel = ({ onNavigateTab }) => {
         inProgress={inProgressCount}
         planning={planningCount}
         completed={completedCount}
+        deployed={deployedCount}
         loading={loading}
       />
 

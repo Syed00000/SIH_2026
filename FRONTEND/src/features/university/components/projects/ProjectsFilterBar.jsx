@@ -58,6 +58,7 @@ export const ProjectsFilterBar = ({
             <option value="In Progress">In Progress</option>
             <option value="Planning">Proposal Stage</option>
             <option value="Completed">Completed</option>
+            <option value="Deployed">🔒 Deployed</option>
           </select>
         </div>
 

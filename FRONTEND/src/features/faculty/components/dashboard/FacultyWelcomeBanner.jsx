@@ -1,19 +1,36 @@
 import React from 'react';
+import { UserCheck, Building } from 'lucide-react';
 
 export const FacultyWelcomeBanner = ({ faculty }) => {
   return (
-    <div className="bg-gradient-to-r from-[#007A61] via-[#00604c] to-emerald-900 rounded-2xl p-5 text-white shadow-md relative overflow-hidden">
-      <div className="relative z-10 space-y-1">
-        <div className="inline-flex items-center space-x-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-400/30 text-[10.5px] font-bold text-emerald-100">
-          <span className="w-1.5 h-1.5 rounded-full bg-emerald-300 animate-pulse" />
-          <span>Faculty Research & Mentorship Portal Node</span>
+    <div className="bg-white border border-slate-200/90 rounded-xl p-5 shadow-2xs">
+      <div className="space-y-1.5">
+        <div className="flex items-center space-x-2">
+          <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider bg-slate-100 text-slate-700 border border-slate-200">
+            <UserCheck className="w-3 h-3 mr-1 text-slate-900" />
+            Faculty Research Node
+          </span>
+          <span className="text-[11px] font-bold text-slate-500">
+            Higher Education &amp; Innovation Cell
+          </span>
         </div>
-        <h1 className="text-xl sm:text-2xl font-black tracking-tight">
+
+        <h1 className="text-lg sm:text-xl font-black text-slate-900 tracking-tight">
           Welcome, {faculty?.name || 'Faculty Mentor'}
         </h1>
-        <p className="text-xs text-emerald-100/90 max-w-2xl leading-relaxed">
-          {faculty?.designation || 'Lead Faculty Mentor'} • {faculty?.department || 'Department of Engineering'} • {faculty?.universityCode || 'RU001'}
-        </p>
+
+        <div className="flex flex-wrap items-center gap-2 text-xs text-slate-600 font-medium pt-0.5">
+          <span>{faculty?.designation || 'Lead Faculty Mentor'}</span>
+          <span>•</span>
+          <span className="flex items-center">
+            <Building className="w-3 h-3 mr-1 text-slate-400" />
+            {faculty?.department || 'Department of Engineering'}
+          </span>
+          <span>•</span>
+          <span className="font-mono text-slate-700 bg-slate-100 px-1.5 py-0.5 rounded text-[11px]">
+            {faculty?.universityCode || 'RU001'}
+          </span>
+        </div>
       </div>
     </div>
   );

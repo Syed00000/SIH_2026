@@ -33,6 +33,7 @@ export const ActiveProjectsPanel = () => {
   const [projects, setProjects] = useState(() => projectCsrSyncService.getActiveProjects());
 
   React.useEffect(() => {
+    projectCsrSyncService.initializeFromBackend();
     const unsubscribe = projectCsrSyncService.subscribe((eventType, data) => {
       if (data?.updatedProjects) {
         setProjects(data.updatedProjects);
@@ -69,8 +70,10 @@ export const ActiveProjectsPanel = () => {
     return projects.filter((p) => {
       const sancVal = parseGrantRupees(p.sanctionedGrant || p.budget) || 0;
       const disbVal = parseGrantRupees(p.disbursedAmount || p.disbursedGrant) || 0;
-      const isSanctioned = p.budgetStatus === 'Grant Sanctioned by Government' || p.budgetStatus === 'Grant Disbursed';
-      return isSanctioned || disbVal > 0 || sancVal > 0 || p.status === 'Active';
+      const isSanctioned = p.budgetStatus === 'Grant Sanctioned by Government' ||
+        p.budgetStatus === 'Grant Disbursed' ||
+        (typeof p.budgetStatus === 'string' && p.budgetStatus.includes('Grant Disbursed'));
+      return isSanctioned || disbVal > 0 || sancVal > 0 || p.status === 'Active' || p.status === 'In Progress';
     });
   }, [projects]);
 

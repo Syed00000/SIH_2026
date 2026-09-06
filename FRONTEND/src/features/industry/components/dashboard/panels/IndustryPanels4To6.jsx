@@ -79,25 +79,29 @@ export const Panel4_Collaboration = ({ data = {}, onViewRequest }) => (
   </Card>
 );
 
-export const Panel5_Projects = ({ data = {}, onViewAll, onViewProject }) => (
-  <Card className="col-span-full xl:col-span-6 border-slate-200/90 shadow-2xs h-full">
-    <CardHeader className="pb-3 border-b border-slate-100 bg-slate-50/50 flex flex-row items-center justify-between">
-      <CardTitle className="text-xs font-black uppercase tracking-wider flex items-center text-slate-800">
-        <Briefcase className="w-4 h-4 mr-2 text-[#007A61]" /> Active Projects
-      </CardTitle>
-      <button onClick={onViewAll} className="text-[10px] font-bold text-blue-600 hover:underline flex items-center cursor-pointer">
-        View All <ArrowRight className="w-3 h-3 ml-1" />
-      </button>
-    </CardHeader>
-    <CardContent className="p-0">
-      <div className="flex space-x-4 border-b border-slate-200 px-4 pt-3">
-        <button className="text-[11px] font-bold text-[#007A61] border-b-2 border-[#007A61] pb-2">
-          Ongoing ({data?.ongoing?.length || 0})
+export const Panel5_Projects = ({ data = {}, onViewAll, onViewProject }) => {
+  const ongoing = (data?.ongoing || []).filter((p) => !p.labChargesQuoted || p.quoteStatus === 'Accepted');
+  const completed = (data?.completed || []).filter((p) => !p.labChargesQuoted || p.quoteStatus === 'Accepted');
+
+  return (
+    <Card className="col-span-full xl:col-span-6 border-slate-200/90 shadow-2xs h-full">
+      <CardHeader className="pb-3 border-b border-slate-100 bg-slate-50/50 flex flex-row items-center justify-between">
+        <CardTitle className="text-xs font-black uppercase tracking-wider flex items-center text-slate-800">
+          <Briefcase className="w-4 h-4 mr-2 text-[#007A61]" /> Active Projects
+        </CardTitle>
+        <button onClick={onViewAll} className="text-[10px] font-bold text-blue-600 hover:underline flex items-center cursor-pointer">
+          View All <ArrowRight className="w-3 h-3 ml-1" />
         </button>
-        <button className="text-[11px] font-bold text-slate-400 hover:text-slate-600 pb-2">
-          Completed ({data?.completed?.length || 0})
-        </button>
-      </div>
+      </CardHeader>
+      <CardContent className="p-0">
+        <div className="flex space-x-4 border-b border-slate-200 px-4 pt-3">
+          <button className="text-[11px] font-bold text-[#007A61] border-b-2 border-[#007A61] pb-2">
+            Ongoing ({ongoing.length})
+          </button>
+          <button className="text-[11px] font-bold text-slate-400 hover:text-slate-600 pb-2">
+            Completed ({completed.length})
+          </button>
+        </div>
       <div className="overflow-x-auto">
         <table className="w-full text-left text-[11px]">
           <thead className="bg-slate-50 text-slate-500 font-extrabold border-b border-slate-100 uppercase tracking-wider text-[9px]">
@@ -109,8 +113,8 @@ export const Panel5_Projects = ({ data = {}, onViewAll, onViewProject }) => (
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
-            {data?.ongoing && data.ongoing.length > 0 ? (
-              data.ongoing.map((proj, i) => (
+            {ongoing && ongoing.length > 0 ? (
+              ongoing.map((proj, i) => (
                 <tr key={proj.id || i} className="hover:bg-slate-50 transition-colors">
                   <td className="px-4 py-2.5 font-bold text-slate-800 line-clamp-1">{proj.title}</td>
                   <td className="px-4 py-2.5 text-slate-600">{proj.university}</td>
@@ -133,8 +137,8 @@ export const Panel5_Projects = ({ data = {}, onViewAll, onViewProject }) => (
         </table>
       </div>
     </CardContent>
-  </Card>
-);
+  </Card>);
+};
 
 export const Panel6_Funding = ({ data = {}, onNavigateToFunding }) => {
   const committedText = data?.totalCommittedFormatted || '₹ 0.00 L';
@@ -146,10 +150,7 @@ export const Panel6_Funding = ({ data = {}, onNavigateToFunding }) => {
         <CardTitle className="text-xs font-black uppercase tracking-wider flex items-center text-slate-800">
           <Rocket className="w-4 h-4 mr-2 text-[#007A61]" /> Funding & Support
         </CardTitle>
-        <button 
-          onClick={onNavigateToFunding}
-          className="text-[10px] font-bold text-emerald-700 hover:text-emerald-800 flex items-center cursor-pointer hover:underline"
-        >
+        <button onClick={onNavigateToFunding} className="text-[10px] font-bold text-emerald-700 hover:text-emerald-800 flex items-center cursor-pointer hover:underline">
           Manage & Fund <ArrowRight className="w-3 h-3 ml-1" />
         </button>
       </CardHeader>

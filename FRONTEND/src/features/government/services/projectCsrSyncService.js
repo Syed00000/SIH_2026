@@ -136,14 +136,21 @@ class ProjectCsrSyncService {
             disbNum > 0 ||
             p.budgetStatus === 'Grant Sanctioned by Government' ||
             p.budgetStatus === 'Grant Disbursed' ||
+            (typeof p.budgetStatus === 'string' && p.budgetStatus.includes('Grant Disbursed')) ||
             p.status === 'Active' ||
+            p.status === 'In Progress' ||
             p.status === 'Deployed' ||
             p.isDeployed ||
-            p.prototypeStatus === 'Approved'
+            p.prototypeStatus === 'Approved' ||
+            p.prototypeStatus === 'Ready for Deployment' ||
+            Boolean(p.sentToGovernment) ||
+            p.governmentStatus === 'Under State Evaluation' ||
+            Boolean(p.testingCompleted) ||
+            Boolean(p.testingReportPdfUrl)
           );
         })
         .map((p) => {
-          const isProtoDone = Boolean(p.testingCompleted || p.testingReportPdfUrl || p.prototypeStatus === 'Pending Approval' || p.prototypeStatus === 'Approved' || p.status === 'Deployed' || p.isDeployed);
+          const isProtoDone = Boolean(p.testingCompleted || p.testingReportPdfUrl || p.prototypeStatus === 'Pending Approval' || p.prototypeStatus === 'Approved' || p.prototypeStatus === 'Ready for Deployment' || p.status === 'Deployed' || p.isDeployed);
           const isDeployed = Boolean(p.status === 'Deployed' || p.isDeployed);
           return {
             id: p.projectId || p.id.replace('PROP-', ''),
@@ -154,10 +161,10 @@ class ProjectCsrSyncService {
             sector: p.sector,
             district: p.district,
             hei: p.hei,
-            progress: isDeployed ? 100 : (isProtoDone ? 100 : (p.prototypeStatus === 'Approved' ? 85 : 57)),
-            status: isDeployed ? 'Deployed' : (isProtoDone ? 'Completed' : 'Active'),
-            stage: isDeployed ? 'Deployed to Citizen Registry' : (isProtoDone ? 'Prototype Done & Lab Verified (TRL-8/9)' : (p.prototypeStatus === 'Approved' ? 'Prototype Testing & Validation (TRL-4 to TRL-7)' : 'R&D Lab Phase')),
-            trlLevel: isProtoDone ? 'TRL-9' : (p.trlLevel || 'TRL-4'),
+            progress: isDeployed ? 100 : (isProtoDone ? 86 : (p.prototypeStatus === 'Approved' ? 85 : 57)),
+            status: isDeployed ? 'Deployed' : (isProtoDone ? 'In Progress' : 'Active'),
+            stage: isDeployed ? 'Deployed to Citizen Registry' : (isProtoDone ? 'Prototype Done & Lab Verified (TRL-7/8)' : (p.prototypeStatus === 'Approved' ? 'Prototype Testing & Validation (TRL-4 to TRL-7)' : 'R&D Lab Phase')),
+            trlLevel: isDeployed ? 'TRL-9' : (p.trlLevel || (isProtoDone ? 'TRL-7' : 'TRL-4')),
             isProtoDone,
             isDeployed,
             testingCompleted: p.testingCompleted,
@@ -183,6 +190,9 @@ class ProjectCsrSyncService {
             sentToGovernment: p.sentToGovernment,
             governmentStatus: p.governmentStatus,
             forwardedToGovAt: p.forwardedToGovAt,
+            testingStages: p.testingStages || [],
+            testingPartner: p.testingPartner || p.partnerName || 'Ariba Research Labs',
+            partnerName: p.partnerName || p.testingPartner || 'Ariba Research Labs',
             milestones: p.milestones || []
           };
         });
@@ -425,13 +435,16 @@ class ProjectCsrSyncService {
             ...p,
             disbursedAmount: cumulativeDisbursedStr,
             disbursedGrant: cumulativeDisbursedStr,
-            budgetStatus: 'Grant Sanctioned by Government'
+            budgetStatus: 'Grant Disbursed',
+            status: 'In Progress',
+            progress: 71,
+            stage: 'Prototype Development & Field Testing (TRL-4)'
           };
         }
         return p;
       });
     } else {
-      const sol = this.solutionProposals.find(p => p.projectId === pId || p.id === `PROP-${pId}`);
+      const sol = this.solutionProposals.find(p => p.projectId === pId || p.id === `PROP-${pId}` || p.id === pId);
       if (sol) {
         this.activeProjects = [
           {
@@ -440,14 +453,14 @@ class ProjectCsrSyncService {
             sector: sol.sector,
             district: sol.district,
             hei: sol.hei,
-            progress: 57,
-            status: 'Active',
-            stage: 'R&D Lab Phase',
+            progress: 71,
+            status: 'In Progress',
+            stage: 'Prototype Development & Field Testing (TRL-4)',
             trlLevel: sol.trlLevel || 'TRL-4',
-            sanctionedGrant: sol.allocatedAmount || sol.requestedGrant,
+            sanctionedGrant: sol.allocatedAmount || sol.requestedGrant || '₹ 80,000',
             disbursedGrant: cumulativeDisbursedStr,
             disbursedAmount: cumulativeDisbursedStr,
-            budgetStatus: 'Grant Sanctioned by Government',
+            budgetStatus: 'Grant Disbursed',
             rawBudget: sol.rawBudget,
             telemetryStatus: 'Active Telemetry',
             hardwareSpecs: '',
@@ -467,8 +480,10 @@ class ProjectCsrSyncService {
         await apiClient.put(`university/projects/${pId}?universityCode=${uniCode}`, {
           universityCode: uniCode,
           disbursedAmount: cumulativeDisbursedStr,
-          budgetStatus: 'Grant Sanctioned by Government',
-          status: 'Active',
+          budgetStatus: 'Grant Disbursed',
+          status: 'In Progress',
+          progressPercentage: 71,
+          milestonesCompleted: 5,
           tranches: projectTranches
         });
       } catch (err) {
@@ -485,6 +500,38 @@ class ProjectCsrSyncService {
     });
     
     return this.csrLedger;
+  }
+
+  deployPrototype(projectId, dept = 'Urban Development & Housing Department') {
+    const markDeployed = (p) => {
+      if (p.id === projectId || p.projectId === projectId || p.challengeId === projectId) {
+        return {
+          ...p,
+          status: 'Completed',
+          governmentStatus: 'Approved',
+          prototypeStatus: 'Approved',
+          isDeployed: true,
+          trlLevel: 'TRL-9',
+          handoverDepartment: dept,
+          deployedAt: new Date()
+        };
+      }
+      return p;
+    };
+    this.activeProjects = this.activeProjects.map(markDeployed);
+    this.solutionProposals = this.solutionProposals.map(markDeployed);
+    this.csrProposals = this.csrProposals.map(markDeployed);
+    this.notify('DATA_SYNCED', {
+      updatedProjects: this.getActiveProjects(),
+      updatedSolProposals: this.solutionProposals,
+      updatedCsrProposals: this.csrProposals,
+      updatedCsrLedger: this.csrLedger
+    });
+    return this.getActiveProjects();
+  }
+
+  advancePrototypeTrl(projectId) {
+    return this.deployPrototype(projectId);
   }
 
   addCsrPayment(payment) {

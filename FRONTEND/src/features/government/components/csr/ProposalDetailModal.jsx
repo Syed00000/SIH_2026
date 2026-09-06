@@ -109,6 +109,8 @@ export const ProposalDetailModal = ({
         proposal,
         linkedProject,
         disburseAmount,
+        rawDisbursed,
+        totalBudgetVal,
         trancheReq,
         onUpdateProposal
       });

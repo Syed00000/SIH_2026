@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ClassificationAnalytics } from './ClassificationAnalytics.jsx';
 import { ClassificationTable } from './ClassificationTable.jsx';
-import { IssueDetailModal } from './IssueDetailModal.jsx';
+import { IssueDetailPanel } from './IssueDetailPanel.jsx';
 import { citizenService } from '../../../citizen/services/citizenService.js';
 
 export const DomainClassificationSection = ({ onNavigateTab, onSelectIssueForOverride, onSelectIssueForEscalate }) => {
@@ -40,6 +40,25 @@ export const DomainClassificationSection = ({ onNavigateTab, onSelectIssueForOve
     fetchIssues();
   }, []);
 
+  if (selectedIssue) {
+    return (
+      <IssueDetailPanel
+        issue={selectedIssue}
+        onClose={() => setSelectedIssue(null)}
+        onNavigateOverride={(iss) => {
+          setSelectedIssue(null);
+          onSelectIssueForOverride?.(iss);
+          onNavigateTab('override');
+        }}
+        onNavigateEscalate={(iss) => {
+          setSelectedIssue(null);
+          onSelectIssueForEscalate?.(iss);
+          onNavigateTab('escalation');
+        }}
+      />
+    );
+  }
+
   return (
     <div className="space-y-3">
       <ClassificationAnalytics issuesCount={issues.length} />
@@ -49,22 +68,6 @@ export const DomainClassificationSection = ({ onNavigateTab, onSelectIssueForOve
         onInspectIssue={(iss) => setSelectedIssue(iss)}
         onRefresh={fetchIssues}
       />
-      {selectedIssue && (
-        <IssueDetailModal
-          issue={selectedIssue}
-          onClose={() => setSelectedIssue(null)}
-          onNavigateOverride={(iss) => {
-            setSelectedIssue(null);
-            onSelectIssueForOverride?.(iss);
-            onNavigateTab('override');
-          }}
-          onNavigateEscalate={(iss) => {
-            setSelectedIssue(null);
-            onSelectIssueForEscalate?.(iss);
-            onNavigateTab('escalation');
-          }}
-        />
-      )}
     </div>
   );
 };

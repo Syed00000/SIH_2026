@@ -1,7 +1,7 @@
 import React from 'react';
 import { NodalFilterBar } from './NodalFilterBar.jsx';
 import { NodalAssignModal } from './NodalAssignModal.jsx';
-import { ProblemEvidenceDossierModal } from './ProblemEvidenceDossierModal.jsx';
+import { ProblemEvidenceDossierPanel } from './ProblemEvidenceDossierPanel.jsx';
 import { ClarificationChatModal } from '../../clarification/components/ClarificationChatModal.jsx';
 import { useNodalChallenges } from './challenges/hooks/useNodalChallenges.js';
 import { NodalChallengesHeader } from './challenges/NodalChallengesHeader.jsx';
@@ -36,6 +36,47 @@ export const NodalChallenges = ({ initialStatusFilter = 'All Status', nodalDistr
     handleTriageSuccess,
     filteredChallenges
   } = useNodalChallenges({ initialStatusFilter, nodalDistrict });
+
+  if (selectedDossierChallenge) {
+    return (
+      <div className="space-y-4 select-none text-left animate-in fade-in duration-150">
+        <ProblemEvidenceDossierPanel
+          challenge={selectedDossierChallenge}
+          onClose={() => setSelectedDossierChallenge(null)}
+          onOpenTriage={() => {
+            setSelectedChallenge(selectedDossierChallenge);
+            setIsAssignModalOpen(true);
+          }}
+          onOpenChat={() => {
+            setChatChallenge(selectedDossierChallenge);
+          }}
+        />
+
+        {/* Triage / Institutional Assignment Modal */}
+        {isAssignModalOpen && (
+          <NodalAssignModal
+            isOpen={isAssignModalOpen}
+            onClose={() => setIsAssignModalOpen(false)}
+            challenge={selectedChallenge}
+            onSuccess={(updated) => {
+              handleTriageSuccess(updated);
+              setSelectedDossierChallenge(null);
+            }}
+          />
+        )}
+
+        {/* Direct Citizen / University Clarification Chat */}
+        {chatChallenge && (
+          <ClarificationChatModal
+            isOpen={Boolean(chatChallenge)}
+            onClose={() => setChatChallenge(null)}
+            challenge={chatChallenge}
+            isUniversityView={false}
+          />
+        )}
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4 select-none text-left animate-in fade-in duration-150">
@@ -80,24 +121,6 @@ export const NodalChallenges = ({ initialStatusFilter = 'All Status', nodalDistr
           onClose={() => setIsAssignModalOpen(false)}
           challenge={selectedChallenge}
           onSuccess={handleTriageSuccess}
-        />
-      )}
-
-      {/* Ground Truth Evidence Dossier Modal */}
-      {selectedDossierChallenge && (
-        <ProblemEvidenceDossierModal
-          isOpen={Boolean(selectedDossierChallenge)}
-          onClose={() => setSelectedDossierChallenge(null)}
-          challenge={selectedDossierChallenge}
-          onOpenTriage={() => {
-            setSelectedChallenge(selectedDossierChallenge);
-            setSelectedDossierChallenge(null);
-            setIsAssignModalOpen(true);
-          }}
-          onOpenChat={() => {
-            setChatChallenge(selectedDossierChallenge);
-            setSelectedDossierChallenge(null);
-          }}
         />
       )}
 
