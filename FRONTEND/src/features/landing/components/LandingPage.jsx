@@ -9,9 +9,9 @@ import {
 } from 'lucide-react';
 import heroBanner from '../assets/landing-banner.png';
 import footerSunsetBg from '../assets/footer_sunset_bg.png';
-import leaderRajesh from '../assets/leader_rajesh.png';
-import leaderAnil from '../assets/leader_anil.png';
-import leaderKavita from '../assets/leader_kavita.png';
+import leaderRajesh from '../assets/leader-1.png';
+import leaderAnil from '../assets/leader-2.png';
+import leaderKavita from '../assets/leader-3.png';
 import quoteCardBg from '../assets/quote_card_bg.png';
 import indiaMapGraphic from '../assets/india_map_graphic.png';
 import jharkhandLeaf from '../assets/jharkhand_leaf.png';
@@ -197,21 +197,7 @@ export const LandingPage = ({ onNavigate }) => {
           </button>
         </div>
 
-        {/* Right TEXT OVERLAY (Windmills area) */}
-        <div className="absolute top-[28%] left-[73%] -translate-y-1/2 flex flex-col z-10 w-[15%]">
-          <p className="text-[#0f4b3a] font-serif italic text-[1.1vw] font-bold leading-[1.1] ml-0">
-            Viksit
-          </p>
-          <p className="text-[#0f4b3a] font-serif italic text-[1.1vw] font-bold leading-[1.1] ml-[0.2vw]">
-            Bharat
-          </p>
-          <p className="text-[#0f4b3a] font-serif italic text-[1.1vw] font-bold leading-[1.1] ml-[0.5vw]">
-            Through
-          </p>
-          <p className="text-[#0f4b3a] font-serif italic text-[1.1vw] font-bold leading-[1.1] ml-[0.8vw]">
-            Knowledge
-          </p>
-        </div>
+
       </section>
 
       {/* Latest Announcements Ticker */}
@@ -260,39 +246,39 @@ export const LandingPage = ({ onNavigate }) => {
         <div className="flex flex-col md:flex-row gap-2 md:gap-3 w-full">
           
           {/* Report a Problem */}
-          <div onClick={() => handleNav('/citizen')} className="flex-1 bg-[#0f4b3a] border border-[#0f4b3a] shadow-xs rounded-none px-4 py-2.5 md:py-3 flex items-center justify-between cursor-pointer hover:bg-[#0c3c2e] hover:shadow-sm transition-all group">
+          <div onClick={() => handleNav('/citizen')} className="flex-1 bg-white border border-gray-200 shadow-xs rounded-none px-4 py-2.5 md:py-3 flex items-center justify-between cursor-pointer hover:bg-[#0f4b3a] hover:border-[#0f4b3a] transition-all duration-300 group">
             <div className="flex items-center gap-3">
-              <FileText className="w-5 h-5 md:w-6 md:h-6 text-white transition-all" />
+              <FileText className="w-5 h-5 md:w-6 md:h-6 text-[#0f4b3a] group-hover:text-white transition-all" />
               <div className="text-left">
-                <h3 className="text-white text-[13px] md:text-[14px] font-bold tracking-tight">Report a Problem</h3>
-                <p className="text-emerald-100/90 text-[9px] md:text-[10px] font-medium mt-0.5">Be the Change</p>
+                <h3 className="text-[#0f4b3a] group-hover:text-white text-[13px] md:text-[14px] font-bold tracking-tight transition-all">Report a Problem</h3>
+                <p className="text-gray-500 group-hover:text-emerald-100/90 text-[9px] md:text-[10px] font-medium mt-0.5 transition-all">Be the Change</p>
               </div>
             </div>
-            <ChevronRight className="w-4 h-4 text-white opacity-80 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
+            <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-white opacity-80 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
           </div>
 
           {/* For Universities */}
-          <div onClick={() => handleNav('/university')} className="flex-1 bg-[#f4f9f6] border border-emerald-100 shadow-xs rounded-none px-4 py-2.5 md:py-3 flex items-center justify-between cursor-pointer hover:bg-[#e8f4ed] hover:border-emerald-300 hover:shadow-sm transition-all group">
+          <div onClick={() => handleNav('/university')} className="flex-1 bg-white border border-gray-200 shadow-xs rounded-none px-4 py-2.5 md:py-3 flex items-center justify-between cursor-pointer hover:bg-[#0f4b3a] hover:border-[#0f4b3a] transition-all duration-300 group">
             <div className="flex items-center gap-3">
-              <Building2 className="w-5 h-5 md:w-6 md:h-6 text-[#0f4b3a] group-hover:scale-110 transition-all" />
+              <Building2 className="w-5 h-5 md:w-6 md:h-6 text-[#0f4b3a] group-hover:text-white transition-all" />
               <div className="text-left">
-                <h3 className="text-[#0f4b3a] text-[13px] md:text-[14px] font-bold tracking-tight">For Universities</h3>
-                <p className="text-emerald-800/70 text-[9px] md:text-[10px] font-medium mt-0.5">Collaborate <span className="mx-1 opacity-50">|</span> Solve <span className="mx-1 opacity-50">|</span> Grow</p>
+                <h3 className="text-[#0f4b3a] group-hover:text-white text-[13px] md:text-[14px] font-bold tracking-tight transition-all">For Universities</h3>
+                <p className="text-gray-500 group-hover:text-emerald-100/90 text-[9px] md:text-[10px] font-medium mt-0.5 transition-all">Collaborate <span className="mx-1 opacity-50">|</span> Solve <span className="mx-1 opacity-50">|</span> Grow</p>
               </div>
             </div>
-            <ChevronRight className="w-4 h-4 text-[#0f4b3a] opacity-80 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
+            <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-white opacity-80 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
           </div>
 
           {/* For Industry & Startups */}
-          <div onClick={() => handleNav('/login')} className="flex-1 bg-[#edf5ff] border border-blue-100 shadow-xs rounded-none px-4 py-2.5 md:py-3 flex items-center justify-between cursor-pointer hover:bg-[#e1eeff] hover:border-blue-300 hover:shadow-sm transition-all group">
+          <div onClick={() => handleNav('/login')} className="flex-1 bg-white border border-gray-200 shadow-xs rounded-none px-4 py-2.5 md:py-3 flex items-center justify-between cursor-pointer hover:bg-[#0f4b3a] hover:border-[#0f4b3a] transition-all duration-300 group">
             <div className="flex items-center gap-3">
-              <Users className="w-5 h-5 md:w-6 md:h-6 text-[#1d4ed8] group-hover:scale-110 transition-all" />
+              <Users className="w-5 h-5 md:w-6 md:h-6 text-[#0f4b3a] group-hover:text-white transition-all" />
               <div className="text-left">
-                <h3 className="text-[#1e40af] text-[13px] md:text-[14px] font-bold tracking-tight">For Industry & Startups</h3>
-                <p className="text-blue-700/70 text-[9px] md:text-[10px] font-medium mt-0.5">Innovate <span className="mx-1 opacity-50">|</span> Partner <span className="mx-1 opacity-50">|</span> Create Impact</p>
+                <h3 className="text-[#0f4b3a] group-hover:text-white text-[13px] md:text-[14px] font-bold tracking-tight transition-all">For Industry & Startups</h3>
+                <p className="text-gray-500 group-hover:text-emerald-100/90 text-[9px] md:text-[10px] font-medium mt-0.5 transition-all">Innovate <span className="mx-1 opacity-50">|</span> Partner <span className="mx-1 opacity-50">|</span> Create Impact</p>
               </div>
             </div>
-            <ChevronRight className="w-4 h-4 text-[#1d4ed8] opacity-80 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
+            <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-white opacity-80 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
           </div>
 
         </div>
@@ -352,44 +338,49 @@ export const LandingPage = ({ onNavigate }) => {
               </div>
 
               {/* 3 Leaders Grid */}
-              <div className="grid grid-cols-3 gap-2.5 md:gap-3 flex-grow items-start">
+              <div className="grid grid-cols-3 gap-2.5 md:gap-3 flex-grow items-stretch">
                 {/* Leader 1 */}
-                <div className="flex flex-col items-center text-center">
-                  <div className="w-full bg-[#f1f3f5] rounded-none overflow-hidden flex items-center justify-center p-1 aspect-[16/11] max-h-28">
-                    <img src={leaderRajesh} alt="Shri Rajesh Kumar" className="w-full h-full object-contain" />
+                <div className="flex flex-col items-center text-center h-full">
+                  <div className="w-full bg-[#f1f3f5] rounded-none overflow-hidden flex items-center justify-center p-1 h-20 md:h-24">
+                    <img src={leaderRajesh} alt="Shri Rajesh Kumar" className="w-full h-full object-cover object-top" />
                   </div>
                   <h4 className="font-bold text-[11px] sm:text-xs text-gray-900 mt-2 leading-tight">Shri Rajesh Kumar</h4>
                   <p className="text-[9px] sm:text-[10px] text-gray-500 leading-tight mt-0.5">Hon'ble Minister</p>
                   <p className="text-[9px] sm:text-[10px] text-gray-500 leading-tight">Ministry of Education</p>
-                  <button className="mt-2 px-3 py-0.5 rounded-none border border-[#0f4b3a] text-[#0f4b3a] text-[10.5px] font-semibold hover:bg-[#0f4b3a] hover:text-white transition-colors shadow-2xs">
-                    Profile
-                  </button>
+                  <div className="mt-auto pt-2 w-full flex justify-center">
+                    <button className="px-3 py-0.5 rounded-none border border-[#0f4b3a] text-[#0f4b3a] text-[10.5px] font-semibold hover:bg-[#0f4b3a] hover:text-white transition-colors shadow-2xs">
+                      Profile
+                    </button>
+                  </div>
                 </div>
 
                 {/* Leader 2 */}
-                <div className="flex flex-col items-center text-center">
-                  <div className="w-full bg-[#f1f3f5] rounded-none overflow-hidden flex items-center justify-center p-1 aspect-[16/11] max-h-28">
-                    <img src={leaderAnil} alt="Dr. Anil Verma" className="w-full h-full object-contain" />
+                <div className="flex flex-col items-center text-center h-full">
+                  <div className="w-full bg-[#f1f3f5] rounded-none overflow-hidden flex items-center justify-center p-1 h-20 md:h-24">
+                    <img src={leaderAnil} alt="Dr. Anil Verma" className="w-full h-full object-cover object-top" />
                   </div>
                   <h4 className="font-bold text-[11px] sm:text-xs text-gray-900 mt-2 leading-tight">Dr. Anil Verma</h4>
                   <p className="text-[9px] sm:text-[10px] text-gray-500 leading-tight mt-0.5">Minister of State</p>
-                  <p className="text-[9px] sm:text-[10px] text-transparent leading-tight select-none">{"\u00A0"}</p>
-                  <button className="mt-2 px-3 py-0.5 rounded-none border border-[#0f4b3a] text-[#0f4b3a] text-[10.5px] font-semibold hover:bg-[#0f4b3a] hover:text-white transition-colors shadow-2xs">
-                    Profile
-                  </button>
+                  <div className="mt-auto pt-2 w-full flex justify-center">
+                    <button className="px-3 py-0.5 rounded-none border border-[#0f4b3a] text-[#0f4b3a] text-[10.5px] font-semibold hover:bg-[#0f4b3a] hover:text-white transition-colors shadow-2xs">
+                      Profile
+                    </button>
+                  </div>
                 </div>
 
                 {/* Leader 3 */}
-                <div className="flex flex-col items-center text-center">
-                  <div className="w-full bg-[#f1f3f5] rounded-none overflow-hidden flex items-center justify-center p-1 aspect-[16/11] max-h-28">
-                    <img src={leaderKavita} alt="Smt. Kavita Sharma" className="w-full h-full object-contain" />
+                <div className="flex flex-col items-center text-center h-full">
+                  <div className="w-full bg-[#f1f3f5] rounded-none overflow-hidden flex items-center justify-center p-1 h-20 md:h-24">
+                    <img src={leaderKavita} alt="Smt. Kavita Sharma" className="w-full h-full object-cover object-top" />
                   </div>
                   <h4 className="font-bold text-[11px] sm:text-xs text-gray-900 mt-2 leading-tight">Smt. Kavita Sharma</h4>
                   <p className="text-[9px] sm:text-[10px] text-gray-500 leading-tight mt-0.5">Secretary</p>
                   <p className="text-[9px] sm:text-[10px] text-gray-500 leading-tight">Ministry of Education</p>
-                  <button className="mt-2 px-3 py-0.5 rounded-none border border-[#0f4b3a] text-[#0f4b3a] text-[10.5px] font-semibold hover:bg-[#0f4b3a] hover:text-white transition-colors shadow-2xs">
-                    Profile
-                  </button>
+                  <div className="mt-auto pt-2 w-full flex justify-center">
+                    <button className="px-3 py-0.5 rounded-none border border-[#0f4b3a] text-[#0f4b3a] text-[10.5px] font-semibold hover:bg-[#0f4b3a] hover:text-white transition-colors shadow-2xs">
+                      Profile
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>

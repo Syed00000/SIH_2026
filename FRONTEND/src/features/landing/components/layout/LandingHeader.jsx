@@ -60,7 +60,7 @@ export const LandingHeader = ({ onNavigate, currentPath = '/' }) => {
 
       {/* Main Header */}
       <header className="bg-white sticky top-0 z-40 shadow-sm border-b border-gray-200">
-        <div className="w-full max-w-7xl mx-auto px-4 md:px-8 py-3 flex justify-between items-center">
+        <div className="w-full max-w-7xl mx-auto px-4 md:px-8 py-1 flex justify-between items-center">
           <div className="flex items-center space-x-3 cursor-pointer" onClick={() => handleNav('/')}>
              <img src="https://www.jharkhand.gov.in/images/jhlogo55.PNG" alt="Johar Sethu" className="h-[46px] w-[46px] object-contain" />
              <div className="ml-2 flex flex-col justify-center">

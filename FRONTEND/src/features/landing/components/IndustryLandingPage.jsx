@@ -1,273 +1,313 @@
 import React from 'react';
 import { LandingLayout } from './layout/LandingLayout';
-import { ArrowRight, IndianRupee, Target, Users, Cpu, Search, Filter, MapPin, Tag, Activity } from 'lucide-react';
-import heroBanner from '../assets/landing-banner.png'; // Using as background
+import { 
+  ArrowRight, Search, ChevronDown, Handshake, CheckCircle2, 
+  TrendingUp, MapPin, Droplet, Sun, Heart, Recycle, FlaskConical,
+  CircleDollarSign, Settings, Users, Factory, Rocket
+} from 'lucide-react';
+import bannerImage from '../../../assets/industry-banner.png'; // Banner for industry
 
 export const IndustryLandingPage = ({ onNavigate }) => {
   return (
     <LandingLayout onNavigate={onNavigate} currentPath="/industry">
       {/* Hero Section */}
-      <section className="bg-slate-50 relative border-b border-gray-200">
-        <div className="absolute top-0 right-0 w-1/2 h-full opacity-10 pointer-events-none">
-           <img src={heroBanner} className="w-full h-full object-cover mix-blend-multiply" alt="bg" />
-           <div className="absolute inset-0 bg-gradient-to-r from-slate-50 to-transparent"></div>
+      <section className="w-full relative min-h-[350px] md:min-h-[400px] flex items-center overflow-hidden bg-white border-b border-gray-200">
+        <div className="absolute inset-0 z-0">
+          <img 
+            src={bannerImage} 
+            alt="Industry Banner" 
+            className="w-full h-full object-cover object-right"
+          />
         </div>
         
-        <div className="max-w-7xl mx-auto px-4 md:px-8 py-12 md:py-16 relative z-10">
-          <div className="flex flex-col lg:flex-row gap-10 items-center">
-            <div className="lg:w-[55%]">
-              <div className="text-sm text-gray-500 mb-2 font-medium">Home &gt; Industry</div>
-              <h1 className="text-4xl md:text-5xl font-black text-[#0f4b3a] tracking-tight leading-tight mb-4">
-                Partner for a Better Jharkhand
-              </h1>
-              <h2 className="text-lg md:text-xl font-bold text-gray-800 mb-2">
-                Industry Collaboration for Social Impact
-              </h2>
-              <p className="text-sm md:text-base text-gray-600 mb-8 max-w-2xl font-medium">
-                Leverage your CSR funds, technical expertise, and resources to solve real challenges. Drive measurable impact alongside the Government and innovators.
-              </p>
-              
-              <div className="flex flex-wrap gap-4">
-                <button className="bg-[#0f4b3a] text-white px-6 py-3 rounded-md font-bold text-sm flex items-center gap-2 hover:bg-teal-900 transition-colors shadow-md">
-                  Explore Challenges <ArrowRight className="w-4 h-4" />
-                </button>
-                <button className="bg-white text-[#0f4b3a] border-2 border-[#0f4b3a] px-6 py-3 rounded-md font-bold text-sm hover:bg-[#0f4b3a] hover:text-white transition-colors">
-                  Partner With Us
-                </button>
-              </div>
+        {/* White fade overlay */}
+        <div className="absolute inset-0 bg-gradient-to-r from-white via-white/95 to-transparent w-[75%] md:w-[65%] lg:w-[55%] z-0"></div>
+
+        <div className="relative z-10 w-full max-w-7xl mx-auto px-4 md:px-8 py-10">
+          <div className="w-full md:w-[70%] lg:w-[60%]">
+            <div className="text-[13px] font-bold text-gray-500 mb-2">
+              Home <span className="mx-1">&gt;</span> Industry
             </div>
-
-            <div className="lg:w-[45%] flex justify-center">
-               {/* Custom Diagram matching the screenshot */}
-               <div className="relative w-72 h-72">
-                  <div className="absolute inset-0 border-[4px] border-dashed border-teal-200 rounded-full animate-[spin_60s_linear_infinite]"></div>
-                  
-                  {/* Center Node */}
-                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-28 h-28 bg-[#0f4b3a] rounded-full flex flex-col items-center justify-center text-white shadow-xl z-10">
-                     <svg className="w-10 h-10 mb-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                       <path d="M11 17l-5.6-5.6a2.83 2.83 0 014-4L11 9l2-2 1.6 1.6M14 6l3.6-3.6a2.83 2.83 0 014 4L16 12M5.4 21.6a2.83 2.83 0 01-4-4L7 12l2 2-3.6 3.6zM13 21v-4l-3-3" />
-                     </svg>
-                     <span className="text-[11px] font-bold text-center leading-tight">Industry<br/>Partnership</span>
-                  </div>
-
-                  {/* Satellite Nodes */}
-                  <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/4 flex flex-col items-center">
-                     <div className="w-16 h-16 bg-white rounded-full shadow-lg border border-gray-100 flex items-center justify-center mb-1 relative group hover:scale-110 transition-transform">
-                        <IndianRupee className="w-6 h-6 text-emerald-600" />
-                        <div className="absolute h-10 w-0.5 bg-emerald-200 top-full left-1/2 -translate-x-1/2 -z-10 group-hover:bg-emerald-400"></div>
-                     </div>
-                     <span className="text-[10px] font-bold text-gray-700 bg-white/80 px-2 rounded">Funding</span>
-                  </div>
-
-                  <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/4 flex flex-col items-center">
-                     <div className="w-16 h-16 bg-white rounded-full shadow-lg border border-gray-100 flex items-center justify-center mb-1 relative group hover:scale-110 transition-transform">
-                        <Users className="w-6 h-6 text-blue-600" />
-                        <div className="absolute h-10 w-0.5 bg-blue-200 bottom-full left-1/2 -translate-x-1/2 -z-10 group-hover:bg-blue-400"></div>
-                     </div>
-                     <span className="text-[10px] font-bold text-gray-700 bg-white/80 px-2 rounded">Mentorship</span>
-                  </div>
-
-                  <div className="absolute top-1/2 left-0 -translate-x-1/4 -translate-y-1/2 flex flex-col items-center">
-                     <div className="w-16 h-16 bg-white rounded-full shadow-lg border border-gray-100 flex items-center justify-center mb-1 relative group hover:scale-110 transition-transform">
-                        <div className="font-bold text-sm text-purple-600">CSR</div>
-                        <div className="absolute w-10 h-0.5 bg-purple-200 left-full top-1/2 -translate-y-1/2 -z-10 group-hover:bg-purple-400"></div>
-                     </div>
-                     <span className="text-[10px] font-bold text-gray-700 text-center leading-tight bg-white/80 px-1 rounded">Corporate Social<br/>Responsibility</span>
-                  </div>
-
-                  <div className="absolute top-1/2 right-0 translate-x-1/4 -translate-y-1/2 flex flex-col items-center">
-                     <div className="w-16 h-16 bg-white rounded-full shadow-lg border border-gray-100 flex items-center justify-center mb-1 relative group hover:scale-110 transition-transform">
-                        <Cpu className="w-6 h-6 text-orange-500" />
-                        <div className="absolute w-10 h-0.5 bg-orange-200 right-full top-1/2 -translate-y-1/2 -z-10 group-hover:bg-orange-400"></div>
-                     </div>
-                     <span className="text-[10px] font-bold text-gray-700 bg-white/80 px-2 rounded">Technology</span>
-                  </div>
-               </div>
+            
+            <h1 className="text-4xl md:text-[42px] lg:text-[46px] font-bold text-[#1c3c78] mb-1.5 leading-[1.1]">
+              Partner for a Better Jharkhand
+            </h1>
+            <h2 className="text-lg md:text-[19px] font-bold text-[#1c3c78] mb-3">
+              Collaborate. Innovate. Create Impact.
+            </h2>
+            
+            <p className="text-gray-700 text-[14px] md:text-[15px] leading-relaxed font-medium mb-6 max-w-[480px]">
+              Join hands with universities, innovators and the Government of Jharkhand to transform real societal challenges into scalable solutions.
+            </p>
+            
+            <div className="flex flex-wrap items-center gap-3">
+              <button className="bg-[#0f4b3a] text-white px-5 py-2.5 rounded-none font-bold text-[13px] transition-all hover:bg-[#0c382b] flex items-center shadow-sm">
+                Explore Challenges <ArrowRight className="w-4 h-4 ml-1.5" />
+              </button>
+              <button className="bg-white text-[#0f4b3a] border border-gray-200 px-5 py-2.5 rounded-none font-bold text-[13px] transition-all hover:bg-gray-50 flex items-center shadow-sm">
+                Partner With Us
+              </button>
+              <button className="bg-white text-[#0f4b3a] border border-gray-200 px-5 py-2.5 rounded-none font-bold text-[13px] transition-all hover:bg-gray-50 flex items-center shadow-sm">
+                View Ongoing Projects
+              </button>
             </div>
           </div>
         </div>
       </section>
 
-      {/* How Industry Can Contribute */}
-      <section className="bg-white py-12 border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 md:px-8">
-           <div className="flex flex-col md:flex-row justify-between items-end mb-8 border-b border-gray-100 pb-4">
-              <div>
-                 <h2 className="text-2xl md:text-3xl font-black text-gray-900 tracking-tight">How Industry Can Contribute</h2>
-                 <p className="text-gray-500 font-medium mt-1">Four ways to make a tangible difference in Jharkhand.</p>
+      {/* Main Content Area */}
+      <section className="w-full max-w-7xl mx-auto px-4 md:px-8 py-8 relative z-10">
+        
+        <div className="flex flex-col lg:flex-row gap-6">
+          
+          {/* Left Column - Main Content */}
+          <div className="lg:w-[73%] flex flex-col gap-8">
+            
+            {/* How Industry Can Contribute */}
+            <div>
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2">
+                  <Factory className="w-6 h-6 text-[#0f4b3a]" />
+                  <h2 className="text-[20px] font-bold text-[#1c3c78]">How Industry Can Contribute</h2>
+                </div>
+                <button className="text-[#0f4b3a] text-[12px] font-bold flex items-center hover:underline cursor-pointer">
+                  Be a Catalyst for Change <ArrowRight className="w-3.5 h-3.5 ml-1" />
+                </button>
               </div>
-           </div>
-
-           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              <div className="p-6 rounded-xl border border-gray-100 bg-slate-50 hover:shadow-lg transition-all group">
-                 <div className="w-12 h-12 rounded-full bg-emerald-100 flex items-center justify-center mb-4 group-hover:bg-emerald-600 transition-colors">
-                    <IndianRupee className="w-6 h-6 text-emerald-600 group-hover:text-white" />
-                 </div>
-                 <h3 className="text-lg font-bold text-gray-900 mb-2">Fund Projects (CSR)</h3>
-                 <p className="text-sm text-gray-600 leading-relaxed">Invest in high-impact projects through transparent channels to meet your Corporate Social Responsibility goals efficiently.</p>
-              </div>
-
-              <div className="p-6 rounded-xl border border-gray-100 bg-slate-50 hover:shadow-lg transition-all group">
-                 <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center mb-4 group-hover:bg-blue-600 transition-colors">
-                    <Target className="w-6 h-6 text-blue-600 group-hover:text-white" />
-                 </div>
-                 <h3 className="text-lg font-bold text-gray-900 mb-2">Adopt a Challenge</h3>
-                 <p className="text-sm text-gray-600 leading-relaxed">Take ownership of specific district-level problems and provide end-to-end solutions using your organizational expertise.</p>
-              </div>
-
-              <div className="p-6 rounded-xl border border-gray-100 bg-slate-50 hover:shadow-lg transition-all group">
-                 <div className="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center mb-4 group-hover:bg-purple-600 transition-colors">
-                    <Users className="w-6 h-6 text-purple-600 group-hover:text-white" />
-                 </div>
-                 <h3 className="text-lg font-bold text-gray-900 mb-2">Provide Mentorship</h3>
-                 <p className="text-sm text-gray-600 leading-relaxed">Guide student innovators and early-stage startups with your industry knowledge, experience, and critical market access.</p>
-              </div>
-
-              <div className="p-6 rounded-xl border border-gray-100 bg-slate-50 hover:shadow-lg transition-all group">
-                 <div className="w-12 h-12 rounded-full bg-orange-100 flex items-center justify-center mb-4 group-hover:bg-orange-600 transition-colors">
-                    <Cpu className="w-6 h-6 text-orange-600 group-hover:text-white" />
-                 </div>
-                 <h3 className="text-lg font-bold text-gray-900 mb-2">Technology Transfer</h3>
-                 <p className="text-sm text-gray-600 leading-relaxed">Share proprietary technology, data sets, or infrastructure to help scale grassroots innovations and speed up deployment.</p>
-              </div>
-           </div>
-        </div>
-      </section>
-
-      {/* Explore Challenges & Projects */}
-      <section className="bg-slate-50 py-12">
-        <div className="max-w-7xl mx-auto px-4 md:px-8">
-           
-           <div className="mb-6 flex flex-col sm:flex-row justify-between items-center gap-4">
-              <h2 className="text-2xl md:text-3xl font-black text-gray-900 tracking-tight">Explore Challenges & Projects</h2>
-              <div className="relative w-full sm:w-72">
-                 <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                 <input type="text" placeholder="Search by keywords..." className="w-full pl-9 pr-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-[#0f4b3a]" />
-              </div>
-           </div>
-
-           <div className="flex flex-col lg:flex-row gap-8">
               
-              {/* Sidebar Filters */}
-              <div className="lg:w-1/4">
-                 <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5 sticky top-24">
-                    <div className="flex items-center gap-2 mb-4 border-b border-gray-100 pb-3">
-                       <Filter className="w-4 h-4 text-gray-500" />
-                       <h3 className="font-bold text-gray-800">Filters</h3>
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2.5">
+                {[
+                  { icon: CircleDollarSign, title: 'Funding / CSR', desc: 'Support innovative solutions through funding and CSR initiatives' },
+                  { icon: Settings, title: 'Technical Expertise', desc: 'Provide domain expertise and technology support' },
+                  { icon: Users, title: 'Mentorship', desc: 'Guide and mentor student and faculty teams' },
+                  { icon: FlaskConical, title: 'Labs & Testing', desc: 'Offer testing facilities and technical infrastructure' },
+                  { icon: Factory, title: 'Manufacturing', desc: 'Help scale prototypes to production-ready solutions' },
+                  { icon: Rocket, title: 'Deployment', desc: 'Support field deployment and market readiness' },
+                ].map((item, idx) => (
+                  <div key={idx} className="bg-white border border-gray-100 rounded-none p-3 flex flex-row items-start gap-2 shadow-[0_2px_8px_rgb(0,0,0,0.04)] hover:border-[#0f4b3a]/30 transition-all cursor-pointer group">
+                    <div className="w-7 h-7 rounded-full bg-green-50 flex items-center justify-center shrink-0 group-hover:bg-[#0f4b3a] transition-colors mt-0.5">
+                      <item.icon className="w-3.5 h-3.5 text-[#0f4b3a] group-hover:text-white transition-colors" strokeWidth={2.5} />
                     </div>
-
-                    <div className="mb-6">
-                       <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">Domain</h4>
-                       <div className="space-y-2">
-                          {['Education', 'Healthcare', 'Agriculture', 'Environment', 'Smart Cities', 'Water & Sanitation'].map(domain => (
-                             <label key={domain} className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
-                                <input type="checkbox" className="rounded text-[#0f4b3a] focus:ring-[#0f4b3a] cursor-pointer" />
-                                {domain}
-                             </label>
-                          ))}
-                       </div>
-                    </div>
-
-                    <div className="mb-6">
-                       <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">District</h4>
-                       <select className="w-full border border-gray-300 rounded text-sm p-1.5 focus:outline-none focus:ring-1 focus:ring-[#0f4b3a]">
-                          <option>All Districts</option>
-                          <option>Ranchi</option>
-                          <option>Palamu</option>
-                          <option>Gumla</option>
-                          <option>Dhanbad</option>
-                       </select>
-                    </div>
-
                     <div>
-                       <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">Project Stage</h4>
-                       <div className="space-y-2">
-                          {['Ideation', 'Prototype', 'Implementation', 'Scaling'].map(stage => (
-                             <label key={stage} className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
-                                <input type="checkbox" className="rounded text-[#0f4b3a] focus:ring-[#0f4b3a] cursor-pointer" />
-                                {stage}
-                             </label>
+                      <h3 className="text-[#1c3c78] font-bold text-[10.5px] mb-1 leading-tight">{item.title}</h3>
+                      <p className="text-gray-500 text-[8.5px] leading-[1.3]">{item.desc}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Explore Challenges & Projects */}
+            <div>
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2">
+                  <div className="w-6 h-6 text-[#0f4b3a] flex items-center justify-center">
+                    <svg viewBox="0 0 24 24" fill="currentColor" stroke="none" className="w-5 h-5"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                  </div>
+                  <h2 className="text-[20px] font-bold text-[#1c3c78]">Explore Challenges & Projects</h2>
+                </div>
+                <button className="text-[#1c3c78] text-[12px] font-bold flex items-center hover:underline cursor-pointer">
+                  View All Challenges <ArrowRight className="w-3.5 h-3.5 ml-1" />
+                </button>
+              </div>
+              
+              <div className="bg-white border border-gray-200 p-4 rounded-none shadow-[0_2px_8px_rgb(0,0,0,0.04)] mb-5">
+                <div className="relative mb-3.5">
+                  <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                  <input 
+                    type="text" 
+                    placeholder="Search by keyword (e.g., water, healthcare, agriculture...)"
+                    className="w-full pl-9 pr-4 py-2 border border-gray-200 rounded-none text-[13px] outline-none focus:border-[#0f4b3a]/50 placeholder-gray-400"
+                  />
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-5 gap-2 h-10">
+                  {['Problem Area', 'District / Region', 'Support Required', 'Project Stage'].map((filter, i) => (
+                    <div key={i} className="relative h-full">
+                      <select className="w-full h-full appearance-none border border-gray-200 rounded-none py-1 pl-3 pr-8 text-[11px] text-gray-500 outline-none focus:border-[#0f4b3a]/50 bg-white">
+                        <option value="">{filter}</option>
+                      </select>
+                      <ChevronDown className="w-3.5 h-3.5 text-gray-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                    </div>
+                  ))}
+                  <button className="bg-[#0f4b3a] text-white rounded-none font-bold text-[13px] transition-all hover:bg-[#0c382b] w-full h-full flex items-center justify-center shadow-sm">
+                    Search
+                  </button>
+                </div>
+              </div>
+
+              {/* Cards Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+                {[
+                  { 
+                    title: 'Smart Water Monitoring System', 
+                    desc: 'Real-time monitoring of water availability in rural areas of Gumia district.',
+                    stage: 'Prototype Stage', badgeColor: 'bg-blue-100 text-blue-700',
+                    img: 'https://images.unsplash.com/photo-1534447677768-be436bb09401?auto=format&fit=crop&q=80&w=400&h=250',
+                    domainIcon: Droplet, domain: 'Water & Sanitation', location: 'Gumia',
+                    support: ['Technology', 'Testing', 'Deployment']
+                  },
+                  { 
+                    title: 'Solar Cold Storage for Farmers', 
+                    desc: 'Affordable solar-powered cold storage units for small farmers.',
+                    stage: 'Solution Development', badgeColor: 'bg-green-100 text-green-700',
+                    img: 'https://images.unsplash.com/photo-1508514177221-188b1cf16e9d?auto=format&fit=crop&q=80&w=400&h=250',
+                    domainIcon: Sun, domain: 'Agriculture', location: 'Simdega',
+                    support: ['Funding', 'Mentorship', 'Manufacturing']
+                  },
+                  { 
+                    title: 'Telemedicine Access for Remote Areas', 
+                    desc: 'Improving healthcare access in tribal and remote regions.',
+                    stage: 'Idea Stage', badgeColor: 'bg-yellow-100 text-yellow-700',
+                    img: 'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&q=80&w=400&h=250',
+                    domainIcon: Heart, domain: 'Healthcare', location: 'Lohardaga',
+                    support: ['Technology', 'Mentorship', 'Deployment']
+                  },
+                  { 
+                    title: 'Smart Waste Management', 
+                    desc: 'IoT-based waste collection and segregation system for urban local bodies.',
+                    stage: 'Pilot Testing', badgeColor: 'bg-purple-100 text-purple-700',
+                    img: 'https://images.unsplash.com/photo-1532996122724-e3c354a0b15b?auto=format&fit=crop&q=80&w=400&h=250',
+                    domainIcon: Recycle, domain: 'Environment', location: 'Ranchi',
+                    support: ['Testing', 'Manufacturing', 'Deployment']
+                  },
+                ].map((card, idx) => (
+                  <div key={idx} className="bg-white border border-gray-200 rounded-none overflow-hidden shadow-[0_2px_8px_rgb(0,0,0,0.04)] flex flex-col group hover:shadow-sm transition-all relative">
+                    <div className="h-24 bg-gray-200 relative overflow-hidden shrink-0">
+                      <img src={card.img} alt={card.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                      <div className="absolute top-2 right-2">
+                        <span className={`text-[9px] font-bold px-2 py-0.5 rounded-none ${card.badgeColor}`}>{card.stage}</span>
+                      </div>
+                    </div>
+                    
+                    <div className="p-3.5 flex flex-col flex-grow">
+                      <h3 className="font-bold text-[#1c3c78] text-[12px] leading-snug mb-1.5">{card.title}</h3>
+                      <p className="text-gray-500 text-[10px] leading-[1.3] mb-3 flex-grow">{card.desc}</p>
+                      
+                      <div className="flex items-center gap-3 text-[#1c3c78] font-bold text-[9px] mb-3">
+                        <div className="flex items-center gap-1">
+                          <card.domainIcon className="w-3 h-3 text-[#0f4b3a]" /> {card.domain}
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <MapPin className="w-3 h-3 text-[#0f4b3a]" /> {card.location}
+                        </div>
+                      </div>
+                      
+                      <div className="mb-3">
+                        <div className="text-[9px] font-bold text-[#1c3c78] mb-1.5">Support Needed:</div>
+                        <div className="flex flex-wrap gap-1">
+                          {card.support.map((tag, i) => (
+                            <span key={i} className="bg-gray-50 border border-gray-200 text-gray-600 text-[8.5px] font-bold px-1.5 py-0.5 rounded-none">
+                              {tag}
+                            </span>
                           ))}
-                       </div>
+                        </div>
+                      </div>
+                      
+                      <button className="w-full text-center text-[#1c3c78] text-[10px] font-bold transition-colors flex items-center justify-center gap-1 group-hover:underline mt-auto">
+                        View Details <ArrowRight className="w-3 h-3" />
+                      </button>
                     </div>
-                 </div>
+                  </div>
+                ))}
               </div>
+            </div>
 
-              {/* Main List */}
-              <div className="lg:w-3/4 flex flex-col gap-4">
-                 
-                 {/* Card 1 */}
-                 <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5 hover:shadow-md transition-shadow">
-                    <div className="flex justify-between items-start mb-3 gap-4">
-                       <h3 className="text-lg font-bold text-[#0f4b3a] leading-tight">Smart Agriculture Solutions for Drought-Prone Areas (Palamu)</h3>
-                       <span className="shrink-0 bg-green-100 text-green-800 text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider">Prototype</span>
-                    </div>
-                    <p className="text-sm text-gray-600 mb-4 line-clamp-2">
-                       Seeking industry partners to deploy IoT-based soil moisture sensors and automated drip irrigation systems in 50 pilot farms in Palamu district to optimize water usage.
-                    </p>
-                    <div className="flex flex-wrap gap-4 text-xs text-gray-500 bg-slate-50 p-3 rounded-lg border border-gray-100">
-                       <div className="flex items-center gap-1.5"><Tag className="w-3.5 h-3.5 text-gray-400" /> <span className="font-medium">Focus:</span> Agritech</div>
-                       <div className="flex items-center gap-1.5"><MapPin className="w-3.5 h-3.5 text-gray-400" /> <span className="font-medium">District:</span> Palamu</div>
-                       <div className="flex items-center gap-1.5"><IndianRupee className="w-3.5 h-3.5 text-gray-400" /> <span className="font-medium">Need:</span> Funding & Tech</div>
-                    </div>
-                    <div className="mt-4 flex justify-end">
-                       <button className="text-sm font-bold text-[#0f4b3a] hover:underline flex items-center gap-1">View Details <ArrowRight className="w-3.5 h-3.5" /></button>
-                    </div>
-                 </div>
+          </div>
 
-                 {/* Card 2 */}
-                 <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5 hover:shadow-md transition-shadow">
-                    <div className="flex justify-between items-start mb-3 gap-4">
-                       <h3 className="text-lg font-bold text-[#0f4b3a] leading-tight">Rural Healthcare Telemedicine Kiosks (Gumla)</h3>
-                       <span className="shrink-0 bg-blue-100 text-blue-800 text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider">Implementation</span>
-                    </div>
-                    <p className="text-sm text-gray-600 mb-4 line-clamp-2">
-                       Scaling a successful pilot that connects remote tribal populations with specialist doctors in Ranchi. We need CSR funding to deploy 20 more kiosks across Gumla block.
-                    </p>
-                    <div className="flex flex-wrap gap-4 text-xs text-gray-500 bg-slate-50 p-3 rounded-lg border border-gray-100">
-                       <div className="flex items-center gap-1.5"><Tag className="w-3.5 h-3.5 text-gray-400" /> <span className="font-medium">Focus:</span> Healthcare</div>
-                       <div className="flex items-center gap-1.5"><MapPin className="w-3.5 h-3.5 text-gray-400" /> <span className="font-medium">District:</span> Gumla</div>
-                       <div className="flex items-center gap-1.5"><IndianRupee className="w-3.5 h-3.5 text-gray-400" /> <span className="font-medium">Need:</span> CSR Funding</div>
-                    </div>
-                    <div className="mt-4 flex justify-end">
-                       <button className="text-sm font-bold text-[#0f4b3a] hover:underline flex items-center gap-1">View Details <ArrowRight className="w-3.5 h-3.5" /></button>
-                    </div>
-                 </div>
-
-                 {/* Card 3 */}
-                 <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5 hover:shadow-md transition-shadow">
-                    <div className="flex justify-between items-start mb-3 gap-4">
-                       <h3 className="text-lg font-bold text-[#0f4b3a] leading-tight">Industrial Waste Management System (Dhanbad)</h3>
-                       <span className="shrink-0 bg-purple-100 text-purple-800 text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider">Ideation</span>
-                    </div>
-                    <p className="text-sm text-gray-600 mb-4 line-clamp-2">
-                       Looking for expertise in heavy industry by-product recycling. The goal is to create a circular economy model for coal ash and other industrial waste in the Dhanbad region.
-                    </p>
-                    <div className="flex flex-wrap gap-4 text-xs text-gray-500 bg-slate-50 p-3 rounded-lg border border-gray-100">
-                       <div className="flex items-center gap-1.5"><Tag className="w-3.5 h-3.5 text-gray-400" /> <span className="font-medium">Focus:</span> Environment</div>
-                       <div className="flex items-center gap-1.5"><MapPin className="w-3.5 h-3.5 text-gray-400" /> <span className="font-medium">District:</span> Dhanbad</div>
-                       <div className="flex items-center gap-1.5"><Cpu className="w-3.5 h-3.5 text-gray-400" /> <span className="font-medium">Need:</span> Tech Transfer</div>
-                    </div>
-                    <div className="mt-4 flex justify-end">
-                       <button className="text-sm font-bold text-[#0f4b3a] hover:underline flex items-center gap-1">View Details <ArrowRight className="w-3.5 h-3.5" /></button>
-                    </div>
-                 </div>
-
-                 {/* Pagination */}
-                 <div className="mt-6 flex justify-center gap-2">
-                    <button className="w-8 h-8 flex items-center justify-center rounded border border-gray-300 text-gray-500 hover:bg-gray-50">&lt;</button>
-                    <button className="w-8 h-8 flex items-center justify-center rounded bg-[#0f4b3a] text-white font-bold">1</button>
-                    <button className="w-8 h-8 flex items-center justify-center rounded border border-gray-300 text-gray-700 font-medium hover:bg-gray-50">2</button>
-                    <button className="w-8 h-8 flex items-center justify-center rounded border border-gray-300 text-gray-700 font-medium hover:bg-gray-50">3</button>
-                    <button className="w-8 h-8 flex items-center justify-center rounded border border-gray-300 text-gray-500 hover:bg-gray-50">&gt;</button>
-                 </div>
-
+          {/* Right Column - Sidebars */}
+          <div className="lg:w-[27%] flex flex-col gap-5">
+            
+            {/* CTA Card */}
+            <div className="bg-[#eaf5f4] border border-[#d2ebe8] p-5 rounded-none relative overflow-hidden flex flex-col items-center shadow-sm">
+              <div className="flex flex-col items-center gap-2 mb-3 relative z-10 text-center">
+                <div className="w-10 h-10 rounded-full bg-[#d2ebe8] flex items-center justify-center shrink-0">
+                  <Handshake className="w-5 h-5 text-[#0f4b3a]" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-[#1c3c78] text-[15px] leading-tight mb-1">Partner With Johar Sethu</h3>
+                  <p className="text-[10px] text-gray-600 font-medium leading-relaxed max-w-[200px]">
+                    Be a part of a collaborative ecosystem to solve real-world challenges and create lasting impact in Jharkhand.
+                  </p>
+                </div>
               </div>
+              <button className="w-full bg-[#0f4b3a] text-white py-2.5 rounded-none font-bold text-[12px] mb-2 flex justify-center items-center relative z-10 hover:bg-[#0c382b] transition-colors shadow-sm">
+                Register as Industry Partner <ArrowRight className="w-3 h-3 ml-1" />
+              </button>
+              <div className="text-center text-[10px] font-medium text-gray-600 relative z-10 flex items-center justify-center gap-1">
+                Already registered? <span className="font-bold text-[#0f4b3a] flex items-center hover:underline cursor-pointer">Login <ArrowRight className="w-2.5 h-2.5 ml-0.5" /></span>
+              </div>
+            </div>
 
-           </div>
+            {/* Why Partner With Us */}
+            <div className="bg-white border border-gray-200 p-5 rounded-none shadow-sm">
+              <div className="flex items-center gap-2 mb-4">
+                <div className="w-5 h-5 text-[#0f4b3a]">
+                  <svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                </div>
+                <h3 className="font-bold text-[#1c3c78] text-[14.5px]">Why Partner With Us?</h3>
+              </div>
+              
+              <ul className="space-y-3">
+                {[
+                  'Work on real societal challenges',
+                  'Access to university innovations and talent',
+                  'Collaborate with government and experts',
+                  'Enhance your CSR impact',
+                  'Build a stronger and inclusive Jharkhand'
+                ].map((text, i) => (
+                  <li key={i} className="flex items-start gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-[#0f4b3a] shrink-0 mt-0.5" strokeWidth={2.5} />
+                    <span className="text-[11px] text-gray-700 font-medium leading-tight">{text}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Impact Stats */}
+            <div className="bg-white border border-gray-200 p-5 rounded-none shadow-sm">
+              <div className="flex items-center gap-2 mb-1">
+                <TrendingUp className="w-5 h-5 text-[#0f4b3a]" />
+                <div>
+                  <h3 className="font-bold text-[#1c3c78] text-[14.5px] leading-none">Impact by Industry Partners</h3>
+                  <p className="text-[9px] text-gray-400 mt-0.5">(As on 2025)</p>
+                </div>
+              </div>
+              
+              <div className="flex justify-between items-start mt-6 mb-5 border-b border-gray-100 pb-4">
+                <div className="text-center flex-1">
+                  <div className="font-bold text-[#1c3c78] text-[19px] mb-0.5">48</div>
+                  <div className="text-[9px] text-gray-500 font-medium leading-tight">Partner Organizations</div>
+                </div>
+                <div className="text-center flex-1 border-l border-gray-100">
+                  <div className="font-bold text-[#1c3c78] text-[19px] mb-0.5">112</div>
+                  <div className="text-[9px] text-gray-500 font-medium leading-tight">Projects Supported</div>
+                </div>
+                <div className="text-center flex-1 border-l border-gray-100">
+                  <div className="font-bold text-[#1c3c78] text-[19px] mb-0.5">350+</div>
+                  <div className="text-[9px] text-gray-500 font-medium leading-tight">Students Mentored</div>
+                </div>
+              </div>
+              
+              <div className="flex justify-between items-start mb-2">
+                <div className="text-center flex-1">
+                  <div className="font-bold text-[#0f4b3a] text-[19px] mb-0.5">₹ 12 Cr+</div>
+                  <div className="text-[9px] text-gray-500 font-medium leading-tight">Support Committed</div>
+                </div>
+                <div className="text-center flex-1 border-l border-gray-100">
+                  <div className="font-bold text-[#0f4b3a] text-[19px] mb-0.5">28</div>
+                  <div className="text-[9px] text-gray-500 font-medium leading-tight">Prototypes Developed</div>
+                </div>
+                <div className="text-center flex-1 border-l border-gray-100">
+                  <div className="font-bold text-[#0f4b3a] text-[19px] mb-0.5">14</div>
+                  <div className="text-[9px] text-gray-500 font-medium leading-tight">Solutions Deployed</div>
+                </div>
+              </div>
+            </div>
+
+          </div>
         </div>
       </section>
-
     </LandingLayout>
   );
 };
