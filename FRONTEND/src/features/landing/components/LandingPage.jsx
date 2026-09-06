@@ -1,13 +1,16 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Search, MapPin, Building2, Users, Lightbulb, Trophy, 
-  FileText, ChevronRight, ChevronUp, Download, Map, Cloud, Brain, 
+  FileText, ChevronRight, ChevronLeft, ChevronUp, Download, Map, Cloud, Brain, 
   MessagesSquare, LineChart, Heart, Youtube, Linkedin, 
   Twitter, Instagram, User, LogIn, ArrowRight, ArrowUp, PieChart, Factory,
   Megaphone, Pause, Monitor, Star, BarChart3, GraduationCap, Settings,
   Droplet, Bus, Pin, Recycle, Sprout
 } from 'lucide-react';
-import heroBanner from '../assets/landing-banner.png';
+import heroBanner1 from '../assets/hero-banner-1.png';
+import heroBanner2 from '../assets/hero-banner-2.jpg';
+import heroBannerInstitutions from '../assets/hero-banner-institutions.jpg';
+import heroBannerIndustry from '../assets/hero-banner-industry.jpg';
 import footerSunsetBg from '../assets/footer_sunset_bg.png';
 import leaderRajesh from '../assets/leader-1.png';
 import leaderAnil from '../assets/leader-2.png';
@@ -44,6 +47,64 @@ export const LandingPage = ({ onNavigate }) => {
   const handleNav = (path) => {
     if (onNavigate) onNavigate(path);
     else window.location.href = path;
+  };
+
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
+
+  const heroSlides = [
+    {
+      id: 1,
+      image: heroBanner1,
+      tag: "EDUCATION | INNOVATION | OPPORTUNITY",
+      title: "Building a Knowledge Driven New India",
+      subtitle: "Accessible Education | Inclusive Growth | A Brighter Tomorrow",
+      buttonText: "READ MORE",
+      link: "/about"
+    },
+    {
+      id: 2,
+      image: heroBanner2,
+      tag: "PEOPLE | IDEAS | INNOVATION",
+      title: "Connecting Challenges with Solutions",
+      subtitle: "Empowering Grassroots Innovation & Driving Collaborative Impact for Jharkhand",
+      buttonText: "EXPLORE IMPACT",
+      link: "/about"
+    },
+    {
+      id: 3,
+      image: heroBannerInstitutions,
+      tag: "ACADEMIA | RESEARCH | IMPACT",
+      title: "Building a Stronger Knowledge Ecosystem",
+      subtitle: "Connecting Educational Institutions with Real-World Industry & Government Needs",
+      buttonText: "FOR INSTITUTIONS",
+      link: "/institutions"
+    },
+    {
+      id: 4,
+      image: heroBannerIndustry,
+      tag: "INDUSTRY | COLLABORATION | GROWTH",
+      title: "Accelerating Technological & Social Progress",
+      subtitle: "Join hands with Government and Universities to build sustainable solutions",
+      buttonText: "INDUSTRY PORTAL",
+      link: "/industry"
+    }
+  ];
+
+  useEffect(() => {
+    if (isPaused) return;
+    const timer = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % heroSlides.length);
+    }, 4500);
+    return () => clearInterval(timer);
+  }, [isPaused, heroSlides.length]);
+
+  const nextSlide = () => {
+    setCurrentSlide((prev) => (prev + 1) % heroSlides.length);
+  };
+
+  const prevSlide = () => {
+    setCurrentSlide((prev) => (prev - 1 + heroSlides.length) % heroSlides.length);
   };
 
   const challengesList = [
@@ -174,30 +235,80 @@ export const LandingPage = ({ onNavigate }) => {
 
   return (
     <LandingLayout onNavigate={onNavigate} currentPath="/">
-      {/* Hero Section */}
-      <section className="w-full relative bg-[#f8fafc] overflow-hidden">
-        <img src={heroBanner} alt="Johar Sethu Hero Banner" className="w-full h-auto object-cover object-center" />
-        
-        {/* TEXT OVERLAY */}
-        <div className="absolute top-[50%] left-[23.5%] -translate-y-1/2 flex flex-col items-start z-10 w-[20%]">
-          <p className="text-white text-[0.55vw] font-medium tracking-[0.2em] mb-[0.8vw] opacity-95">
-            EDUCATION <span className="mx-[0.3vw] opacity-70">|</span> INNOVATION <span className="mx-[0.3vw] opacity-70">|</span> OPPORTUNITY
-          </p>
-          
-          <h1 className="text-white text-[2vw] font-bold leading-[1.15] mb-[0.8vw] tracking-tight drop-shadow-sm">
-            Building a Knowledge<br />Driven New India
-          </h1>
-          
-          <p className="text-white text-[0.65vw] font-medium mb-[1.2vw] opacity-95">
-            Accessible Education <span className="mx-[0.3vw] opacity-70">|</span> Inclusive Growth <span className="mx-[0.3vw] opacity-70">|</span> A Brighter Tomorrow
-          </p>
-          
-          <button className="bg-white text-[#0f4b3a] px-[1vw] py-[0.4vw] rounded-none text-[0.6vw] font-black flex items-center hover:bg-gray-200 hover:scale-105 transition-all duration-300 shadow-md">
-            READ MORE <ArrowRight className="ml-[0.3vw] w-[0.8vw] h-[0.8vw]" strokeWidth={3} />
-          </button>
+      {/* Hero Section Carousel */}
+      <section 
+        className="w-full relative h-[320px] sm:h-[380px] md:h-[430px] lg:h-[460px] bg-[#0c382b] overflow-hidden group select-none"
+        onMouseEnter={() => setIsPaused(true)}
+        onMouseLeave={() => setIsPaused(false)}
+      >
+        {heroSlides.map((slide, index) => (
+          <div
+            key={slide.id}
+            className={`absolute inset-0 transition-opacity duration-700 ease-in-out ${
+              index === currentSlide ? 'opacity-100 z-10 pointer-events-auto' : 'opacity-0 z-0 pointer-events-none'
+            }`}
+          >
+            <img 
+              src={slide.image} 
+              alt={`Johar Sethu Hero Banner ${slide.id}`} 
+              className="w-full h-full object-cover object-center" 
+            />
+
+            {/* Text Overlay for all slides */}
+            <div className="absolute inset-0 bg-gradient-to-r from-[#0c382b]/90 via-[#0c382b]/60 to-transparent flex items-center z-10 px-8 md:px-16 lg:px-24">
+              <div className="max-w-xl text-white space-y-3">
+                <div className="text-xs md:text-sm font-black text-emerald-300 tracking-widest uppercase">
+                  {slide.tag}
+                </div>
+                <h1 className="text-2xl md:text-4xl lg:text-5xl font-black leading-tight tracking-tight drop-shadow-sm">
+                  {slide.title}
+                </h1>
+                <p className="text-xs md:text-sm text-gray-200 font-medium leading-relaxed drop-shadow-sm">
+                  {slide.subtitle}
+                </p>
+                <button 
+                  onClick={() => handleNav(slide.link || '/about')}
+                  className="mt-2 bg-white text-[#0f4b3a] px-5 py-2 rounded-none text-xs md:text-sm font-black flex items-center hover:bg-emerald-50 hover:scale-105 transition-all duration-300 shadow-md cursor-pointer"
+                >
+                  {slide.buttonText} <ArrowRight className="ml-2 w-4 h-4" strokeWidth={2.5} />
+                </button>
+              </div>
+            </div>
+          </div>
+        ))}
+
+        {/* Carousel Navigation Arrows */}
+        <button
+          onClick={prevSlide}
+          aria-label="Previous Slide"
+          className="absolute left-3 md:left-5 top-1/2 -translate-y-1/2 z-20 bg-black/30 hover:bg-[#0f4b3a] text-white p-2 rounded-none transition-all duration-200 opacity-0 group-hover:opacity-100 cursor-pointer shadow-md"
+        >
+          <ChevronLeft className="w-6 h-6" />
+        </button>
+
+        <button
+          onClick={nextSlide}
+          aria-label="Next Slide"
+          className="absolute right-3 md:right-5 top-1/2 -translate-y-1/2 z-20 bg-black/30 hover:bg-[#0f4b3a] text-white p-2 rounded-none transition-all duration-200 opacity-0 group-hover:opacity-100 cursor-pointer shadow-md"
+        >
+          <ChevronRight className="w-6 h-6" />
+        </button>
+
+        {/* Carousel Indicators / Dots */}
+        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2">
+          {heroSlides.map((_, i) => (
+            <button
+              key={i}
+              onClick={() => setCurrentSlide(i)}
+              aria-label={`Go to slide ${i + 1}`}
+              className={`h-2 transition-all duration-300 rounded-none cursor-pointer ${
+                i === currentSlide 
+                  ? 'w-8 bg-white' 
+                  : 'w-2 bg-white/50 hover:bg-white/80'
+              }`}
+            />
+          ))}
         </div>
-
-
       </section>
 
       {/* Latest Announcements Ticker */}
@@ -242,7 +353,7 @@ export const LandingPage = ({ onNavigate }) => {
       </section>
 
       {/* Action Buttons */}
-      <section className="w-full relative z-20 bg-white py-2 md:py-3 px-4 lg:px-6">
+      <section className="w-full relative z-20 bg-white py-2 md:py-3 px-4 md:px-8 lg:px-12">
         <div className="flex flex-col md:flex-row gap-2 md:gap-3 w-full">
           
           {/* Report a Problem */}
@@ -270,7 +381,7 @@ export const LandingPage = ({ onNavigate }) => {
           </div>
 
           {/* For Industry & Startups */}
-          <div onClick={() => handleNav('/login')} className="flex-1 bg-white border border-gray-200 shadow-xs rounded-none px-4 py-2.5 md:py-3 flex items-center justify-between cursor-pointer hover:bg-[#0f4b3a] hover:border-[#0f4b3a] transition-all duration-300 group">
+          <div onClick={() => handleNav('/apply-industry')} className="flex-1 bg-white border border-gray-200 shadow-xs rounded-none px-4 py-2.5 md:py-3 flex items-center justify-between cursor-pointer hover:bg-[#0f4b3a] hover:border-[#0f4b3a] transition-all duration-300 group">
             <div className="flex items-center gap-3">
               <Users className="w-5 h-5 md:w-6 md:h-6 text-[#0f4b3a] group-hover:text-white transition-all" />
               <div className="text-left">
@@ -286,7 +397,7 @@ export const LandingPage = ({ onNavigate }) => {
 
       {/* 3-Column Main Portal Section */}
       <section className="py-2.5 md:py-3.5 bg-[#fbfcfb] border-b border-gray-100">
-        <div className="w-full px-4 lg:px-6">
+        <div className="w-full px-4 md:px-8 lg:px-12">
           
           {/* TOP ROW: 3 Columns */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-3.5 md:gap-4 mb-3.5 md:mb-4 items-stretch">

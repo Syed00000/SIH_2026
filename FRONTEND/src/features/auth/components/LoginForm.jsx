@@ -4,7 +4,7 @@ import { Button } from '../../../shared/components/ui/button.jsx';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../../../shared/components/ui/card.jsx';
 import { Eye, EyeOff, AlertCircle, Lock, Mail, ArrowRight, Lightbulb, CheckCircle2, FileText, Users } from 'lucide-react';
 import { LandingLayout } from '../../landing/components/layout/LandingLayout';
-import bannerImage from '../../../assets/report-banner.png';
+import bannerImage from '../../landing/assets/report-banner.png';
 
 export const LoginForm = ({ onNavigate }) => {
   const { login } = useAuth();
@@ -110,10 +110,26 @@ export const LoginForm = ({ onNavigate }) => {
 
   return (
     <LandingLayout onNavigate={onNavigate} currentPath="/login">
-      {/* Hero Section */}
-      <section className="bg-white relative border-b border-gray-200 w-full overflow-hidden">
-        <div className="relative w-full">
-           <img src={bannerImage} className="w-full h-[200px] md:h-[260px] lg:h-[300px] object-fill" alt="Report a Problem Banner" />
+      {/* Hero Section Banner */}
+      <section className="w-full relative h-[320px] sm:h-[380px] md:h-[430px] lg:h-[450px] bg-[#0c382b] overflow-hidden border-b border-gray-200">
+        <img 
+          src={bannerImage} 
+          alt="Report a Problem Banner" 
+          className="w-full h-full object-cover object-center" 
+        />
+        {/* Subtle dark overlay for text contrast if desired */}
+        <div className="absolute inset-0 bg-gradient-to-r from-black/40 via-transparent to-transparent flex items-center z-10 px-8 md:px-16 lg:px-24">
+          <div className="max-w-xl text-white space-y-2">
+            <div className="text-xs md:text-sm font-black text-emerald-300 tracking-widest uppercase">
+              PEOPLE | IDEAS | INNOVATION
+            </div>
+            <h1 className="text-2xl md:text-4xl lg:text-5xl font-black leading-tight tracking-tight drop-shadow-md">
+              JoharSetu Portal
+            </h1>
+            <p className="text-xs md:text-sm text-gray-100 font-medium leading-relaxed drop-shadow-sm">
+              Connecting Community Challenges with Expert Solvers & Real Impact
+            </p>
+          </div>
         </div>
       </section>
 
@@ -354,26 +370,7 @@ export const LoginForm = ({ onNavigate }) => {
               </CardContent>
             </Card>
 
-            {/* Every Problem Counts */}
-            <Card className="bg-[#eef8f3] rounded-none shadow-sm border border-[#d3ecd8] relative overflow-hidden">
-              <CardContent className="p-5">
-                <div className="flex gap-3 relative z-10">
-                  <div className="bg-[#0f4b3a] p-2.5 rounded-none h-fit shrink-0">
-                    <Users className="w-5 h-5 text-white" />
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="text-[14px] font-black text-[#0f4b3a] mb-1">Every Problem Counts</h3>
-                    <p className="text-[12px] text-[#0f4b3a]/80 font-semibold leading-relaxed">
-                      Your voice can lead to real change.<br />
-                      Let's build a stronger Jharkhand together.
-                    </p>
-                  </div>
-                </div>
-                <div className="absolute -bottom-4 -right-4 opacity-10 z-0">
-                  <Users className="w-24 h-24 text-[#0f4b3a]" />
-                </div>
-              </CardContent>
-            </Card>
+ 
           </div>
 
         </div>
