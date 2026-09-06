@@ -16,6 +16,12 @@ export const MilestonesTrackingView = ({ projects = [], onManageProject }) => {
   const [expandedProjectId, setExpandedProjectId] = useState(null);
 
   const filteredProjects = projects.filter((p) => {
+    const disbVal = (p.disbursedAmount ? Number(String(p.disbursedAmount).replace(/[^\d]/g, '')) : 0) ||
+      (p.disbursedGrant ? Number(String(p.disbursedGrant).replace(/[^\d]/g, '')) : 0);
+    const isFunded = disbVal > 0 || p.budgetStatus === 'Grant Sanctioned by Government' || p.budgetStatus === 'Grant Disbursed' || (typeof p.budgetStatus === 'string' && p.budgetStatus.includes('Grant Disbursed'));
+    const isDeployed = p.status === 'Deployed' || Boolean(p.isDeployed);
+    if (!isFunded && !isDeployed) return false;
+
     const isCompleted = p.status === 'Completed' || (p.progress || 0) >= 100;
     const isPending = !p.milestones || p.milestones.length === 0 || p.milestones.every(m => m.status === 'Pending');
     const isInProgress = !isCompleted && !isPending;

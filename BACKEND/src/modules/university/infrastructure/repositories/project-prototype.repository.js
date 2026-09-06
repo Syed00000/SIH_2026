@@ -20,6 +20,7 @@ export class ProjectPrototypeRepository {
             sentToUniversity: true,
             submittedToUniversityAt: new Date(),
             ...(prototypeData?.pdfUrl ? { pdfUrl: prototypeData.pdfUrl, pdfName: prototypeData.pdfName } : {}),
+            ...(Array.isArray(prototypeData?.milestoneRoadmap) && prototypeData.milestoneRoadmap.length ? { milestoneRoadmap: prototypeData.milestoneRoadmap } : {}),
             ...(Array.isArray(prototypeData?.testingStages) && prototypeData.testingStages.length ? { testingStages: prototypeData.testingStages } : {}),
             ...(prototypeData?.industryRequisition?.selectedPartner ? { testingPartner: prototypeData.industryRequisition.selectedPartner } : {})
           } 
@@ -28,6 +29,12 @@ export class ProjectPrototypeRepository {
       );
 
       if (project) {
+        if (Array.isArray(prototypeData?.milestoneRoadmap) && prototypeData.milestoneRoadmap.length) {
+          await UniversityApproval.updateMany(
+            { $or: [{ projectId: project.projectId }, { challengeId: project.challengeId }, { project: project.title }] },
+            { $set: { milestoneRoadmap: prototypeData.milestoneRoadmap } }
+          );
+        }
         await UniversityTeam.updateMany({ $or: [{ projectId: project.projectId }, { challengeId: project.challengeId }] }, { $set: { workStatus: 'Prototype Sent to University (In Review)' } });
         await UniversityActivity.create({ universityCode: code, text: `Prototype blueprint for "${project.title}" submitted by Faculty Mentor to Industry Testing Pipeline.`, type: 'PROTOTYPE_SUBMITTED', timestamp: new Date() });
         return { success: true, projectId };
@@ -52,7 +59,8 @@ export class ProjectPrototypeRepository {
         { $or: [{ projectId: pId }, { challengeId: pId }] },
         {
           $set: {
-            sentToGovernment: true, governmentStatus: 'Under State Evaluation', prototypeStatus: 'Approved',
+            sentToGovernment: true, prototypeSentToGovernment: true, prototypeForwardedAt: new Date(),
+            governmentStatus: 'Under State Evaluation', prototypeStatus: 'Approved',
             forwardedToGovAt: new Date(), adminRemarks: remarks || 'Forwarded to Government for State TRL certification.',
             trlLevel: 'TRL-7', progressPercentage: 86, milestonesCompleted: 6,
             'milestones.5.status': 'Completed', 'milestones.5.completedAt': new Date(), 'milestones.6.status': 'In Progress'
@@ -61,7 +69,10 @@ export class ProjectPrototypeRepository {
         { new: true }
       );
 
-      await UniversityApproval.updateMany({ $or: [{ projectId: pId }, { challengeId: pId }, { approvalId: projectId }] }, { $set: { sentToGovernment: true, governmentStatus: 'Under State Evaluation', status: 'Approved' } });
+      await UniversityApproval.updateMany(
+        { $or: [{ projectId: pId }, { challengeId: pId }, { approvalId: projectId }] },
+        { $set: { sentToGovernment: true, prototypeSentToGovernment: true, governmentStatus: 'Under State Evaluation', status: 'Approved' } }
+      );
       if (proj) {
         await CitizenChallenge.updateMany({ $or: [{ challengeId: proj.challengeId }, { challengeId: pId }] }, { $set: { stage: 'Prototype Evaluation (State TRL Review)', governmentReview: true } });
       }
@@ -154,14 +165,7 @@ export class ProjectPrototypeRepository {
               { 'assignedChallenges.challengeId': proj.challengeId }
             ].filter(Boolean)
           },
-          {
-            $set: {
-              availabilityStatus: 'Available',
-              isDeployed: true,
-              activeProjects: 0
-            },
-            $inc: { completedProjects: 1 }
-          }
+          { $set: { availabilityStatus: 'Available', isDeployed: true, activeProjects: 0 }, $inc: { completedProjects: 1 } }
         );
 
         try {

@@ -99,8 +99,11 @@ class ProjectCsrSyncService {
           proposedBudget: effectiveBudgetStr,
           rawBudget: effectiveBudgetNum,
           additionalAmount: effectiveAdditional,
-          status: isFunded ? 'Grant Sanctioned' : 'Approved',
-          budgetStatus: isFunded ? 'Grant Sanctioned by Government' : 'Forwarded to CSR Grants Pipeline',
+          status: isFunded ? 'Grant Sanctioned' : 'Pending',
+          budgetStatus: isFunded ? (p.budgetStatus || 'Grant Sanctioned by Government') : 'Forwarded to CSR Grants Pipeline',
+          isFunded,
+          prototypeSentToGovernment: Boolean(p.prototypeSentToGovernment || p.isPrototypeSentToGov),
+          prototypeForwardedAt: p.prototypeForwardedAt,
           sourceScheme: p.domain ? `${p.domain} State Innovation Grant` : 'Govt State R&D & CSR Pool',
           stage: p.stage || 'Stage 1: Formulation & DPR',
           trlLevel: p.trlLevel || 'TRL-4',
@@ -128,29 +131,19 @@ class ProjectCsrSyncService {
       // 4. CSR & State Grants Pipeline (all citizen problem statements / solutions)
       this.csrProposals = this.solutionProposals;
 
-      // 5. Active Projects (Funded / In Execution / Forwarded Prototypes)
+      // 5. Active Projects (Only projects with 1st Grant Disbursed or Deployed)
       this.activeProjects = this.solutionProposals
         .filter((p) => {
           const disbNum = Number(String(p.disbursedAmount || '0').replace(/[^\d]/g, '')) || 0;
-          return (
-            disbNum > 0 ||
+          const isFunded = disbNum > 0 ||
             p.budgetStatus === 'Grant Sanctioned by Government' ||
             p.budgetStatus === 'Grant Disbursed' ||
-            (typeof p.budgetStatus === 'string' && p.budgetStatus.includes('Grant Disbursed')) ||
-            p.status === 'Active' ||
-            p.status === 'In Progress' ||
-            p.status === 'Deployed' ||
-            p.isDeployed ||
-            p.prototypeStatus === 'Approved' ||
-            p.prototypeStatus === 'Ready for Deployment' ||
-            Boolean(p.sentToGovernment) ||
-            p.governmentStatus === 'Under State Evaluation' ||
-            Boolean(p.testingCompleted) ||
-            Boolean(p.testingReportPdfUrl)
-          );
+            (typeof p.budgetStatus === 'string' && p.budgetStatus.includes('Grant Disbursed'));
+          const isDeployed = p.status === 'Deployed' || Boolean(p.isDeployed);
+          return isFunded || isDeployed;
         })
         .map((p) => {
-          const isProtoDone = Boolean(p.testingCompleted || p.testingReportPdfUrl || p.prototypeStatus === 'Pending Approval' || p.prototypeStatus === 'Approved' || p.prototypeStatus === 'Ready for Deployment' || p.status === 'Deployed' || p.isDeployed);
+          const isProtoDone = Boolean(p.testingCompleted || p.testingReportPdfUrl || p.prototypeSentToGovernment || p.prototypeStatus === 'Approved' || p.prototypeStatus === 'Ready for Deployment' || p.status === 'Deployed' || p.isDeployed);
           const isDeployed = Boolean(p.status === 'Deployed' || p.isDeployed);
           return {
             id: p.projectId || p.id.replace('PROP-', ''),
@@ -201,12 +194,12 @@ class ProjectCsrSyncService {
       try {
         const fundsRes = await apiClient.get('government/funds');
         const fundsData = fundsRes.data?.data || fundsRes.data || {};
-        this.govtAllocation = Number(fundsData.stateGrantsTotal || 100000);
-        this.corporateAllocation = Number(fundsData.corporateCsrTotal || 0);
+        this.govtAllocation = Number(fundsData.stateGrantsTotal) || 0;
+        this.corporateAllocation = Number(fundsData.corporateCsrTotal) || 0;
         this.totalCorpus = this.govtAllocation + this.corporateAllocation;
       } catch (e) {
-        this.govtAllocation = 100000;
-        this.totalCorpus = 100000;
+        this.govtAllocation = 0;
+        this.totalCorpus = 0;
       }
 
       this.hasInitialized = true;

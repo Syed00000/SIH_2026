@@ -81,6 +81,12 @@ export const MilestonesMonitoringPanel = () => {
   };
 
   const filteredProjects = (projects || []).filter((p) => {
+    const disbVal = (p.disbursedAmount ? Number(String(p.disbursedAmount).replace(/[^\d]/g, '')) : 0) ||
+      (p.disbursedGrant ? Number(String(p.disbursedGrant).replace(/[^\d]/g, '')) : 0);
+    const isFunded = disbVal > 0 || p.budgetStatus === 'Grant Sanctioned by Government' || p.budgetStatus === 'Grant Disbursed' || (typeof p.budgetStatus === 'string' && p.budgetStatus.includes('Grant Disbursed'));
+    const isDeployed = p.status === 'Deployed' || Boolean(p.isDeployed);
+    if (!isFunded && !isDeployed) return false;
+
     const matchQ = !searchQuery.trim() ||
       (p.title || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
       (p.id || '').toLowerCase().includes(searchQuery.toLowerCase()) ||

@@ -33,11 +33,7 @@ export const Panel7_Labs = ({ data = [] }) => (
                 </tr>
               ))
             ) : (
-              <tr>
-                <td colSpan="3" className="text-center py-6 text-slate-400 text-xs">
-                  No shared testing facilities or labs listed.
-                </td>
-              </tr>
+              <tr><td colSpan="3" className="text-center py-6 text-slate-400 text-xs">No shared testing facilities listed.</td></tr>
             )}
           </tbody>
         </table>
@@ -65,25 +61,28 @@ export const Panel8_Experts = ({ data = [] }) => (
           </thead>
           <tbody className="divide-y divide-slate-100">
             {data && data.length > 0 ? (
-              data.map((expert, i) => (
-                <tr key={i} className="hover:bg-slate-50 transition-colors">
-                  <td className="px-4 py-2.5 font-bold text-slate-800 flex items-center space-x-2">
-                    <div className="w-6 h-6 rounded-full bg-slate-200 flex items-center justify-center text-[9px] font-bold text-slate-600">{expert.name?.charAt(0)}</div>
-                    <span>{expert.name}</span>
-                  </td>
-                  <td className="px-4 py-2.5">
-                    <span className="block text-slate-800 font-medium">{expert.role}</span>
-                    <span className="block text-[9px] text-slate-500">{expert.spec}</span>
-                  </td>
-                  <td className="px-4 py-2.5 text-emerald-600 font-bold text-[10px]">{expert.availability}</td>
-                </tr>
-              ))
+              data.map((expert, i) => {
+                const isAssigned = (expert.assignedProblems?.length || 0) > 0;
+                return (
+                  <tr key={i} className="hover:bg-slate-50 transition-colors">
+                    <td className="px-4 py-2.5 font-bold text-slate-800 flex items-center space-x-2">
+                      <div className="w-6 h-6 rounded-full bg-emerald-100 flex items-center justify-center text-[9px] font-bold text-[#007A61]">{expert.name?.charAt(0) || 'E'}</div>
+                      <span>{expert.name}</span>
+                    </td>
+                    <td className="px-4 py-2.5">
+                      <span className="block text-slate-800 font-medium">{expert.designation || expert.role}</span>
+                      <span className="block text-[9px] text-slate-500">{expert.specialization || expert.spec}</span>
+                    </td>
+                    <td className="px-4 py-2.5">
+                      <span className={`px-2 py-0.5 rounded-full font-bold text-[9px] ${isAssigned ? 'bg-blue-50 text-blue-700' : 'bg-emerald-50 text-[#007A61]'}`}>
+                        {isAssigned ? `Mentoring (${expert.assignedProblems.length})` : expert.status || 'Available'}
+                      </span>
+                    </td>
+                  </tr>
+                );
+              })
             ) : (
-              <tr>
-                <td colSpan="3" className="text-center py-6 text-slate-400 text-xs">
-                  No registered technical mentors or experts listed.
-                </td>
-              </tr>
+              <tr><td colSpan="3" className="text-center py-6 text-slate-400 text-xs">No registered technical mentors listed.</td></tr>
             )}
           </tbody>
         </table>
@@ -120,18 +119,13 @@ export const Panel9_Documents = ({ data = [] }) => (
                   <td className="px-4 py-2.5 text-slate-600 font-mono text-[10px]">{doc.date}</td>
                   <td className="px-4 py-2.5">
                     <span className={`px-1.5 py-0.5 rounded font-bold text-[9px] uppercase tracking-wider ${
-                      doc.status === 'Signed' ? 'bg-emerald-50 text-emerald-600' : 
-                      doc.status === 'Pending' ? 'bg-amber-50 text-amber-600' : 'bg-blue-50 text-blue-600'
+                      doc.status === 'Signed' ? 'bg-emerald-50 text-emerald-600' : 'bg-amber-50 text-amber-600'
                     }`}>{doc.status}</span>
                   </td>
                 </tr>
               ))
             ) : (
-              <tr>
-                <td colSpan="3" className="text-center py-6 text-slate-400 text-xs">
-                  No MoUs or legal agreements uploaded yet.
-                </td>
-              </tr>
+              <tr><td colSpan="3" className="text-center py-6 text-slate-400 text-xs">No MoUs or legal agreements uploaded yet.</td></tr>
             )}
           </tbody>
         </table>
@@ -148,23 +142,11 @@ export const Panel10_IP = () => (
       </CardTitle>
     </CardHeader>
     <CardContent className="p-4 space-y-3">
-       <div className="space-y-2">
-         <div className="flex justify-between text-xs border-b border-slate-100 pb-2">
-           <span className="text-slate-500 font-medium">Background IP</span>
-           <span className="font-bold text-slate-800">University Owned</span>
-         </div>
-         <div className="flex justify-between text-xs border-b border-slate-100 pb-2">
-           <span className="text-slate-500 font-medium">Foreground IP</span>
-           <span className="font-bold text-slate-800">Jointly Developed</span>
-         </div>
-         <div className="flex justify-between text-xs border-b border-slate-100 pb-2">
-           <span className="text-slate-500 font-medium">Patent Status</span>
-           <span className="font-bold text-slate-400">Not Filed</span>
-         </div>
-         <div className="flex justify-between text-xs pt-1">
-           <span className="text-slate-500 font-medium">Commercialization</span>
-           <span className="font-bold text-blue-600">Open for Licensing</span>
-         </div>
+       <div className="space-y-2 text-xs">
+         <div className="flex justify-between border-b border-slate-100 pb-2"><span className="text-slate-500 font-medium">Background IP</span><span className="font-bold text-slate-800">University Owned</span></div>
+         <div className="flex justify-between border-b border-slate-100 pb-2"><span className="text-slate-500 font-medium">Foreground IP</span><span className="font-bold text-slate-800">Jointly Developed</span></div>
+         <div className="flex justify-between border-b border-slate-100 pb-2"><span className="text-slate-500 font-medium">Patent Status</span><span className="font-bold text-slate-400">Not Filed</span></div>
+         <div className="flex justify-between pt-1"><span className="text-slate-500 font-medium">Commercialization</span><span className="font-bold text-blue-600">Open for Licensing</span></div>
        </div>
     </CardContent>
   </Card>
@@ -181,34 +163,21 @@ export const Panel11_Internships = ({ data = [] }) => (
       <div className="overflow-x-auto">
         <table className="w-full text-left text-[11px]">
           <thead className="bg-slate-50 text-slate-500 font-extrabold border-b border-slate-100 uppercase tracking-wider text-[9px]">
-            <tr>
-              <th className="px-4 py-2">Program Name</th>
-              <th className="px-4 py-2">Duration</th>
-              <th className="px-4 py-2">Status</th>
-            </tr>
+            <tr><th className="px-4 py-2">Program</th><th className="px-4 py-2">Duration</th><th className="px-4 py-2">Status</th></tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
             {data && data.length > 0 ? (
               data.map((prog, i) => (
                 <tr key={i} className="hover:bg-slate-50 transition-colors">
-                  <td className="px-4 py-2.5 font-bold text-slate-800">
-                    <span className="block">{prog.name}</span>
-                    <span className="text-[9px] text-slate-400 font-medium">{prog.type}</span>
-                  </td>
+                  <td className="px-4 py-2.5 font-bold text-slate-800">{prog.name}</td>
                   <td className="px-4 py-2.5 text-slate-600">{prog.duration}</td>
                   <td className="px-4 py-2.5">
-                    <span className={`px-2 py-0.5 rounded-full font-bold text-[9px] uppercase tracking-wider border ${
-                      prog.status === 'Open' ? 'bg-emerald-50 text-emerald-600 border-emerald-200' : 'bg-slate-50 text-slate-500 border-slate-200'
-                    }`}>{prog.status}</span>
+                    <span className="px-2 py-0.5 rounded-full font-bold text-[9px] bg-emerald-50 text-emerald-600 border border-emerald-200">{prog.status}</span>
                   </td>
                 </tr>
               ))
             ) : (
-              <tr>
-                <td colSpan="3" className="text-center py-6 text-slate-400 text-xs">
-                  No active student internship drives posted yet.
-                </td>
-              </tr>
+              <tr><td colSpan="3" className="text-center py-6 text-slate-400 text-xs">No active student internship drives posted yet.</td></tr>
             )}
           </tbody>
         </table>

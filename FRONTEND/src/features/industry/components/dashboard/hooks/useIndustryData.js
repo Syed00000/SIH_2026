@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { universityApiService } from '../../../../university/services/universityApiService.js';
 import { industryFundService } from '../../../services/industryFundService.js';
+import { industryExpertService } from '../../../services/industryExpertService.js';
 import { formatIncomingRequests, extractActiveProjectsList } from './industryDataHelpers.js';
 
 export const useIndustryData = (user) => {
@@ -37,6 +38,15 @@ export const useIndustryData = (user) => {
     incomingRequests: [],
     availableUniversities: []
   });
+
+  const [expertsData, setExpertsData] = useState([]);
+  const [expertStats, setExpertStats] = useState({
+    totalExperts: 0,
+    activeMentors: 0,
+    availableExperts: 0,
+    totalAssignments: 0
+  });
+  const [mentorshipProblemsAwaiting, setMentorshipProblemsAwaiting] = useState([]);
 
   const loadData = async () => {
     try {
@@ -87,6 +97,19 @@ export const useIndustryData = (user) => {
         activeProjectsCount: Math.max(prev?.activeProjectsCount || 0, activeProjectsList.length)
       }));
 
+      // 5. Fetch Real Industry Experts & Mentorship Eligible Problems from MongoDB
+      try {
+        const indName = profileData?.legalName || user?.organizationName || '';
+        const expRes = await industryExpertService.getExperts(indName);
+        if (expRes?.experts) {
+          setExpertsData(expRes.experts);
+          if (expRes.stats) setExpertStats(expRes.stats);
+          if (expRes.eligibleProblemStatements) setMentorshipProblemsAwaiting(expRes.eligibleProblemStatements);
+        }
+      } catch (expErr) {
+        console.warn('Failed to fetch real industry experts:', expErr);
+      }
+
     } catch (error) {
       console.error('Error loading real industry data:', error);
     } finally {
@@ -118,7 +141,9 @@ export const useIndustryData = (user) => {
       location: p.university || 'Jharkhand University Lab',
       status: 'In Testing'
     })),
-    expertsData: [],
+    expertsData,
+    expertStats,
+    mentorshipProblemsAwaiting,
     documentsData: [],
     internshipsData: [],
     refreshData: loadData

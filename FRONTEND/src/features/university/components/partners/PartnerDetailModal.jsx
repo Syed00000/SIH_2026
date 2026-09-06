@@ -173,10 +173,10 @@ export const PartnerDetailModal = ({
                 className={`px-5 py-2.5 text-xs font-bold rounded-xl flex items-center space-x-2 transition-all shadow-md ${
                   selectedProblem ? 'bg-[#007A61] hover:bg-[#00604c] text-white cursor-pointer' : 'bg-slate-200 text-slate-400 cursor-not-allowed border border-slate-300'
                 }`}
-                title={selectedProblem ? 'Request Lab Access for Problem' : 'No submitted prototype available yet'}
+                title={selectedProblem ? 'Request Collaboration for Problem' : 'No submitted prototype available yet'}
               >
                 <Send className="w-4 h-4" />
-                <span>Request Lab Access for Problem</span>
+                <span>Request Collaboration for Problem</span>
               </button>
             )}
           </div>
