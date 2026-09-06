@@ -82,7 +82,7 @@ export const LandingFooter = ({ onNavigate }) => {
                 <li><a onClick={() => handleNav('/industry')} className="cursor-pointer hover:text-white hover:underline transition-colors">Industry</a></li>
                 <li><a onClick={() => handleNav('/impact')} className="cursor-pointer hover:text-white hover:underline transition-colors">Impact</a></li>
                 <li><a href="#gallery" className="hover:text-white hover:underline transition-colors">Gallery</a></li>
-                <li><a href="#contact" className="hover:text-white hover:underline transition-colors">Contact</a></li>
+                <li><a onClick={() => handleNav('/contact')} className="cursor-pointer hover:text-white hover:underline transition-colors">Contact</a></li>
               </ul>
             </div>
 
