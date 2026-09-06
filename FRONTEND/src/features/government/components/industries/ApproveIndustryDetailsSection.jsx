@@ -16,6 +16,7 @@ export const ApproveIndustryDetailsSection = ({ industry = {} }) => {
         </h4>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 bg-slate-50/70 p-3.5 rounded-md border border-slate-200/80">
           <div>
+
             <span className="text-slate-400 font-medium block text-[10px]">Category</span>
             <span className="font-bold text-slate-800 mt-0.5 block">{industry.category}</span>
           </div>

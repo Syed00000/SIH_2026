@@ -43,34 +43,34 @@ export const IndustrySummaryCards = ({ stats, kpis, isLoading }) => {
         ))
       ) : (
         cards.map((card) => {
-        const IconComponent = card.icon;
-        return (
-          <div
-            key={card.id}
-            className="bg-white border border-slate-200/90 rounded-lg p-4 shadow-2xs flex flex-col justify-between min-h-[96px] hover:border-slate-300 transition-colors"
-          >
-            {/* Top row: Label & Bare Icon */}
-            <div className="flex items-center justify-between">
-              <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">
-                {card.title}
-              </span>
-              <div className={`flex items-center justify-center ${card.iconColor}`}>
-                <IconComponent className="w-4 h-4" />
+          const IconComponent = card.icon;
+          return (
+            <div
+              key={card.id}
+              className="bg-white border border-slate-200/90 rounded-lg p-4 shadow-2xs flex flex-col justify-between min-h-[96px] hover:border-slate-300 transition-colors"
+            >
+              {/* Top row: Label & Bare Icon */}
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">
+                  {card.title}
+                </span>
+                <div className={`flex items-center justify-center ${card.iconColor}`}>
+                  <IconComponent className="w-4 h-4" />
+                </div>
               </div>
-            </div>
 
-            {/* Bottom row: Value & Subtitle */}
-            <div className="mt-2">
-              <div className="text-2xl font-extrabold text-slate-900 tracking-tight">
-                {card.value}
+              {/* Bottom row: Value & Subtitle */}
+              <div className="mt-2">
+                <div className="text-2xl font-extrabold text-slate-900 tracking-tight">
+                  {card.value}
+                </div>
+                <span className="text-[11px] font-medium text-slate-400 block truncate mt-0.5">
+                  {card.subtitle}
+                </span>
               </div>
-              <span className="text-[11px] font-medium text-slate-400 block truncate mt-0.5">
-                {card.subtitle}
-              </span>
             </div>
-          </div>
-        );
-      })
+          );
+        })
       )}
     </div>
   );
