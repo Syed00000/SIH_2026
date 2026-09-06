@@ -42,12 +42,8 @@ export const InstitutionsPage = ({ onNavigate }) => {
             </p>
             
             <div className="flex flex-wrap items-center gap-4">
-              <button className="bg-[#0f4b3a] text-white px-6 py-3 rounded-md font-bold text-sm transition-all hover:bg-[#0c382b] flex items-center shadow-md">
-                Explore Institutions <ArrowRight className="w-4 h-4 ml-2" />
-              </button>
-              <button className="bg-white text-[#0f4b3a] border border-[#0f4b3a] px-6 py-3 rounded-md font-bold text-sm transition-all hover:bg-gray-50 flex items-center shadow-sm">
-                Partner With Us
-              </button>
+
+
             </div>
           </div>
         </div>

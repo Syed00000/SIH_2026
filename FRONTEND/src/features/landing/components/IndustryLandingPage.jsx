@@ -44,12 +44,7 @@ export const IndustryLandingPage = ({ onNavigate }) => {
               <button className="bg-[#0f4b3a] text-white px-5 py-2.5 rounded-none font-bold text-[13px] transition-all hover:bg-[#0c382b] flex items-center shadow-sm">
                 Explore Challenges <ArrowRight className="w-4 h-4 ml-1.5" />
               </button>
-              <button className="bg-white text-[#0f4b3a] border border-gray-200 px-5 py-2.5 rounded-none font-bold text-[13px] transition-all hover:bg-gray-50 flex items-center shadow-sm">
-                Partner With Us
-              </button>
-              <button className="bg-white text-[#0f4b3a] border border-gray-200 px-5 py-2.5 rounded-none font-bold text-[13px] transition-all hover:bg-gray-50 flex items-center shadow-sm">
-                View Ongoing Projects
-              </button>
+
             </div>
           </div>
         </div>
