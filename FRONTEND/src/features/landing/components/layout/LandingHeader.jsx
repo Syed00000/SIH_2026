@@ -73,7 +73,7 @@ export const LandingHeader = ({ onNavigate, currentPath = '/' }) => {
               <a onClick={() => handleNav('/institutions')} className={`cursor-pointer transition-colors border-b-[3px] pb-1.5 ${isCurrent('/institutions') ? 'text-[#0f4b3a] border-[#0f4b3a]' : 'border-transparent hover:border-[#0f4b3a] hover:text-[#0f4b3a]'}`}>INSTITUTIONS</a>
               <a onClick={() => handleNav('/industry')} className={`cursor-pointer transition-colors border-b-[3px] pb-1.5 ${isCurrent('/industry') ? 'text-[#0f4b3a] border-[#0f4b3a]' : 'border-transparent hover:border-[#0f4b3a] hover:text-[#0f4b3a]'}`}>INDUSTRY</a>
               <a onClick={() => handleNav('/impact')} className={`cursor-pointer transition-colors border-b-[3px] pb-1.5 ${isCurrent('/impact') ? 'text-[#0f4b3a] border-[#0f4b3a]' : 'border-transparent hover:border-[#0f4b3a] hover:text-[#0f4b3a]'}`}>IMPACT</a>
-              <a href="#contact" className="hover:text-[#0f4b3a] transition-colors border-b-[3px] border-transparent hover:border-[#0f4b3a] pb-1.5">CONTACT</a>
+              <a onClick={() => handleNav('/contact')} className={`cursor-pointer transition-colors border-b-[3px] pb-1.5 ${isCurrent('/contact') ? 'text-[#0f4b3a] border-[#0f4b3a]' : 'border-transparent hover:border-[#0f4b3a] hover:text-[#0f4b3a]'}`}>CONTACT</a>
             </nav>
           </div>
         </div>

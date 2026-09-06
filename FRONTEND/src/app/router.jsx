@@ -19,6 +19,7 @@ import { AboutPage } from '../features/landing/components/AboutPage.jsx';
 import { ImpactPage } from '../features/landing/components/ImpactPage.jsx';
 import { IndustryLandingPage } from '../features/landing/components/IndustryLandingPage.jsx';
 import { InstitutionsPage } from '../features/landing/components/InstitutionsPage.jsx';
+import { ContactPage } from '../features/landing/components/ContactPage.jsx';
 
 export function Router() {
   const { user, isAuthenticated, loading, logout } = useAuth();
@@ -79,6 +80,7 @@ export function Router() {
       '/impact',
       '/industry',
       '/institutions',
+      '/contact',
       '/login',
       '/register',
       '/register/industry',
@@ -105,6 +107,8 @@ export function Router() {
           return <IndustryLandingPage onNavigate={navigate} />;
         case '/institutions':
           return <InstitutionsPage onNavigate={navigate} />;
+        case '/contact':
+          return <ContactPage onNavigate={navigate} />;
         case '/login':
           return <LoginForm onNavigate={navigate} />;
         case '/register':

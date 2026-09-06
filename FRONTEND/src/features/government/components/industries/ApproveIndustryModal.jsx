@@ -22,6 +22,7 @@ export const ApproveIndustryModal = ({
 }) => {
   const [loginEmail, setLoginEmail] = useState('');
   const [password, setPassword] = useState('');
+
   const [rejectMode, setRejectMode] = useState(false);
   const [rejectReason, setRejectReason] = useState('');
   const [error, setError] = useState('');
