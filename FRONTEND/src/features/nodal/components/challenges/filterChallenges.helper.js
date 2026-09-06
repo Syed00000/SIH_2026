@@ -1,23 +1,28 @@
 export const filterChallengesList = ({
   challenges = [],
-  statusFilter,
-  domainFilter,
-  districtFilter,
-  priorityFilter,
-  searchTerm
+  statusFilter = 'All Status',
+  domainFilter = 'All Domains',
+  districtFilter = 'All Districts',
+  priorityFilter = 'All Priority',
+  searchTerm = ''
 }) => {
+  const safeStatusFilter = typeof statusFilter === 'string' ? statusFilter : 'All Status';
+  const safeDomainFilter = typeof domainFilter === 'string' ? domainFilter : 'All Domains';
+  const safeDistrictFilter = typeof districtFilter === 'string' ? districtFilter : 'All Districts';
+  const safePriorityFilter = typeof priorityFilter === 'string' ? priorityFilter : 'All Priority';
+
   return challenges.filter((chl) => {
-    const status = chl.status || 'Under Review';
-    const domain = chl.domain || 'Other';
-    const district = chl.location?.district || chl.district || chl.assignedNodalOfficer?.district || 'Jharkhand';
-    const priority = chl.priority || 'Medium';
+    const status = String(chl.status || 'Under Review');
+    const domain = String(chl.domain || 'Other');
+    const district = String(chl.location?.district || chl.district || chl.assignedNodalOfficer?.district || 'Jharkhand');
+    const priority = String(chl.priority || 'Medium');
 
-    if (statusFilter !== 'All Status' && status.toLowerCase() !== statusFilter.toLowerCase()) return false;
-    if (domainFilter !== 'All Domains' && domain.toLowerCase() !== domainFilter.toLowerCase()) return false;
-    if (districtFilter !== 'All Districts' && district.toLowerCase() !== districtFilter.toLowerCase()) return false;
-    if (priorityFilter !== 'All Priority' && priority.toLowerCase() !== priorityFilter.toLowerCase()) return false;
+    if (safeStatusFilter !== 'All Status' && status.toLowerCase() !== safeStatusFilter.toLowerCase()) return false;
+    if (safeDomainFilter !== 'All Domains' && domain.toLowerCase() !== safeDomainFilter.toLowerCase()) return false;
+    if (safeDistrictFilter !== 'All Districts' && district.toLowerCase() !== safeDistrictFilter.toLowerCase()) return false;
+    if (safePriorityFilter !== 'All Priority' && priority.toLowerCase() !== safePriorityFilter.toLowerCase()) return false;
 
-    if (searchTerm?.trim()) {
+    if (typeof searchTerm === 'string' && searchTerm.trim()) {
       const q = searchTerm.toLowerCase();
       const match =
         (chl.title || '').toLowerCase().includes(q) ||

@@ -50,7 +50,7 @@ export const CreatePartnershipModal = ({ isOpen, onClose, partner: initialPartne
         partnerName,
         partnerEmail: currentPartner?.contactPerson?.email || currentPartner?.officialEmail || '',
         fundingRequested: true,
-        labAccessRequested: true,
+        labAccessRequested: purpose !== 'Mentorship',
         mentorshipRequested: true,
         estimatedBudget: 'Awaiting Industry Lab Fee',
         duration,

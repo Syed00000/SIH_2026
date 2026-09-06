@@ -2,7 +2,6 @@ import React from 'react';
 import { Building, GraduationCap } from 'lucide-react';
 
 export const InstitutionalTargetingCard = ({
-  verificationStatus,
   isUniversityTargetMode,
   universities = [],
   selectedUniCode,
@@ -12,14 +11,12 @@ export const InstitutionalTargetingCard = ({
   acceptanceStatus,
   setAcceptanceStatus
 }) => {
-  if (verificationStatus !== 'Verified') return null;
-
   return (
     <div className="p-4 bg-slate-50 border border-slate-200/90 rounded-lg space-y-3">
       <div className="flex items-center space-x-2">
         <GraduationCap className="w-4 h-4 text-[#047857]" />
         <label className="block text-[11px] font-bold text-slate-800 uppercase tracking-wider">
-          2. Target Higher Education Institute (HEI) Allocation
+          Target Higher Education Institute (HEI) Allocation
         </label>
       </div>
 
