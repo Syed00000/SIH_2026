@@ -101,9 +101,6 @@ export const IndustryLandingPage = ({ onNavigate }) => {
                   </div>
                   <h2 className="text-[20px] font-bold text-[#1c3c78]">Explore Challenges & Projects</h2>
                 </div>
-                <button className="text-[#1c3c78] text-[12px] font-bold flex items-center hover:underline cursor-pointer">
-                  View All Challenges <ArrowRight className="w-3.5 h-3.5 ml-1" />
-                </button>
               </div>
               
               <div className="bg-white border border-gray-200 p-4 rounded-none shadow-[0_2px_8px_rgb(0,0,0,0.04)] mb-5">
@@ -226,11 +223,14 @@ export const IndustryLandingPage = ({ onNavigate }) => {
                   </p>
                 </div>
               </div>
-              <button className="w-full bg-[#0f4b3a] text-white py-2.5 rounded-none font-bold text-[12px] mb-2 flex justify-center items-center relative z-10 hover:bg-[#0c382b] transition-colors shadow-sm">
+              <button 
+                onClick={() => onNavigate && onNavigate('/register')}
+                className="w-full bg-[#0f4b3a] text-white py-2.5 rounded-none font-bold text-[12px] mb-2 flex justify-center items-center relative z-10 hover:bg-[#0c382b] transition-colors shadow-sm"
+              >
                 Register as Industry Partner <ArrowRight className="w-3 h-3 ml-1" />
               </button>
               <div className="text-center text-[10px] font-medium text-gray-600 relative z-10 flex items-center justify-center gap-1">
-                Already registered? <span className="font-bold text-[#0f4b3a] flex items-center hover:underline cursor-pointer">Login <ArrowRight className="w-2.5 h-2.5 ml-0.5" /></span>
+                Already registered? <span onClick={() => onNavigate && onNavigate('/login')} className="font-bold text-[#0f4b3a] flex items-center hover:underline cursor-pointer">Login <ArrowRight className="w-2.5 h-2.5 ml-0.5" /></span>
               </div>
             </div>
 
