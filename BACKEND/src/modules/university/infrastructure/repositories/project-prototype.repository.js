@@ -143,8 +143,26 @@ export class ProjectPrototypeRepository {
         });
 
         await UniversityChallenge.updateMany(cFilter, { $set: { status: 'Deployed', actionLabel: 'Deployed & Locked', isDeployed: true, isLocked: true } });
-        await UniversityApproval.updateMany({ $or: [{ challengeId: proj.challengeId }, { projectId: proj.projectId }, { project: proj.title }] }, { $set: { status: 'Deployed', isDeployed: true, isLocked: true } });
+        await UniversityApproval.updateMany({ $or: [{ challengeId: proj.challengeId }, { projectId: proj.projectId }, { project: proj.title }] }, { $set: { status: 'Deployed', governmentStatus: 'Approved & Deployed', isDeployed: true, isLocked: true } });
         await UniversityIndustryRequest.updateMany({ $or: [{ challengeId: proj.challengeId }, { projectId: proj.projectId }] }, { $set: { status: 'Deployed', isDeployed: true, isLocked: true } });
+        await UniversityFaculty.updateMany(
+          {
+            $or: [
+              { name: proj.leadMentor },
+              { name: proj.facultyMentor?.name },
+              { email: proj.facultyMentor?.email },
+              { 'assignedChallenges.challengeId': proj.challengeId }
+            ].filter(Boolean)
+          },
+          {
+            $set: {
+              availabilityStatus: 'Available',
+              isDeployed: true,
+              activeProjects: 0
+            },
+            $inc: { completedProjects: 1 }
+          }
+        );
 
         try {
           const { getSocketIO } = await import('../../../../infrastructure/socket/socketServer.js');

@@ -36,7 +36,17 @@ export const UniversityLayout = ({ user, onLogout }) => {
       setDashboardData(data);
       const appList = Array.isArray(approvalsData) ? approvalsData : [];
       setApprovalsList(appList);
-      setPendingApprovalsCount(appList.filter(a => a.status === 'Pending').length);
+      const isPending = (a) =>
+        a.status === 'Pending' &&
+        !a.isDeployed &&
+        !a.isLocked &&
+        a.status !== 'Deployed' &&
+        a.status !== 'Approved' &&
+        !a.sentToGovernment &&
+        a.governmentStatus !== 'Under State Evaluation' &&
+        a.governmentStatus !== 'Approved' &&
+        a.governmentStatus !== 'Approved & Deployed';
+      setPendingApprovalsCount(appList.filter(isPending).length);
       const indList = Array.isArray(indReqsData) ? indReqsData : (Array.isArray(indReqsData?.data) ? indReqsData.data : []);
       setIndustryRequestsList(indList);
     } catch (err) {
@@ -97,7 +107,7 @@ export const UniversityLayout = ({ user, onLogout }) => {
       actionLabel: 'View in Industry Partners',
       targetTab: 'partners'
     })),
-    ...approvalsList.filter(a => a.status === 'Pending').map(a => ({
+    ...approvalsList.filter(a => a.status === 'Pending' && !a.isDeployed && !a.isLocked && !a.sentToGovernment && a.governmentStatus !== 'Under State Evaluation' && a.governmentStatus !== 'Approved' && a.governmentStatus !== 'Approved & Deployed').map(a => ({
       id: `app-${a.approvalId || a._id}`,
       type: 'APPROVAL',
       category: 'Pending Review',

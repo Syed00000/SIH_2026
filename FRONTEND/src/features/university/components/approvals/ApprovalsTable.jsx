@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ChevronLeft, ChevronRight, Eye, FlaskConical } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Eye, FlaskConical, Lock, CheckCircle2 } from 'lucide-react';
 
 const getTypePill = (type = '') => {
   if (type.includes('Project')) return 'bg-blue-50 text-blue-800 border-blue-200';
@@ -9,12 +9,63 @@ const getTypePill = (type = '') => {
   return 'bg-slate-100 text-slate-800 border-slate-200';
 };
 
-const getStatusPill = (status = '') => {
-  if (status === 'Approved') return 'bg-emerald-50 text-emerald-800 border-emerald-300';
-  if (status === 'Pending') return 'bg-amber-50 text-amber-800 border-amber-300';
-  if (status === 'Rejected') return 'bg-rose-50 text-rose-800 border-rose-300';
-  if (status === 'Changes Required') return 'bg-orange-50 text-orange-800 border-orange-300';
-  return 'bg-slate-100 text-slate-700 border-slate-200';
+const getStatusBadge = (apr) => {
+  const isDeployed = Boolean(
+    apr.isDeployed ||
+    apr.isLocked ||
+    apr.status === 'Deployed' ||
+    apr.governmentStatus === 'Approved & Deployed'
+  );
+  if (isDeployed) {
+    return (
+      <span className="px-2 py-0.5 text-[10px] font-black border rounded-md bg-teal-50 text-teal-800 border-teal-300 inline-flex items-center space-x-1">
+        <Lock className="w-2.5 h-2.5 text-teal-700" />
+        <span>🔒 Deployed</span>
+      </span>
+    );
+  }
+
+  const isForwarded = Boolean(
+    apr.sentToGovernment ||
+    apr.governmentStatus === 'Under State Evaluation' ||
+    apr.governmentStatus === 'Approved'
+  );
+  if (isForwarded) {
+    return (
+      <span className="px-2 py-0.5 text-[10px] font-bold border rounded-md bg-blue-50 text-blue-800 border-blue-300 inline-flex items-center space-x-1">
+        <CheckCircle2 className="w-2.5 h-2.5 text-blue-600" />
+        <span>✓ Forwarded to Govt</span>
+      </span>
+    );
+  }
+
+  if (apr.status === 'Approved') {
+    return (
+      <span className="px-2 py-0.5 text-[10px] font-bold border rounded-md bg-emerald-50 text-emerald-800 border-emerald-300">
+        Approved
+      </span>
+    );
+  }
+  if (apr.status === 'Rejected') {
+    return (
+      <span className="px-2 py-0.5 text-[10px] font-bold border rounded-md bg-rose-50 text-rose-800 border-rose-300">
+        Rejected
+      </span>
+    );
+  }
+  if (apr.status === 'Changes Required') {
+    return (
+      <span className="px-2 py-0.5 text-[10px] font-bold border rounded-md bg-orange-50 text-orange-800 border-orange-300">
+        Revisions Directed
+      </span>
+    );
+  }
+
+  return (
+    <span className="px-2 py-0.5 text-[10px] font-bold border rounded-md bg-amber-50 text-amber-800 border-amber-300">
+      Pending Review
+    </span>
+  );
 };
 
 export const ApprovalsTable = ({ approvals = [], selectedId, onSelect, loading = false }) => {
@@ -100,9 +151,7 @@ export const ApprovalsTable = ({ approvals = [], selectedId, onSelect, loading =
                         <div className="text-[10px] text-slate-400">{apr.dateTime}</div>
                       </td>
                       <td className="py-3 px-3.5">
-                        <span className={`px-2 py-0.5 text-[10px] font-bold border rounded-md ${getStatusPill(apr.status)}`}>
-                          {apr.status}
-                        </span>
+                        {getStatusBadge(apr)}
                       </td>
                       <td className="py-3 px-3.5 text-right">
                         <button

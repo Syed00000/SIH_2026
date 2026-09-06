@@ -25,14 +25,20 @@ export const ApprovalDetailPanel = ({
     approval.isLocked ||
     approval.status === 'Deployed' ||
     approval.governmentStatus === 'Approved' ||
+    approval.governmentStatus === 'Approved & Deployed' ||
     approval.status === 'Completed' ||
     approval.trlLevel === 'TRL-9'
   );
-  const isApproved = approval.status === 'Approved' || isDeployed;
+  const isForwarded = Boolean(
+    approval.sentToGovernment ||
+    approval.governmentStatus === 'Under State Evaluation' ||
+    approval.governmentStatus === 'Approved'
+  );
+  const isApproved = approval.status === 'Approved' || isForwarded || isDeployed;
   const isProto = approval.type === 'Prototype Approval';
 
   const handleAction = async (type) => {
-    if (isDeployed) return;
+    if (isDeployed || isApproved) return;
     setIsProcessing(true);
     try {
       if (type === 'approve') await onApprove?.(approval, remarks, { remarks });
@@ -52,12 +58,23 @@ export const ApprovalDetailPanel = ({
       idBadge={approval.approvalId || approval._id}
       statusBadge={
         <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-black border flex items-center space-x-1 ${
-          isDeployed ? 'bg-emerald-50 text-emerald-800 border-emerald-300' : isApproved ? 'bg-emerald-50 text-emerald-800 border-emerald-300' : 'bg-amber-50 text-amber-800 border-amber-300'
+          isDeployed
+            ? 'bg-teal-50 text-teal-800 border-teal-300'
+            : isForwarded
+            ? 'bg-blue-50 text-blue-800 border-blue-300'
+            : isApproved
+            ? 'bg-emerald-50 text-emerald-800 border-emerald-300'
+            : 'bg-amber-50 text-amber-800 border-amber-300'
         }`}>
           {isDeployed ? (
             <>
-              <Lock className="w-3 h-3 text-emerald-700" />
+              <Lock className="w-3 h-3 text-teal-700" />
               <span>✓ Deployed (TRL-9) · Locked</span>
+            </>
+          ) : isForwarded ? (
+            <>
+              <CheckCircle2 className="w-3 h-3 text-blue-700" />
+              <span>✓ Forwarded to Government · Under Evaluation</span>
             </>
           ) : (
             <span>{approval.status || 'Pending Vetting'}</span>

@@ -23,8 +23,33 @@ export const ApprovalsPanel = () => {
   const fetchApprovals = async () => {
     setLoading(true);
     try {
-      const data = await universityApiService.getApprovals(UNIVERSITY_CODE);
-      setApprovals(Array.isArray(data) ? data : []);
+      const [data, projData] = await Promise.all([
+        universityApiService.getApprovals(UNIVERSITY_CODE),
+        universityApiService.getProjects(UNIVERSITY_CODE)
+      ]);
+      const appData = Array.isArray(data) ? data : [];
+      const pList = Array.isArray(projData) ? projData : [];
+
+      const enriched = appData.map((a) => {
+        const matchingProj = pList.find((p) =>
+          (p.projectId && a.projectId && p.projectId === a.projectId) ||
+          (p.challengeId && a.challengeId && p.challengeId === a.challengeId) ||
+          (p.title && a.project && p.title.toLowerCase() === a.project.toLowerCase())
+        );
+        const isProjectDeployed = matchingProj?.status === 'Deployed' || Boolean(matchingProj?.isDeployed) || Boolean(matchingProj?.isLocked);
+        const isDeployed = Boolean(a.isDeployed || a.isLocked || a.status === 'Deployed' || a.governmentStatus === 'Approved & Deployed' || isProjectDeployed);
+        const isForwarded = Boolean(a.sentToGovernment || a.governmentStatus === 'Under State Evaluation' || a.governmentStatus === 'Approved');
+
+        return {
+          ...a,
+          isDeployed,
+          isLocked: isDeployed,
+          isForwarded,
+          status: isDeployed ? 'Deployed' : a.status
+        };
+      });
+
+      setApprovals(enriched);
     } catch (err) {
       console.error('fetchApprovals error:', err.message);
     } finally {
@@ -87,7 +112,14 @@ export const ApprovalsPanel = () => {
     // Prototype approvals only appear when testing has been completed by industry partner
     if (activeTab === 'prototype' && (a.type !== 'Prototype Approval' || !a.testingCompleted)) return false;
     if (typeFilter !== 'All' && a.type !== typeFilter) return false;
-    if (statusFilter !== 'All' && a.status !== statusFilter) return false;
+    if (statusFilter !== 'All') {
+      if (statusFilter === 'Deployed' && !a.isDeployed) return false;
+      if (statusFilter === 'Forwarded' && (!a.isForwarded || a.isDeployed)) return false;
+      if (statusFilter === 'Pending' && (a.isDeployed || a.isForwarded || a.status !== 'Pending')) return false;
+      if (statusFilter === 'Approved' && a.status !== 'Approved' && !a.isForwarded) return false;
+      if (statusFilter === 'Rejected' && a.status !== 'Rejected') return false;
+      if (statusFilter === 'Changes Required' && a.status !== 'Changes Required') return false;
+    }
     if (search.trim()) {
       const q = search.toLowerCase();
       const s = `${a.approvalId} ${a.project} ${a.challengeId} ${a.requestedBy} ${a.type}`.toLowerCase();
@@ -98,8 +130,9 @@ export const ApprovalsPanel = () => {
 
   const validApprovals = approvals.filter((a) => a.type !== 'Prototype Approval' || Boolean(a.testingCompleted));
   const total = validApprovals.length;
-  const pending = validApprovals.filter((a) => a.status === 'Pending').length;
-  const approved = validApprovals.filter((a) => a.status === 'Approved').length;
+  const deployedCount = validApprovals.filter((a) => a.isDeployed).length;
+  const pending = validApprovals.filter((a) => a.status === 'Pending' && !a.isDeployed && !a.isForwarded).length;
+  const approved = validApprovals.filter((a) => (a.status === 'Approved' || a.isForwarded) && !a.isDeployed).length;
   const rejected = validApprovals.filter((a) => a.status === 'Rejected').length;
 
   if (isModalOpen && selected) {
@@ -137,6 +170,7 @@ export const ApprovalsPanel = () => {
         pending={pending}
         approved={approved}
         rejected={rejected}
+        deployed={deployedCount}
         loading={loading}
       />
 

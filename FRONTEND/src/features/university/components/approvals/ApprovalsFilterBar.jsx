@@ -44,10 +44,12 @@ export const ApprovalsFilterBar = ({
           className="w-full px-2.5 py-1.5 bg-slate-50 border border-slate-200 text-xs text-slate-800 font-medium focus:bg-white focus:outline-none focus:border-slate-900 rounded-none cursor-pointer"
         >
           <option value="All">All Statuses</option>
-          <option value="Pending">Pending</option>
+          <option value="Pending">Pending Review</option>
+          <option value="Forwarded">✓ Forwarded to Govt</option>
           <option value="Approved">Approved</option>
+          <option value="Deployed">🔒 Deployed</option>
           <option value="Rejected">Rejected</option>
-          <option value="Changes Required">Changes Required</option>
+          <option value="Changes Required">Revisions Directed</option>
         </select>
 
         <div className="relative">

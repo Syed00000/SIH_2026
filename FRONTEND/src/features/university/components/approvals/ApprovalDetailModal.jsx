@@ -28,6 +28,7 @@ import { GovernmentGrantStatusCard } from './GovernmentGrantStatusCard.jsx';
 import { projectCsrSyncService } from '../../../government/services/projectCsrSyncService.js';
 
 const statusBadge = (s = '') => {
+  if (s === 'Deployed') return 'bg-teal-50 text-teal-800 border-teal-300';
   if (s === 'Approved') return 'bg-emerald-50 text-emerald-800 border-emerald-300';
   if (s === 'Pending') return 'bg-amber-50 text-amber-800 border-amber-300';
   if (s === 'Rejected') return 'bg-rose-50 text-rose-800 border-rose-300';

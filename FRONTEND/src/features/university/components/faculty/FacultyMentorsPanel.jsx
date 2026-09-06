@@ -31,12 +31,40 @@ export const FacultyMentorsPanel = ({ onNavigateTab, onSelectFacultyDetail, onSe
     const fList = Array.isArray(facData) ? facData : [];
     const pList = Array.isArray(projData) ? projData : [];
     const cList = chlData?.challenges || (Array.isArray(chlData) ? chlData : []);
-    setFacultyList(fList);
+
+    const enrichedFaculty = fList.map((f) => {
+      const facProjects = pList.filter((p) =>
+        p.leadMentor === f.name ||
+        (p.facultyMentor && (p.facultyMentor.name === f.name || p.facultyMentor.email === f.email)) ||
+        (f.assignedChallenges && f.assignedChallenges.some((ac) => ac.challengeId === p.challengeId || ac.challengeId === p.projectId))
+      );
+      const facChallenges = cList.filter((c) =>
+        (c.assignedFaculty && (c.assignedFaculty.name === f.name || c.assignedFaculty.email === f.email)) ||
+        (f.assignedChallenges && f.assignedChallenges.some((ac) => ac.challengeId === c.challengeId || ac.challengeId === c.id))
+      );
+
+      const hasDeployedProject = facProjects.some((p) => p.status === 'Deployed' || Boolean(p.isDeployed) || Boolean(p.isLocked));
+      const hasDeployedChallenge = facChallenges.some((c) => c.status === 'Deployed' || c.status === 'Resolved' || Boolean(c.isDeployed) || Boolean(c.isLocked));
+      const hasActiveOngoing = facProjects.some((p) => !p.isDeployed && !p.isLocked && p.status !== 'Deployed' && p.status !== 'Resolved');
+
+      const isDeployed = Boolean(f.isDeployed || f.status === 'Deployed' || hasDeployedProject || hasDeployedChallenge);
+      const availabilityStatus = (isDeployed && !hasActiveOngoing) ? 'Available' : (f.availabilityStatus || 'Available');
+
+      return {
+        ...f,
+        isDeployed,
+        availabilityStatus,
+        hasActiveOngoing,
+        status: isDeployed ? 'Deployed' : f.status
+      };
+    });
+
+    setFacultyList(enrichedFaculty);
     setProjectsList(pList);
     setChallengesList(cList);
     setSelectedFaculty((prev) => {
-      if (prev && fList.some((f) => (f._id && f._id === prev._id) || f.email === prev.email)) {
-        return fList.find((f) => (f._id && f._id === prev._id) || f.email === prev.email);
+      if (prev && enrichedFaculty.some((f) => (f._id && f._id === prev._id) || f.email === prev.email)) {
+        return enrichedFaculty.find((f) => (f._id && f._id === prev._id) || f.email === prev.email);
       }
       return null;
     });
@@ -129,8 +157,17 @@ export const FacultyMentorsPanel = ({ onNavigateTab, onSelectFacultyDetail, onSe
 
   const filtered = facultyList.filter((f) => {
     if (deptFilter !== 'All' && f.department !== deptFilter) return false;
-    if (availabilityFilter !== 'All' && f.availabilityStatus !== availabilityFilter) return false;
-    if (statusFilter !== 'All' && f.status !== statusFilter) return false;
+    if (availabilityFilter !== 'All') {
+      if (availabilityFilter === 'Deployed' && !f.isDeployed) return false;
+      if (availabilityFilter === 'Available' && !f.isDeployed && f.availabilityStatus !== 'Available') return false;
+      if (availabilityFilter === 'In Project' && (f.isDeployed || f.availabilityStatus !== 'In Project')) return false;
+      if (availabilityFilter === 'On Leave' && f.availabilityStatus !== 'On Leave') return false;
+    }
+    if (statusFilter !== 'All') {
+      if (statusFilter === 'Deployed' && !f.isDeployed) return false;
+      if (statusFilter === 'Active' && f.status !== 'Active' && !f.isDeployed) return false;
+      if (statusFilter === 'Inactive' && f.status !== 'Inactive') return false;
+    }
     if (domainFilter !== 'All') {
       const specs = Array.isArray(f.specialization)
         ? f.specialization
@@ -160,10 +197,11 @@ export const FacultyMentorsPanel = ({ onNavigateTab, onSelectFacultyDetail, onSe
       <FacultyKpis
         loading={loading}
         total={facultyList.length}
-        active={facultyList.filter((f) => f.status === 'Active').length}
-        available={facultyList.filter((f) => f.availabilityStatus === 'Available').length}
+        active={facultyList.filter((f) => f.status === 'Active' || f.isDeployed).length}
+        available={facultyList.filter((f) => f.availabilityStatus === 'Available' || f.isDeployed).length}
         onLeave={facultyList.filter((f) => f.availabilityStatus === 'On Leave').length}
-        inProjects={facultyList.filter((f) => f.availabilityStatus === 'In Project').length}
+        inProjects={facultyList.filter((f) => f.hasActiveOngoing).length}
+        deployed={facultyList.filter((f) => f.isDeployed).length}
       />
 
       <FacultyFilterBar

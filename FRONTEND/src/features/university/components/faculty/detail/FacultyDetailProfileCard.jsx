@@ -23,14 +23,16 @@ export const FacultyDetailProfileCard = ({ faculty, initials, isAvailable, isAss
 
         <span
           className={`px-2.5 py-1 rounded-full text-xs font-bold ${
-            isAvailable
+            faculty.isDeployed
+              ? 'bg-teal-50 text-teal-800 border border-teal-300'
+              : isAvailable
               ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
               : isAssigned
               ? 'bg-purple-50 text-purple-800 border border-purple-200'
               : 'bg-slate-100 text-slate-700'
           }`}
         >
-          {isAvailable ? 'Available for Allocation' : isAssigned ? 'Active Mentor' : faculty.availabilityStatus || 'Available'}
+          {faculty.isDeployed ? '🔒 Deployed Solution Mentor' : isAvailable ? 'Available for Allocation' : isAssigned ? 'Active Mentor' : faculty.availabilityStatus || 'Available'}
         </span>
       </div>
 

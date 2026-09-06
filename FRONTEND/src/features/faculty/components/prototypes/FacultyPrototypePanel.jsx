@@ -44,10 +44,11 @@ export const FacultyPrototypePanel = ({ project, faculty, onRefresh }) => {
 
   const isFunded = Boolean(project?.disbursedAmount && project.disbursedAmount !== '0' && project.disbursedAmount !== '₹ 0');
   const currentStatus = project?.prototypeStatus || 'Not Started';
-  const isLocked = currentStatus === 'In Review' || currentStatus === 'Approved';
+  const isProjectDeployed = project?.status === 'Deployed' || Boolean(project?.isDeployed) || Boolean(project?.isLocked);
+  const isLocked = isProjectDeployed || currentStatus === 'In Review' || currentStatus === 'Approved';
   const needsChanges = currentStatus === 'Changes Required';
   const isRejected = currentStatus === 'Rejected';
-  const isCertified = project?.governmentStatus === 'Approved' || project?.status === 'Completed';
+  const isCertified = isProjectDeployed || project?.governmentStatus === 'Approved' || project?.status === 'Completed';
 
   const handleChangeData = (key, value) => {
     isDirtyRef.current = true;
