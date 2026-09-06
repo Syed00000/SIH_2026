@@ -5,7 +5,7 @@ import {
   Settings, Handshake, MapPin, Building2, ChevronDown, CheckCircle2,
   TrendingUp, Leaf, LogIn, Trophy, Landmark
 } from 'lucide-react';
-import bannerImage from '../assets/institutions-banner.jpg';
+import bannerImage from '../assets/hero-banner-institutions.jpg';
 import dummyImage from '../assets/mission-image.jpg'; // For success story
 
 export const InstitutionsPage = ({ onNavigate }) => {
