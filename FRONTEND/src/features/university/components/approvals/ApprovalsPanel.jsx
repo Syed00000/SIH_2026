@@ -69,13 +69,10 @@ export const ApprovalsPanel = () => {
     }
   };
 
-  const handleOpenIndustryModal = () => {
-    setIsIndustryModalOpen(true);
-  };
-
   const filtered = approvals.filter((a) => {
     if (activeTab === 'budget' && a.type === 'Prototype Approval') return false;
-    if (activeTab === 'prototype' && a.type !== 'Prototype Approval') return false;
+    // Prototype approvals only appear when testing has been completed by industry partner
+    if (activeTab === 'prototype' && (a.type !== 'Prototype Approval' || !a.testingCompleted)) return false;
     if (typeFilter !== 'All' && a.type !== typeFilter) return false;
     if (statusFilter !== 'All' && a.status !== statusFilter) return false;
     if (search.trim()) {
@@ -86,14 +83,14 @@ export const ApprovalsPanel = () => {
     return true;
   });
 
-  const total = approvals.length;
-  const pending = approvals.filter((a) => a.status === 'Pending').length;
-  const approved = approvals.filter((a) => a.status === 'Approved').length;
-  const rejected = approvals.filter((a) => a.status === 'Rejected').length;
+  const validApprovals = approvals.filter((a) => a.type !== 'Prototype Approval' || Boolean(a.testingCompleted));
+  const total = validApprovals.length;
+  const pending = validApprovals.filter((a) => a.status === 'Pending').length;
+  const approved = validApprovals.filter((a) => a.status === 'Approved').length;
+  const rejected = validApprovals.filter((a) => a.status === 'Rejected').length;
 
   return (
-    <div className="space-y-4 max-w-7xl mx-auto select-none pb-12">
-      {/* Top Notification Alert */}
+    <div className="space-y-4 max-w-7xl mx-auto select-none pb-12 text-left">
       <ApprovalsNotificationBanner
         pendingCount={pending}
         onFilterPending={() => {
@@ -173,23 +170,19 @@ export const ApprovalsPanel = () => {
           approval={selected}
           isOpen={isModalOpen}
           onClose={handleCloseModal}
-          onApprove={(apr, remarks, extra) => handleUpdateStatus(apr, 'Approved', remarks, extra)}
-          onReject={(apr, remarks, extra) => handleUpdateStatus(apr, 'Rejected', remarks, extra)}
-          onRequestChanges={(apr, remarks, extra) => handleUpdateStatus(apr, 'Changes Required', remarks, extra)}
+          onUpdateStatus={handleUpdateStatus}
           onDelete={handleDelete}
-          onOpenIndustryModal={handleOpenIndustryModal}
         />
       )}
 
-      <IndustryRequestModal
-        isOpen={isIndustryModalOpen}
-        onClose={() => setIsIndustryModalOpen(false)}
-        approval={selected}
-        onSuccess={() => {
-          // Optionally update the UI to show it's been forwarded, e.g., by changing its state locally
-          handleCloseModal();
-        }}
-      />
+      {/* Industry Request Modal */}
+      {isIndustryModalOpen && (
+        <IndustryRequestModal
+          isOpen={isIndustryModalOpen}
+          onClose={() => setIsIndustryModalOpen(false)}
+          onSubmitSuccess={fetchApprovals}
+        />
+      )}
     </div>
   );
 };

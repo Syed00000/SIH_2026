@@ -4,6 +4,7 @@ import { universityApiService } from '../../services/universityApiService.js';
 import { projectCsrSyncService } from '../../../government/services/projectCsrSyncService.js';
 import { parseGrantRupees } from '../../../government/components/projects/GrantPaymentModal.jsx';
 import { GrantRequestForm } from './GrantRequestForm.jsx';
+import { FacultyPrototypeRequestAction } from './FacultyPrototypeRequestAction.jsx';
 import apiClient from '../../../../infrastructure/api/client.js';
 
 export const GovernmentGrantStatusCard = ({ approval }) => {
@@ -35,34 +36,20 @@ export const GovernmentGrantStatusCard = ({ approval }) => {
   };
 
   const syncProjectData = () => {
-    const allProposals = projectCsrSyncService.getSolutionProposals() || [];
-    const activeProjects = projectCsrSyncService.getActiveProjects() || [];
-    const pool = [...activeProjects, ...allProposals];
-    const found = pool.find(
-      (p) => p.id === pId || p.projectId === pId || p.projectId === approval?.projectId ||
-             p.title === approval?.project || p.challengeId === approval?.challengeId
-    );
+    const pool = [...(projectCsrSyncService.getActiveProjects() || []), ...(projectCsrSyncService.getSolutionProposals() || [])];
+    const found = pool.find((p) => p.id === pId || p.projectId === pId || p.projectId === approval?.projectId || p.title === approval?.project || p.challengeId === approval?.challengeId);
     if (found) setProject((prev) => ({ ...found, ...prev }));
-    if (found?.trancheRequest?.status === 'Pending' || approval?.trancheRequest?.status === 'Pending') {
-      setTrancheRequested(true);
-    }
+    if (found?.trancheRequest?.status === 'Pending' || approval?.trancheRequest?.status === 'Pending') setTrancheRequested(true);
   };
 
   useEffect(() => {
     syncProjectData();
     fetchLiveStatus();
-    const unsub = projectCsrSyncService.subscribe(() => {
-      syncProjectData();
-      fetchLiveStatus();
-    });
+    const unsub = projectCsrSyncService.subscribe(() => { syncProjectData(); fetchLiveStatus(); });
     const interval = setInterval(fetchLiveStatus, 3000);
-    return () => {
-      unsub();
-      clearInterval(interval);
-    };
+    return () => { unsub(); clearInterval(interval); };
   }, [pId, approval?.approvalId]);
 
-  // Calculate total disbursed by State Government for this project
   const ledgerDisbursed = ledgerPayments
     .filter((t) => {
       const matchId = t.projectRef === pId || t.projectRef === approval?.projectId || t.challengeId === approval?.challengeId;
@@ -78,11 +65,9 @@ export const GovernmentGrantStatusCard = ({ approval }) => {
     projectCsrSyncService.getProjectDisbursed(pId)
   );
 
-  const totalSanctionedNum =
-    parseGrantRupees(project?.originalGovernmentGrant) ||
+  const totalSanctionedNum = parseGrantRupees(project?.originalGovernmentGrant) ||
     parseGrantRupees(project?.sanctionedBudget || project?.sanctionedGrant || approval?.sanctionedBudget) ||
-    parseGrantRupees(approval?.proposedBudget || approval?.estimatedBudget) ||
-    80000;
+    parseGrantRupees(approval?.proposedBudget || approval?.estimatedBudget) || 80000;
 
   const pendingVal = Math.max(0, totalSanctionedNum - rawDisbursed);
   const isFullyDisbursed = totalSanctionedNum > 0 && rawDisbursed >= totalSanctionedNum;
@@ -93,21 +78,14 @@ export const GovernmentGrantStatusCard = ({ approval }) => {
     try {
       const targetId = project?.id || project?.projectId || approval?.projectId || pId;
       const tranchePayload = {
-        status: 'Pending',
-        amount: Number(reqAmount),
-        requestedTranche: rawDisbursed === 0 ? 1 : 2,
+        status: 'Pending', amount: Number(reqAmount), requestedTranche: rawDisbursed === 0 ? 1 : 2,
         formattedAmount: `₹ ${Number(reqAmount).toLocaleString('en-IN')}`,
         reason: reason || 'Milestone research materials validated. University requesting installment release from Government Escrow.',
-        requestedAt: new Date(),
-        requestedBy: 'Ranchi University (RU001)'
+        requestedAt: new Date(), requestedBy: 'Ranchi University (RU001)'
       };
-
       await universityApiService.requestProjectTranche(targetId, tranchePayload).catch(() => {});
-      await apiClient.patch(`university/approvals/${approval.approvalId || targetId}?universityCode=RU001`, {
-        trancheRequest: tranchePayload
-      }).catch(() => {});
+      await apiClient.patch(`university/approvals/${approval.approvalId || targetId}?universityCode=RU001`, { trancheRequest: tranchePayload }).catch(() => {});
       projectCsrSyncService.updateProposalTrancheRequest(targetId, tranchePayload);
-
       setTrancheRequested(true);
       setFeedbackMsg(`✓ Request of ₹ ${Number(reqAmount).toLocaleString('en-IN')} submitted to State Government!`);
       setTimeout(() => setFeedbackMsg(''), 4500);
@@ -168,6 +146,16 @@ export const GovernmentGrantStatusCard = ({ approval }) => {
           <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
           <span>{feedbackMsg}</span>
         </div>
+      )}
+
+      {rawDisbursed > 0 && (
+        <FacultyPrototypeRequestAction
+          project={project}
+          approval={approval}
+          pId={pId}
+          rawDisbursed={rawDisbursed}
+          onSuccess={fetchLiveStatus}
+        />
       )}
 
       {isFullyDisbursed || project?.isDeployed ? (

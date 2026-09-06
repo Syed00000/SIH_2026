@@ -1,100 +1,89 @@
-import React, { useState, useEffect } from 'react';
-import { Lightbulb, Lock, FlaskConical, TestTube2, ShieldCheck, Rocket } from 'lucide-react';
-import ReactQuill from 'react-quill-new';
-import 'react-quill-new/dist/quill.snow.css';
+import React, { useState, useEffect, useRef } from 'react';
+import { Lightbulb, Lock, Rocket, Send, CheckCircle2, Cpu, FlaskConical, Factory, Loader2 } from 'lucide-react';
 import { facultyApiService } from '../../services/facultyApiService.js';
 import { PrototypeStatusBanner } from './PrototypeStatusBanner.jsx';
-import { PrototypePhasesStepper } from './PrototypePhasesStepper.jsx';
-import { PrototypeSidebarActions } from './PrototypeSidebarActions.jsx';
+import { PrototypeDetailsTab } from './PrototypeDetailsTab.jsx';
+import { PrototypeLabTestsTab } from './PrototypeLabTestsTab.jsx';
+import { PrototypeIndustryRequisitionTab } from './PrototypeIndustryRequisitionTab.jsx';
 
-const PHASES = [
-  { key: 'labDesign',    label: 'Lab Design',    icon: FlaskConical, color: 'amber' },
-  { key: 'fieldTest',    label: 'Field Test',    icon: TestTube2,    color: 'blue' },
-  { key: 'stateCert',    label: 'State Cert',    icon: ShieldCheck,  color: 'purple' },
-  { key: 'publicDeploy', label: 'Public Deploy', icon: Rocket,       color: 'emerald' },
+const TABS = [
+  { id: 0, label: '1. Architecture & Blueprint PDF', icon: Cpu },
+  { id: 1, label: '2. In-House Lab Test Results', icon: FlaskConical },
+  { id: 2, label: '3. Industry Testing Checklist', icon: Factory },
 ];
 
-const PHASE_COLORS = {
-  amber:   { bg: 'bg-amber-50',   border: 'border-amber-200',  text: 'text-amber-700' },
-  blue:    { bg: 'bg-blue-50',    border: 'border-blue-200',   text: 'text-blue-700' },
-  purple:  { bg: 'bg-purple-50',  border: 'border-purple-200', text: 'text-purple-700' },
-  emerald: { bg: 'bg-emerald-50', border: 'border-emerald-200',text: 'text-emerald-700' },
-};
-
 export const FacultyPrototypePanel = ({ project, faculty, onRefresh }) => {
-  const [activePhase, setActivePhase] = useState(0);
-  const [phaseData, setPhaseData] = useState({ labDesign: '', fieldTest: '', stateCert: '', publicDeploy: '' });
-  const [timeline, setTimeline] = useState('');
+  const [activeTab, setActiveTab] = useState(0);
+  const [protoData, setProtoData] = useState({});
   const [submitting, setSubmitting] = useState(false);
-  const [saving, setSaving] = useState(false);
-  const [success, setSuccess] = useState(false);
-  const [saveSuccess, setSaveSuccess] = useState(false);
+  const [submitSuccess, setSubmitSuccess] = useState(false);
 
+  const pId = project?.projectId || project?.challengeId || project?._id;
+  const loadedProjectIdRef = useRef(null);
+  const isDirtyRef = useRef(false);
+
+  // Initialize once per project; do NOT let background 4s poll overwrite typed data
   useEffect(() => {
-    if (project?.prototypeData?.phases) {
-      setPhaseData((prev) => ({ ...prev, ...project.prototypeData.phases }));
-    } else if (project?.prototypeData?.content) {
-      setPhaseData((prev) => ({ ...prev, labDesign: project.prototypeData.content }));
+    if (!pId) return;
+    if (loadedProjectIdRef.current !== pId) {
+      loadedProjectIdRef.current = pId;
+      isDirtyRef.current = false;
+      let initial = project?.prototypeData ? { ...project.prototypeData } : {};
+      try {
+        const savedDraft = localStorage.getItem(`joharsetu_proto_${pId}`);
+        if (savedDraft) {
+          const parsed = JSON.parse(savedDraft);
+          initial = { ...initial, ...parsed };
+        }
+      } catch {}
+      setProtoData(initial);
+    } else if (!isDirtyRef.current && project?.prototypeData) {
+      setProtoData((prev) => ({ ...project.prototypeData, ...prev }));
     }
-    if (project?.prototypeData?.timeline) setTimeline(project.prototypeData.timeline);
-  }, [project?.prototypeData]);
+  }, [pId, project?.prototypeData]);
 
-  const isFunded = Boolean(project && project.disbursedAmount && project.disbursedAmount !== '0' && project.disbursedAmount !== '₹ 0');
+  const isFunded = Boolean(project?.disbursedAmount && project.disbursedAmount !== '0' && project.disbursedAmount !== '₹ 0');
   const currentStatus = project?.prototypeStatus || 'Not Started';
   const isLocked = currentStatus === 'In Review' || currentStatus === 'Approved';
   const needsChanges = currentStatus === 'Changes Required';
   const isRejected = currentStatus === 'Rejected';
   const isCertified = project?.governmentStatus === 'Approved' || project?.status === 'Completed';
 
-  const updatePhase = (key, value) => setPhaseData((prev) => ({ ...prev, [key]: value }));
-  const hasAnyContent = () => Object.values(phaseData).some((v) => v && v.replace(/<[^>]*>/g, '').trim().length > 0);
-
-  const handleSaveDraft = async () => {
-    if (isLocked) return;
-    setSaving(true);
-    try {
-      await facultyApiService.savePrototypeDraft(project.projectId || project.challengeId, {
-        phases: phaseData, content: phaseData.labDesign, timeline,
-        facultyEmail: faculty?.email, facultyName: faculty?.name
-      });
-      setSaveSuccess(true);
-      if (onRefresh) await onRefresh();
-      setTimeout(() => setSaveSuccess(false), 2000);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setSaving(false);
-    }
+  const handleChangeData = (key, value) => {
+    isDirtyRef.current = true;
+    setProtoData((prev) => {
+      const next = { ...prev, [key]: value };
+      try {
+        if (pId) localStorage.setItem(`joharsetu_proto_${pId}`, JSON.stringify(next));
+      } catch {}
+      return next;
+    });
   };
 
   const handleSubmit = async () => {
-    if (isLocked) return;
+    if (isLocked || !pId) return;
+    if (!protoData?.title?.trim()) {
+      alert('Please enter a Prototype Working Title in Tab 1 before submitting.');
+      setActiveTab(0);
+      return;
+    }
+    if (!confirm('Submit prototype dossier for University Review & Lab Approval?')) return;
     setSubmitting(true);
     try {
-      await facultyApiService.submitPrototype(project.projectId || project.challengeId, {
-        phases: phaseData, content: phaseData.labDesign, timeline,
-        facultyEmail: faculty?.email, facultyName: faculty?.name
+      await facultyApiService.submitPrototype(pId, {
+        ...protoData,
+        facultyEmail: faculty?.email,
+        facultyName: faculty?.name
       });
-      setSuccess(true);
+      isDirtyRef.current = false;
+      try { localStorage.removeItem(`joharsetu_proto_${pId}`); } catch {}
+      setSubmitSuccess(true);
       if (onRefresh) await onRefresh();
-      setTimeout(() => setSuccess(false), 2500);
+      setTimeout(() => setSubmitSuccess(false), 3000);
     } catch (err) {
-      console.error(err);
+      alert('Submission failed: ' + (err.message || 'Error'));
     } finally {
       setSubmitting(false);
-    }
-  };
-
-  const handleDeleteDraft = async () => {
-    if (isLocked) return;
-    setSaving(true);
-    try {
-      await facultyApiService.deletePrototypeDraft(project.projectId || project.challengeId);
-      setPhaseData({ labDesign: '', fieldTest: '', stateCert: '', publicDeploy: '' });
-      setTimeline('');
-      if (onRefresh) await onRefresh();
-    } finally {
-      setSaving(false);
     }
   };
 
@@ -108,48 +97,75 @@ export const FacultyPrototypePanel = ({ project, faculty, onRefresh }) => {
     );
   }
 
-  const phase = PHASES[activePhase];
-
   return (
-    <div className="space-y-4 max-w-7xl mx-auto select-none">
+    <div className="space-y-4 max-w-7xl mx-auto select-none text-left">
+      {project?.prototypeWorkRequested && (
+        <div className="p-3.5 bg-gradient-to-r from-emerald-50 via-teal-50 to-emerald-50 border border-emerald-300 rounded-2xl flex items-center justify-between">
+          <div className="flex items-center space-x-2.5">
+            <div className="w-8 h-8 rounded-lg bg-[#007A61] text-white flex items-center justify-center shrink-0"><Rocket className="w-4 h-4" /></div>
+            <div>
+              <h4 className="text-xs font-bold text-slate-900">Official Directive from Ranchi University Authority</h4>
+              <p className="text-[11px] text-slate-600 font-medium">1st Grant installment has been disbursed. You are authorized to proceed with prototype R&D and submit phase blueprints below.</p>
+            </div>
+          </div>
+          <span className="text-[10px] font-extrabold px-2.5 py-1 bg-emerald-100 text-emerald-800 rounded-full shrink-0">Work Authorized</span>
+        </div>
+      )}
+
       <PrototypeStatusBanner currentStatus={currentStatus} needsChanges={needsChanges} isRejected={isRejected} isCertified={isCertified} />
 
-      <div className="flex items-center justify-between bg-white border border-slate-200/90 p-4 rounded-2xl shadow-2xs">
+      {/* Header with Navigation Pills & Action Button */}
+      <div className="bg-white border border-slate-200/90 p-4 rounded-2xl shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-3">
         <div className="flex items-center space-x-3">
           <div className="w-10 h-10 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center justify-center"><Lightbulb className="w-5 h-5 text-[#007A61]" /></div>
           <div>
-            <h2 className="text-sm font-extrabold text-slate-900 uppercase tracking-tight">Prototype Blueprint Lab</h2>
-            <p className="text-[11px] text-slate-500 font-medium">Document across 4 lifecycle phases for Ranchi University Technical Evaluation & Lab Review.</p>
+            <h2 className="text-sm font-extrabold text-slate-900 uppercase tracking-tight">Integrated Prototype R&D Lab</h2>
+            <p className="text-[11px] text-slate-500 font-medium">Specs, in-house lab metrics, industry trial requisition & technical blueprint upload.</p>
           </div>
         </div>
-        <div className="flex items-center space-x-2">
-          <span className="text-[10px] font-extrabold px-3 py-1.5 bg-emerald-50 text-[#007A61] border border-emerald-200 rounded-xl">Phase {activePhase + 1} of 4</span>
-          <span className="text-[10px] font-extrabold px-3 py-1.5 border rounded-xl shadow-xs uppercase bg-slate-50 text-slate-700 border-slate-200">{currentStatus}</span>
+
+        <div className="flex items-center space-x-2 self-end md:self-auto">
+          {!isLocked && (
+            <button onClick={handleSubmit} disabled={submitting} className="flex items-center space-x-1.5 px-4 py-2 bg-[#007A61] hover:bg-[#00604c] text-white font-bold text-xs rounded-xl shadow-xs transition-all cursor-pointer">
+              {submitting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Send className="w-3.5 h-3.5" />}
+              <span>{submitSuccess ? 'Submitted! 🎉' : 'Submit for Review'}</span>
+            </button>
+          )}
+
+          {isLocked && (
+            <span className="text-xs font-bold px-3 py-1.5 bg-slate-100 text-slate-600 rounded-xl border border-slate-200 flex items-center space-x-1">
+              <CheckCircle2 className="w-3.5 h-3.5 text-[#007A61]" />
+              <span>Dossier {currentStatus}</span>
+            </span>
+          )}
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <div className="lg:col-span-2 bg-white border border-slate-200/90 rounded-2xl shadow-2xs overflow-hidden">
-          <PrototypePhasesStepper phases={PHASES} activePhase={activePhase} setActivePhase={setActivePhase} phaseData={phaseData} phaseColors={PHASE_COLORS} />
-          <div className="p-4 space-y-3 text-left">
-            <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">{phase.label} Specifications & Telemetry Blueprint</h3>
-            <ReactQuill
-              theme="snow"
-              value={phaseData[phase.key] || ''}
-              onChange={(val) => updatePhase(phase.key, val)}
-              readOnly={isLocked}
-              placeholder={`Document ${phase.label} specifications, test results, hardware schematics, and sensor telemetry here...`}
-              className="h-64 mb-12"
-            />
-          </div>
-        </div>
+      {/* Tabs Switcher */}
+      <div className="flex border-b border-slate-200 space-x-2 bg-white px-3 pt-2 rounded-xl border">
+        {TABS.map((tab) => {
+          const Icon = tab.icon;
+          const isActive = activeTab === tab.id;
+          return (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`flex items-center space-x-2 py-2.5 px-3.5 text-xs font-black transition-all border-b-2 -mb-px rounded-t-lg ${
+                isActive ? 'border-[#007A61] text-[#007A61] bg-emerald-50/50' : 'border-transparent text-slate-500 hover:text-slate-800 hover:bg-slate-50'
+              }`}
+            >
+              <Icon className={`w-4 h-4 ${isActive ? 'text-[#007A61]' : 'text-slate-400'}`} />
+              <span>{tab.label}</span>
+            </button>
+          );
+        })}
+      </div>
 
-        <PrototypeSidebarActions
-          timeline={timeline} setTimeline={setTimeline} phases={PHASES} phaseData={phaseData}
-          isLocked={isLocked} saving={saving} saveSuccess={saveSuccess} submitting={submitting} success={success}
-          hasAnyContent={hasAnyContent()} needsChanges={needsChanges} isRejected={isRejected} currentStatus={currentStatus}
-          onSaveDraft={handleSaveDraft} onSubmit={handleSubmit} onDeleteDraft={handleDeleteDraft}
-        />
+      {/* Active Tab Panel */}
+      <div>
+        {activeTab === 0 && <PrototypeDetailsTab project={project} prototypeData={protoData} onChangeData={handleChangeData} isLocked={isLocked} onRefresh={onRefresh} />}
+        {activeTab === 1 && <PrototypeLabTestsTab prototypeData={protoData} onChangeData={handleChangeData} isLocked={isLocked} />}
+        {activeTab === 2 && <PrototypeIndustryRequisitionTab prototypeData={protoData} onChangeData={handleChangeData} isLocked={isLocked} />}
       </div>
     </div>
   );

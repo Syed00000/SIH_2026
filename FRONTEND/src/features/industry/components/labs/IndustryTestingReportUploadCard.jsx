@@ -1,5 +1,5 @@
-import React, { useState, useRef } from 'react';
-import { Upload, FileText, CheckCircle2, Lock, ExternalLink, Loader2, AlertCircle, RefreshCw, Trash2 } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import { Upload, FileText, CheckCircle2, Lock, ExternalLink, Loader2, AlertCircle, RefreshCw } from 'lucide-react';
 import { universityApiService } from '../../../university/services/universityApiService.js';
 import { facultyProjectsApi } from '../../../university/services/api/facultyProjectsApi.js';
 import { getPdfViewUrl } from '../../../../shared/utils/openPdf.js';
@@ -26,7 +26,7 @@ export const IndustryTestingReportUploadCard = ({ project, stages = [], allStage
     setPdfFile(null);
   };
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (project?.testingReportPdfUrl && !pdfUrl) {
       setPdfUrl(project.testingReportPdfUrl);
       setPdfName(project.testingReportPdfName || 'Certified_Lab_Report.pdf');
@@ -40,14 +40,9 @@ export const IndustryTestingReportUploadCard = ({ project, stages = [], allStage
     const file = e.target.files?.[0];
     if (!file) return;
     setErrorMsg('');
-    if (!file.name.toLowerCase().endsWith('.pdf') && file.type !== 'application/pdf') {
-      setErrorMsg('Only PDF documents are allowed.');
-      return;
-    }
-    if (file.size > 1024 * 1024) {
-      setErrorMsg('File size exceeds 1MB limit. Please upload a PDF under 1MB.');
-      return;
-    }
+    if (!file.name.toLowerCase().endsWith('.pdf') && file.type !== 'application/pdf') return setErrorMsg('Only PDF documents are allowed.');
+    if (file.size > 1024 * 1024) return setErrorMsg('File size exceeds 1MB limit. Please upload a PDF under 1MB.');
+
     setPdfFile(file);
     setUploading(true);
     try {
@@ -103,7 +98,7 @@ export const IndustryTestingReportUploadCard = ({ project, stages = [], allStage
         <CheckCircle2 className="w-6 h-6 text-emerald-700 mx-auto" />
         <h5 className="text-xs font-black text-emerald-950">✓ Project Deployed & Challenge Resolved</h5>
         <p className="text-[11px] text-emerald-800 max-w-md mx-auto">
-          State Government (DHTE) has officially certified and deployed this project to the public registry. All testing submissions are completed and locked.
+          State Government (DHTE) has officially certified and deployed this project. Submissions are locked.
         </p>
       </div>
     );
@@ -112,9 +107,7 @@ export const IndustryTestingReportUploadCard = ({ project, stages = [], allStage
   if (!allStagesCompleted) {
     return (
       <div className="bg-slate-50/80 border-2 border-dashed border-slate-200 rounded-2xl p-4 text-center space-y-1.5 select-none">
-        <div className="w-7 h-7 rounded-lg bg-slate-200 text-slate-500 flex items-center justify-center mx-auto">
-          <Lock className="w-3.5 h-3.5" />
-        </div>
+        <div className="w-7 h-7 rounded-lg bg-slate-200 text-slate-500 flex items-center justify-center mx-auto"><Lock className="w-3.5 h-3.5" /></div>
         <h5 className="text-xs font-black text-slate-700">Certified Lab Report Upload Locked</h5>
         <p className="text-[11px] text-slate-500 max-w-md mx-auto">
           Complete all 3 testing stages above to activate official PDF lab report upload and submit dossier for University Prototype Approval.
@@ -127,17 +120,13 @@ export const IndustryTestingReportUploadCard = ({ project, stages = [], allStage
     <div className="bg-white border-2 border-emerald-300 rounded-2xl p-4 shadow-2xs space-y-3.5 animate-in fade-in duration-200">
       <div className="flex items-center justify-between border-b border-emerald-100 pb-2">
         <div className="flex items-center space-x-2">
-          <div className="w-8 h-8 rounded-lg bg-emerald-50 border border-emerald-200 flex items-center justify-center text-[#007A61]">
-            <FileText className="w-4 h-4" />
-          </div>
+          <div className="w-8 h-8 rounded-lg bg-emerald-50 border border-emerald-200 flex items-center justify-center text-[#007A61]"><FileText className="w-4 h-4" /></div>
           <div>
             <h4 className="text-xs font-black uppercase tracking-wider text-slate-900">Certified Laboratory Testing Report (PDF)</h4>
             <p className="text-[10.5px] text-slate-500">Upload official certified evaluation dossier (PDF under 1MB)</p>
           </div>
         </div>
-        <span className="px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded-full text-[10px] font-black border border-emerald-200">
-          STAGES COMPLETED
-        </span>
+        <span className="px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded-full text-[10px] font-black border border-emerald-200">STAGES COMPLETED</span>
       </div>
 
       {errorMsg && (
@@ -162,12 +151,7 @@ export const IndustryTestingReportUploadCard = ({ project, stages = [], allStage
               <ExternalLink className="w-3 h-3" />
             </a>
             {!submitted && (
-              <button
-                type="button"
-                onClick={handleRemoveOrReplacePdf}
-                className="p-1 text-slate-400 hover:text-rose-600 transition-colors cursor-pointer"
-                title="Remove and permanently delete PDF from Cloudinary"
-              >
+              <button type="button" onClick={handleRemoveOrReplacePdf} className="p-1 text-slate-400 hover:text-rose-600 transition-colors cursor-pointer" title="Remove PDF">
                 <RefreshCw className="w-3.5 h-3.5" />
               </button>
             )}
@@ -178,14 +162,11 @@ export const IndustryTestingReportUploadCard = ({ project, stages = [], allStage
           <input ref={fileInputRef} type="file" accept="application/pdf,.pdf" onChange={handleFileChange} className="hidden" />
           {uploading ? (
             <div className="flex flex-col items-center space-y-1 text-emerald-700">
-              <Loader2 className="w-5 h-5 animate-spin" />
-              <span className="text-xs font-bold">Uploading certified PDF to Cloudinary...</span>
+              <Loader2 className="w-5 h-5 animate-spin" /><span className="text-xs font-bold">Uploading certified PDF to Cloudinary...</span>
             </div>
           ) : (
             <>
-              <div className="w-7 h-7 rounded-lg bg-emerald-100 text-[#007A61] flex items-center justify-center mx-auto">
-                <Upload className="w-3.5 h-3.5" />
-              </div>
+              <div className="w-7 h-7 rounded-lg bg-emerald-100 text-[#007A61] flex items-center justify-center mx-auto"><Upload className="w-3.5 h-3.5" /></div>
               <p className="text-xs font-black text-slate-800">Click or drag &amp; drop to upload certified test report PDF</p>
               <p className="text-[10px] text-slate-500">Only PDF files under 1MB are accepted</p>
             </>
@@ -195,10 +176,7 @@ export const IndustryTestingReportUploadCard = ({ project, stages = [], allStage
 
       {submitted ? (
         <div className="p-2.5 bg-emerald-100/90 border border-emerald-300 rounded-xl flex items-center justify-between text-xs font-black text-emerald-900 shadow-2xs">
-          <div className="flex items-center space-x-2">
-            <CheckCircle2 className="w-4 h-4 text-[#007A61] shrink-0" />
-            <span>Certified Testing Dossier &amp; Report Successfully Submitted to University!</span>
-          </div>
+          <div className="flex items-center space-x-2"><CheckCircle2 className="w-4 h-4 text-[#007A61] shrink-0" /><span>Certified Testing Dossier &amp; Report Successfully Submitted to University!</span></div>
           <span className="px-2 py-0.5 bg-white text-emerald-800 rounded-md font-mono text-[10px]">PENDING APPROVAL</span>
         </div>
       ) : (
@@ -210,11 +188,7 @@ export const IndustryTestingReportUploadCard = ({ project, stages = [], allStage
             pdfUrl ? 'bg-[#007A61] hover:bg-[#00604c] text-white cursor-pointer animate-pulse' : 'bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed'
           }`}
         >
-          {submitting ? (
-            <><Loader2 className="w-4 h-4 animate-spin" /><span>Submitting Dossier to University...</span></>
-          ) : (
-            <><CheckCircle2 className="w-4 h-4" /><span>{pdfUrl ? 'Submit Certified Lab Report to University for Prototype Approval' : 'Upload PDF Report Above to Activate Submission'}</span></>
-          )}
+          {submitting ? (<><Loader2 className="w-4 h-4 animate-spin" /><span className="ml-2">Submitting Dossier to University...</span></>) : (<><CheckCircle2 className="w-4 h-4" /><span className="ml-2">{pdfUrl ? 'Submit Certified Lab Report to University for Prototype Approval' : 'Upload PDF Report Above to Activate Submission'}</span></>)}
         </button>
       )}
     </div>

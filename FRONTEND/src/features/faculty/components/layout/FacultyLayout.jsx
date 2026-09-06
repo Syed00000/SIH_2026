@@ -163,6 +163,14 @@ export const FacultyLayout = ({ user, onLogout }) => {
         challengeId: a.challengeId,
         date: a.time || a.timestamp || new Date().toISOString()
       })),
+      ...(data.projects || []).filter((p) => p.prototypeWorkRequested).map((p) => ({
+        id: `proto-dir-${p.projectId || p.challengeId}`,
+        title: `🚀 Directive: Start Prototype Work (${p.title || p.projectId})`,
+        message: '1st Grant Installment received from State Escrow. Ranchi University Authority has officially authorized your team to start prototype development!',
+        type: 'directive',
+        projectId: p.projectId || p.challengeId,
+        date: p.prototypeWorkRequestedAt || p.updatedAt || new Date().toISOString()
+      })),
       ...(data.projects || []).filter((p) => p.adminRemarks || p.universityRemarks).map((p) => ({
         id: `notif-${p.projectId || p.challengeId}`,
         title: `University Directive: ${p.title || p.projectId}`,
@@ -281,6 +289,7 @@ export const FacultyLayout = ({ user, onLogout }) => {
                 <FacultyProjectWorkspace
                   project={data.projects.find(p => p.projectId === selectedProjectId || p.challengeId === selectedProjectId)}
                   projects={data.projects}
+                  teams={data.teams || []}
                   faculty={data.faculty}
                   onRefresh={loadData}
                   onBack={() => handleSetActiveTab('dashboard')}
