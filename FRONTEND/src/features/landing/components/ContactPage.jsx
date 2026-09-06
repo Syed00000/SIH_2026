@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import heroBanner from '../assets/hero-banner-2.jpg';
 import jharkhandLeaf from '../assets/jharkhand_leaf.png';
+import jsicOffice from '../assets/jsic-office.png';
 
 export const ContactPage = ({ onNavigate }) => {
   const [formData, setFormData] = useState({
@@ -49,13 +50,6 @@ export const ContactPage = ({ onNavigate }) => {
         {/* Content Container */}
         <div className="relative z-10 w-full px-4 md:px-8 lg:px-12 py-10 md:py-14 flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="max-w-2xl">
-            {/* Breadcrumb */}
-            <div className="text-[12px] font-bold text-emerald-300 tracking-wider flex items-center gap-2 mb-3 uppercase">
-              <span>Home</span>
-              <span className="text-gray-300">&gt;</span>
-              <span>Contact</span>
-            </div>
-
             <h1 className="text-4xl md:text-5xl font-black text-white mb-2 tracking-tight leading-none drop-shadow-md">
               Contact Us
             </h1>
@@ -66,18 +60,6 @@ export const ContactPage = ({ onNavigate }) => {
             <p className="text-gray-100 text-[14px] md:text-[15px] leading-relaxed font-medium max-w-xl drop-shadow-xs">
               Have questions, suggestions, or partnership opportunities? Get in touch with the Johar Sethu team. Together, we can build a more innovative, inclusive and prosperous Jharkhand.
             </p>
-          </div>
-
-          {/* Leaf Badge Overlay Graphic */}
-          <div className="hidden lg:flex items-center justify-center shrink-0 pr-8">
-            <div className="bg-white/15 backdrop-blur-md border border-white/30 p-5 rounded-none shadow-xl text-center max-w-[210px] transform rotate-1 hover:rotate-0 transition-all duration-300">
-              <img src={jharkhandLeaf} alt="Jharkhand Leaf" className="w-10 h-10 mx-auto mb-2 object-contain" />
-              <p className="text-white font-black text-sm leading-tight tracking-tight">
-                Your Voice<br />
-                <span className="text-emerald-300">Stronger</span><br />
-                Jharkhand
-              </p>
-            </div>
           </div>
         </div>
       </section>
@@ -151,119 +133,8 @@ export const ContactPage = ({ onNavigate }) => {
           {/* Main 3-Column Layout */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
             
-            {/* Column 1: Send Us a Message Form (5 cols on lg) */}
-            <div className="lg:col-span-6 bg-white border border-gray-200/90 rounded-none p-5 sm:p-6 shadow-2xs">
-              <div className="flex items-center gap-2.5 mb-1">
-                <Send className="w-5 h-5 text-[#0f4b3a]" />
-                <h3 className="text-lg font-black text-gray-900 tracking-tight">Send Us a Message</h3>
-              </div>
-              <p className="text-xs text-gray-500 mb-6 font-medium">
-                Fill out the form below and our team will get back to you soon.
-              </p>
-
-              {submitted ? (
-                <div className="p-6 bg-emerald-50 border border-emerald-200 text-center rounded-none animate-fadeIn space-y-3">
-                  <CheckCircle2 className="w-10 h-10 text-emerald-600 mx-auto" />
-                  <h4 className="font-black text-gray-900 text-base">Thank You for Reaching Out!</h4>
-                  <p className="text-xs text-gray-600 leading-relaxed max-w-md mx-auto">
-                    Your message has been received successfully. A representative from Johar Sethu will get back to you shortly.
-                  </p>
-                  <button
-                    onClick={() => {
-                      setSubmitted(false);
-                      setFormData({ fullName: '', email: '', phone: '', subject: '', message: '' });
-                    }}
-                    className="mt-2 bg-[#0f4b3a] text-white text-xs font-bold px-4 py-2 rounded-none hover:bg-[#0c382b] transition-all"
-                  >
-                    Send Another Message
-                  </button>
-                </div>
-              ) : (
-                <form onSubmit={handleSubmit} className="space-y-4 text-xs">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block font-bold text-gray-700 mb-1">Full Name *</label>
-                      <input 
-                        type="text" 
-                        name="fullName"
-                        value={formData.fullName}
-                        onChange={handleChange}
-                        required
-                        placeholder="Enter your full name" 
-                        className="w-full px-3 py-2 border border-gray-300 rounded-none focus:outline-none focus:border-[#0f4b3a] text-xs font-medium"
-                      />
-                    </div>
-                    <div>
-                      <label className="block font-bold text-gray-700 mb-1">Email Address *</label>
-                      <input 
-                        type="email" 
-                        name="email"
-                        value={formData.email}
-                        onChange={handleChange}
-                        required
-                        placeholder="Enter your email address" 
-                        className="w-full px-3 py-2 border border-gray-300 rounded-none focus:outline-none focus:border-[#0f4b3a] text-xs font-medium"
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block font-bold text-gray-700 mb-1">Phone Number</label>
-                    <input 
-                      type="tel" 
-                      name="phone"
-                      value={formData.phone}
-                      onChange={handleChange}
-                      placeholder="Enter your phone number" 
-                      className="w-full px-3 py-2 border border-gray-300 rounded-none focus:outline-none focus:border-[#0f4b3a] text-xs font-medium"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block font-bold text-gray-700 mb-1">Subject *</label>
-                    <select 
-                      name="subject"
-                      value={formData.subject}
-                      onChange={handleChange}
-                      required
-                      className="w-full px-3 py-2 border border-gray-300 rounded-none focus:outline-none focus:border-[#0f4b3a] text-xs font-medium bg-white text-gray-700"
-                    >
-                      <option value="">Select a subject</option>
-                      <option value="General Inquiry">General Inquiry</option>
-                      <option value="Technical Support">Technical Support</option>
-                      <option value="University Partnership">University Partnership</option>
-                      <option value="Industry Collaboration">Industry Collaboration</option>
-                      <option value="Report a Problem">Report a Problem</option>
-                      <option value="Feedback & Suggestions">Feedback & Suggestions</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block font-bold text-gray-700 mb-1">Your Message *</label>
-                    <textarea 
-                      name="message"
-                      rows={5}
-                      value={formData.message}
-                      onChange={handleChange}
-                      required
-                      placeholder="Write your message here..." 
-                      className="w-full px-3 py-2 border border-gray-300 rounded-none focus:outline-none focus:border-[#0f4b3a] text-xs font-medium resize-none"
-                    ></textarea>
-                  </div>
-
-                  <button 
-                    type="submit"
-                    className="bg-[#0f4b3a] hover:bg-[#0c382b] text-white px-5 py-2.5 rounded-none font-bold text-xs flex items-center gap-2 transition-all shadow-xs cursor-pointer"
-                  >
-                    <span>Send Message</span>
-                    <ArrowRight className="w-4 h-4" />
-                  </button>
-                </form>
-              )}
-            </div>
-
-            {/* Column 2: Our Office (3 cols on lg) */}
-            <div className="lg:col-span-3 bg-white border border-gray-200/90 rounded-none p-4 sm:p-5 shadow-2xs flex flex-col justify-between">
+            {/* Column 1: Our Office (6 cols on lg) */}
+            <div className="lg:col-span-6 bg-white border border-gray-200/90 rounded-none p-4 sm:p-5 shadow-2xs flex flex-col justify-between">
               <div>
                 <div className="flex items-center gap-2 mb-3 pb-2 border-b border-gray-100">
                   <Building className="w-4 h-4 text-[#0f4b3a]" />
@@ -278,12 +149,12 @@ export const ContactPage = ({ onNavigate }) => {
                   <p className="text-gray-600 font-bold">Jharkhand, India</p>
                 </div>
 
-                {/* Building Photo */}
-                <div className="w-full h-36 overflow-hidden rounded-none border border-gray-200 mb-4">
+                {/* Office Photo */}
+                <div className="w-full overflow-hidden rounded-none border border-gray-200 mb-4 bg-gray-50">
                   <img 
-                    src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=800&q=80" 
-                    alt="Vikas Bhawan Ranchi Office Building" 
-                    className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                    src={jsicOffice} 
+                    alt="Jharkhand State Innovation Cell Office" 
+                    className="w-full object-contain hover:scale-105 transition-transform duration-300"
                   />
                 </div>
               </div>
@@ -300,8 +171,8 @@ export const ContactPage = ({ onNavigate }) => {
               </a>
             </div>
 
-            {/* Column 3: Key Contacts & Follow Us (3 cols on lg) */}
-            <div className="lg:col-span-3 space-y-4">
+            {/* Column 2: Key Contacts & Follow Us (6 cols on lg) */}
+            <div className="lg:col-span-6 space-y-4">
               
               {/* Key Contacts */}
               <div className="bg-white border border-gray-200/90 rounded-none p-4 shadow-2xs">

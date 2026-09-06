@@ -66,7 +66,7 @@ export const LandingHeader = ({ onNavigate, currentPath = '/' }) => {
           </div>
 
           <div className="flex items-center ml-auto">
-            <nav className="hidden xl:flex items-center space-x-7 font-bold text-[12px] text-gray-600">
+            <nav className="hidden md:flex items-center space-x-4 lg:space-x-7 font-bold text-[12px] text-gray-600">
               <a onClick={() => handleNav('/')} className={`cursor-pointer transition-colors border-b-[3px] pb-1.5 ${isCurrent('/') ? 'text-[#0f4b3a] border-[#0f4b3a]' : 'border-transparent hover:border-[#0f4b3a] hover:text-[#0f4b3a]'}`}>HOME</a>
               <a onClick={() => handleNav('/about')} className={`cursor-pointer transition-colors border-b-[3px] pb-1.5 ${isCurrent('/about') ? 'text-[#0f4b3a] border-[#0f4b3a]' : 'border-transparent hover:border-[#0f4b3a] hover:text-[#0f4b3a]'}`}>ABOUT</a>
               <a onClick={() => handleNav('/login')} className="cursor-pointer hover:text-[#0f4b3a] transition-colors border-b-[3px] border-transparent hover:border-[#0f4b3a] pb-1.5">REPORT A PROBLEM</a>

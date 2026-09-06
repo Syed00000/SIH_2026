@@ -191,31 +191,6 @@ export const AboutPage = ({ onNavigate }) => {
               </div>
             </div>
 
-            {/* Bottom Goal Bar */}
-            <Card className="mt-8 bg-gradient-to-br from-[#f8fbf9] to-white border border-[#d6ecde] shadow-sm rounded-none overflow-hidden">
-              <CardContent className="p-6 lg:p-8 flex flex-col lg:flex-row items-center gap-6 relative">
-                <div className="flex items-center gap-3 shrink-0">
-                  <Target className="w-8 h-8 text-[#0f4b3a]" />
-                  <h3 className="text-[#0f4b3a] font-black text-[20px] tracking-tight">Our Goal</h3>
-                </div>
-                
-                <div className="hidden lg:block w-[1.5px] h-10 bg-[#0f4b3a] opacity-10 rounded-full"></div>
-
-                <div className="flex-1 flex items-center">
-                  <span className="text-5xl font-serif text-[#0f4b3a] opacity-40 leading-[0] mr-3 mt-6">“</span>
-                  <p className="text-slate-700 text-[16px] font-bold italic leading-relaxed">
-                    "Empowering people's problems to become real solutions for a better and more inclusive Jharkhand."
-                  </p>
-                </div>
-
-                <div className="shrink-0 text-right">
-                  <div className="inline-block">
-                    <span className="text-[13px] font-black text-[#0f4b3a] tracking-widest uppercase">— JoharSethu</span>
-                    <div className="w-full h-[3px] bg-[#0f4b3a] mt-1.5 rounded-full"></div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
           </div>
         )}
 
@@ -416,31 +391,6 @@ export const AboutPage = ({ onNavigate }) => {
               </div>
             </div>
 
-            {/* Bottom Goal Bar */}
-            <Card className="mt-8 bg-gradient-to-br from-[#f8fbf9] to-white border border-[#d6ecde] shadow-sm rounded-none overflow-hidden">
-              <CardContent className="p-6 lg:p-8 flex flex-col lg:flex-row items-center gap-6 relative">
-                <div className="flex items-center gap-3 shrink-0">
-                  <Leaf className="w-8 h-8 text-[#0f4b3a]" />
-                  <h3 className="text-[#0f4b3a] font-black text-[20px] tracking-tight">Greater Impact <br/>for Society</h3>
-                </div>
-                
-                <div className="hidden lg:block w-[1.5px] h-12 bg-[#0f4b3a] opacity-10 rounded-full"></div>
-
-                <div className="flex-1 flex items-center">
-                  <span className="text-5xl font-serif text-[#0f4b3a] opacity-40 leading-[0] mr-3 mt-6">“</span>
-                  <p className="text-slate-700 text-[16px] font-bold italic leading-relaxed">
-                    "When citizens, government, academia and industry come together, we create practical solutions and build a more inclusive, prosperous and resilient Jharkhand."
-                  </p>
-                </div>
-
-                <div className="shrink-0 text-right">
-                  <div className="inline-block">
-                    <span className="text-[13px] font-black text-[#0f4b3a] tracking-widest uppercase">— JoharSethu</span>
-                    <div className="w-full h-[3px] bg-[#0f4b3a] mt-1.5 rounded-full"></div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
           </div>
         )}
 
