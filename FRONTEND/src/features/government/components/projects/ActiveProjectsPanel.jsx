@@ -65,15 +65,15 @@ export const ActiveProjectsPanel = () => {
     } catch {}
   };
 
-  // Only consider projects that have sanctioned grant / disbursed amount or are active
+  // Only consider projects that have disbursed grant (1st installment) or are deployed
   const activeExecutionProjects = useMemo(() => {
     return projects.filter((p) => {
-      const sancVal = parseGrantRupees(p.sanctionedGrant || p.budget) || 0;
       const disbVal = parseGrantRupees(p.disbursedAmount || p.disbursedGrant) || 0;
       const isSanctioned = p.budgetStatus === 'Grant Sanctioned by Government' ||
         p.budgetStatus === 'Grant Disbursed' ||
         (typeof p.budgetStatus === 'string' && p.budgetStatus.includes('Grant Disbursed'));
-      return isSanctioned || disbVal > 0 || sancVal > 0 || p.status === 'Active' || p.status === 'In Progress';
+      const isDeployed = p.status === 'Deployed' || Boolean(p.isDeployed);
+      return disbVal > 0 || isSanctioned || isDeployed;
     });
   }, [projects]);
 

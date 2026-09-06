@@ -24,16 +24,14 @@ export const DrawerHeaderTabs = ({
               </span>
               <span
                 className={`px-1.5 py-0.5 text-[10px] font-bold rounded border ${
-                  faculty.isDeployed
-                    ? 'bg-teal-50 text-teal-800 border-teal-300 font-extrabold'
-                    : faculty.availabilityStatus === 'In Project'
+                  faculty.availabilityStatus === 'In Project'
                     ? 'bg-amber-50 text-amber-800 border-amber-200'
                     : faculty.availabilityStatus === 'On Leave'
-                    ? 'bg-rose-50 text-rose-800 border-rose-200'
+                    ? 'bg-purple-50 text-purple-800 border-purple-200'
                     : 'bg-emerald-50 text-emerald-800 border-emerald-200'
                 }`}
               >
-                {faculty.isDeployed ? '🔒 Deployed' : faculty.availabilityStatus || 'Available'}
+                {faculty.availabilityStatus || 'Available'}
               </span>
             </div>
             <div className="text-[11px] text-slate-600 font-semibold">{faculty.designation || 'Professor'}</div>

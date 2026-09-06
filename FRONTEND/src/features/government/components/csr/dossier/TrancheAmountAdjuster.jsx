@@ -1,5 +1,8 @@
-import React from 'react';
-import { Sliders, IndianRupee, ShieldCheck, Wallet, ArrowRight } from 'lucide-react';
+import React, { useState } from 'react';
+import { Sliders, IndianRupee, ShieldCheck, Wallet, ArrowRight, AlertTriangle } from 'lucide-react';
+import { useGovernmentTreasury } from '../../../hooks/useGovernmentTreasury.js';
+import { LowFundAlertBanner } from '../../common/LowFundAlertBanner.jsx';
+import { AddStateGrantModal } from '../AddStateGrantModal.jsx';
 
 export const TrancheAmountAdjuster = ({
   totalBudgetVal = 80000,
@@ -10,10 +13,14 @@ export const TrancheAmountAdjuster = ({
   isFullyDisbursed = false,
   hasTrancheRequest = false
 }) => {
+  const [showAddFundModal, setShowAddFundModal] = useState(false);
+  const treasury = useGovernmentTreasury();
+
   if (isFullyDisbursed || remainingBudget <= 0) return null;
 
   const isFirstTime = rawDisbursed === 0;
   const retainedInEscrow = Math.max(0, remainingBudget - disburseAmount);
+  const isTreasuryLow = treasury.availableStateFund < disburseAmount || treasury.availableStateFund <= 0;
 
   const presets = [
     { label: '25%', value: Math.round(remainingBudget * 0.25) },
@@ -29,7 +36,7 @@ export const TrancheAmountAdjuster = ({
   };
 
   return (
-    <div className="bg-gradient-to-br from-white to-blue-50/40 border border-blue-200/90 rounded-2xl p-4 sm:p-5 shadow-2xs space-y-4">
+    <div className="bg-gradient-to-br from-white to-blue-50/40 border border-blue-200/90 rounded-2xl p-4 sm:p-5 shadow-2xs space-y-4 text-left">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-blue-100">
         <div className="flex items-center space-x-2.5">
@@ -62,6 +69,15 @@ export const TrancheAmountAdjuster = ({
         </div>
       </div>
 
+      {/* Low Fund Banner if treasury balance is insufficient */}
+      {isTreasuryLow && (
+        <LowFundAlertBanner
+          availableAmount={treasury.availableStateFund}
+          requiredAmount={disburseAmount}
+          onOpenAddFund={() => setShowAddFundModal(true)}
+        />
+      )}
+
       {/* Breakdown 3-col preview */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 text-xs">
         <div className="p-3 bg-white rounded-xl border border-slate-200 space-y-0.5">
@@ -70,13 +86,32 @@ export const TrancheAmountAdjuster = ({
           <span className="text-[10px] text-slate-500 block">Total Sanctioned</span>
         </div>
 
-        <div className="p-3 bg-blue-50/80 rounded-xl border border-blue-200 space-y-0.5 ring-1 ring-blue-400/20">
-          <span className="text-[10px] font-extrabold text-blue-700 uppercase block">
-            {hasTrancheRequest ? 'Disbursing Now (2nd EMI)' : isFirstTime ? 'Disbursing Now (1st Time)' : 'Disbursing Now'}
+        <div className={`p-3 rounded-xl border space-y-0.5 transition-all ${
+          isTreasuryLow
+            ? 'bg-rose-50/90 border-rose-300 ring-1 ring-rose-400/30'
+            : 'bg-blue-50/80 border-blue-200 ring-1 ring-blue-400/20'
+        }`}>
+          <span className={`text-[10px] font-extrabold uppercase flex items-center space-x-1 ${
+            isTreasuryLow ? 'text-rose-700' : 'text-blue-700'
+          }`}>
+            {isTreasuryLow && <AlertTriangle className="w-3 h-3 text-rose-600 shrink-0" />}
+            <span>
+              {isTreasuryLow
+                ? 'Low Fund • Disbursing Now'
+                : hasTrancheRequest
+                ? 'Disbursing Now (2nd EMI)'
+                : isFirstTime
+                ? 'Disbursing Now (1st Time)'
+                : 'Disbursing Now'}
+            </span>
           </span>
-          <span className="text-sm font-black text-blue-700 font-mono">₹ {disburseAmount.toLocaleString('en-IN')}</span>
-          <span className="text-[10px] text-blue-600 font-bold block">
-            {remainingBudget > 0 ? `${Math.round((disburseAmount / remainingBudget) * 100)}% of Remaining` : '100%'}
+          <span className={`text-sm font-black font-mono ${isTreasuryLow ? 'text-rose-700' : 'text-blue-700'}`}>
+            ₹ {disburseAmount.toLocaleString('en-IN')}
+          </span>
+          <span className={`text-[10px] font-bold block ${isTreasuryLow ? 'text-rose-600' : 'text-blue-600'}`}>
+            {isTreasuryLow
+              ? `State Pool: ₹ ${treasury.availableStateFund.toLocaleString('en-IN')} (No Fund)`
+              : remainingBudget > 0 ? `${Math.round((disburseAmount / remainingBudget) * 100)}% of Remaining` : '100%'}
           </span>
         </div>
 
@@ -146,6 +181,12 @@ export const TrancheAmountAdjuster = ({
           </div>
         </div>
       </div>
+
+      <AddStateGrantModal
+        isOpen={showAddFundModal}
+        onClose={() => setShowAddFundModal(false)}
+        onFundAdded={treasury.refreshTreasury}
+      />
     </div>
   );
 };

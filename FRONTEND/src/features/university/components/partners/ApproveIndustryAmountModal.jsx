@@ -13,6 +13,7 @@ export const ApproveIndustryAmountModal = ({ isOpen, onClose, request, partner, 
   const partnerTitle = partner?.name || partner?.legalName || request.partnerName || 'Industry Partner';
   const isAccepted = request.quoteStatus === 'Accepted';
   const isDeclined = request.quoteStatus === 'Declined';
+  const isMentorship = request.collaborationPurpose === 'Mentorship' || request.purpose === 'Mentorship' || request.mentorshipRequested;
   const feeAmount = request.labChargesQuoted || '₹ 25,000';
 
   const handleDecision = async (decision, reason = '') => {
@@ -42,7 +43,7 @@ export const ApproveIndustryAmountModal = ({ isOpen, onClose, request, partner, 
             </div>
             <div>
               <span className="text-[10px] font-mono uppercase tracking-wider text-emerald-300">Industry Financial Proposal</span>
-              <h2 className="text-sm font-black text-white">Review &amp; Approve Industry Testing Fee</h2>
+              <h2 className="text-sm font-black text-white">{isMentorship ? 'Review & Approve Industry Mentorship Fee' : 'Review & Approve Industry Testing Fee'}</h2>
             </div>
           </div>
           <button onClick={onClose} className="p-1.5 rounded-lg text-emerald-200 hover:text-white hover:bg-white/10 cursor-pointer">
@@ -60,7 +61,7 @@ export const ApproveIndustryAmountModal = ({ isOpen, onClose, request, partner, 
                 <span className="truncate max-w-[240px]">{partnerTitle}</span>
               </div>
               <span className="px-2 py-0.5 rounded-full bg-emerald-50 text-[#007A61] text-[10px] font-black border border-emerald-200">
-                Verified Lab
+                {isMentorship ? 'Corporate Mentor' : 'Verified Lab'}
               </span>
             </div>
             <div className="pt-1.5 border-t border-slate-100">
@@ -71,19 +72,19 @@ export const ApproveIndustryAmountModal = ({ isOpen, onClose, request, partner, 
 
           {/* Requested Amount Banner */}
           <div className="p-3.5 bg-emerald-50/80 border-2 border-emerald-300 rounded-2xl shadow-inner space-y-1 text-center">
-            <span className="text-[10px] font-black uppercase tracking-wider text-emerald-900 block">Requested Laboratory Testing Fee</span>
+            <span className="text-[10px] font-black uppercase tracking-wider text-emerald-900 block">{isMentorship ? 'Requested Technical Mentorship & Guidance Fee' : 'Requested Laboratory Testing Fee'}</span>
             <div className="text-2xl font-black text-[#007A61] tracking-tight">{feeAmount}</div>
-            <p className="text-[10.5px] text-emerald-800 font-medium">Requested by {partnerTitle} for apparatus &amp; technician hours.</p>
+            <p className="text-[10.5px] text-emerald-800 font-medium">{isMentorship ? `Requested by ${partnerTitle} for expert guidance & domain consultation.` : `Requested by ${partnerTitle} for apparatus & technician hours.`}</p>
           </div>
 
           {/* Quote Terms & Scope */}
           <div className="space-y-1">
             <span className="text-[9.5px] font-extrabold uppercase tracking-wider text-slate-400 flex items-center space-x-1">
               <FileText className="w-3 h-3 text-[#007A61]" />
-              <span>Industry Scope &amp; Facilities Included</span>
+              <span>{isMentorship ? 'Mentorship Scope & Consultation Terms' : 'Industry Scope & Facilities Included'}</span>
             </span>
             <p className="text-xs text-slate-700 italic bg-white p-2.5 rounded-xl border border-slate-200/80 leading-relaxed font-medium">
-              "{request.quoteTerms || 'Access to certified research lab, advanced testing apparatus & technician assistance.'}"
+              "{request.quoteTerms || (isMentorship ? 'Dedicated industry mentorship sessions, architecture reviews, and prototype guidance.' : 'Access to certified research lab, advanced testing apparatus & technician assistance.')}"
             </p>
           </div>
 
@@ -94,7 +95,7 @@ export const ApproveIndustryAmountModal = ({ isOpen, onClose, request, partner, 
               <span>University Government Grant Deduction Notice</span>
             </div>
             <p className="text-[10.5px] text-amber-800 leading-relaxed font-medium">
-              Accepting this fee will deduct <strong>{feeAmount}</strong> from Ranchi University's government grant (₹ 80,000 &rarr; ₹ 55,000). Project moves to Active Projects and Testing Labs.
+              Accepting this fee will deduct <strong>{feeAmount}</strong> from Ranchi University's government grant. {isMentorship ? 'Problem statement will be unlocked for expert mentor assignment in the industry portal.' : 'Project moves to Active Projects and Testing Labs.'}
             </p>
           </div>
 

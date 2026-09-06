@@ -14,6 +14,7 @@ export const IndustryRequestActionModal = ({ request, onClose, onSuccess }) => {
 
   const isAlreadyApproved = request.status === 'Approved';
   const isDeclined = request.status === 'Fee Declined' || request.quoteStatus === 'Declined';
+  const isMentorship = request.collaborationPurpose === 'Mentorship' || request.purpose === 'Mentorship' || request.mentorshipRequested;
 
   const handleAction = async (status) => {
     setIsSubmitting(true);
@@ -125,16 +126,18 @@ export const IndustryRequestActionModal = ({ request, onClose, onSuccess }) => {
             <div className="space-y-2.5 pt-1">
               <label className="text-[11px] font-black uppercase tracking-wider text-slate-700 flex items-center space-x-1.5">
                 <IndianRupee className="w-3.5 h-3.5 text-[#007A61]" />
-                <span>Industry Research Lab Facility & Access Fee Quote *</span>
+                <span>{isMentorship ? 'Industry Technical Mentorship & Guidance Fee Quote *' : 'Industry Research Lab Facility & Access Fee Quote *'}</span>
               </label>
               <p className="text-[11px] text-slate-500 leading-normal">
-                Specify the fee your laboratory charges for providing equipment usage, testing space, and technical lab facilities.
+                {isMentorship
+                  ? 'Specify the fee your organization charges for dedicated industrial mentoring, technical roadmap reviews, and expert hours.'
+                  : 'Specify the fee your laboratory charges for providing equipment usage, testing space, and technical lab facilities.'}
               </p>
 
               {(isAlreadyApproved || isDeclined) && request.labChargesQuoted ? (
                 <div className={`p-3 rounded-xl space-y-1 border ${isDeclined ? 'bg-rose-50/50 border-rose-200' : 'bg-emerald-50 border-emerald-200'}`}>
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-slate-900">Quoted Lab Fee:</span>
+                    <span className="text-xs font-bold text-slate-900">{isMentorship ? 'Quoted Mentorship Fee:' : 'Quoted Lab Fee:'}</span>
                     <span className={`text-sm font-black ${isDeclined ? 'text-rose-700' : 'text-emerald-700'}`}>{request.labChargesQuoted}</span>
                   </div>
                   {request.quoteTerms && <p className="text-[11px] text-slate-600 italic">{request.quoteTerms}</p>}
@@ -152,7 +155,7 @@ export const IndustryRequestActionModal = ({ request, onClose, onSuccess }) => {
                     rows={2}
                     value={quoteTerms}
                     onChange={(e) => setQuoteTerms(e.target.value)}
-                    placeholder="Describe laboratory access, apparatus, and testing terms..."
+                    placeholder={isMentorship ? 'Describe technical mentorship scope, weekly consultation hours & domain guidance terms...' : 'Describe laboratory access, apparatus, and testing terms...'}
                     className="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs font-medium text-slate-700 focus:outline-none focus:ring-1 focus:ring-[#007A61]"
                   />
                 </div>
@@ -174,7 +177,7 @@ export const IndustryRequestActionModal = ({ request, onClose, onSuccess }) => {
             <>
               <button type="button" onClick={() => handleAction('Rejected')} disabled={isSubmitting} className="px-4 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-xs font-bold rounded-xl cursor-pointer disabled:opacity-50">Reject</button>
               <button type="button" onClick={() => handleAction('Approved')} disabled={isSubmitting} className="px-4 py-2 bg-[#007A61] hover:bg-[#00604c] text-white text-xs font-bold rounded-xl flex items-center space-x-1.5 shadow-md cursor-pointer disabled:opacity-50">
-                <CheckCircle2 className="w-4 h-4" /><span>Approve & Request Lab Fee</span>
+                <CheckCircle2 className="w-4 h-4" /><span>{isMentorship ? 'Approve & Request Mentorship Fee' : 'Approve & Request Lab Fee'}</span>
               </button>
             </>
           ) : null}

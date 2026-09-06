@@ -29,6 +29,10 @@ export const FacultyPrototypePanel = ({ project, faculty, onRefresh }) => {
       loadedProjectIdRef.current = pId;
       isDirtyRef.current = false;
       let initial = project?.prototypeData ? { ...project.prototypeData } : {};
+      // Seed milestoneRoadmap from proposal if not already in prototypeData
+      if (!initial.milestoneRoadmap && project?.milestoneRoadmap?.length) {
+        initial.milestoneRoadmap = project.milestoneRoadmap;
+      }
       try {
         const savedDraft = localStorage.getItem(`joharsetu_proto_${pId}`);
         if (savedDraft) {
@@ -40,7 +44,7 @@ export const FacultyPrototypePanel = ({ project, faculty, onRefresh }) => {
     } else if (!isDirtyRef.current && project?.prototypeData) {
       setProtoData((prev) => ({ ...project.prototypeData, ...prev }));
     }
-  }, [pId, project?.prototypeData]);
+  }, [pId, project?.prototypeData, project?.milestoneRoadmap]);
 
   const isFunded = Boolean(project?.disbursedAmount && project.disbursedAmount !== '0' && project.disbursedAmount !== '₹ 0');
   const currentStatus = project?.prototypeStatus || 'Not Started';
@@ -164,7 +168,7 @@ export const FacultyPrototypePanel = ({ project, faculty, onRefresh }) => {
 
       {/* Active Tab Panel */}
       <div>
-        {activeTab === 0 && <PrototypeDetailsTab project={project} prototypeData={protoData} onChangeData={handleChangeData} isLocked={isLocked} onRefresh={onRefresh} />}
+        {activeTab === 0 && <PrototypeDetailsTab project={project} prototypeData={protoData} onChangeData={handleChangeData} isLocked={isLocked} onRefresh={onRefresh} milestoneStages={protoData?.milestoneRoadmap || project?.milestoneRoadmap || []} onMilestoneChange={(stages) => handleChangeData('milestoneRoadmap', stages)} />}
         {activeTab === 1 && <PrototypeLabTestsTab prototypeData={protoData} onChangeData={handleChangeData} isLocked={isLocked} />}
         {activeTab === 2 && <PrototypeIndustryRequisitionTab project={project} prototypeData={protoData} onChangeData={handleChangeData} isLocked={isLocked} />}
       </div>

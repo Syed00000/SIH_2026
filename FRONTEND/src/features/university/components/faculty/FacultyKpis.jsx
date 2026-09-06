@@ -1,5 +1,5 @@
 import React from 'react';
-import { Users, UserCheck, UserX, Briefcase, Lock } from 'lucide-react';
+import { Users, UserCheck, UserX, Briefcase, Award } from 'lucide-react';
 
 export const FacultyKpis = ({
   total = 0,
@@ -7,7 +7,7 @@ export const FacultyKpis = ({
   available = 0,
   onLeave = 0,
   inProjects = 0,
-  deployed = 0,
+  deliveredSolutions = 0,
   loading = false
 }) => {
   if (loading) {
@@ -31,8 +31,8 @@ export const FacultyKpis = ({
     { label: 'Total Faculty', value: total, sub: `Active: ${active}`, icon: Users },
     { label: 'Available Faculty', value: available, sub: 'Available for new projects', icon: UserCheck },
     { label: 'On Leave', value: onLeave, sub: 'Not available', icon: UserX },
-    { label: 'Active in Projects', value: inProjects, sub: inProjects > 0 ? 'Working on projects' : 'No ongoing projects', icon: Briefcase },
-    { label: '🔒 Deployed Mentors', value: deployed, sub: 'TRL-9 Solutions Deployed', icon: Lock, isDeployed: true }
+    { label: 'Active in Projects', value: inProjects, sub: inProjects > 0 ? 'Mentoring ongoing R&D' : 'No ongoing projects', icon: Briefcase },
+    { label: 'Solutions Delivered', value: deliveredSolutions, sub: 'TRL-9 Solutions Deployed', icon: Award, isSuccess: true }
   ];
 
   return (
@@ -43,25 +43,25 @@ export const FacultyKpis = ({
           <div
             key={i}
             className={`border rounded-none p-3.5 flex items-center justify-between shadow-2xs transition-colors ${
-              c.isDeployed
-                ? 'bg-teal-50/50 border-teal-300 hover:border-teal-400'
+              c.isSuccess
+                ? 'bg-emerald-50/50 border-emerald-300 hover:border-emerald-400'
                 : 'bg-white border-slate-200 hover:border-slate-300'
             }`}
           >
             <div>
-              <div className={`text-[11px] font-bold uppercase tracking-wider ${c.isDeployed ? 'text-teal-700 font-extrabold' : 'text-slate-500'}`}>
+              <div className={`text-[11px] font-bold uppercase tracking-wider ${c.isSuccess ? 'text-[#007A61] font-extrabold' : 'text-slate-500'}`}>
                 {c.label}
               </div>
-              <div className={`text-2xl font-extrabold mt-1 font-mono ${c.isDeployed ? 'text-teal-900' : 'text-slate-900'}`}>
+              <div className={`text-2xl font-extrabold mt-1 font-mono ${c.isSuccess ? 'text-emerald-950' : 'text-slate-900'}`}>
                 {c.value}
               </div>
-              <div className={`text-[10.5px] mt-0.5 font-medium ${c.isDeployed ? 'text-teal-700' : 'text-slate-500'}`}>
+              <div className={`text-[10.5px] mt-0.5 font-medium ${c.isSuccess ? 'text-[#007A61]' : 'text-slate-500'}`}>
                 {c.sub}
               </div>
             </div>
             <div className={`w-10 h-10 border rounded-none flex items-center justify-center ${
-              c.isDeployed
-                ? 'bg-teal-100 border-teal-300 text-teal-800'
+              c.isSuccess
+                ? 'bg-emerald-100 border-emerald-300 text-[#007A61]'
                 : 'bg-slate-100 border-slate-200 text-slate-800'
             }`}>
               <Icon className="w-5 h-5" />

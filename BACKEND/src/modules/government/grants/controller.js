@@ -76,6 +76,9 @@ export const createPayment = async (req, res, next) => {
     const data = await governmentLedgerService.createPayment(req.body);
     res.status(201).json({ status: 'SUCCESS', message: 'Grant disbursement recorded successfully', data });
   } catch (error) {
+    if (error.message.includes('Low Budget') || error.message.includes('Insufficient State Grant Fund')) {
+      return res.status(400).json({ status: 'ERROR', message: error.message });
+    }
     next(error);
   }
 };
