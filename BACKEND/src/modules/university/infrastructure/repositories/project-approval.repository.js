@@ -99,6 +99,26 @@ export class ProjectApprovalRepository {
         ).catch((err) => console.warn('Milestone roadmap sync to approval warning:', err.message));
       }
 
+      if (cleanUpdate.prototypeWorkRequested) {
+        const { UniversityApproval } = await import('../model.js');
+        await UniversityApproval.updateMany(
+          { $or: [{ projectId: res?.projectId || projectId }, { challengeId: res?.challengeId || projectId }] },
+          { $set: { prototypeWorkRequested: true, prototypeWorkRequestedAt: new Date() } }
+        ).catch(() => {});
+
+        await UniversityActivity.create({
+          universityCode: uniCode,
+          projectId: res?.projectId || projectId,
+          challengeId: res?.challengeId || '',
+          title: `Prototype Directive: ${res?.title || 'Project'}`,
+          text: `First grant installment received in University Escrow. University Authority has requested Lead Faculty Mentor to start work on Prototype Development.`,
+          description: `First grant installment received in University Escrow. University Authority has requested Lead Faculty Mentor to start work on Prototype Development.`,
+          type: 'directive',
+          actionUrl: `/faculty?tab=workspace&projectId=${res?.projectId || projectId}&subtab=prototype`,
+          timestamp: new Date()
+        }).catch(() => {});
+      }
+
       await syncGovernmentDirectives({ res, updateData: cleanUpdate, projectId, uniCode });
 
       return res;

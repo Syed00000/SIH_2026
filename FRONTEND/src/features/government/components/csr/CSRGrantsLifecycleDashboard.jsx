@@ -9,12 +9,14 @@ import { CSRFundUtilization } from './CSRFundUtilization.jsx';
 import { CSRComplianceChecklist } from './CSRComplianceChecklist.jsx';
 import { CSRLifecycleHeader } from './CSRLifecycleHeader.jsx';
 import { InitiateDisbursalModal } from './InitiateDisbursalModal.jsx';
+import { ProposalDetailModal } from './ProposalDetailModal.jsx';
 import { projectCsrSyncService } from '../../services/projectCsrSyncService.js';
 import { exportCsrLifecycleReportPdf } from '../../services/exportPdfService.js';
 
 export const CSRGrantsLifecycleDashboard = () => {
   // Navigation: 4 Modular Phases
-  const [activePhase, setActivePhase] = useState('phase_1_2'); // 'phase_1_2' | 'phase_3_4' | 'phase_5_6' | 'phase_7_8'
+  const [activePhase, setActivePhase] = useState('phase_1_2');
+  const [selectedProposal, setSelectedProposal] = useState(null);
 
   // Live Local State synced with service
   const [proposals, setProposals] = useState(() => projectCsrSyncService.getCsrProposals());
@@ -48,44 +50,37 @@ export const CSRGrantsLifecycleDashboard = () => {
   const [statutoryFilter, setStatutoryFilter] = useState(null);
   const [ledgerStatusFilter, setLedgerStatusFilter] = useState(null);
 
-  const handleUpdateProposal = (updatedProposal) => {
-    const res = projectCsrSyncService.addOrUpdateCsrProposal(updatedProposal);
+  const handleUpdateProposal = (p) => {
+    const res = projectCsrSyncService.addOrUpdateCsrProposal(p);
     setProposals(res?.updatedCsrProposals || projectCsrSyncService.getCsrProposals() || []);
   };
 
-  const handleDeleteProposal = (proposalId) => {
-    const res = projectCsrSyncService.deleteCsrProposal(proposalId);
+  const handleDeleteProposal = (id) => {
+    const res = projectCsrSyncService.deleteCsrProposal(id);
     setProposals(res?.updatedCsrProposals || projectCsrSyncService.getCsrProposals() || []);
   };
 
-  const handleAddNewDisbursal = (newEntry) => {
-    const res = projectCsrSyncService.addCsrPayment(newEntry);
+  const handleAddNewDisbursal = (entry) => {
+    const res = projectCsrSyncService.addCsrPayment(entry);
     setLedger(res?.updatedLedger || res?.updatedCsrLedger || projectCsrSyncService.getCsrLedger() || []);
   };
 
-  const handleAuthorizePayment = (ledgerId) => {
+  const handleAuthorizePayment = (id) => {
     try {
-      const updated = projectCsrSyncService.authorizePayment(ledgerId);
-      setLedger(Array.isArray(updated) ? updated : projectCsrSyncService.getCsrLedger() || []);
+      const u = projectCsrSyncService.authorizePayment(id);
+      setLedger(Array.isArray(u) ? u : projectCsrSyncService.getCsrLedger() || []);
     } catch {}
   };
 
-  // Trigger Tranche Disbursal from a proposal
-  const handleInitiateDisbursalForProposal = (proposal) => {
-    setDisbursalTargetProposal(proposal);
+  const handleInitiateDisbursalForProposal = (p) => {
+    setDisbursalTargetProposal(p);
     setIsDisbursalModalOpen(true);
   };
 
-  // Export Audit Report PDF
   const handleExportAudit = () => {
-    exportCsrLifecycleReportPdf({
-      proposals: proposals || [],
-      ledger: ledger || [],
-      filterSource: sourceFilter
-    });
+    exportCsrLifecycleReportPdf({ proposals: proposals || [], ledger: ledger || [], filterSource: sourceFilter });
   };
 
-  // Filter proposals by top-level source filter
   const filteredProposals = (proposals || []).filter((p) => {
     if (sourceFilter === 'All Sources') return true;
     if (sourceFilter === 'Corporate CSR' && p.sourceScheme?.includes('Corporate')) return true;
@@ -94,22 +89,28 @@ export const CSRGrantsLifecycleDashboard = () => {
     return false;
   });
 
+  if (selectedProposal) {
+    return (
+      <div className="w-full pb-10 max-w-[1600px] mx-auto px-4 min-w-0 max-w-full overflow-hidden animate-in fade-in duration-200">
+        <ProposalDetailModal
+          isOpen={true}
+          onClose={() => setSelectedProposal(null)}
+          proposal={selectedProposal}
+          onUpdateProposal={(u) => {
+            handleUpdateProposal(u);
+            setSelectedProposal(u);
+          }}
+          onInitiateDisbursal={handleInitiateDisbursalForProposal}
+        />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-4 pb-10 max-w-[1600px] w-full mx-auto px-4 min-w-0 max-w-full overflow-hidden animate-in fade-in duration-200">
-      {/* 1. Header Banner Card */}
-      <CSRLifecycleHeader
-        sourceFilter={sourceFilter}
-        setSourceFilter={setSourceFilter}
-        onExportAudit={handleExportAudit}
-      />
+      <CSRLifecycleHeader sourceFilter={sourceFilter} setSourceFilter={setSourceFilter} onExportAudit={handleExportAudit} />
+      <CSRPhaseTabs activePhase={activePhase} onSelectPhase={(p) => setActivePhase(p)} />
 
-      {/* 2. Four Phase Tabs */}
-      <CSRPhaseTabs
-        activePhase={activePhase}
-        onSelectPhase={(phase) => setActivePhase(phase)}
-      />
-
-      {/* 3. Phase-Specific Tabbed Views */}
       {activePhase === 'phase_1_2' && (
         <div className="space-y-4">
           <CSRFundingSources
@@ -120,16 +121,11 @@ export const CSRGrantsLifecycleDashboard = () => {
               else if (sourceId === 'joint_funding') setSourceFilter('Joint Co-Funding');
             }}
           />
-
-          <CSRStatutoryParameters
-            activeFilter={statutoryFilter}
-            onSelectFilter={(f) => setStatutoryFilter(f)}
-            proposals={filteredProposals}
-          />
-
+          <CSRStatutoryParameters activeFilter={statutoryFilter} onSelectFilter={(f) => setStatutoryFilter(f)} proposals={filteredProposals} />
           <CSRProposalPipelineTable
             proposals={filteredProposals}
             activeFilter={statutoryFilter}
+            onSelectProposal={(p) => setSelectedProposal(p)}
             onUpdateProposal={handleUpdateProposal}
             onDeleteProposal={handleDeleteProposal}
             onInitiateDisbursal={handleInitiateDisbursalForProposal}

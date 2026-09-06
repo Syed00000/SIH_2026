@@ -1,14 +1,11 @@
 import React, { useState } from 'react';
-import { Users, Crown, Edit3, Trash2, Plus, Search, FileUp, Loader2 } from 'lucide-react';
-import { facultyApiService } from '../../../services/facultyApiService.js';
-import { SubmitPrototypeFooterBar } from './SubmitPrototypeFooterBar.jsx';
+import { Users, Crown, Edit3, Trash2, Plus, Search } from 'lucide-react';
 
 export const FacultyTeamsListTable = ({
-  teams = [], onSelectTeam, onAddNewTeam, onDeleteTeam, onSendPrototype, onRefresh
+  teams = [], onSelectTeam, onAddNewTeam, onDeleteTeam
 }) => {
   const [search, setSearch] = useState('');
   const [teamToDelete, setTeamToDelete] = useState(null);
-  const [uploadingPdfId, setUploadingPdfId] = useState(null);
 
   const filtered = teams.filter((t) => {
     if (!search.trim()) return true;
@@ -18,33 +15,6 @@ export const FacultyTeamsListTable = ({
       (t.studentLead || '').toLowerCase().includes(q) ||
       (t.project || '').toLowerCase().includes(q);
   });
-
-  const handlePdfUpload = async (team, e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    if (file.type !== 'application/pdf' && !file.name.toLowerCase().endsWith('.pdf')) {
-      alert('Only PDF documents (.pdf) are allowed');
-      return;
-    }
-    if (file.size > 1024 * 1024) {
-      alert(`PDF file size must be under 1MB. Selected file is ${(file.size / (1024 * 1024)).toFixed(2)} MB.`);
-      return;
-    }
-
-    const tid = team.id || team.teamCode || team.projectId;
-    setUploadingPdfId(tid);
-    try {
-      const pid = team.projectId || team.id;
-      await facultyApiService.uploadProjectPdf(pid, file);
-      if (onRefresh) await onRefresh();
-      alert('PDF uploaded successfully to Cloudinary and saved to database!');
-    } catch (err) {
-      alert('Failed to upload PDF: ' + (err.message || 'Unknown error'));
-    } finally {
-      setUploadingPdfId(null);
-      e.target.value = '';
-    }
-  };
 
   return (
     <div className="bg-white border border-slate-200/90 rounded-2xl shadow-2xs overflow-hidden">
@@ -90,7 +60,6 @@ export const FacultyTeamsListTable = ({
           <tbody className="divide-y divide-slate-100">
             {filtered.map((t) => {
               const isUnassigned = !t.projectId || t.project?.includes('Not Assigned Yet');
-              const isUploading = uploadingPdfId === (t.id || t.teamCode || t.projectId);
 
               return (
                 <tr key={t.id || t.teamCode} className="hover:bg-emerald-50/40 transition-colors">
@@ -143,20 +112,7 @@ export const FacultyTeamsListTable = ({
 
                   <td className="px-4 py-3.5 text-right">
                     <div className="flex items-center justify-end space-x-1.5">
-                      {/* PDF Upload Button (< 1MB) */}
-                      {isUploading ? (
-                        <span className="px-2 py-1.5 bg-slate-100 text-slate-600 rounded-xl text-[10.5px] font-bold flex items-center space-x-1 border border-slate-200">
-                          <Loader2 className="w-3 h-3 animate-spin text-[#007A61]" /><span>Uploading...</span>
-                        </span>
-                      ) : (
-                        <label className="px-2.5 py-1.5 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 hover:border-slate-300 rounded-xl text-[10.5px] font-bold transition-all shadow-2xs flex items-center space-x-1 cursor-pointer" title="Upload Prototype PDF (< 1MB)">
-                          <FileUp className="w-3.5 h-3.5 text-rose-500" />
-                          <span>{t.pdfUrl ? 'Replace PDF' : 'Upload PDF'}</span>
-                          <input type="file" accept="application/pdf" className="hidden" onChange={(e) => handlePdfUpload(t, e)} />
-                        </label>
-                      )}
-
-                      <button type="button" onClick={() => onSelectTeam(t)} className="px-2.5 py-1.5 bg-slate-50 hover:bg-[#007A61] text-slate-700 hover:text-white border border-slate-200 rounded-xl text-[11px] font-bold transition-all flex items-center space-x-1 cursor-pointer">
+                      <button type="button" onClick={() => onSelectTeam(t)} className="px-3 py-1.5 bg-slate-50 hover:bg-[#007A61] text-slate-700 hover:text-white border border-slate-200 rounded-xl text-[11px] font-bold transition-all flex items-center space-x-1 cursor-pointer">
                         <Edit3 className="w-3 h-3" /><span>Edit</span>
                       </button>
 
@@ -173,9 +129,6 @@ export const FacultyTeamsListTable = ({
           </tbody>
         </table>
       </div>
-
-      {/* 1 Send to University Button at bottom - Active once PDF uploaded */}
-      <SubmitPrototypeFooterBar teams={teams} filtered={filtered} onSendPrototype={onSendPrototype} />
 
       {teamToDelete && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">

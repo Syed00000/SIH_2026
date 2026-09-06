@@ -1,10 +1,11 @@
 import React from 'react';
 import { ChevronRight } from 'lucide-react';
+import { computeDynamicMilestones } from '../../../../shared/utils/milestonesHelper.js';
 
 export const MentoredProjectCard = ({ project: p, index: i, onNavigateTab }) => {
-  const milestonesDone = p.milestonesCompleted || 1;
-  const totalM = p.milestonesTotal || 7;
-  const progressPct = p.progressPercentage || Math.round((milestonesDone / totalM) * 100);
+  const dynamicM = computeDynamicMilestones(p);
+  const doneM = dynamicM.filter((m) => m.status === 'Completed').length;
+  const progressPct = Math.round((doneM / 7) * 100);
 
   return (
     <div

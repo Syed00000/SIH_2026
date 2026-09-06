@@ -5,7 +5,7 @@ import { FacultyTeamsPanel } from '../teams/FacultyTeamsPanel.jsx';
 import { FacultyProposalsPanel } from '../proposals/FacultyProposalsPanel.jsx';
 import { FacultyPrototypePanel } from '../prototypes/FacultyPrototypePanel.jsx';
 
-export const FacultyProjectWorkspace = ({ project, projects = [], faculty, onRefresh, onBack }) => {
+export const FacultyProjectWorkspace = ({ project, projects = [], teams = [], faculty, onRefresh, onBack }) => {
   const getInitialWorkspaceTab = () => {
     try {
       const p = new URLSearchParams(window.location.search);
@@ -81,6 +81,37 @@ export const FacultyProjectWorkspace = ({ project, projects = [], faculty, onRef
         </div>
       )}
 
+      {project.prototypeWorkRequested && (
+        <div className="bg-gradient-to-r from-emerald-500/10 via-teal-500/10 to-emerald-500/5 border border-emerald-300 rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-left">
+          <div className="flex items-start space-x-3">
+            <div className="w-9 h-9 rounded-xl bg-[#007A61] text-white flex items-center justify-center shrink-0 mt-0.5">
+              <FlaskConical className="w-5 h-5" />
+            </div>
+            <div>
+              <div className="flex items-center space-x-2">
+                <h3 className="text-xs font-black text-slate-900 uppercase tracking-tight">
+                  University Directive: Start Work on Prototype
+                </h3>
+                <span className="px-2 py-0.5 bg-emerald-100 text-[#007A61] text-[10px] font-extrabold rounded-full">
+                  Grant Installment Credited ✓
+                </span>
+              </div>
+              <p className="text-[11px] text-slate-600 font-medium mt-0.5">
+                Ranchi University Authority has received the 1st Grant Installment from State PFMS Escrow and officially requested your team to commence Prototype R&D.
+              </p>
+            </div>
+          </div>
+          {activeTab !== 'prototype' && (
+            <button
+              onClick={() => handleSetWorkspaceTab('prototype')}
+              className="px-3.5 py-1.5 bg-[#007A61] hover:bg-[#00604c] text-white rounded-xl text-xs font-bold transition-all shadow-xs shrink-0 cursor-pointer"
+            >
+              Open Prototype Lab →
+            </button>
+          )}
+        </div>
+      )}
+
       <div className="flex space-x-1 border-b border-slate-200">
         {[
           { id: 'overview', label: 'Overview & Milestones', icon: Target },
@@ -113,7 +144,7 @@ export const FacultyProjectWorkspace = ({ project, projects = [], faculty, onRef
 
       <div className="pt-2">
         {activeTab === 'overview' && <FacultyProjectsPanel projects={projects} faculty={faculty} onRefresh={onRefresh} initialProjectId={project.projectId || project.challengeId} hideHeader={true} />}
-        {activeTab === 'team' && <FacultyTeamsPanel projects={projects} faculty={faculty} onRefresh={onRefresh} initialProjectId={project.projectId || project.challengeId} hideHeader={true} />}
+        {activeTab === 'team' && <FacultyTeamsPanel projects={projects} teams={teams} faculty={faculty} onRefresh={onRefresh} initialProjectId={project.projectId || project.challengeId} hideHeader={true} />}
         {activeTab === 'proposal' && <FacultyProposalsPanel projects={projects} faculty={faculty} onRefresh={onRefresh} initialProjectId={project.projectId || project.challengeId} hideHeader={true} />}
         {activeTab === 'prototype' && <FacultyPrototypePanel project={project} faculty={faculty} onRefresh={onRefresh} />}
       </div>
