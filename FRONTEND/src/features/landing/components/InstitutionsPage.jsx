@@ -9,6 +9,36 @@ import bannerImage from '../assets/hero-banner-institutions.jpg';
 import dummyImage from '../assets/mission-image.jpg'; // For success story
 
 export const InstitutionsPage = ({ onNavigate }) => {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [showAll, setShowAll] = useState(false);
+  const [districtFilter, setDistrictFilter] = useState('');
+  const [typeFilter, setTypeFilter] = useState('');
+  const [expertFilter, setExpertFilter] = useState('');
+
+  const allInstitutions = [
+    { name: 'Birla Institute of Technology Mesra', type: 'Deemed University', location: 'Ranchi', expert: 'Sustainable Technology', active: 24, teams: 12, color: 'text-red-600', bg: 'bg-red-50', logo: 'B' },
+    { name: 'Ranchi University', type: 'State University', location: 'Ranchi', expert: 'Social Sciences, Rural Development, Environment', active: 18, teams: 10, color: 'text-blue-600', bg: 'bg-blue-50', logo: 'R' },
+    { name: 'National Institute of Technology Jamshedpur', type: 'Central University', location: 'Jamshedpur', expert: 'Engineering, Manufacturing, Clean Energy', active: 20, teams: 15, color: 'text-[#0f4b3a]', bg: 'bg-green-50', logo: 'N' },
+    { name: 'Indian Institute of Management Ranchi', type: 'Central Institute', location: 'Ranchi', expert: 'Management, Policy, Social Innovation', active: 10, teams: 8, color: 'text-orange-600', bg: 'bg-orange-50', logo: 'I' },
+    { name: 'Indian Institute of Technology (ISM) Dhanbad', type: 'Central University', location: 'Dhanbad', expert: 'Mining, Earth Sciences, Engineering', active: 30, teams: 25, color: 'text-purple-600', bg: 'bg-purple-50', logo: 'IIT' },
+    { name: 'XLRI - Xavier School of Management', type: 'Private Institute', location: 'Jamshedpur', expert: 'Business Management, HR', active: 12, teams: 6, color: 'text-pink-600', bg: 'bg-pink-50', logo: 'X' },
+  ];
+
+  const filteredInstitutions = allInstitutions.filter(inst => {
+    const matchesSearch = inst.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                          inst.location.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesDistrict = districtFilter ? inst.location === districtFilter : true;
+    const matchesType = typeFilter ? inst.type === typeFilter : true;
+    const matchesExpert = expertFilter ? inst.expert.includes(expertFilter) : true;
+    
+    return matchesSearch && matchesDistrict && matchesType && matchesExpert;
+  });
+
+  const isFiltering = searchQuery || districtFilter || typeFilter || expertFilter;
+  const displayedInstitutions = showAll || isFiltering 
+    ? filteredInstitutions 
+    : filteredInstitutions.slice(0, 4);
+
   return (
     <LandingLayout onNavigate={onNavigate} currentPath="/institutions">
       {/* Hero Section */}
@@ -97,20 +127,63 @@ export const InstitutionsPage = ({ onNavigate }) => {
                   <input 
                     type="text" 
                     placeholder="Search by institution name (e.g., BIT Mesra, Ranchi University...)"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
                     className="w-full pl-9 pr-4 py-2 border border-gray-100 rounded-md text-[13px] outline-none focus:border-[#0f4b3a]/50"
                   />
                 </div>
                 
-                <div className="grid grid-cols-1 md:grid-cols-5 gap-2 h-10">
-                  {['District / Region', 'Institution Type', 'Areas of Expertise', 'Active Projects'].map((filter, i) => (
-                    <div key={i} className="relative h-full">
-                      <select className="w-full h-full appearance-none border border-gray-100 rounded-md py-1 pl-3 pr-8 text-[11px] text-gray-500 outline-none focus:border-[#0f4b3a]/50 bg-white">
-                        <option value="">{filter}</option>
-                      </select>
-                      <ChevronDown className="w-3.5 h-3.5 text-gray-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
-                    </div>
-                  ))}
-                  <button className="bg-[#0f4b3a] text-white rounded-md font-bold text-[13px] transition-all hover:bg-[#0c382b] w-full h-full flex items-center justify-center">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-2 h-10">
+                  <div className="relative h-full">
+                    <select 
+                      value={districtFilter}
+                      onChange={(e) => setDistrictFilter(e.target.value)}
+                      className="w-full h-full appearance-none border border-gray-100 rounded-md py-1 pl-3 pr-8 text-[11px] text-gray-500 outline-none focus:border-[#0f4b3a]/50 bg-white"
+                    >
+                      <option value="">District / Region</option>
+                      <option value="Ranchi">Ranchi</option>
+                      <option value="Jamshedpur">Jamshedpur</option>
+                      <option value="Dhanbad">Dhanbad</option>
+                    </select>
+                    <ChevronDown className="w-3.5 h-3.5 text-gray-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                  </div>
+                  
+                  <div className="relative h-full">
+                    <select 
+                      value={typeFilter}
+                      onChange={(e) => setTypeFilter(e.target.value)}
+                      className="w-full h-full appearance-none border border-gray-100 rounded-md py-1 pl-3 pr-8 text-[11px] text-gray-500 outline-none focus:border-[#0f4b3a]/50 bg-white"
+                    >
+                      <option value="">Institution Type</option>
+                      <option value="Central University">Central University</option>
+                      <option value="State University">State University</option>
+                      <option value="Deemed University">Deemed University</option>
+                      <option value="Central Institute">Central Institute</option>
+                      <option value="Private Institute">Private Institute</option>
+                    </select>
+                    <ChevronDown className="w-3.5 h-3.5 text-gray-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                  </div>
+                  
+                  <div className="relative h-full">
+                    <select 
+                      value={expertFilter}
+                      onChange={(e) => setExpertFilter(e.target.value)}
+                      className="w-full h-full appearance-none border border-gray-100 rounded-md py-1 pl-3 pr-8 text-[11px] text-gray-500 outline-none focus:border-[#0f4b3a]/50 bg-white"
+                    >
+                      <option value="">Areas of Expertise</option>
+                      <option value="Sustainable Technology">Sustainable Technology</option>
+                      <option value="Social Sciences">Social Sciences</option>
+                      <option value="Engineering">Engineering</option>
+                      <option value="Management">Management</option>
+                      <option value="Mining">Mining</option>
+                    </select>
+                    <ChevronDown className="w-3.5 h-3.5 text-gray-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                  </div>
+                  
+                  <button 
+                    onClick={() => {}} // Filtering is reactive, but button can be left for UX
+                    className="bg-[#0f4b3a] text-white rounded-md font-bold text-[13px] transition-all hover:bg-[#0c382b] w-full h-full flex items-center justify-center"
+                  >
                     Search
                   </button>
                 </div>
@@ -126,18 +199,15 @@ export const InstitutionsPage = ({ onNavigate }) => {
                   </div>
                   <h2 className="text-[20px] font-black text-[#1c3c78]">Featured Institutions</h2>
                 </div>
-                <button className="text-[#0f4b3a] text-[12px] font-bold flex items-center hover:underline cursor-pointer">
-                  View All Institutions <ArrowRight className="w-3.5 h-3.5 ml-1" />
-                </button>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
-                {[
-                  { name: 'Birla Institute of Technology Mesra', type: 'Deemed University', location: 'Ranchi', expert: 'Sustainable Technology', active: 24, teams: 12, color: 'text-red-600', bg: 'bg-red-50', logo: 'B' },
-                  { name: 'Ranchi University', type: 'State University', location: 'Ranchi', expert: 'Social Sciences, Rural Development, Environment', active: 18, teams: 10, color: 'text-blue-600', bg: 'bg-blue-50', logo: 'R' },
-                  { name: 'National Institute of Technology Jamshedpur', type: 'Central University', location: 'Jamshedpur', expert: 'Engineering, Manufacturing, Clean Energy', active: 20, teams: 15, color: 'text-[#0f4b3a]', bg: 'bg-green-50', logo: 'N' },
-                  { name: 'Indian Institute of Management Ranchi', type: 'Central Institute', location: 'Ranchi', expert: 'Management, Policy, Social Innovation', active: 10, teams: 8, color: 'text-orange-600', bg: 'bg-orange-50', logo: 'I' },
-                ].map((inst, idx) => (
+              {filteredInstitutions.length === 0 ? (
+                <div className="text-center py-10 bg-white rounded-xl border border-gray-200 shadow-sm">
+                  <p className="text-gray-500 font-medium">No institutions found matching your criteria.</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+                  {displayedInstitutions.map((inst, idx) => (
                   <div key={idx} className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm flex flex-col group hover:shadow-md transition-all">
                     {/* Placeholder for building image */}
                     <div className="h-28 bg-gray-200 relative overflow-hidden">
@@ -180,6 +250,7 @@ export const InstitutionsPage = ({ onNavigate }) => {
                   </div>
                 ))}
               </div>
+              )}
             </div>
 
           </div>
@@ -200,11 +271,14 @@ export const InstitutionsPage = ({ onNavigate }) => {
                   </p>
                 </div>
               </div>
-              <button className="w-full bg-[#0f4b3a] text-white py-2.5 rounded-md font-bold text-[13px] mb-3 flex justify-center items-center relative z-10 hover:bg-[#0c382b] transition-colors shadow-sm">
+              <button 
+                onClick={() => onNavigate('/register')}
+                className="w-full bg-[#0f4b3a] text-white py-2.5 rounded-md font-bold text-[13px] mb-3 flex justify-center items-center relative z-10 hover:bg-[#0c382b] transition-colors shadow-sm cursor-pointer"
+              >
                 Register Your Institution <ArrowRight className="w-3.5 h-3.5 ml-1.5" />
               </button>
               <div className="text-center text-[11px] font-medium text-gray-600 relative z-10 flex items-center justify-center gap-1">
-                Already registered? <span className="font-bold text-[#0f4b3a] flex items-center hover:underline cursor-pointer">Login <ArrowRight className="w-3 h-3 ml-0.5" /></span>
+                Already registered? <span onClick={() => onNavigate('/login')} className="font-bold text-[#0f4b3a] flex items-center hover:underline cursor-pointer">Login <ArrowRight className="w-3 h-3 ml-0.5" /></span>
               </div>
             </div>
 
