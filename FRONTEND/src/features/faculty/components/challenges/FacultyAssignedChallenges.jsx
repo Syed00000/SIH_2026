@@ -13,7 +13,7 @@ import {
   AlertTriangle,
   Loader2
 } from 'lucide-react';
-import { ProblemEvidenceDossierModal } from '../../../nodal/components/ProblemEvidenceDossierModal.jsx';
+import { ProblemEvidenceDossierPanel } from '../../../nodal/components/ProblemEvidenceDossierPanel.jsx';
 import { facultyApiService } from '../../services/facultyApiService.js';
 
 export const FacultyAssignedChallenges = ({
@@ -111,6 +111,18 @@ export const FacultyAssignedChallenges = ({
       }
     }
   };
+
+  if (selectedDossier) {
+    return (
+      <div className="space-y-4 max-w-7xl mx-auto select-none pb-12 animate-in fade-in duration-150 text-left">
+        <ProblemEvidenceDossierPanel
+          challenge={selectedDossier}
+          onClose={() => setSelectedDossier(null)}
+          isUniversityView={true}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4 max-w-7xl mx-auto select-none pb-12">
@@ -234,12 +246,15 @@ export const FacultyAssignedChallenges = ({
             const domain = c.domain || c.category || 'Innovation';
             const loc = c.location?.district || c.district || 'Jharkhand';
             const status = getAssignmentStatus(c);
+            const isDeployed = c.status === 'Deployed' || Boolean(c.isDeployed) || Boolean(c.isLocked);
 
             return (
               <div
                 key={c.challengeId || idx}
                 className={`bg-white border rounded-2xl p-4 shadow-2xs transition-all flex flex-col justify-between space-y-3 ${
-                  status.isAssignedToMe
+                  isDeployed
+                    ? 'border-teal-200 bg-teal-50/20'
+                    : status.isAssignedToMe
                     ? 'border-emerald-200 hover:border-emerald-400'
                     : 'border-slate-200/90 hover:border-blue-300'
                 }`}
@@ -255,7 +270,11 @@ export const FacultyAssignedChallenges = ({
                       </span>
                     </div>
 
-                    {status.isAssignedToMe ? (
+                    {isDeployed ? (
+                      <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-teal-50 text-teal-900 border border-teal-300 whitespace-nowrap shadow-2xs">
+                        🔒 Deployed & Locked
+                      </span>
+                    ) : status.isAssignedToMe ? (
                       <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-emerald-50 text-[#007A61] border border-emerald-200 whitespace-nowrap shadow-2xs">
                         ✓ Assigned to You
                       </span>
@@ -307,19 +326,25 @@ export const FacultyAssignedChallenges = ({
                       <span>Evidence Dossier</span>
                     </button>
 
-                    <button
-                      type="button"
-                      onClick={() => setChallengeToDelete(c)}
-                      className="px-2.5 py-1.5 bg-red-50 hover:bg-red-100 text-red-700 border border-red-200/80 rounded-xl text-[11px] font-bold transition-colors flex items-center space-x-1 cursor-pointer"
-                      title="Delete Problem Statement"
-                    >
-                      <Trash2 className="w-3 h-3 text-red-600" />
-                      <span>Delete</span>
-                    </button>
+                    {!isDeployed && (
+                      <button
+                        type="button"
+                        onClick={() => setChallengeToDelete(c)}
+                        className="px-2.5 py-1.5 bg-red-50 hover:bg-red-100 text-red-700 border border-red-200/80 rounded-xl text-[11px] font-bold transition-colors flex items-center space-x-1 cursor-pointer"
+                        title="Delete Problem Statement"
+                      >
+                        <Trash2 className="w-3 h-3 text-red-600" />
+                        <span>Delete</span>
+                      </button>
+                    )}
                   </div>
 
                   <div className="flex items-center space-x-2">
-                    {c.status === 'Resolved' || c.isDeployed ? (
+                    {isDeployed ? (
+                      <div className="px-3.5 py-1.5 bg-teal-50 text-teal-800 border border-teal-300 rounded-xl text-[11px] font-bold flex items-center space-x-1 shadow-2xs">
+                        <span>🔒 Deployed & Government Certified</span>
+                      </div>
+                    ) : c.status === 'Resolved' ? (
                       <div className="px-3.5 py-1.5 bg-emerald-50 text-emerald-800 border border-emerald-300 rounded-xl text-[11px] font-bold flex items-center space-x-1 shadow-2xs">
                         <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
                         <span>✓ Publicly Deployed (Locked)</span>
@@ -346,14 +371,7 @@ export const FacultyAssignedChallenges = ({
         </div>
       )}
 
-      {/* Dossier Modal */}
-      {selectedDossier && (
-        <ProblemEvidenceDossierModal
-          isOpen={true}
-          onClose={() => setSelectedDossier(null)}
-          challenge={selectedDossier}
-        />
-      )}
+
 
       {/* Delete Confirmation Modal */}
       {challengeToDelete && (

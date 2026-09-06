@@ -7,7 +7,7 @@ import { Button } from '../../../shared/components/ui/button.jsx';
 import { Input } from '../../../shared/components/ui/input.jsx';
 import { Badge } from '../../../shared/components/ui/badge.jsx';
 
-const STATUS_FILTERS = ['All', 'Submitted', 'Under Review', 'In Progress', 'Resolved', 'Withdrawn'];
+const STATUS_FILTERS = ['All', 'Submitted', 'Under Review', 'In Progress', 'Resolved', 'Deployed', 'Withdrawn'];
 const DOMAIN_OPTIONS = [
   'All', 'Education', 'Healthcare', 'Agriculture', 'Water Resources',
   'Environment', 'Energy', 'Urban Development', 'Accessibility',
@@ -217,7 +217,8 @@ export const CitizenMyChallenges = ({
                       ? new Date(ch.submittedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
                       : 'N/A';
                     const isWithdrawn = (ch.status || '').toLowerCase() === 'withdrawn';
-                    const isResolved = (ch.status || '').toLowerCase() === 'resolved' || Boolean(ch.isDeployed);
+                    const isDeployed = (ch.status || '').toLowerCase() === 'deployed' || Boolean(ch.isDeployed) || Boolean(ch.isLocked);
+                    const isResolved = (ch.status || '').toLowerCase() === 'resolved' || isDeployed;
                     const district = ch.location?.district || ch.district || 'N/A';
                     const rowNumber = ((currentPage - 1) * itemsPerPage) + index + 1;
 
@@ -273,7 +274,11 @@ export const CitizenMyChallenges = ({
 
                         {/* 6. Status */}
                         <td className="py-2.5 px-3 whitespace-nowrap">
-                          {(() => {
+                          {isDeployed ? (
+                            <span className="inline-flex items-center gap-1 text-[10.5px] font-bold text-emerald-800 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">
+                              🔒 Deployed
+                            </span>
+                          ) : (() => {
                             let textStyle = 'text-amber-600';
                             const stat = (ch.status || '').toLowerCase();
                             if (isWithdrawn) textStyle = 'text-slate-500';
@@ -295,11 +300,11 @@ export const CitizenMyChallenges = ({
                             <button 
                               onClick={(e) => { e.stopPropagation(); onSelectChallenge(ch); }}
                               className="p-1 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-md transition-colors"
-                              title="Options"
+                              title={isDeployed ? 'Deployed & Locked — View Only' : 'Options'}
                             >
                               <MoreVertical className="w-4 h-4" />
                             </button>
-                            {(isWithdrawn || isResolved) && (
+                            {!isDeployed && (isWithdrawn || isResolved) && (
                               <button 
                                 onClick={(e) => handleDeleteChallenge(e, ch)}
                                 className="p-1 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-md transition-colors"

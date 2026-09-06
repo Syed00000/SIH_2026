@@ -29,6 +29,7 @@ export const ChallengesFilterBar = ({
           <option value="Clarified">Clarified by Nodal</option>
           <option value="Accepted">Accepted</option>
           <option value="Rejected">Declined</option>
+          <option value="Resolved & Deployed">🔒 Resolved & Deployed</option>
         </select>
 
         <select

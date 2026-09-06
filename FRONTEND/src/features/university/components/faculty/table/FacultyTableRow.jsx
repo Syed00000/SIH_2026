@@ -18,6 +18,9 @@ export const FacultyTableRow = ({
 
   const avail = f.availabilityStatus || 'Available';
   const isActive = f.status !== 'Inactive';
+  const isDeployed = f.status === 'Deployed' || Boolean(f.isDeployed) || Boolean(f.isLocked);
+  // If the faculty's assigned project is deployed, override availability
+  const displayAvail = isDeployed ? 'Deployed' : avail;
 
   return (
     <tr
@@ -86,26 +89,30 @@ export const FacultyTableRow = ({
       <td className="py-3 px-3 whitespace-nowrap">
         <span
           className={`inline-flex items-center space-x-1.5 text-[11px] font-bold ${
-            avail === 'Available' ? 'text-[#007A61]' : avail === 'In Project' ? 'text-amber-600' : 'text-slate-600'
+            isDeployed ? 'text-teal-700' :
+            displayAvail === 'Available' ? 'text-[#007A61]' :
+            displayAvail === 'In Project' ? 'text-amber-600' : 'text-slate-600'
           }`}
         >
           <span
             className={`w-1.5 h-1.5 rounded-full ${
-              avail === 'Available' ? 'bg-[#007A61]' : avail === 'In Project' ? 'bg-amber-500' : 'bg-slate-400'
+              isDeployed ? 'bg-teal-500' :
+              displayAvail === 'Available' ? 'bg-[#007A61]' :
+              displayAvail === 'In Project' ? 'bg-amber-500' : 'bg-slate-400'
             }`}
           />
-          <span>{avail}</span>
+          <span>{isDeployed ? '🔒 Deployed' : displayAvail}</span>
         </span>
       </td>
 
       <td className="py-3 px-3 whitespace-nowrap">
         <span
           className={`inline-flex items-center space-x-1.5 text-[11px] font-extrabold ${
-            isActive ? 'text-[#007A61]' : 'text-rose-600'
+            isDeployed ? 'text-teal-700' : isActive ? 'text-[#007A61]' : 'text-rose-600'
           }`}
         >
-          <span className={`w-1.5 h-1.5 rounded-full ${isActive ? 'bg-[#007A61]' : 'bg-rose-500'}`} />
-          <span>{isActive ? 'Active' : 'Inactive'}</span>
+          <span className={`w-1.5 h-1.5 rounded-full ${isDeployed ? 'bg-teal-500' : isActive ? 'bg-[#007A61]' : 'bg-rose-500'}`} />
+          <span>{isDeployed ? 'Deployed' : (isActive ? 'Active' : 'Inactive')}</span>
         </span>
       </td>
 

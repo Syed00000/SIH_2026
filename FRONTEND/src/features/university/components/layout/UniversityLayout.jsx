@@ -36,7 +36,17 @@ export const UniversityLayout = ({ user, onLogout }) => {
       setDashboardData(data);
       const appList = Array.isArray(approvalsData) ? approvalsData : [];
       setApprovalsList(appList);
-      setPendingApprovalsCount(appList.filter(a => a.status === 'Pending').length);
+      const isPending = (a) =>
+        a.status === 'Pending' &&
+        !a.isDeployed &&
+        !a.isLocked &&
+        a.status !== 'Deployed' &&
+        a.status !== 'Approved' &&
+        !a.sentToGovernment &&
+        a.governmentStatus !== 'Under State Evaluation' &&
+        a.governmentStatus !== 'Approved' &&
+        a.governmentStatus !== 'Approved & Deployed';
+      setPendingApprovalsCount(appList.filter(isPending).length);
       const indList = Array.isArray(indReqsData) ? indReqsData : (Array.isArray(indReqsData?.data) ? indReqsData.data : []);
       setIndustryRequestsList(indList);
     } catch (err) {
@@ -97,7 +107,7 @@ export const UniversityLayout = ({ user, onLogout }) => {
       actionLabel: 'View in Industry Partners',
       targetTab: 'partners'
     })),
-    ...approvalsList.filter(a => a.status === 'Pending').map(a => ({
+    ...approvalsList.filter(a => a.status === 'Pending' && !a.isDeployed && !a.isLocked && !a.sentToGovernment && a.governmentStatus !== 'Under State Evaluation' && a.governmentStatus !== 'Approved' && a.governmentStatus !== 'Approved & Deployed').map(a => ({
       id: `app-${a.approvalId || a._id}`,
       type: 'APPROVAL',
       category: 'Pending Review',
@@ -120,7 +130,7 @@ export const UniversityLayout = ({ user, onLogout }) => {
   ];
 
   return (
-    <div className="min-h-screen bg-[#f8fafc] flex flex-col h-screen overflow-hidden text-slate-900 font-sans select-none">
+    <div className="min-h-screen bg-white flex flex-col h-screen overflow-hidden text-slate-900 font-sans select-none">
       <UniversityHeader
         universityName={uniName}
         adminName={adminName}
@@ -147,7 +157,7 @@ export const UniversityLayout = ({ user, onLogout }) => {
           partnerNotificationCount={pendingIndustryAmountCount}
         />
 
-        <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden bg-[#f8fafc]">
+        <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden bg-white">
           <main className="flex-1 p-3.5 md:p-5 overflow-y-auto min-h-0">
             {loading ? (
               <div className="flex items-center justify-center h-64 text-xs font-bold text-slate-600">

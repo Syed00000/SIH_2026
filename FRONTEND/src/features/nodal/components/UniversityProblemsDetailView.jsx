@@ -1,6 +1,6 @@
 import React from 'react';
 import { NodalAssignModal } from './NodalAssignModal.jsx';
-import { ProblemEvidenceDossierModal } from './ProblemEvidenceDossierModal.jsx';
+import { ProblemEvidenceDossierPanel } from './ProblemEvidenceDossierPanel.jsx';
 import { ClarificationChatModal } from '../../clarification/components/ClarificationChatModal.jsx';
 import { useUniversityProblemsView } from './universityDetail/hooks/useUniversityProblemsView.js';
 import { UniversityProblemsDetailHeader } from './universityDetail/UniversityProblemsDetailHeader.jsx';
@@ -47,6 +47,47 @@ export const UniversityProblemsDetailView = ({
   });
 
   if (!university) return null;
+
+  if (selectedDossierChallenge) {
+    return (
+      <div className="space-y-4 select-none text-left animate-in fade-in duration-150">
+        <ProblemEvidenceDossierPanel
+          challenge={selectedDossierChallenge}
+          onClose={() => setSelectedDossierChallenge(null)}
+          onOpenTriage={() => {
+            handleOpenEditOrReassign(selectedDossierChallenge);
+          }}
+          onOpenChat={() => {
+            setChatChallenge(selectedDossierChallenge);
+          }}
+        />
+
+        {/* Triage / Assignment Modal */}
+        {isAssignModalOpen && (
+          <NodalAssignModal
+            isOpen={isAssignModalOpen}
+            onClose={() => setIsAssignModalOpen(false)}
+            challenge={selectedChallenge}
+            targetUniversity={targetUniForAllocation}
+            onSuccess={(updated) => {
+              handleTriageSuccess(updated);
+              setSelectedDossierChallenge(null);
+            }}
+          />
+        )}
+
+        {/* Direct Clarification Chat Modal */}
+        {chatChallenge && (
+          <ClarificationChatModal
+            isOpen={Boolean(chatChallenge)}
+            onClose={() => setChatChallenge(null)}
+            challenge={chatChallenge}
+            isUniversityView={false}
+          />
+        )}
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4 select-none text-left animate-in fade-in duration-150">
@@ -97,23 +138,6 @@ export const UniversityProblemsDetailView = ({
           challenge={selectedChallenge}
           targetUniversity={targetUniForAllocation}
           onSuccess={handleTriageSuccess}
-        />
-      )}
-
-      {/* Ground Truth Evidence Dossier Modal */}
-      {selectedDossierChallenge && (
-        <ProblemEvidenceDossierModal
-          isOpen={Boolean(selectedDossierChallenge)}
-          onClose={() => setSelectedDossierChallenge(null)}
-          challenge={selectedDossierChallenge}
-          onOpenTriage={() => {
-            handleOpenEditOrReassign(selectedDossierChallenge);
-            setSelectedDossierChallenge(null);
-          }}
-          onOpenChat={() => {
-            setChatChallenge(selectedDossierChallenge);
-            setSelectedDossierChallenge(null);
-          }}
         />
       )}
 

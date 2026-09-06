@@ -25,8 +25,10 @@ import { universityApiService } from '../../services/universityApiService.js';
 import { PrototypeLabTestingSection } from './PrototypeLabTestingSection.jsx';
 import { PrototypeApprovalActions } from './PrototypeApprovalActions.jsx';
 import { GovernmentGrantStatusCard } from './GovernmentGrantStatusCard.jsx';
+import { projectCsrSyncService } from '../../../government/services/projectCsrSyncService.js';
 
 const statusBadge = (s = '') => {
+  if (s === 'Deployed') return 'bg-teal-50 text-teal-800 border-teal-300';
   if (s === 'Approved') return 'bg-emerald-50 text-emerald-800 border-emerald-300';
   if (s === 'Pending') return 'bg-amber-50 text-amber-800 border-amber-300';
   if (s === 'Rejected') return 'bg-rose-50 text-rose-800 border-rose-300';
@@ -222,8 +224,9 @@ export const ApprovalDetailModal = ({
   const handleForwardToGov = async () => {
     setIsForwarding(true);
     try {
-      const projId = approval.projectId || approval.approvalId.replace('APP-PROTO-', '').replace('APP-', '');
+      const projId = approval.projectId || approval.challengeId || approval.projectRef || approval.approvalId;
       await universityApiService.forwardPrototypeToGovernment(projId, 'RU001', remarks);
+      try { await projectCsrSyncService.initializeFromBackend(); } catch {}
       setForwarded(true);
       setRemarks('');
     } catch (err) {
@@ -236,15 +239,17 @@ export const ApprovalDetailModal = ({
   const handleSendToGovernment = async () => {
     setIsForwarding(true);
     try {
-      const projId = approval.projectId || approval.approvalId.replace('APP-PROTO-', '').replace('APP-', '');
+      const projId = approval.projectId || approval.challengeId || approval.projectRef || approval.approvalId;
       await universityApiService.forwardPrototypeToGovernment(projId, 'RU001', remarks);
       if (onApprove) {
         await onApprove(approval, remarks, {
           sentToGovernment: true,
           governmentStatus: 'Under State Evaluation',
-          status: 'Approved'
+          status: 'Approved',
+          prototypeStatus: 'Approved'
         });
       }
+      try { await projectCsrSyncService.initializeFromBackend(); } catch {}
       setForwarded(true);
       setRemarks('');
       onClose();
@@ -255,15 +260,25 @@ export const ApprovalDetailModal = ({
     }
   };
 
-  const handleAction = async (actionFn) => {
+  const handleAction = async (actionFn, fallbackStatus = 'Approved') => {
     setIsProcessing(true);
     try {
-      await actionFn(approval, remarks, {
+      const isApproved = fallbackStatus === 'Approved';
+      const payloadExtra = {
         budget: totalFormatted,
         proposedBudget: totalFormatted,
         additionalAmount: effectiveExtraNum,
-        budgetBreakdown: approval.budgetBreakdown
-      });
+        budgetBreakdown: approval.budgetBreakdown,
+        sentToGovernment: isApproved,
+        governmentStatus: isApproved ? 'Under State Evaluation' : undefined,
+        budgetStatus: isApproved ? 'Forwarded to CSR Grants Pipeline' : (fallbackStatus === 'Changes Required' ? 'Changes Required by University' : undefined)
+      };
+
+      if (typeof actionFn === 'function') {
+        await actionFn(approval, remarks, payloadExtra);
+      } else if (typeof onUpdateStatus === 'function') {
+        await onUpdateStatus(approval, fallbackStatus, remarks, payloadExtra);
+      }
       setRemarks('');
       onClose();
     } catch (err) {
@@ -538,7 +553,7 @@ export const ApprovalDetailModal = ({
                 <div className="flex items-center space-x-2 w-full sm:w-auto justify-end">
                   <button
                     type="button"
-                    onClick={() => handleAction(onReject)}
+                    onClick={() => handleAction(onReject, 'Rejected')}
                     disabled={isProcessing}
                     className="px-4 py-2 bg-white hover:bg-rose-50 border border-rose-200 text-rose-700 text-xs font-bold rounded-xl flex items-center space-x-1.5 transition-all shadow-2xs cursor-pointer"
                   >
@@ -548,7 +563,7 @@ export const ApprovalDetailModal = ({
 
                   <button
                     type="button"
-                    onClick={() => handleAction(onRequestChanges)}
+                    onClick={() => handleAction(onRequestChanges, 'Changes Required')}
                     disabled={isProcessing}
                     className="px-4 py-2 bg-white hover:bg-amber-50 border border-amber-300 text-amber-800 text-xs font-bold rounded-xl flex items-center space-x-1.5 transition-all shadow-2xs cursor-pointer"
                   >
@@ -558,12 +573,12 @@ export const ApprovalDetailModal = ({
 
                   <button
                     type="button"
-                    onClick={() => handleAction(onApprove)}
+                    onClick={() => handleAction(onApprove, 'Approved')}
                     disabled={isProcessing}
                     className="px-5 py-2 bg-[#007A61] hover:bg-[#006650] text-white text-xs font-bold rounded-xl flex items-center space-x-1.5 transition-all shadow-2xs cursor-pointer"
                   >
                     <CheckCircle2 className="w-4 h-4 text-emerald-300" />
-                    <span>Approve & Forward to Government</span>
+                    <span>{isProcessing ? 'Approving & Forwarding...' : 'Approve & Forward to Government'}</span>
                   </button>
                 </div>
               ) : (

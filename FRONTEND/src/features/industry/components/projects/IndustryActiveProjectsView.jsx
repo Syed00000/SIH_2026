@@ -1,15 +1,19 @@
 import React, { useState } from 'react';
-import { Briefcase, Building2, Search, ArrowRight, Eye, Rocket, CheckCircle2, ShieldCheck } from 'lucide-react';
+import { Briefcase, Building2, Search, ArrowRight, Eye, Rocket, ShieldCheck } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '../../../../shared/components/ui/card.jsx';
-import { IndustryProjectDetailModal } from './IndustryProjectDetailModal.jsx';
+import { IndustryProjectDetailPanel } from './IndustryProjectDetailPanel.jsx';
 
 export const IndustryActiveProjectsView = ({ projects = {}, onNavigateToFunding }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedProject, setSelectedProject] = useState(null);
   const [activeTab, setActiveTab] = useState('ongoing'); // 'ongoing' | 'completed'
 
-  const ongoingList = projects?.ongoing || [];
-  const completedList = projects?.completed || [];
+  const ongoingList = (projects?.ongoing || []).filter(
+    (p) => !p.labChargesQuoted || p.quoteStatus === 'Accepted'
+  );
+  const completedList = (projects?.completed || []).filter(
+    (p) => !p.labChargesQuoted || p.quoteStatus === 'Accepted'
+  );
   const currentList = activeTab === 'ongoing' ? ongoingList : completedList;
 
   const filteredProjects = currentList.filter((proj) => {
@@ -22,6 +26,19 @@ export const IndustryActiveProjectsView = ({ projects = {}, onNavigateToFunding 
   });
 
   const uniqueUniversities = new Set(ongoingList.map((p) => p.university)).size;
+
+  if (selectedProject) {
+    return (
+      <IndustryProjectDetailPanel
+        project={selectedProject}
+        onBack={() => setSelectedProject(null)}
+        onNavigateToFunding={() => {
+          setSelectedProject(null);
+          if (onNavigateToFunding) onNavigateToFunding();
+        }}
+      />
+    );
+  }
 
   return (
     <div className="space-y-4">
@@ -136,9 +153,15 @@ export const IndustryActiveProjectsView = ({ projects = {}, onNavigateToFunding 
                       </td>
                       <td className="px-4 py-3 text-slate-600 font-medium">{proj.university}</td>
                       <td className="px-4 py-3">
-                        <span className="px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-200">
-                          {proj.stage || 'In Progress'}
-                        </span>
+                        {(proj.status === 'Deployed' || proj.isDeployed || proj.isLocked) ? (
+                          <span className="px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-teal-50 text-teal-800 border border-teal-300">
+                            🔒 Deployed
+                          </span>
+                        ) : (
+                          <span className="px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-200">
+                            {proj.stage || 'In Progress'}
+                          </span>
+                        )}
                       </td>
                       <td className="px-4 py-3">
                         <div className="font-bold text-slate-900 text-xs">{proj.labChargesQuoted || proj.budget || 'In Progress'}</div>
@@ -174,15 +197,6 @@ export const IndustryActiveProjectsView = ({ projects = {}, onNavigateToFunding 
           </div>
         </CardContent>
       </Card>
-
-      {/* Project Detail Modal */}
-      {selectedProject && (
-        <IndustryProjectDetailModal
-          project={selectedProject}
-          onClose={() => setSelectedProject(null)}
-          onNavigateToFunding={onNavigateToFunding}
-        />
-      )}
     </div>
   );
 };

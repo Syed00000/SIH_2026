@@ -61,21 +61,13 @@ export const citizenChallengeSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: [
-        'Submitted',
-        'Under Review',
-        'In Progress',
-        'Resolved',
-        'Rejected',
-        'Clarification Requested',
-        'Clarified',
-        'Accepted',
-        'Declined',
-        'Withdrawn'
-      ],
+      enum: ['Submitted', 'Under Review', 'In Progress', 'Resolved', 'Deployed', 'Rejected', 'Clarification Requested', 'Clarified', 'Accepted', 'Declined', 'Withdrawn'],
       default: 'Under Review',
       index: true
     },
+    isDeployed: { type: Boolean, default: false, index: true },
+    isLocked: { type: Boolean, default: false, index: true },
+    deployedAt: { type: Date, default: null },
     district: {
       type: String,
       trim: true,

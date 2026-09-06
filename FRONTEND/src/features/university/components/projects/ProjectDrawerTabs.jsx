@@ -77,6 +77,7 @@ export const ProjectDrawerTabs = ({
 
   const isFunded = Boolean(project.disbursedAmount && project.disbursedAmount !== '0' && project.disbursedAmount !== '₹ 0');
   const isGovApproved = project.governmentStatus === 'Approved' || project.status === 'Completed';
+  const isDeployed = project.status === 'Deployed' || Boolean(project.isDeployed) || Boolean(project.isLocked);
   const isProtoApproved = project.prototypeStatus === 'Approved' || isGovApproved;
   const isProtoInReview = project.prototypeStatus === 'In Review';
   const isProtoStarted = Boolean(project.prototypeData);
@@ -317,6 +318,10 @@ export const ProjectDrawerTabs = ({
                           <Clock className="w-3.5 h-3.5 text-amber-600" />
                           <span>Second EMI Requested &bull; Pending Government Release</span>
                         </div>
+                      ) : isDeployed ? (
+                        <div className="flex items-center space-x-1.5 text-xs font-bold text-teal-800 bg-teal-50 p-2 rounded-lg border border-teal-200">
+                          <span>🔒 Project Deployed — All financial actions are locked</span>
+                        </div>
                       ) : (
                         <button
                           type="button"
@@ -458,7 +463,7 @@ export const ProjectDrawerTabs = ({
             />
           </div>
           <div className="flex justify-between items-center text-[10.5px] text-slate-500 pt-0.5">
-            <span>Status: <strong className="text-slate-800">{project.status || (calculatedPercentage === 100 ? 'Completed' : 'In Progress')}</strong></span>
+            <span>Status: <strong className={isDeployed ? 'text-teal-700' : 'text-slate-800'}>{isDeployed ? '🔒 Deployed' : (project.status || (calculatedPercentage === 100 ? 'Completed' : 'In Progress'))}</strong></span>
             <span>
               Milestones: <strong className="text-[#007A61] font-bold">{completedMilestones}</strong> / {totalMilestones} Completed
             </span>
@@ -467,7 +472,11 @@ export const ProjectDrawerTabs = ({
 
         {/* Action Controls */}
         <div className="grid grid-cols-3 gap-2 pt-1 border-t border-slate-100">
-          {project.status !== 'Completed' ? (
+          {isDeployed ? (
+            <div className="col-span-3 flex items-center justify-center gap-2 py-3 bg-teal-50 border border-teal-200 rounded-xl text-xs font-bold text-teal-800">
+              <span>🔒 Deployed & Government Certified — All edits are locked</span>
+            </div>
+          ) : project.status !== 'Completed' ? (
             <button
               type="button"
               onClick={() => onMarkCompleted && onMarkCompleted(project)}
@@ -487,23 +496,27 @@ export const ProjectDrawerTabs = ({
             </button>
           )}
 
-          <button
-            type="button"
-            onClick={() => onEdit(project)}
-            className="py-2 bg-white hover:bg-slate-50 border border-slate-200 text-slate-800 text-[11px] font-bold rounded-xl flex items-center justify-center space-x-1.5 cursor-pointer transition-colors shadow-2xs"
-          >
-            <Edit3 className="w-3.5 h-3.5 text-slate-600" />
-            <span>Edit</span>
-          </button>
+          {!isDeployed && (
+            <button
+              type="button"
+              onClick={() => onEdit(project)}
+              className="py-2 bg-white hover:bg-slate-50 border border-slate-200 text-slate-800 text-[11px] font-bold rounded-xl flex items-center justify-center space-x-1.5 cursor-pointer transition-colors shadow-2xs"
+            >
+              <Edit3 className="w-3.5 h-3.5 text-slate-600" />
+              <span>Edit</span>
+            </button>
+          )}
 
-          <button
-            type="button"
-            onClick={() => onEndProject(project)}
-            className="py-2 border border-slate-200 text-slate-600 hover:bg-rose-50 hover:text-rose-700 hover:border-rose-200 text-[11px] font-bold rounded-xl flex items-center justify-center space-x-1.5 cursor-pointer transition-colors"
-          >
-            <PowerOff className="w-3.5 h-3.5" />
-            <span>Archive</span>
-          </button>
+          {!isDeployed && (
+            <button
+              type="button"
+              onClick={() => onEndProject(project)}
+              className="py-2 border border-slate-200 text-slate-600 hover:bg-rose-50 hover:text-rose-700 hover:border-rose-200 text-[11px] font-bold rounded-xl flex items-center justify-center space-x-1.5 cursor-pointer transition-colors"
+            >
+              <PowerOff className="w-3.5 h-3.5" />
+              <span>Archive</span>
+            </button>
+          )}
         </div>
 
         {/* Recent Real Activity Feed */}

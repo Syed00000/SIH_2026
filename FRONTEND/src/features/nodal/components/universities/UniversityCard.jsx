@@ -7,8 +7,12 @@ export const UniversityCard = ({
   onSelectUniversity,
   onAllocateNew
 }) => {
+  const deployedCount = assignedChallenges.filter(
+    (c) => c.status === 'Deployed' || Boolean(c.isDeployed) || Boolean(c.isLocked)
+  ).length;
   const inProgressCount = assignedChallenges.filter(
-    (c) => c.status === 'In Progress' || c.assignedUniversity?.acceptanceStatus === 'Accepted'
+    (c) => (c.status === 'In Progress' || c.assignedUniversity?.acceptanceStatus === 'Accepted')
+      && !c.isDeployed && !c.isLocked && c.status !== 'Deployed'
   ).length;
 
   return (
@@ -71,6 +75,16 @@ export const UniversityCard = ({
               In Progress
             </span>
           </div>
+          {deployedCount > 0 && (
+            <div>
+              <span className="text-xs font-black text-teal-700 block">
+                {deployedCount}
+              </span>
+              <span className="text-[10px] text-teal-600 font-bold block">
+                🔒 Deployed
+              </span>
+            </div>
+          )}
         </div>
 
         <div className="flex items-center space-x-1.5">

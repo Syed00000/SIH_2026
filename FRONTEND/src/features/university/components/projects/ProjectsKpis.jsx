@@ -1,11 +1,11 @@
 import React from 'react';
-import { ClipboardList, TrendingUp, Hourglass, CheckCircle2 } from 'lucide-react';
+import { ClipboardList, TrendingUp, Hourglass, CheckCircle2, Rocket } from 'lucide-react';
 
-export const ProjectsKpis = ({ total = 0, inProgress = 0, planning = 0, completed = 0, loading = false }) => {
+export const ProjectsKpis = ({ total = 0, inProgress = 0, planning = 0, completed = 0, deployed = 0, loading = false }) => {
   if (loading) {
     return (
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
-        {[1, 2, 3, 4].map((i) => (
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-3.5">
+        {[1, 2, 3, 4, 5].map((i) => (
           <div key={i} className="bg-white border border-slate-200/90 p-4 animate-pulse rounded-2xl shadow-2xs">
             <div className="h-3 bg-slate-200 rounded w-20 mb-2" />
             <div className="h-6 bg-slate-200 rounded w-12 mb-1" />
@@ -16,7 +16,8 @@ export const ProjectsKpis = ({ total = 0, inProgress = 0, planning = 0, complete
   }
 
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5 select-none">
+    <div className="grid grid-cols-2 lg:grid-cols-5 gap-3.5 select-none">
+      {/* Total */}
       <div className="bg-white border border-slate-200/90 p-4 flex items-center justify-between rounded-2xl shadow-2xs hover:border-emerald-200 transition-colors">
         <div>
           <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 block">Total Portfolio</span>
@@ -28,6 +29,7 @@ export const ProjectsKpis = ({ total = 0, inProgress = 0, planning = 0, complete
         </div>
       </div>
 
+      {/* In Progress */}
       <div className="bg-white border border-slate-200/90 p-4 flex items-center justify-between rounded-2xl shadow-2xs hover:border-emerald-200 transition-colors">
         <div>
           <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 block">In Progress</span>
@@ -39,6 +41,7 @@ export const ProjectsKpis = ({ total = 0, inProgress = 0, planning = 0, complete
         </div>
       </div>
 
+      {/* Planning */}
       <div className="bg-white border border-slate-200/90 p-4 flex items-center justify-between rounded-2xl shadow-2xs hover:border-amber-200 transition-colors">
         <div>
           <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 block">Proposal Stage</span>
@@ -50,6 +53,7 @@ export const ProjectsKpis = ({ total = 0, inProgress = 0, planning = 0, complete
         </div>
       </div>
 
+      {/* Completed */}
       <div className="bg-white border border-slate-200/90 p-4 flex items-center justify-between rounded-2xl shadow-2xs hover:border-purple-200 transition-colors">
         <div>
           <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 block">Completed</span>
@@ -58,6 +62,18 @@ export const ProjectsKpis = ({ total = 0, inProgress = 0, planning = 0, complete
         </div>
         <div className="w-10 h-10 rounded-xl bg-purple-50 border border-purple-200 text-purple-700 flex items-center justify-center shrink-0 shadow-2xs">
           <CheckCircle2 className="w-5 h-5" />
+        </div>
+      </div>
+
+      {/* Deployed */}
+      <div className="bg-teal-50 border border-teal-200 p-4 flex items-center justify-between rounded-2xl shadow-2xs hover:border-teal-400 transition-colors">
+        <div>
+          <span className="text-[10px] font-extrabold uppercase tracking-wider text-teal-500 block">🔒 Deployed</span>
+          <div className="text-2xl font-black text-teal-900 mt-0.5">{deployed}</div>
+          <span className="text-[10.5px] text-teal-700 font-semibold mt-0.5 block">Govt Certified & Live</span>
+        </div>
+        <div className="w-10 h-10 rounded-xl bg-teal-100 border border-teal-300 text-teal-700 flex items-center justify-center shrink-0 shadow-2xs">
+          <Rocket className="w-5 h-5" />
         </div>
       </div>
     </div>

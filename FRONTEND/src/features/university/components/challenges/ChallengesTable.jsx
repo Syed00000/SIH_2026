@@ -19,7 +19,7 @@ export const getNormalizedStatus = (challenge) => {
   const acceptance = challenge.acceptanceStatus || challenge.assignedUniversity?.acceptanceStatus;
   const s = String(status || '').toLowerCase();
   const acc = String(acceptance || '').toLowerCase();
-  if (s.includes('resolve') || s.includes('deploy') || challenge.isDeployed) return 'Resolved & Deployed';
+  if (s.includes('resolve') || s.includes('deploy') || challenge.isDeployed || challenge.isLocked) return 'Resolved & Deployed';
   if (s.includes('accept') || acc === 'accepted' || s === 'completed') return 'Accepted';
   if (s.includes('reject') || s.includes('decline') || acc === 'declined') return 'Rejected';
   if (s === 'clarified' || acc === 'clarified' || Boolean(challenge.clarificationResponse)) return 'Clarified';

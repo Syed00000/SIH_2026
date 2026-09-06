@@ -111,11 +111,11 @@ export const partnersApprovalsApi = {
     return { success: false };
   },
 
-  async updateGovernmentPrototypeStatus(projectId, status, trlLevel, remarks = '', universityCode = DEFAULT_UNIVERSITY_CODE) {
+  async updateGovernmentPrototypeStatus(projectId, status, trlLevel, remarks = '', universityCode = DEFAULT_UNIVERSITY_CODE, extra = {}) {
     try {
       const res = await apiClient.patch(
         `university/projects/${encodeURIComponent(projectId)}/government-prototype-status?universityCode=${encodeURIComponent(universityCode)}`,
-        { status, trlLevel, remarks }
+        { status, trlLevel, remarks, ...extra }
       );
       if (res?.data) return res.data;
     } catch (err) { console.error('API updateGovernmentPrototypeStatus error:', err.message); }

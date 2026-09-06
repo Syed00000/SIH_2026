@@ -5,7 +5,7 @@ import { UniversityRecentActivity } from './UniversityRecentActivity.jsx';
 import { UniversityAssignedChallenges } from './UniversityAssignedChallenges.jsx';
 import { UniversityProjectProgress } from './UniversityProjectProgress.jsx';
 import { UniversityActionModal } from './UniversityActionModal.jsx';
-import { ProblemEvidenceDossierModal } from '../../../nodal/components/ProblemEvidenceDossierModal.jsx';
+import { ProblemEvidenceDossierPanel } from '../../../nodal/components/ProblemEvidenceDossierPanel.jsx';
 import { useUniversityDashboard } from './hooks/useUniversityDashboard.js';
 
 export const UniversityDashboard = ({
@@ -35,6 +35,39 @@ export const UniversityDashboard = ({
   const liveChallenges = liveData?.challenges || [];
   const liveCount = liveData?.kpis?.assignedChallenges?.total || liveChallenges.length || 0;
   const resolvedUniName = liveData?.name || liveData?.university?.name || universityName;
+
+  if (dossierChallenge) {
+    return (
+      <div className="space-y-4 max-w-7xl mx-auto select-none animate-in fade-in duration-150">
+        <ProblemEvidenceDossierPanel
+          challenge={dossierChallenge}
+          onClose={() => setDossierChallenge(null)}
+          isUniversityView={true}
+          onAccept={(c) => { setSelectedChallenge(c); setIsModalOpen(true); }}
+          onRequestClarification={(c) => { setSelectedChallenge(c); setIsModalOpen(true); }}
+          onDecline={(c) => { setSelectedChallenge(c); setIsModalOpen(true); }}
+          onAssignFaculty={(c) => { setSelectedChallenge(c); setIsModalOpen(true); }}
+        />
+        <UniversityActionModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          challenge={selectedChallenge}
+          onAccept={(c, note) => {
+            handleAcceptChallenge(c, note);
+            setDossierChallenge(null);
+          }}
+          onDecline={(c, note) => {
+            handleDeclineChallenge(c, note);
+            setDossierChallenge(null);
+          }}
+          onAssignFaculty={(c, payload) => {
+            handleAssignFaculty(c, payload);
+            setDossierChallenge(null);
+          }}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4 max-w-7xl mx-auto select-none">
@@ -111,19 +144,6 @@ export const UniversityDashboard = ({
           setDossierChallenge(c);
         }}
       />
-
-      {dossierChallenge && (
-        <ProblemEvidenceDossierModal
-          challenge={dossierChallenge}
-          isOpen={Boolean(dossierChallenge)}
-          onClose={() => setDossierChallenge(null)}
-          isUniversityView={true}
-          onAccept={(c) => { setSelectedChallenge(c); setIsModalOpen(true); }}
-          onRequestClarification={(c) => { setSelectedChallenge(c); setIsModalOpen(true); }}
-          onDecline={(c) => { setSelectedChallenge(c); setIsModalOpen(true); }}
-          onAssignFaculty={(c) => { setSelectedChallenge(c); setIsModalOpen(true); }}
-        />
-      )}
     </div>
   );
 };

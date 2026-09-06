@@ -83,6 +83,7 @@ export const FacultyFilterBar = ({
             <option value="Available">Available</option>
             <option value="In Project">In Project</option>
             <option value="On Leave">On Leave</option>
+            <option value="Deployed">🔒 Deployed</option>
           </select>
         </div>
 
@@ -96,6 +97,7 @@ export const FacultyFilterBar = ({
           >
             <option value="All">All Status</option>
             <option value="Active">Active</option>
+            <option value="Deployed">🔒 Deployed</option>
             <option value="Inactive">Inactive</option>
           </select>
         </div>

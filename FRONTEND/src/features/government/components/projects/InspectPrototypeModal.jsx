@@ -23,7 +23,8 @@ import {
   Users,
   Send,
   RotateCcw,
-  Clock
+  Clock,
+  Rocket
 } from 'lucide-react';
 import { universityApiService } from '../../../university/services/universityApiService.js';
 import { openPdf } from '../../../../shared/utils/openPdf.js';
@@ -40,7 +41,8 @@ export const InspectPrototypeModal = ({
   onClose,
   project,
   onAdvanceStage,
-  onStateApproved
+  onStateApproved,
+  onOpenDeployTerms
 }) => {
   if (!isOpen || !project) return null;
 
@@ -229,14 +231,24 @@ export const InspectPrototypeModal = ({
           </div>
 
           <div className="flex items-center space-x-2">
-            {(project.testingReportPdfUrl || project.pdfUrl) && (
+            {project.testingReportPdfUrl && (
               <button
                 type="button"
-                onClick={() => openPdf(project.testingReportPdfUrl || project.pdfUrl)}
-                className="px-3.5 py-1.5 bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-400/40 rounded-xl text-xs font-bold transition-colors cursor-pointer flex items-center space-x-1.5"
+                onClick={() => openPdf(project.testingReportPdfUrl)}
+                className="px-3 py-1.5 bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-400/40 rounded-xl text-xs font-bold transition-colors cursor-pointer flex items-center space-x-1"
               >
                 <FileCheck2 className="w-3.5 h-3.5" />
-                <span>View Lab Report PDF</span>
+                <span>Lab Report PDF</span>
+              </button>
+            )}
+            {project.pdfUrl && (
+              <button
+                type="button"
+                onClick={() => openPdf(project.pdfUrl)}
+                className="px-3 py-1.5 bg-blue-500/20 hover:bg-blue-500/30 text-blue-300 border border-blue-400/40 rounded-xl text-xs font-bold transition-colors cursor-pointer flex items-center space-x-1"
+              >
+                <FileCheck2 className="w-3.5 h-3.5" />
+                <span>Blueprint PDF</span>
               </button>
             )}
             <button
@@ -291,6 +303,26 @@ export const InspectPrototypeModal = ({
               <p className="font-bold text-xs">{actionSuccess}</p>
             </div>
           )}
+
+          {/* Citizen Problem Statement Dossier */}
+          <div className="bg-white p-4 rounded-2xl border border-slate-200/90 shadow-2xs space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-black uppercase tracking-wider text-slate-400">Citizen Problem Statement Dossier</span>
+              <span className="font-mono text-[10px] font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">
+                {project.challengeId || 'CHL-JH-2026-3857'}
+              </span>
+            </div>
+            <p className="text-sm font-extrabold text-slate-900 leading-relaxed">
+              "{project.problemStatement || project.title}"
+            </p>
+            <div className="flex flex-wrap items-center gap-3 pt-1 border-t border-slate-100 text-[11px] text-slate-600">
+              <span>District: <strong className="text-slate-900">{project.district || 'Ranchi'}</strong></span>
+              <span>•</span>
+              <span>Domain Sector: <strong className="text-slate-900">{project.domain || project.sector || 'Urban Development'}</strong></span>
+              <span>•</span>
+              <span>Industrial Testing Lab: <strong className="text-emerald-700">{project.testingPartner || 'Ariba Research Labs'}</strong> (NABL Calibrated)</span>
+            </div>
+          </div>
 
           {/* Core Metadata Info Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -435,12 +467,25 @@ export const InspectPrototypeModal = ({
 
             <button
               type="button"
-              onClick={handleApproveAndCertify}
+              onClick={() => {
+                if (onOpenDeployTerms) {
+                  onClose();
+                  onOpenDeployTerms(project);
+                } else {
+                  handleApproveAndCertify();
+                }
+              }}
               disabled={isApproving}
-              className="px-5 py-2 rounded-xl text-xs font-bold bg-[#007A61] hover:bg-[#00604c] text-white cursor-pointer shadow-md flex items-center space-x-1.5 transition-all"
+              className="px-6 py-2.5 rounded-xl text-xs font-black bg-[#007A61] hover:bg-[#00604c] text-white cursor-pointer shadow-md hover:shadow-lg flex items-center space-x-2 transition-all"
             >
-              <CheckCircle2 className="w-4 h-4 text-emerald-300" />
-              <span>{isApproving ? 'Approving & Certifying...' : '✓ Approve & Grant State Certification (TRL-9)'}</span>
+              <Rocket className="w-4 h-4 text-emerald-200" />
+              <span>
+                {isApproving
+                  ? 'Deploying...'
+                  : (isApprovedByGov || project.isDeployed)
+                    ? '🚀 Re-Deploy / Update State Handover (TRL-9)'
+                    : '🚀 Deploy Prototype & Grant State Certification (TRL-9)'}
+              </span>
             </button>
           </div>
         </div>

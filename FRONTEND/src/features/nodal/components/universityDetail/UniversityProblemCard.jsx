@@ -13,11 +13,14 @@ export const UniversityProblemCard = ({
   const chlId = chl.challengeId || chl.id;
   const isDeleting = deletingId === chlId;
   const acceptance = chl.assignedUniversity?.acceptanceStatus || 'Pending Review';
+  const isDeployed = chl.status === 'Deployed' || Boolean(chl.isDeployed) || Boolean(chl.isLocked);
 
   return (
     <div
       onClick={() => onOpenDossier(chl)}
-      className="bg-white border border-slate-200/90 rounded-lg p-5 shadow-2xs hover:shadow-xs transition-all cursor-pointer flex flex-col justify-between space-y-4 group text-left"
+      className={`bg-white border rounded-lg p-5 shadow-2xs hover:shadow-xs transition-all cursor-pointer flex flex-col justify-between space-y-4 group text-left ${
+        isDeployed ? 'border-teal-200 bg-teal-50/20' : 'border-slate-200/90'
+      }`}
     >
       <div className="space-y-2.5">
         {/* Card Header */}
@@ -31,15 +34,21 @@ export const UniversityProblemCard = ({
             </span>
           </div>
 
-          <span className={`text-[10.5px] font-bold px-2 py-0.5 rounded-full border ${
-            acceptance === 'Accepted'
-              ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
-              : acceptance === 'Declined'
-              ? 'bg-rose-50 text-rose-800 border-rose-200'
-              : 'bg-amber-50 text-amber-800 border-amber-200'
-          }`}>
-            {acceptance}
-          </span>
+          {isDeployed ? (
+            <span className="text-[10.5px] font-bold px-2 py-0.5 rounded-full border bg-teal-50 text-teal-800 border-teal-300">
+              🔒 Deployed
+            </span>
+          ) : (
+            <span className={`text-[10.5px] font-bold px-2 py-0.5 rounded-full border ${
+              acceptance === 'Accepted'
+                ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
+                : acceptance === 'Declined'
+                ? 'bg-rose-50 text-rose-800 border-rose-200'
+                : 'bg-amber-50 text-amber-800 border-amber-200'
+            }`}>
+              {acceptance}
+            </span>
+          )}
         </div>
 
         {/* Title & Description */}
@@ -90,26 +99,34 @@ export const UniversityProblemCard = ({
             <MessageSquare className="w-3.5 h-3.5" />
           </button>
 
-          <button
-            onClick={(e) => onQuickDelete(e, chl)}
-            disabled={isDeleting}
-            className="p-1.5 rounded-md hover:bg-rose-50 text-slate-400 hover:text-rose-600 transition-colors"
-            title="Delete Problem"
-          >
-            <Trash2 className="w-3.5 h-3.5" />
-          </button>
+          {!isDeployed && (
+            <button
+              onClick={(e) => onQuickDelete(e, chl)}
+              disabled={isDeleting}
+              className="p-1.5 rounded-md hover:bg-rose-50 text-slate-400 hover:text-rose-600 transition-colors"
+              title="Delete Problem"
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+            </button>
+          )}
         </div>
 
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            onOpenEditOrReassign(chl);
-          }}
-          className="flex items-center space-x-1.5 bg-white hover:bg-slate-900 text-slate-900 hover:text-white border border-slate-200/90 text-xs font-bold px-3 py-1.5 rounded-md shadow-3xs transition-all"
-        >
-          <RotateCcw className="w-3 h-3" />
-          <span>Edit / Reassign</span>
-        </button>
+        {isDeployed ? (
+          <span className="flex items-center space-x-1.5 text-[10.5px] font-bold text-teal-700 bg-teal-50 border border-teal-200 px-2.5 py-1.5 rounded-md">
+            <span>🔒 Govt Deployed — Locked</span>
+          </span>
+        ) : (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onOpenEditOrReassign(chl);
+            }}
+            className="flex items-center space-x-1.5 bg-white hover:bg-slate-900 text-slate-900 hover:text-white border border-slate-200/90 text-xs font-bold px-3 py-1.5 rounded-md shadow-3xs transition-all"
+          >
+            <RotateCcw className="w-3 h-3" />
+            <span>Edit / Reassign</span>
+          </button>
+        )}
       </div>
     </div>
   );

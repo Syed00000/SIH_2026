@@ -61,7 +61,7 @@ export const NodalPortal = ({ user: propUser, onLogout }) => {
   };
 
   return (
-    <div className="min-h-screen bg-[#f8fafc] flex flex-row overflow-hidden h-screen text-slate-800 antialiased select-none">
+    <div className="min-h-screen bg-white flex flex-row overflow-hidden h-screen text-slate-800 antialiased select-none">
       {/* 1. Left Nodal Sidebar */}
       <NodalSidebar
         activeTab={activeTab}
@@ -75,7 +75,7 @@ export const NodalPortal = ({ user: propUser, onLogout }) => {
       />
 
       {/* 2. Main Viewport */}
-      <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden bg-[#f8fafc]">
+      <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden bg-white">
         {/* Sticky Header with Real Institution & Officer Info */}
         <NodalHeader
           institutionName={institutionName}

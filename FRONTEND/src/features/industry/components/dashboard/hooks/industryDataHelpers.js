@@ -50,84 +50,51 @@ export function formatIncomingRequests(liveFunds, fallbackReqs = []) {
 }
 
 export function extractActiveProjectsList(liveFunds, formattedRequests = []) {
-  let activeProjectsList = [];
+  const activeProjectsList = [];
+  const seenIds = new Set();
 
-  if (Array.isArray(liveFunds?.activeProjects) && liveFunds.activeProjects.length > 0) {
-    activeProjectsList = liveFunds.activeProjects
-      .filter((p) => !p.labChargesQuoted || p.quoteStatus === 'Accepted')
-      .map((p) => ({
-        id: p.id || p.projectId,
-        projectId: p.projectId,
-        requestId: p.requestId || p.id,
-        universityCode: p.universityCode || 'RU001',
-        title: p.title,
-        university: p.university,
-        stage: p.stage || 'In Progress',
-        budget: p.labChargesQuoted || p.budget || '₹ 0',
-        disbursed: p.disbursed || '₹ 0',
-        status: p.status || 'Active',
-        leadMentor: p.leadMentor,
-        studentTeam: p.studentTeam,
-        problemStatement: p.problemStatement,
-        labChargesQuoted: p.labChargesQuoted,
-        quoteStatus: p.quoteStatus,
-        quoteTerms: p.quoteTerms,
-        pdfUrl: p.pdfUrl || p.prototypeData?.pdfUrl || '',
-        pdfName: p.pdfName || p.prototypeData?.pdfName || '',
-        testingStages: p.testingStages || []
-      }));
-  } else if (liveFunds?.availableUniversities?.length > 0) {
-    liveFunds.availableUniversities.forEach((uni) => {
-      (uni.activeProjects || []).forEach((proj) => {
-        activeProjectsList.push({
-          id: proj.id,
-          projectId: proj.id,
-          title: proj.title,
-          university: uni.name,
-          universityCode: uni.code || 'RU001',
-          stage: proj.status || 'In Progress',
-          budget: proj.sanctionedBudget || '₹ 0',
-          disbursed: proj.disbursedAmount || '₹ 0',
-          status: proj.disbursedAmount && proj.disbursedAmount !== '₹ 0' ? 'Funded' : 'Active',
-          testingStages: proj.testingStages || []
-        });
+  const addIfEligible = (item) => {
+    if (!item) return;
+    const isFeeRequested = Boolean(item.labChargesQuoted && item.labChargesQuoted !== '₹ 0');
+    // ONLY show in active projects and testing lab when university accepts fee request
+    if (isFeeRequested && item.quoteStatus !== 'Accepted') {
+      return;
+    }
+    const isApprovedStatus = item.status === 'Approved' || item.status === 'Active' || item.status === 'In Progress';
+    if (!isApprovedStatus) {
+      return;
+    }
+
+    const key = item.projectId || item.id;
+    if (key && !seenIds.has(key)) {
+      seenIds.add(key);
+      activeProjectsList.push({
+        id: item.id || item.projectId,
+        projectId: item.projectId || item.id,
+        requestId: item.requestId || item.id,
+        universityCode: item.universityCode || 'RU001',
+        title: item.title,
+        university: item.university || item.universityName || 'Ranchi University',
+        stage: item.stage || 'In Progress',
+        budget: item.labChargesQuoted || item.budget || '₹ 0',
+        disbursed: item.disbursed || item.disbursedAmount || '₹ 0',
+        status: 'Active',
+        leadMentor: item.leadMentor || item.faculty,
+        studentTeam: item.studentTeam,
+        problemStatement: item.problemStatement,
+        labChargesQuoted: item.labChargesQuoted,
+        quoteStatus: item.quoteStatus,
+        quoteTerms: item.quoteTerms,
+        pdfUrl: item.pdfUrl || item.prototypeData?.pdfUrl || '',
+        pdfName: item.pdfName || item.prototypeData?.pdfName || '',
+        testingStages: item.testingStages || [],
+        labAccessRequested: item.labAccessRequested
       });
-    });
-  }
+    }
+  };
 
-  // An approved request appears in active projects ONLY when university accepts the fee quote
-  formattedRequests
-    .filter((r) => r.status === 'Approved' && (!r.labChargesQuoted || r.quoteStatus === 'Accepted'))
-    .forEach((r) => {
-      const found = activeProjectsList.some(
-        (p) => (r.projectId && p.id === r.projectId) || p.title?.toLowerCase() === r.title?.toLowerCase()
-      );
-      if (!found) {
-        activeProjectsList.push({
-          id: r.projectId || r.requestId || r.id,
-          projectId: r.projectId || r.requestId,
-          requestId: r.requestId,
-          title: r.title,
-          university: r.university,
-          universityCode: r.universityCode || 'RU001',
-          stage: 'In Progress',
-          budget: r.labChargesQuoted || r.budget || '₹ 0',
-          disbursed: '₹ 0',
-          status: 'Active',
-          leadMentor: r.faculty,
-          studentTeam: r.studentTeam,
-          required: r.required,
-          problemStatement: r.problemStatement,
-          labChargesQuoted: r.labChargesQuoted,
-          quoteStatus: r.quoteStatus,
-          quoteTerms: r.quoteTerms,
-          pdfUrl: r.pdfUrl || r.prototypeData?.pdfUrl || '',
-          pdfName: r.pdfName || r.prototypeData?.pdfName || '',
-          prototypeData: r.prototypeData || null,
-          testingStages: r.testingStages || []
-        });
-      }
-    });
+  (liveFunds?.activeProjects || []).forEach(addIfEligible);
+  (formattedRequests || []).forEach(addIfEligible);
 
   return activeProjectsList;
 }

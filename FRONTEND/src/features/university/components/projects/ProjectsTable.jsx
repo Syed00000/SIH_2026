@@ -20,6 +20,7 @@ export const ProjectsTable = ({
 
   const getStatusColor = (status = '') => {
     const s = status.toLowerCase();
+    if (s === 'deployed') return { text: 'text-teal-700', dot: 'bg-teal-500' };
     if (s.includes('progress') || s.includes('track') || s.includes('active')) {
       return { text: 'text-emerald-600', dot: 'bg-emerald-500' };
     }
@@ -73,6 +74,7 @@ export const ProjectsTable = ({
                 const facultyDept = p.facultyMentor?.department || (p.facultyMentor?.name ? 'Department of Engineering' : '');
                 const hasStudentTeam = Array.isArray(p.teamMembers) && p.teamMembers.length > 0;
                 const statusStyle = getStatusColor(p.status || 'In Progress');
+                const isDeployed = p.status === 'Deployed' || Boolean(p.isDeployed) || Boolean(p.isLocked);
 
                 return (
                   <tr
@@ -178,10 +180,16 @@ export const ProjectsTable = ({
 
                     {/* Status */}
                     <td className="py-2.5 px-2.5 whitespace-nowrap">
-                      <span className={`inline-flex items-center space-x-1.5 text-[11px] font-semibold ${statusStyle.text}`}>
-                        <span className={`w-1.5 h-1.5 rounded-full ${statusStyle.dot}`} />
-                        <span>{p.status || 'In Progress'}</span>
-                      </span>
+                      {isDeployed ? (
+                        <span className="inline-flex items-center gap-1 text-[10.5px] font-bold text-teal-800 bg-teal-50 border border-teal-200 px-2 py-0.5 rounded-full">
+                          🔒 Deployed
+                        </span>
+                      ) : (
+                        <span className={`inline-flex items-center space-x-1.5 text-[11px] font-semibold ${statusStyle.text}`}>
+                          <span className={`w-1.5 h-1.5 rounded-full ${statusStyle.dot}`} />
+                          <span>{p.status || 'In Progress'}</span>
+                        </span>
+                      )}
                     </td>
 
                     {/* Actions */}
@@ -199,8 +207,13 @@ export const ProjectsTable = ({
                           <button
                             type="button"
                             onClick={() => onSoftDeleteProject(p)}
-                            className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-md transition-colors cursor-pointer"
-                            title="Archive Project"
+                            disabled={isDeployed}
+                            className={`p-1.5 rounded-md transition-colors ${
+                              isDeployed
+                                ? 'text-slate-200 cursor-not-allowed'
+                                : 'text-slate-400 hover:text-rose-600 hover:bg-rose-50 cursor-pointer'
+                            }`}
+                            title={isDeployed ? 'Deployed & Locked — Cannot archive' : 'Archive Project'}
                           >
                             <Trash2 className="w-4 h-4" />
                           </button>

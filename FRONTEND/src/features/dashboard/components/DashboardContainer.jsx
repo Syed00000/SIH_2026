@@ -67,7 +67,7 @@ export const DashboardContainer = ({ onNavigate }) => {
 
   return (
     <div
-      className={`min-h-screen bg-slate-100/40 flex flex-col h-screen overflow-hidden ${
+      className={`min-h-screen bg-white flex flex-col h-screen overflow-hidden ${
         fontSize === 'small' ? 'text-xs' : fontSize === 'large' ? 'text-base' : 'text-sm'
       }`}
     >

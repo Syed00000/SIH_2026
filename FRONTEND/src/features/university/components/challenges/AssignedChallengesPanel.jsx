@@ -1,9 +1,8 @@
 import React from 'react';
 import { ChallengesFilterBar } from './ChallengesFilterBar.jsx';
 import { ChallengesTable } from './ChallengesTable.jsx';
-import { ChallengeInspector } from './ChallengeInspector.jsx';
+import { ChallengeInspectorPanel } from './ChallengeInspectorPanel.jsx';
 import { ChallengeActionModal } from './ChallengeActionModal.jsx';
-import { ProblemEvidenceDossierModal } from '../../../nodal/components/ProblemEvidenceDossierModal.jsx';
 import { ClarificationChatModal } from '../../../clarification/components/ClarificationChatModal.jsx';
 import { useAssignedChallenges } from './hooks/useAssignedChallenges.js';
 
@@ -31,6 +30,31 @@ export const AssignedChallengesPanel = ({
   } = useAssignedChallenges({ initialChallenges, universityCode, onUpdateChallengeStatus, onAssignFaculty });
 
   const activeCount = challengeList.filter((c) => c.status === 'Accepted' || c.acceptanceStatus === 'Accepted').length;
+
+  if (selectedChallenge) {
+    return (
+      <div className="space-y-3.5 max-w-7xl mx-auto select-none text-left">
+        <ChallengeInspectorPanel
+          challenge={selectedChallenge}
+          onClose={() => setSelectedChallenge(null)}
+          onAccept={(c) => setModalConfig({ isOpen: true, type: 'accept', challenge: c })}
+          onDecline={(c) => setModalConfig({ isOpen: true, type: 'decline', challenge: c })}
+          onRequestClarification={(c) => setModalConfig({ isOpen: true, type: 'clarify', challenge: c })}
+          onAssignFaculty={(c) => setModalConfig({ isOpen: true, type: 'assign', challenge: c })}
+        />
+        {modalConfig.isOpen && (
+          <ChallengeActionModal
+            isOpen={modalConfig.isOpen}
+            type={modalConfig.type}
+            challenge={modalConfig.challenge}
+            universityCode={universityCode}
+            onClose={() => setModalConfig({ isOpen: false, type: 'accept', challenge: null })}
+            onSubmit={handleModalSubmit}
+          />
+        )}
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-3.5 max-w-7xl mx-auto select-none text-left">
@@ -73,17 +97,6 @@ export const AssignedChallengesPanel = ({
           onDeleteChallenge={handleDeleteChallenge}
         />
       </div>
-
-      {selectedChallenge && (
-        <ChallengeInspector
-          challenge={selectedChallenge}
-          onClose={() => setSelectedChallenge(null)}
-          onAccept={(c) => setModalConfig({ isOpen: true, type: 'accept', challenge: c })}
-          onDecline={(c) => setModalConfig({ isOpen: true, type: 'decline', challenge: c })}
-          onRequestClarification={(c) => setModalConfig({ isOpen: true, type: 'clarify', challenge: c })}
-          onAssignFaculty={(c) => setModalConfig({ isOpen: true, type: 'assign', challenge: c })}
-        />
-      )}
 
       {modalConfig.isOpen && (
         <ChallengeActionModal

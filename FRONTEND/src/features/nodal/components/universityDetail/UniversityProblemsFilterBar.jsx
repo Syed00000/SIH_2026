@@ -1,7 +1,7 @@
 import React from 'react';
 import { Search } from 'lucide-react';
 
-const STATUS_FILTERS = ['All', 'In Progress', 'Under Review', 'Resolved', 'Rejected'];
+const STATUS_FILTERS = ['All', 'In Progress', 'Under Review', 'Resolved', 'Deployed', 'Rejected'];
 const PRIORITY_OPTIONS = ['All', 'Critical', 'High', 'Medium', 'Low'];
 
 export const UniversityProblemsFilterBar = ({

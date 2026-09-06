@@ -30,7 +30,7 @@ export const universityApprovalSchema = new mongoose.Schema(
     requestedByAvatar: { type: String, default: '' },
     date: { type: String, default: '20 May 2026' },
     dateTime: { type: String, default: '10:30 AM' },
-    status: { type: String, enum: ['Pending', 'Approved', 'Rejected', 'Changes Required'], default: 'Pending' },
+    status: { type: String, enum: ['Pending', 'Approved', 'Rejected', 'Changes Required', 'Deployed'], default: 'Pending' },
     faculty: { name: String, department: String },
     team: { name: String, membersCount: { type: Number, default: 4 } },
     startDate: { type: String, default: '20 May 2026' },

@@ -31,13 +31,13 @@ export function calculateDashboardMetrics({
     locationDetails: c.locationDetails
   }));
 
-  const reviewNeededCount = allChallenges.filter((c) => c.status === 'Review' || c.status === 'Pending').length;
-  const pendingApprovalsCount = approvals.filter((a) => a.status === 'Pending').length;
-  const activeProjectsCount = projects.filter((p) => p.status !== 'Completed' && p.status !== 'Archived').length;
+  const reviewNeededCount = allChallenges.filter((c) => (c.status === 'Review' || c.status === 'Pending') && !c.isDeployed && !c.isLocked).length;
+  const pendingApprovalsCount = approvals.filter((a) => a.status === 'Pending' && !a.isDeployed && !a.isLocked && !a.sentToGovernment && a.governmentStatus !== 'Under State Evaluation').length;
+  const activeProjectsCount = projects.filter((p) => p.status !== 'Completed' && p.status !== 'Archived' && p.status !== 'Deployed' && !p.isDeployed && !p.isLocked).length;
   const delayedProjectsCount = projects.filter((p) => p.status === 'Delayed').length;
-  const onTrackCount = projects.filter((p) => p.status === 'On Track' || p.status === 'In Progress').length;
+  const onTrackCount = projects.filter((p) => (p.status === 'On Track' || p.status === 'In Progress') && !p.isDeployed && !p.isLocked).length;
   const atRiskCount = projects.filter((p) => p.status === 'At Risk' || p.status === 'Planning').length;
-  const completedCount = projects.filter((p) => p.status === 'Completed').length;
+  const completedCount = projects.filter((p) => p.status === 'Completed' || p.status === 'Deployed' || Boolean(p.isDeployed) || Boolean(p.isLocked)).length;
   const facultyCount = faculty.length;
   const onLeaveCount = faculty.filter((f) => f.availabilityStatus === 'On Leave').length;
   const totalProj = projects.length;

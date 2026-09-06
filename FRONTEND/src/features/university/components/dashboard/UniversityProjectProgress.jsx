@@ -21,18 +21,21 @@ export const UniversityProjectProgress = ({
   }, [universityCode]);
 
   const total = liveProjects.length;
-  const inProgressCount = liveProjects.filter((p) => p.status === 'In Progress' || p.status === 'On Track').length;
+  const deployedCount = liveProjects.filter((p) => p.status === 'Deployed' || p.isDeployed || p.isLocked).length;
+  const inProgressCount = liveProjects.filter((p) => (p.status === 'In Progress' || p.status === 'On Track') && !p.isDeployed && !p.isLocked && p.status !== 'Deployed').length;
   const planningCount = liveProjects.filter((p) => p.status === 'Planning' || p.status === 'At Risk').length;
   const completedCount = liveProjects.filter((p) => p.status === 'Completed').length;
   const delayedCount = liveProjects.filter((p) => p.status === 'Delayed').length;
 
   const completedPercent = total > 0 ? Math.round((completedCount / total) * 100) : 0;
+  const deployedPercent = total > 0 ? Math.round((deployedCount / total) * 100) : 0;
   const inProgressPercent = total > 0 ? Math.round((inProgressCount / total) * 100) : 0;
   const planningPercent = total > 0 ? Math.round((planningCount / total) * 100) : 0;
   const delayedPercent = total > 0 ? Math.round((delayedCount / total) * 100) : 0;
 
   const breakdown = [
     { status: 'Completed', count: completedCount, percentage: completedPercent, color: '#007A61' },
+    { status: 'Deployed', count: deployedCount, percentage: deployedPercent, color: '#0d9488' },
     { status: 'In Progress', count: inProgressCount, percentage: inProgressPercent, color: '#0f172a' },
     { status: 'Planning', count: planningCount, percentage: planningPercent, color: '#64748b' },
     { status: 'Delayed', count: delayedCount, percentage: delayedPercent, color: '#e11d48' }

@@ -12,13 +12,19 @@ export const ProjectDrawer = ({ project, onClose, onEdit, onAssignMentor, onEndP
       <div className="p-4 border-b border-slate-100 bg-slate-50/70 space-y-2.5">
         <div className="flex items-start justify-between">
           <div>
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-2 flex-wrap gap-1">
               <h2 className="text-base font-bold text-slate-900 leading-snug">{project.title}</h2>
-              <span className={`px-2 py-0.5 text-[10px] font-bold rounded border ${
-                project.status === 'Completed' ? 'bg-purple-50 text-purple-900 border-purple-200' : 'bg-emerald-50 text-emerald-900 border-emerald-200'
-              }`}>
-                {project.status || 'In Progress'}
-              </span>
+              {(project.status === 'Deployed' || project.isDeployed || project.isLocked) ? (
+                <span className="px-2 py-0.5 text-[10px] font-bold rounded border bg-teal-50 text-teal-900 border-teal-300">
+                  🔒 Deployed & Locked
+                </span>
+              ) : (
+                <span className={`px-2 py-0.5 text-[10px] font-bold rounded border ${
+                  project.status === 'Completed' ? 'bg-purple-50 text-purple-900 border-purple-200' : 'bg-emerald-50 text-emerald-900 border-emerald-200'
+                }`}>
+                  {project.status || 'In Progress'}
+                </span>
+              )}
             </div>
             <div className="text-[10.5px] text-slate-500 font-mono mt-0.5">
               Challenge ID: {project.challengeId || 'CHL-1024'} &bull; Project: {project.projectId}

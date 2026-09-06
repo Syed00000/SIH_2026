@@ -70,27 +70,23 @@ export async function syncGovernmentDirectives({ res, updateData, projectId, uni
     });
   }
 
-  if (updateData.budgetStatus === 'Grant Sanctioned by Government') {
-    const approvalId = `APP-${res?.projectId || projectId || ''}`;
-    const orderNo = updateData.sanctionOrderNo || 'JH-GOV-RD-2026-8842';
-    const grantAmt = updateData.sanctionedBudget || updateData.budget || '₹ 75,000';
-    await UniversityApproval.findOneAndUpdate(
-      { approvalId },
-      {
-        $set: { status: 'Approved', sanctionOrderNo: orderNo, sanctionedBudget: grantAmt, adminRemarks: `Grant Sanctioned under Sanction Order ${orderNo}` },
-        $push: {
-          history: {
-            action: 'Grant Sanctioned & Disbursed by Government', performedBy: 'State Innovation Council (Govt of Jharkhand)',
-            timestamp: `${new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}, ${new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}`,
-            note: `Sanction Order ${orderNo} approved for ${grantAmt}. Escrow funds active.`
-          }
-        }
-      }
-    );
-    await UniversityActivity.create({
-      universityCode: uniCode, text: `🏛️ Grant sanctioned and funds released under Order ${orderNo} for "${res?.title || projectId}" (${grantAmt}).`,
-      type: 'GRANT_SANCTIONED_BY_GOVERNMENT', timestamp: new Date()
-    });
+  const isGrantDisbursed = updateData.budgetStatus === 'Grant Sanctioned by Government' ||
+    updateData.budgetStatus === 'Grant Disbursed' ||
+    (typeof updateData.budgetStatus === 'string' && updateData.budgetStatus.includes('Grant Disbursed'));
+  if (isGrantDisbursed) {
+    try {
+      const { syncGrantSanctionAndDisbursal } = await import('../../../government/grants/grant-stage-sync.helper.js');
+      await syncGrantSanctionAndDisbursal({
+        projectId: res?.projectId || projectId,
+        challengeId: res?.challengeId,
+        rawAmount: Number(String(updateData.disbursedAmount || '0').replace(/[^\d]/g, '')) || 40000,
+        formattedAmount: updateData.disbursedAmount,
+        sanctionOrderNo: updateData.sanctionOrderNo,
+        universityCode: uniCode
+      });
+    } catch (e) {
+      console.warn('syncGrantSanctionAndDisbursal warning:', e);
+    }
   }
 }
 
@@ -98,20 +94,35 @@ export async function syncBidirectionalProjectApprovals(uniCode = 'RU001') {
   try {
     const code = (uniCode || 'RU001').toUpperCase();
     const { UniversityProject } = await import('../model.js');
+    const { CitizenChallenge } = await import('../../../citizen/infrastructure/model.js');
     const { GovernmentGrantPayment } = await import('../../../government/grants/model.js');
     const { findUniversityIdentity } = await import('./lookup.helper.js');
+    const { isChallengeAcceptedByUniversity } = await import('./approval-filter.helper.js');
     const identity = await findUniversityIdentity(code);
     const validCodes = identity?.validIdentifiers || [code];
 
-    const [projects, approvals, payments] = await Promise.all([
+    const [projects, approvals, payments, rawChallenges] = await Promise.all([
       UniversityProject.find({ universityCode: { $in: validCodes } }).lean(),
       UniversityApproval.find({ universityCode: { $in: validCodes } }).lean(),
-      GovernmentGrantPayment.find({ bankStatus: 'success' }).lean().catch(() => [])
+      GovernmentGrantPayment.find({ bankStatus: 'success' }).lean().catch(() => []),
+      CitizenChallenge.find({ $or: [{ 'assignedUniversity.id': { $in: validCodes } }, { 'assignedUniversity.name': new RegExp(`^${identity?.name || code}$`, 'i') }] }).select('challengeId acceptanceStatus assignedUniversity status isDeleted').lean().catch(() => [])
     ]);
 
+    const acceptedChallengeIds = new Set(rawChallenges.filter(isChallengeAcceptedByUniversity).map((c) => c.challengeId).filter(Boolean));
+    const validProjectIds = new Set(projects.filter((p) => !p.isDeleted && p.status !== 'Transferred').map((p) => p.projectId).filter(Boolean));
+
+    for (const a of approvals) {
+      if (a.type?.includes('Prototype')) continue;
+      const hasAcceptedChallenge = a.challengeId && acceptedChallengeIds.has(a.challengeId);
+      const hasValidProject = a.projectId && validProjectIds.has(a.projectId);
+      if (!hasAcceptedChallenge && !hasValidProject) {
+        await UniversityApproval.deleteOne({ _id: a._id }).catch(() => {});
+      }
+    }
+
     for (const p of projects) {
-      if (p.isDeleted || p.status === 'Transferred') {
-        await UniversityApproval.deleteMany({ $or: [{ projectId: p.projectId }, { challengeId: p.challengeId }] });
+      if (p.isDeleted || p.status === 'Transferred' || (p.challengeId && !acceptedChallengeIds.has(p.challengeId))) {
+        await UniversityApproval.deleteMany({ $or: [{ projectId: p.projectId }, { challengeId: p.challengeId }] }).catch(() => {});
         continue;
       }
 
@@ -150,7 +161,7 @@ export async function syncBidirectionalProjectApprovals(uniCode = 'RU001') {
             type: 'R&D Grant Proposal', proposedBudget: p.proposedBudget || '₹ 80,000',
             estimatedBudget: p.proposedBudget || '₹ 80,000', trancheRequest: p.trancheRequest || null,
             requestedBy: p.leadMentor || 'Faculty Lead', faculty: { name: p.leadMentor || 'Faculty Lead', department: 'Engineering' },
-            sentToGovernment: true, governmentStatus: isGovtApproved ? 'Grant Sanctioned' : 'Under State Evaluation',
+            sentToGovernment: Boolean(isGovtApproved), governmentStatus: isGovtApproved ? 'Grant Sanctioned' : 'Pending University Review',
             date: new Date(p.createdAt || Date.now()).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }),
             documentsCount: 3
           },

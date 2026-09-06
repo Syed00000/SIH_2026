@@ -1,6 +1,7 @@
 import { GovernmentGrantPayment } from './model.js';
-import { UniversityProject, UniversityActivity } from '../../university/infrastructure/model.js';
+import { UniversityProject } from '../../university/infrastructure/model.js';
 import { CitizenChallenge } from '../../citizen/infrastructure/model.js';
+import { syncGrantSanctionAndDisbursal } from './grant-stage-sync.helper.js';
 
 export class GovernmentLedgerService {
   async getLedger() {
@@ -79,37 +80,18 @@ export class GovernmentLedgerService {
       timestamp: new Date()
     });
 
-    // Update University Project in MongoDB with cumulative disbursed amount
+    // Update University Project, Citizen Challenge, Approvals & Notifications across all stages
     if (pRef) {
-      const existingProj = await UniversityProject.findOne({
-        $or: [{ projectId: pRef }, { challengeId: pRef }]
-      }).lean();
-      if (existingProj) {
-        const prevDisb = Number(String(existingProj.disbursedAmount || '0').replace(/[^\d]/g, '')) || 0;
-        const totalDisb = prevDisb + rawVal;
-        const totalBudgetVal = Number(String(existingProj.sanctionedBudget || existingProj.proposedBudget || existingProj.budget || '0').replace(/[^\d]/g, '')) || 80000;
-        const isComplete = totalDisb >= totalBudgetVal;
-        const cumFormatted = `₹ ${totalDisb.toLocaleString('en-IN')}`;
-
-        await UniversityProject.findByIdAndUpdate(existingProj._id, {
-          $set: {
-            disbursedAmount: cumFormatted,
-            budgetStatus: 'Grant Disbursed',
-            status: 'In Progress',
-            'trancheRequest.status': 'Disbursed',
-            'trancheRequest.disbursedAt': new Date()
-          }
-        }).catch(() => {});
-      }
+      await syncGrantSanctionAndDisbursal({
+        projectId: pRef,
+        challengeId: chalId,
+        rawAmount: rawVal,
+        formattedAmount: formattedAmt,
+        utrNumber: utr,
+        sanctionOrderNo: data.sanctionOrderNo || '',
+        payee: data.payee || ''
+      }).catch((err) => console.warn('syncGrantSanctionAndDisbursal warning:', err));
     }
-
-    // Create activity notification
-    await UniversityActivity.create({
-      universityCode: 'RU001',
-      text: `🏛️ Govt Disbursed ${formattedAmt} (UTR: ${utr}) for "${projTitle}". Funds released to university escrow.`,
-      type: 'directive',
-      timestamp: new Date()
-    }).catch(() => {});
 
     return newPayment;
   }

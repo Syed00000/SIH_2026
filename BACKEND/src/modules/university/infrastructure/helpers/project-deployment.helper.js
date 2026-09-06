@@ -69,19 +69,37 @@ export async function deployProjectToPublicRegistry({ projectId, code = 'RU001',
   await Promise.allSettled([
     mongoose.connection.db.collection('university_approvals').updateMany(
       uniFilter,
-      { $set: { governmentStatus: 'Approved & Deployed', status: 'Approved', isDeployed: true } }
+      { $set: { governmentStatus: 'Approved & Deployed', status: 'Deployed', isDeployed: true, isLocked: true } }
     ),
     mongoose.connection.db.collection('university_industry_requests').updateMany(
       uniFilter,
-      { $set: { testingStatus: 'Completed & Deployed', isDeployed: true } }
+      { $set: { testingStatus: 'Completed & Deployed', isDeployed: true, isLocked: true } }
     ),
     mongoose.connection.db.collection('university_challenges').updateMany(
       { $or: [{ challengeId: proj.challengeId }, { title: proj.title }] },
-      { $set: { status: 'Resolved', stage: 'Deployed', isDeployed: true } }
+      { $set: { status: 'Resolved', stage: 'Deployed', isDeployed: true, isLocked: true } }
     ),
     mongoose.connection.db.collection('university_teams').updateMany(
       { $or: [{ projectId: proj.projectId }, { challengeId: proj.challengeId }] },
-      { $set: { isDeployed: true, status: 'Deployed' } }
+      { $set: { isDeployed: true, status: 'Deployed', isLocked: true } }
+    ),
+    mongoose.connection.db.collection('university_faculty').updateMany(
+      {
+        $or: [
+          { name: proj.leadMentor },
+          { name: proj.facultyMentor?.name },
+          { email: proj.facultyMentor?.email },
+          { 'assignedChallenges.challengeId': proj.challengeId }
+        ].filter(Boolean)
+      },
+      {
+        $set: {
+          availabilityStatus: 'Available',
+          isDeployed: true,
+          activeProjects: 0
+        },
+        $inc: { completedProjects: 1 }
+      }
     )
   ]);
 

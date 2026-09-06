@@ -119,8 +119,8 @@ export class UniversityDashboardRepository {
     return this.projectPrototypeRepo.forwardPrototypeToGovernment(projectId, universityCode, remarks);
   }
 
-  updateGovernmentPrototypeStatus(projectId, status, trlLevel, remarks) {
-    return this.projectPrototypeRepo.updateGovernmentPrototypeStatus(projectId, status, trlLevel, remarks);
+  updateGovernmentPrototypeStatus(projectId, status, trlLevel, remarks, extra) {
+    return this.projectPrototypeRepo.updateGovernmentPrototypeStatus(projectId, status, trlLevel, remarks, extra);
   }
 
   uploadProjectPdf(projectId, universityCode, file, type = 'prototype') {
