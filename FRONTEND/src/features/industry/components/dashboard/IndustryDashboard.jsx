@@ -13,6 +13,7 @@ import { IndustryRequestActionModal } from './IndustryRequestActionModal.jsx';
 import { IndustryFundingView } from '../funding/IndustryFundingView.jsx';
 import { IndustryActiveProjectsView } from '../projects/IndustryActiveProjectsView.jsx';
 import { IndustryTestingLabsView } from '../labs/IndustryTestingLabsView.jsx';
+import { IndustryExpertsView } from '../experts/IndustryExpertsView.jsx';
 import { IndustryComingSoonPanel } from '../common/IndustryComingSoonPanel.jsx';
 
 export const IndustryDashboard = ({ activeTab, setActiveTab, user }) => {
@@ -27,6 +28,8 @@ export const IndustryDashboard = ({ activeTab, setActiveTab, user }) => {
     fundingData,
     labsData,
     expertsData,
+    expertStats,
+    mentorshipProblemsAwaiting,
     documentsData,
     internshipsData,
     refreshData
@@ -104,7 +107,15 @@ export const IndustryDashboard = ({ activeTab, setActiveTab, user }) => {
       case 'capabilities':
         return <IndustryComingSoonPanel title="R&D Capabilities & Infrastructure" onBackToDashboard={() => setActiveTab('dashboard')} />;
       case 'experts':
-        return <IndustryComingSoonPanel title="Domain Experts & Mentorship Network" onBackToDashboard={() => setActiveTab('dashboard')} />;
+        return (
+          <IndustryExpertsView
+            user={user}
+            expertsData={expertsData}
+            expertStats={expertStats}
+            mentorshipProblemsAwaiting={mentorshipProblemsAwaiting}
+            onRefresh={refreshData}
+          />
+        );
       case 'documents':
         return <IndustryComingSoonPanel title="Legal Dossiers & MOUs" onBackToDashboard={() => setActiveTab('dashboard')} />;
       case 'ip_transfer':

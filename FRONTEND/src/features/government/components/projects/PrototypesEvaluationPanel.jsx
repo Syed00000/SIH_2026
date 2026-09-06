@@ -22,10 +22,10 @@ export const PrototypesEvaluationPanel = () => {
   }, []);
 
   const prototypeProjects = useMemo(() => projects.filter((p) => {
-    const hasPhases = p.prototypeData?.phases && Object.values(p.prototypeData.phases).some((v) => v && v.replace(/<[^>]*>/g, '').trim().length > 0);
-    const isProtoApproved = ['Approved', 'Ready for Deployment', 'In Review'].includes(p.prototypeStatus) || p.budgetStatus === 'Prototype Approved & Shipped to Government';
-    const isGovForwarded = Boolean(p.sentToGovernment) || p.governmentStatus === 'Under State Evaluation' || Boolean(p.testingCompleted) || Boolean(p.testingReportPdfUrl);
-    return isProtoApproved || hasPhases || isGovForwarded;
+    const isProtoSent = Boolean(p.prototypeSentToGovernment || p.isPrototypeSentToGov);
+    const isProtoApproved = (p.prototypeStatus === 'Approved' || p.prototypeStatus === 'Ready for Deployment') && isProtoSent;
+    const isDeployed = p.status === 'Deployed' || Boolean(p.isDeployed);
+    return isProtoSent || isProtoApproved || isDeployed;
   }), [projects]);
 
   const showToast = (msg, type = 'success') => {

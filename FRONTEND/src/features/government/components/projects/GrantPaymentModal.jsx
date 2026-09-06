@@ -15,6 +15,9 @@ import {
 } from 'lucide-react';
 import { projectCsrSyncService } from '../../services/projectCsrSyncService.js';
 import apiClient from '../../../../infrastructure/api/client.js';
+import { useGovernmentTreasury } from '../../hooks/useGovernmentTreasury.js';
+import { LowFundAlertBanner } from '../common/LowFundAlertBanner.jsx';
+import { AddStateGrantModal } from '../csr/AddStateGrantModal.jsx';
 
 export const parseGrantRupees = (grantStr) => {
   if (typeof grantStr === 'number') return grantStr;
@@ -122,10 +125,18 @@ export const GrantPaymentModal = ({ project, isOpen, onClose, onConfirmPayment }
     ? Math.min(100, Math.round((projectedDisbursed / currentFinancials.sanctionedRupees) * 100))
     : 0;
 
+  const treasury = useGovernmentTreasury();
+  const [isAddStateGrantOpen, setIsAddStateGrantOpen] = useState(false);
+  const isInsufficientFund = payingNum > treasury.availableStateFund;
+
   const handleSubmit = (e) => {
     e.preventDefault();
     if (payingNum <= 0) {
       alert('Please enter a valid payment amount greater than ₹0.');
+      return;
+    }
+    if (isInsufficientFund) {
+      alert(`Low Budget Alert: Available Government State Grant pool has only ${formatRupeesINR(treasury.availableStateFund)}. You cannot release a grant of ${formatRupeesINR(payingNum)}. Please add State Grant Funds first.`);
       return;
     }
 
@@ -250,6 +261,13 @@ export const GrantPaymentModal = ({ project, isOpen, onClose, onConfirmPayment }
               <span className="text-[10px] font-bold text-amber-600">{currentFinancials.pendingSub}</span>
             </div>
           </div>
+
+          {/* Low Fund Warning Banner */}
+          <LowFundAlertBanner
+            availableAmount={treasury.availableStateFund}
+            requiredAmount={payingNum}
+            onOpenAddFund={() => setIsAddStateGrantOpen(true)}
+          />
 
           {/* Amount to Release */}
           <div className="space-y-1.5">
@@ -432,14 +450,38 @@ export const GrantPaymentModal = ({ project, isOpen, onClose, onConfirmPayment }
 
             <button
               type="submit"
-              disabled={isSubmitting}
-              className="px-5 py-2.5 bg-[#007A61] hover:bg-[#006650] text-white text-xs font-bold rounded-xl flex items-center space-x-1.5 transition-all shadow-2xs cursor-pointer"
+              disabled={isSubmitting || isInsufficientFund}
+              className={`px-5 py-2.5 text-xs font-bold rounded-xl flex items-center space-x-1.5 transition-all shadow-2xs ${
+                isInsufficientFund
+                  ? 'bg-rose-600 hover:bg-rose-700 text-white cursor-not-allowed opacity-90 shadow-rose-200'
+                  : 'bg-[#007A61] hover:bg-[#006650] text-white cursor-pointer'
+              }`}
             >
               <Send className="w-3.5 h-3.5" />
-              <span>{isSubmitting ? 'Authorizing...' : 'Authorize & Disburse Grant'}</span>
+              <span>
+                {isInsufficientFund
+                  ? 'Low Budget • Insufficient State Funds'
+                  : isSubmitting
+                  ? 'Authorizing...'
+                  : 'Authorize & Disburse Grant'}
+              </span>
             </button>
           </div>
         </form>
+
+        {isAddStateGrantOpen && (
+          <AddStateGrantModal
+            isOpen={isAddStateGrantOpen}
+            onClose={() => {
+              setIsAddStateGrantOpen(false);
+              treasury.refreshTreasury();
+            }}
+            onFundCreated={() => {
+              setIsAddStateGrantOpen(false);
+              treasury.refreshTreasury();
+            }}
+          />
+        )}
       </div>
     </div>
   );

@@ -165,6 +165,11 @@ export const PartnerPrototypeRow = ({
             <span>Ready for Lab</span>
           </span>
         )}
+        {(request?.assignedMentor || prototype?.industryMentor) && (
+          <span className="mt-1 px-2 py-0.5 text-[9px] font-bold rounded-md bg-emerald-100/90 text-emerald-900 border border-emerald-300 flex items-center space-x-1 w-max">
+            <span>👤 {(request?.assignedMentor || prototype?.industryMentor).name}</span>
+          </span>
+        )}
       </td>
 
       {/* 6. Actions */}

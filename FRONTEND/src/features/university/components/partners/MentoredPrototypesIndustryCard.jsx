@@ -82,6 +82,12 @@ export const MentoredPrototypesIndustryCard = ({ prototypes = [], onConnectIndus
                       🎯 Requested Industry Facility: {targetPartner}
                     </p>
                   )}
+                  {p.industryMentor && (
+                    <div className="flex items-center justify-between text-[10.5px] font-bold text-emerald-900 bg-white p-2 rounded-lg border border-emerald-300">
+                      <span className="flex items-center space-x-1.5"><Users className="w-3 h-3 text-[#007A61]" /><span>Industry Mentor: <strong>{p.industryMentor.name}</strong> ({p.industryMentor.designation})</span></span>
+                      <span className="text-[9.5px] text-emerald-700 font-mono">{p.industryMentor.email}</span>
+                    </div>
+                  )}
                 </div>
               </div>
 

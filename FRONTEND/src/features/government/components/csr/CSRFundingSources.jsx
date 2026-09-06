@@ -103,17 +103,20 @@ export const CSRFundingSources = ({ onFilterBySource, selectedSourceFilter }) =>
     {
       id: 'govt_grants',
       title: 'Government State Grants',
-      description: 'Jharkhand State Innovation Council & Higher Education Dept R&D allocation.',
-      tag: `${fundsData.fundEntries.length} Active Allocations`,
+      description: remainingStateGrants <= 0
+        ? '⚠️ State grant pool has ₹ 0. Please add funds before granting to universities.'
+        : 'Jharkhand State Innovation Council & Higher Education Dept R&D allocation.',
+      tag: remainingStateGrants <= 0 ? '⚠️ Low Budget Pool' : `${fundsData.fundEntries.length} Active Allocations`,
       amount: remainingStateGrants,
       amountFormatted: formatAmountINR(remainingStateGrants),
       amountSub: formatLakhsCrSubtitle(remainingStateGrants),
       allocatedFormatted: formatAmountINR(fundsData.stateGrantsTotal),
       disbursedFormatted: formatAmountINR(totalDisbursed),
       hasDisbursed: totalDisbursed > 0,
-      iconColor: 'text-emerald-600 bg-emerald-50 border-emerald-100',
-      badgeColor: 'text-[#007A61] bg-emerald-50 border-emerald-200',
-      canAdd: true
+      iconColor: remainingStateGrants <= 0 ? 'text-rose-600 bg-rose-50 border-rose-200' : 'text-emerald-600 bg-emerald-50 border-emerald-100',
+      badgeColor: remainingStateGrants <= 0 ? 'text-rose-700 bg-rose-100 border-rose-300 font-black animate-pulse' : 'text-[#007A61] bg-emerald-50 border-emerald-200',
+      canAdd: true,
+      isLowFund: remainingStateGrants <= 0
     },
     {
       id: 'joint_funding',
@@ -210,15 +213,15 @@ export const CSRFundingSources = ({ onFilterBySource, selectedSourceFilter }) =>
                 </div>
 
                 {/* Big Number Section */}
-                <div className="p-3.5 bg-white border border-slate-200/90 rounded-xl space-y-1">
+                <div className={`p-3.5 bg-white rounded-xl space-y-1 border ${src.isLowFund ? 'border-rose-300 bg-rose-50/40 ring-2 ring-rose-200' : 'border-slate-200/90'}`}>
                   <div className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400">
                     {src.hasDisbursed ? 'Remaining Available Pool' : 'Total Committed Pool'}
                   </div>
-                  <div className="text-2xl sm:text-3xl font-black font-mono text-slate-900 tracking-tight leading-none">
+                  <div className={`text-2xl sm:text-3xl font-black font-mono tracking-tight leading-none ${src.isLowFund ? 'text-rose-600' : 'text-slate-900'}`}>
                     {src.amountSub}
                   </div>
-                  <div className="text-[11px] font-bold font-mono text-slate-500">
-                    {src.amountFormatted}
+                  <div className={`text-[11px] font-bold font-mono ${src.isLowFund ? 'text-rose-600 font-extrabold' : 'text-slate-500'}`}>
+                    {src.amountFormatted} {src.isLowFund && '(Low Budget)'}
                   </div>
                   {src.hasDisbursed && (
                     <div className="text-[10px] text-slate-500 font-semibold pt-1 border-t border-slate-100 flex items-center justify-between">
@@ -228,7 +231,7 @@ export const CSRFundingSources = ({ onFilterBySource, selectedSourceFilter }) =>
                   )}
                 </div>
 
-                <p className="text-[11px] text-slate-600 leading-snug">{src.description}</p>
+                <p className={`text-[11px] leading-snug ${src.isLowFund ? 'text-rose-700 font-semibold' : 'text-slate-600'}`}>{src.description}</p>
 
                 {src.canAdd && (
                   <button
@@ -237,7 +240,11 @@ export const CSRFundingSources = ({ onFilterBySource, selectedSourceFilter }) =>
                       e.stopPropagation();
                       setIsAddGrantModalOpen(true);
                     }}
-                    className="w-full py-2 bg-emerald-50 hover:bg-[#007A61] hover:text-white border border-emerald-200 text-[#007A61] text-xs font-extrabold rounded-xl flex items-center justify-center space-x-1.5 transition-all cursor-pointer shadow-2xs"
+                    className={`w-full py-2 text-xs font-extrabold rounded-xl flex items-center justify-center space-x-1.5 transition-all cursor-pointer shadow-2xs ${
+                      src.isLowFund
+                        ? 'bg-rose-600 hover:bg-rose-700 text-white shadow-rose-200 animate-pulse'
+                        : 'bg-emerald-50 hover:bg-[#007A61] hover:text-white border border-emerald-200 text-[#007A61]'
+                    }`}
                   >
                     <Plus className="w-3.5 h-3.5" />
                     <span>+ Add State Grant Fund</span>

@@ -8,6 +8,9 @@ import {
   IndianRupee
 } from 'lucide-react';
 import { parseGrantRupees, formatRupeesINR } from '../projects/GrantPaymentModal.jsx';
+import { useGovernmentTreasury } from '../../hooks/useGovernmentTreasury.js';
+import { LowFundAlertBanner } from '../common/LowFundAlertBanner.jsx';
+import { AddStateGrantModal } from './AddStateGrantModal.jsx';
 
 export const InitiateDisbursalModal = ({
   isOpen,
@@ -57,6 +60,10 @@ export const InitiateDisbursalModal = ({
     }
   }, [initialProposal?.id, initialProposal?.disbursedAmount]);
 
+  const treasury = useGovernmentTreasury();
+  const [isAddStateGrantOpen, setIsAddStateGrantOpen] = useState(false);
+  const isInsufficientFund = grossAmount > treasury.availableStateFund;
+
   if (!isOpen) return null;
 
   // Calculate TDS
@@ -68,6 +75,10 @@ export const InitiateDisbursalModal = ({
     e.preventDefault();
     if (!grossAmount || grossAmount <= 0) {
       alert('Please enter a valid disbursement amount greater than ₹0');
+      return;
+    }
+    if (isInsufficientFund) {
+      alert(`Low Budget Alert: Available Government State Grant pool has only ${formatRupeesINR(treasury.availableStateFund)}. You cannot disburse ${formatRupeesINR(grossAmount)}. Please add State Grant Funds first.`);
       return;
     }
 
@@ -154,6 +165,13 @@ export const InitiateDisbursalModal = ({
               ))}
             </select>
           </div>
+
+          {/* Low Fund Warning Banner */}
+          <LowFundAlertBanner
+            availableAmount={treasury.availableStateFund}
+            requiredAmount={grossAmount}
+            onOpenAddFund={() => setIsAddStateGrantOpen(true)}
+          />
 
           {/* Amount and Tranche Quick Select */}
           <div className="bg-white p-4 border border-slate-200/90 rounded-xl shadow-2xs space-y-3">
@@ -263,13 +281,36 @@ export const InitiateDisbursalModal = ({
             </button>
             <button
               type="submit"
-              className="px-5 py-2.5 rounded-xl bg-[#007A61] hover:bg-[#006650] text-white text-xs font-bold transition-all shadow-2xs flex items-center space-x-1.5 cursor-pointer"
+              disabled={isInsufficientFund}
+              className={`px-5 py-2.5 rounded-xl text-white text-xs font-bold transition-all shadow-2xs flex items-center space-x-1.5 ${
+                isInsufficientFund
+                  ? 'bg-rose-600 hover:bg-rose-700 cursor-not-allowed opacity-90 shadow-rose-200'
+                  : 'bg-[#007A61] hover:bg-[#006650] cursor-pointer'
+              }`}
             >
               <Send className="w-3.5 h-3.5" />
-              <span>Confirm & Disburse {formatRupeesINR(grossAmount)}</span>
+              <span>
+                {isInsufficientFund
+                  ? 'Low Budget • Insufficient State Funds'
+                  : `Confirm & Disburse ${formatRupeesINR(grossAmount)}`}
+              </span>
             </button>
           </div>
         </form>
+
+        {isAddStateGrantOpen && (
+          <AddStateGrantModal
+            isOpen={isAddStateGrantOpen}
+            onClose={() => {
+              setIsAddStateGrantOpen(false);
+              treasury.refreshTreasury();
+            }}
+            onFundCreated={() => {
+              setIsAddStateGrantOpen(false);
+              treasury.refreshTreasury();
+            }}
+          />
+        )}
       </div>
     </div>
   );

@@ -57,6 +57,22 @@ export class GovernmentLedgerService {
       }
     }
 
+    const { GovernmentGrantFund } = await import('./model.js');
+    const fundList = await GovernmentGrantFund.find({ status: 'Active' }).lean();
+    const stateGrantsTotal = fundList.reduce((sum, f) => sum + (Number(f.amount) || 0), 0);
+
+    const existingPayments = await GovernmentGrantPayment.find({}).lean();
+    const totalDisbursed = existingPayments
+      .filter((p) => p.makerCheckerStatus === 'Approved' || p.bankStatus === 'success')
+      .reduce((sum, p) => sum + (Number(p.rawAmount) || 0), 0);
+
+    const availableFund = Math.max(0, stateGrantsTotal - totalDisbursed);
+    if (stateGrantsTotal > 0 && availableFund < rawVal) {
+      const err = new Error(`Low Budget Error: Insufficient State Grant Fund. Available treasury balance is ₹ ${availableFund.toLocaleString('en-IN')}, but required payment is ₹ ${rawVal.toLocaleString('en-IN')}. Please allocate State Grant Funds before disbursal.`);
+      err.statusCode = 400;
+      throw err;
+    }
+
     const newPayment = await GovernmentGrantPayment.create({
       paymentId,
       payer: data.payer || 'Govt State Treasury (PFMS Escrow)',

@@ -20,6 +20,9 @@ import {
 } from 'lucide-react';
 import { projectCsrSyncService } from '../../services/projectCsrSyncService.js';
 import { formatRupeesINR, parseGrantRupees } from './GrantPaymentModal.jsx';
+import { useGovernmentTreasury } from '../../hooks/useGovernmentTreasury.js';
+import { LowFundAlertBanner } from '../common/LowFundAlertBanner.jsx';
+import { AddStateGrantModal } from '../csr/AddStateGrantModal.jsx';
 
 export const ProposalDetailView = ({
   proposal,
@@ -32,6 +35,8 @@ export const ProposalDetailView = ({
   const [activeTab, setActiveTab] = useState('dpr'); // 'dpr' | 'methodology' | 'budget' | 'review'
   const [reviewerRemarks, setReviewerRemarks] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const treasury = useGovernmentTreasury();
+  const [isAddStateGrantOpen, setIsAddStateGrantOpen] = useState(false);
 
   if (!proposal) return null;
 
@@ -391,6 +396,13 @@ export const ProposalDetailView = ({
             />
           </div>
 
+          {/* Low Budget Warning Banner */}
+          <LowFundAlertBanner
+            availableAmount={treasury.availableStateFund}
+            requiredAmount={rawBudgetNum}
+            onOpenAddFund={() => setIsAddStateGrantOpen(true)}
+          />
+
           {/* Action Trigger Box */}
           <div className="bg-slate-900 text-white rounded-xl p-5 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-md">
             <div>
@@ -436,6 +448,20 @@ export const ProposalDetailView = ({
             </div>
           </div>
         </div>
+      )}
+
+      {isAddStateGrantOpen && (
+        <AddStateGrantModal
+          isOpen={isAddStateGrantOpen}
+          onClose={() => {
+            setIsAddStateGrantOpen(false);
+            treasury.refreshTreasury();
+          }}
+          onFundCreated={() => {
+            setIsAddStateGrantOpen(false);
+            treasury.refreshTreasury();
+          }}
+        />
       )}
     </div>
   );

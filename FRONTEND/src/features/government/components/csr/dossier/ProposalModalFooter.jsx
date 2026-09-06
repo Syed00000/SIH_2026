@@ -1,5 +1,6 @@
 import React from 'react';
-import { ShieldCheck, RotateCcw, Lock, Coins, CheckCircle2 } from 'lucide-react';
+import { ShieldCheck, RotateCcw, Lock, Coins, CheckCircle2, AlertTriangle } from 'lucide-react';
+import { useGovernmentTreasury } from '../../../hooks/useGovernmentTreasury.js';
 
 export const ProposalModalFooter = ({
   onClose,
@@ -16,8 +17,16 @@ export const ProposalModalFooter = ({
   handleApproveAndSanction,
   handleDisburseSecondEmi
 }) => {
+  const treasury = useGovernmentTreasury();
   const isFirstTime = rawDisbursed === 0;
   const currentReleaseAmt = Math.min(remainingBudget, Math.max(1000, disburseAmount || remainingBudget));
+  const isTreasuryLow = treasury.availableStateFund < currentReleaseAmt || treasury.availableStateFund <= 0;
+
+  const handleLowFundClick = () => {
+    alert(
+      `⚠️ Low Budget Alert • Insufficient State Grant Fund\n\nGovernment State Treasury has ₹ ${treasury.availableStateFund.toLocaleString('en-IN')} available in the committed pool, but ₹ ${currentReleaseAmt.toLocaleString('en-IN')} is required to disburse this grant to the university.\n\nPlease scroll to the top of the proposal and click '+ Add State Grant Fund' to allocate funds before releasing.`
+    );
+  };
 
   return (
     <div className="px-6 py-3.5 border-t border-slate-200 bg-white flex flex-col sm:flex-row items-center justify-between gap-3 shrink-0">
@@ -29,6 +38,11 @@ export const ProposalModalFooter = ({
           </span>
         ) : isSaved ? (
           <span className="text-emerald-700 font-bold">✓ Disbursal & status updated and synchronized with University!</span>
+        ) : isTreasuryLow ? (
+          <div className="flex items-center space-x-2 text-rose-700 font-extrabold animate-pulse">
+            <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0" />
+            <span>Low Fund Alert: State Treasury has ₹ {treasury.availableStateFund.toLocaleString('en-IN')} (Need: ₹ {currentReleaseAmt.toLocaleString('en-IN')})</span>
+          </div>
         ) : remainingBudget > 0 ? (
           <div className="flex items-center space-x-2 text-slate-500">
             <span>Escrow Balance: <strong className="text-slate-800 font-mono">₹ {remainingBudget.toLocaleString('en-IN')}</strong></span>
@@ -79,6 +93,16 @@ export const ProposalModalFooter = ({
           >
             <Lock className="w-4 h-4 text-slate-400" />
             <span>Approved Amount Completed</span>
+          </button>
+        ) : isTreasuryLow ? (
+          <button
+            type="button"
+            onClick={handleLowFundClick}
+            className="px-5 py-2 rounded-xl text-xs font-extrabold bg-rose-600 hover:bg-rose-700 text-white cursor-pointer shadow-2xs flex items-center space-x-1.5 transition-all ring-2 ring-rose-400"
+            title="State Grant Treasury has ₹ 0 available"
+          >
+            <AlertTriangle className="w-4 h-4 text-white shrink-0" />
+            <span>⚠️ Low Fund • State Treasury Deficit (₹ {treasury.availableStateFund.toLocaleString('en-IN')})</span>
           </button>
         ) : hasTrancheRequest || remainingBudget > 0 ? (
           <button

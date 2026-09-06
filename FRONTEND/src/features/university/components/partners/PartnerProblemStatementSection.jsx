@@ -15,19 +15,15 @@ export const PartnerProblemStatementSection = ({
         const prjs = (Array.isArray(prjData) ? prjData : (Array.isArray(prjData?.data) ? prjData.data : []));
         // ONLY show projects when submitted by student research team!
         const submitted = prjs
-          .filter((p) => p.sentToUniversity === true || p.prototypeStatus === 'In Review' || p.prototypeStatus === 'Approved')
+          .filter((p) => p.sentToUniversity || p.prototypeStatus === 'In Review' || p.prototypeStatus === 'Approved')
           .map((p) => ({
-            id: p.projectId || p.id,
-            title: p.title,
-            problemStatement: p.problemStatement || p.title,
-            domain: p.domain || 'University R&D',
-            facultyName: p.leadMentor || p.facultyMentor?.name || 'Dr. Binod Kumar',
-            studentTeam: p.studentTeam || 'Student Research Squad',
-            studentLead: p.studentLead || 'Student Team Leader',
-            prototypeData: p.prototypeData,
-            pdfUrl: p.pdfUrl || p.prototypeData?.pdfUrl,
+            id: p.projectId || p.id, title: p.title, problemStatement: p.problemStatement || p.title,
+            domain: p.domain || 'University R&D', facultyName: p.leadMentor || p.facultyMentor?.name || 'Dr. Binod Kumar',
+            studentTeam: p.studentTeam || 'Student Squad', studentLead: p.studentLead || 'Lead',
+            prototypeData: p.prototypeData, pdfUrl: p.pdfUrl || p.prototypeData?.pdfUrl,
             pdfName: p.pdfName || p.prototypeData?.pdfName || 'Prototype_Report.pdf',
-            sanctionedBudget: p.sanctionedBudget || p.disbursedAmount || '₹ 80,000'
+            sanctionedBudget: p.sanctionedBudget || p.disbursedAmount || '₹ 80,000',
+            industryMentor: p.industryMentor || null
           }));
 
         setProblemStatements(submitted);
@@ -50,6 +46,7 @@ export const PartnerProblemStatementSection = ({
   );
   const isApproved = matchedReq?.status === 'Approved';
   const isPending = matchedReq?.status === 'Pending';
+  const assignedMentor = matchedReq?.assignedMentor || activeProblem?.industryMentor;
 
   return (
     <div className="bg-white border border-slate-200/90 rounded-2xl p-4 shadow-2xs space-y-3">
@@ -130,7 +127,33 @@ export const PartnerProblemStatementSection = ({
             </div>
           </div>
 
-          {/* 3. Attached Cloudinary PDF */}
+          {/* 3. Assigned Corporate Industry Technical Mentor */}
+          {assignedMentor && (
+            <div className="p-2.5 bg-gradient-to-r from-teal-50 to-emerald-50 border border-emerald-300 rounded-xl space-y-1">
+              <div className="flex items-center justify-between">
+                <span className="text-[9.5px] font-black uppercase tracking-wider text-emerald-900 flex items-center space-x-1">
+                  <UserCheck className="w-3.5 h-3.5 text-[#007A61]" />
+                  <span>Assigned Industry Mentor</span>
+                </span>
+                <span className="px-2 py-0.2 bg-emerald-200 text-emerald-900 text-[9px] font-extrabold rounded-full">Active Guide</span>
+              </div>
+              <div className="flex items-center space-x-2 pt-0.5">
+                <div className="w-6 h-6 rounded-full bg-[#007A61] text-white flex items-center justify-center font-bold text-[10px] shrink-0">
+                  {assignedMentor.name?.charAt(0) || 'M'}
+                </div>
+                <div className="min-w-0">
+                  <h5 className="text-xs font-black text-slate-900 truncate">{assignedMentor.name}</h5>
+                  <p className="text-[10px] text-slate-600 font-medium truncate">{assignedMentor.designation} • {assignedMentor.specialization}</p>
+                </div>
+              </div>
+              <div className="flex items-center space-x-3 text-[9.5px] text-slate-500 font-semibold pt-1 border-t border-emerald-200/50">
+                <span>✉️ {assignedMentor.email}</span>
+                <span>📞 {assignedMentor.phone}</span>
+              </div>
+            </div>
+          )}
+
+          {/* 4. Attached Cloudinary PDF */}
           {activeProblem.pdfUrl && (
             <div className="flex items-center justify-between p-2.5 bg-rose-50/80 border border-rose-200 rounded-xl">
               <div className="flex items-center space-x-2">
@@ -140,12 +163,7 @@ export const PartnerProblemStatementSection = ({
                   <div className="text-[9.5px] text-emerald-700 font-semibold">✓ Verified Cloudinary Technical Blueprint</div>
                 </div>
               </div>
-              <a
-                href={getPdfViewUrl(activeProblem.pdfUrl, activeProblem.pdfName)}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="px-3 py-1 bg-white hover:bg-rose-100 text-rose-700 border border-rose-300 rounded-lg text-xs font-bold transition-all flex items-center space-x-1 shadow-2xs cursor-pointer"
-              >
+              <a href={getPdfViewUrl(activeProblem.pdfUrl, activeProblem.pdfName)} target="_blank" rel="noopener noreferrer" className="px-3 py-1 bg-white hover:bg-rose-100 text-rose-700 border border-rose-300 rounded-lg text-xs font-bold transition-all flex items-center space-x-1 shadow-2xs cursor-pointer">
                 <span>View Attached PDF</span>
                 <ExternalLink className="w-3 h-3" />
               </a>
@@ -160,19 +178,11 @@ export const PartnerProblemStatementSection = ({
             </div>
 
             {isApproved ? (
-              <span className="px-2.5 py-1 text-[10.5px] font-extrabold border rounded-lg bg-emerald-50 text-emerald-800 border-emerald-300 flex items-center space-x-1">
-                <Lock className="w-3 h-3 text-[#007A61]" />
-                <span>Approved from University</span>
-              </span>
+              <span className="px-2.5 py-1 text-[10.5px] font-extrabold border rounded-lg bg-emerald-50 text-emerald-800 border-emerald-300 flex items-center space-x-1"><Lock className="w-3 h-3 text-[#007A61]" /><span>Approved from University</span></span>
             ) : isPending ? (
-              <span className="px-2.5 py-1 text-[10.5px] font-extrabold border rounded-lg bg-amber-50 text-amber-800 border-amber-300 flex items-center space-x-1">
-                <Clock className="w-3 h-3 text-amber-600" />
-                <span>Request Pending</span>
-              </span>
+              <span className="px-2.5 py-1 text-[10.5px] font-extrabold border rounded-lg bg-amber-50 text-amber-800 border-amber-300 flex items-center space-x-1"><Clock className="w-3 h-3 text-amber-600" /><span>Request Pending</span></span>
             ) : (
-              <span className="text-[10.5px] font-bold text-emerald-700 bg-emerald-100/70 border border-emerald-200 px-2.5 py-1 rounded-lg">
-                ✓ Ready for Industry Lab Testing
-              </span>
+              <span className="text-[10.5px] font-bold text-emerald-700 bg-emerald-100/70 border border-emerald-200 px-2.5 py-1 rounded-lg">✓ Ready for Industry Lab Testing</span>
             )}
           </div>
         </div>

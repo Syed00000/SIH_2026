@@ -20,6 +20,7 @@ import citizenRoutes from './modules/citizen/presentation/routes.js';
 import clarificationRoutes from './modules/clarification/presentation/routes.js';
 import grantRoutes from './modules/government/grants/routes.js';
 import industryFundRoutes from './modules/industry/funds/routes.js';
+import industryExpertRoutes from './modules/industry/experts/routes.js';
 import mediaRoutes from './modules/media/presentation/routes.js';
 
 const app = express();
@@ -74,6 +75,8 @@ app.use('/api/v1/government/heis', heisRoutes);
 // Industry Fund & Grant Management System
 app.use('/api/v1/industry/funds', industryFundRoutes);
 app.use('/api/v1/industries/funds', industryFundRoutes);
+app.use('/api/v1/industry/experts', industryExpertRoutes);
+app.use('/api/v1/industries/experts', industryExpertRoutes);
 
 app.use('/api/v1/admin/industries', industryRoutes);
 app.use('/api/v1/industries', industryRoutes);
