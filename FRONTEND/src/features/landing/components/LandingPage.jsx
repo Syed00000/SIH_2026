@@ -257,9 +257,6 @@ export const LandingPage = ({ onNavigate }) => {
             {/* Text Overlay for all slides */}
             <div className="absolute inset-0 bg-gradient-to-r from-[#0c382b]/90 via-[#0c382b]/60 to-transparent flex items-center z-10 px-8 md:px-16 lg:px-24">
               <div className="max-w-xl text-white space-y-3">
-                <div className="text-xs md:text-sm font-black text-emerald-300 tracking-widest uppercase">
-                  {slide.tag}
-                </div>
                 <h1 className="text-2xl md:text-4xl lg:text-5xl font-black leading-tight tracking-tight drop-shadow-sm">
                   {slide.title}
                 </h1>
@@ -311,46 +308,7 @@ export const LandingPage = ({ onNavigate }) => {
         </div>
       </section>
 
-      {/* Latest Announcements Ticker */}
-      <section className="w-full bg-[#f8fafc] border-y border-gray-200 h-8 flex items-center relative overflow-hidden z-20">
-        
-        {/* Left Badge (Fixed) */}
-        <div className="absolute left-0 top-0 h-full flex items-center bg-[#f8fafc] z-20 px-4 lg:px-6">
-          <div className="bg-[#0f4b3a] text-white px-3 py-1 rounded-none flex items-center gap-1.5 font-bold text-[11px] shadow-sm">
-            <Megaphone className="w-3 h-3" />
-            Latest Announcements
-          </div>
-        </div>
 
-        {/* Scrolling Content */}
-        <div className="flex-1 h-full flex items-center relative overflow-hidden pl-[210px] pr-[140px]">
-          <div className="animate-marquee whitespace-nowrap text-[11px] font-semibold text-gray-800">
-            <span>Applications open for National Research Fellowship 2024-25</span>
-            <span className="text-gray-400 mx-4">|</span>
-            <span>Guidelines for Institution Innovation Council (IIC)</span>
-            <span className="text-gray-400 mx-4">|</span>
-            <span>Webinar on Future Skills for Young India</span>
-            <span className="text-gray-400 mx-4">|</span>
-            <span>Academic Calendar 2024-25 Released</span>
-            {/* Duplicate for seamless scrolling */}
-            <span className="text-gray-400 mx-4">|</span>
-            <span>Applications open for National Research Fellowship 2024-25</span>
-            <span className="text-gray-400 mx-4">|</span>
-            <span>Guidelines for Institution Innovation Council (IIC)</span>
-            <span className="text-gray-400 mx-4">|</span>
-            <span>Webinar on Future Skills for Young India</span>
-            <span className="text-gray-400 mx-4">|</span>
-            <span>Academic Calendar 2024-25 Released</span>
-          </div>
-        </div>
-
-        {/* Right Actions (Fixed) */}
-        <div className="absolute right-0 top-0 h-full flex items-center bg-gradient-to-l from-[#f8fafc] via-[#f8fafc] via-80% to-transparent z-20 px-4 lg:px-6 pl-16">
-          <button className="text-[#0f4b3a] font-bold text-[11px] flex items-center hover:underline">
-            View All <ArrowRight className="w-3 h-3 ml-1" />
-          </button>
-        </div>
-      </section>
 
       {/* Action Buttons */}
       <section className="w-full relative z-20 bg-white py-2 md:py-3 px-4 md:px-8 lg:px-12">
@@ -443,9 +401,6 @@ export const LandingPage = ({ onNavigate }) => {
                   </div>
                   <h3 className="text-[15px] md:text-base font-bold text-[#0f4b3a] tracking-tight">Our Leadership</h3>
                 </div>
-                <a href="#leadership" className="text-xs font-semibold text-[#0f4b3a] hover:underline flex items-center gap-1">
-                  View All <ArrowRight className="w-3.5 h-3.5" />
-                </a>
               </div>
 
               {/* 3 Leaders Grid */}
@@ -458,11 +413,6 @@ export const LandingPage = ({ onNavigate }) => {
                   <h4 className="font-bold text-[11px] sm:text-xs text-gray-900 mt-2 leading-tight">Shri Rajesh Kumar</h4>
                   <p className="text-[9px] sm:text-[10px] text-gray-500 leading-tight mt-0.5">Hon'ble Minister</p>
                   <p className="text-[9px] sm:text-[10px] text-gray-500 leading-tight">Ministry of Education</p>
-                  <div className="mt-auto pt-2 w-full flex justify-center">
-                    <button className="px-3 py-0.5 rounded-none border border-[#0f4b3a] text-[#0f4b3a] text-[10.5px] font-semibold hover:bg-[#0f4b3a] hover:text-white transition-colors shadow-2xs">
-                      Profile
-                    </button>
-                  </div>
                 </div>
 
                 {/* Leader 2 */}
@@ -472,11 +422,6 @@ export const LandingPage = ({ onNavigate }) => {
                   </div>
                   <h4 className="font-bold text-[11px] sm:text-xs text-gray-900 mt-2 leading-tight">Dr. Anil Verma</h4>
                   <p className="text-[9px] sm:text-[10px] text-gray-500 leading-tight mt-0.5">Minister of State</p>
-                  <div className="mt-auto pt-2 w-full flex justify-center">
-                    <button className="px-3 py-0.5 rounded-none border border-[#0f4b3a] text-[#0f4b3a] text-[10.5px] font-semibold hover:bg-[#0f4b3a] hover:text-white transition-colors shadow-2xs">
-                      Profile
-                    </button>
-                  </div>
                 </div>
 
                 {/* Leader 3 */}
@@ -487,11 +432,6 @@ export const LandingPage = ({ onNavigate }) => {
                   <h4 className="font-bold text-[11px] sm:text-xs text-gray-900 mt-2 leading-tight">Smt. Kavita Sharma</h4>
                   <p className="text-[9px] sm:text-[10px] text-gray-500 leading-tight mt-0.5">Secretary</p>
                   <p className="text-[9px] sm:text-[10px] text-gray-500 leading-tight">Ministry of Education</p>
-                  <div className="mt-auto pt-2 w-full flex justify-center">
-                    <button className="px-3 py-0.5 rounded-none border border-[#0f4b3a] text-[#0f4b3a] text-[10.5px] font-semibold hover:bg-[#0f4b3a] hover:text-white transition-colors shadow-2xs">
-                      Profile
-                    </button>
-                  </div>
                 </div>
               </div>
             </div>
@@ -549,7 +489,7 @@ export const LandingPage = ({ onNavigate }) => {
 
           </div>
 
-          {/* 4-COLUMN CARDS SECTION (Auto-Scrolling with Hover Pause) */}
+          {/* 3-COLUMN CARDS SECTION (Auto-Scrolling with Hover Pause) */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 md:gap-4 items-stretch mb-4 md:mb-5">
             
             {/* Col 1: Latest Challenges */}
@@ -557,9 +497,6 @@ export const LandingPage = ({ onNavigate }) => {
               {/* Card Header */}
               <div className="bg-[#0f4b3a] text-white px-3.5 py-2 flex items-center justify-between shrink-0">
                 <h3 className="text-[13px] font-bold tracking-tight">Latest Challenges</h3>
-                <a href="#challenges" className="text-emerald-100 hover:text-white text-[11px] font-medium flex items-center gap-1 transition-colors">
-                  More <ArrowRight className="w-3 h-3" />
-                </a>
               </div>
 
               {/* Auto-scrolling Ticker */}
@@ -591,51 +528,13 @@ export const LandingPage = ({ onNavigate }) => {
               </div>
             </div>
 
-            {/* Col 2: Announcements / Notices */}
-            <div className="bg-white rounded-none border border-gray-200/90 shadow-xs flex flex-col overflow-hidden">
-              {/* Card Header */}
-              <div className="bg-[#0f4b3a] text-white px-3.5 py-2 flex items-center justify-between shrink-0">
-                <h3 className="text-[13px] font-bold tracking-tight">Announcements / Notices</h3>
-                <a href="#announcements" className="text-emerald-100 hover:text-white text-[11px] font-medium flex items-center gap-1 transition-colors">
-                  More <ArrowRight className="w-3 h-3" />
-                </a>
-              </div>
 
-              {/* Auto-scrolling Ticker */}
-              <div className="h-[195px] overflow-hidden relative marquee-container cursor-pointer px-2.5 py-1 bg-white">
-                <div className="animate-marquee-vertical flex flex-col divide-y divide-gray-100/90">
-                  {[...announcementsList, ...announcementsList].map((item, idx) => (
-                    <div key={idx} className="py-2 flex items-start gap-2 group cursor-pointer hover:bg-slate-50/90 px-1 rounded-none transition-colors">
-                      <Pin className="w-3.5 h-3.5 text-slate-700 mt-0.5 shrink-0 rotate-45" />
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-1.5 flex-wrap">
-                          <h4 className="text-[11.5px] font-bold text-gray-900 leading-tight group-hover:text-[#0f4b3a] transition-colors">
-                            {item.title}
-                          </h4>
-                          {item.isNew && (
-                            <span className="bg-red-600 text-white text-[8px] font-extrabold px-1.5 py-0.2 rounded-none uppercase tracking-wide leading-tight shadow-2xs">
-                              New
-                            </span>
-                          )}
-                        </div>
-                        <p className="text-[9.5px] text-gray-500 mt-0.5 leading-tight">
-                          {item.date}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
 
             {/* Col 3: Key Documents */}
             <div className="bg-white rounded-none border border-gray-200/90 shadow-xs flex flex-col overflow-hidden">
               {/* Card Header */}
               <div className="bg-[#0f4b3a] text-white px-3.5 py-2 flex items-center justify-between shrink-0">
                 <h3 className="text-[13px] font-bold tracking-tight">Key Documents</h3>
-                <a href="#documents" className="text-emerald-100 hover:text-white text-[11px] font-medium flex items-center gap-1 transition-colors">
-                  More <ArrowRight className="w-3 h-3" />
-                </a>
               </div>
 
               {/* Auto-scrolling Ticker */}
@@ -672,9 +571,6 @@ export const LandingPage = ({ onNavigate }) => {
               {/* Card Header */}
               <div className="bg-[#0f4b3a] text-white px-3.5 py-2 flex items-center justify-between shrink-0">
                 <h3 className="text-[13px] font-bold tracking-tight">Important Updates</h3>
-                <a href="#updates" className="text-emerald-100 hover:text-white text-[11px] font-medium flex items-center gap-1 transition-colors">
-                  More <ArrowRight className="w-3 h-3" />
-                </a>
               </div>
 
               {/* Auto-scrolling Ticker */}
@@ -700,6 +596,54 @@ export const LandingPage = ({ onNavigate }) => {
                         </div>
                         <p className="text-[9.5px] text-gray-500 mt-0.5 leading-tight truncate">
                           {item.sub}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Col 5: Announcements / Notices */}
+            <div className="bg-white rounded-none border border-gray-200/90 shadow-xs flex flex-col overflow-hidden">
+              {/* Card Header */}
+              <div className="bg-[#0f4b3a] text-white px-3.5 py-2 flex items-center justify-between shrink-0">
+                <h3 className="text-[13px] font-bold tracking-tight">Announcements / Notices</h3>
+              </div>
+
+              {/* Auto-scrolling Ticker */}
+              <div className="h-[195px] overflow-hidden relative marquee-container cursor-pointer px-2.5 py-1 bg-white">
+                <div className="animate-marquee-vertical flex flex-col divide-y divide-gray-100/90">
+                  {[...[  
+                    { title: "Model Problem Statement Formats", date: "10 Aug 2026", isNew: false },
+                    { title: "State Youth Innovation Challenge 2026", date: "04 Sep 2026", isNew: false },
+                    { title: "Launch of Johar Sethu Portal", date: "01 Sep 2026", isNew: true },
+                    { title: "Guidelines for University Participation", date: "25 Aug 2026", isNew: false },
+                    { title: "Faculty Mentor Nomination Deadline Extended", date: "20 Aug 2026", isNew: false },
+                    { title: "Hackathon Results – Ranchi Zone Declared", date: "18 Aug 2026", isNew: false },
+                  ], ...[  
+                    { title: "Model Problem Statement Formats", date: "10 Aug 2026", isNew: false },
+                    { title: "State Youth Innovation Challenge 2026", date: "04 Sep 2026", isNew: false },
+                    { title: "Launch of Johar Sethu Portal", date: "01 Sep 2026", isNew: true },
+                    { title: "Guidelines for University Participation", date: "25 Aug 2026", isNew: false },
+                    { title: "Faculty Mentor Nomination Deadline Extended", date: "20 Aug 2026", isNew: false },
+                    { title: "Hackathon Results – Ranchi Zone Declared", date: "18 Aug 2026", isNew: false },
+                  ]].map((item, idx) => (
+                    <div key={idx} className="py-2 flex items-start gap-2 group cursor-pointer hover:bg-slate-50/90 px-1 rounded-none transition-colors">
+                      <span className="text-[#0f4b3a] font-black text-sm leading-none mt-0.5 shrink-0">•</span>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <h4 className="text-[11.5px] font-bold text-gray-900 leading-tight group-hover:text-[#0f4b3a] transition-colors">
+                            {item.title}
+                          </h4>
+                          {item.isNew && (
+                            <span className="bg-red-600 text-white text-[8px] font-extrabold px-1.5 py-0.2 rounded-none uppercase tracking-wide leading-tight shadow-2xs">
+                              New
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-[9.5px] text-gray-500 mt-0.5 leading-tight truncate">
+                          {item.date}
                         </p>
                       </div>
                     </div>
