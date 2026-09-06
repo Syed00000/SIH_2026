@@ -17,10 +17,7 @@ export const FacultyTableRow = ({
     : ['Water Resources', 'IoT'];
 
   const avail = f.availabilityStatus || 'Available';
-  const isActive = f.status !== 'Inactive';
-  const isDeployed = f.status === 'Deployed' || Boolean(f.isDeployed) || Boolean(f.isLocked);
-  // If the faculty's assigned project is deployed, override availability
-  const displayAvail = isDeployed ? 'Deployed' : avail;
+  const status = f.status || 'Active';
 
   return (
     <tr
@@ -89,30 +86,36 @@ export const FacultyTableRow = ({
       <td className="py-3 px-3 whitespace-nowrap">
         <span
           className={`inline-flex items-center space-x-1.5 text-[11px] font-bold ${
-            isDeployed ? 'text-teal-700' :
-            displayAvail === 'Available' ? 'text-[#007A61]' :
-            displayAvail === 'In Project' ? 'text-amber-600' : 'text-slate-600'
+            avail === 'Available' ? 'text-[#007A61]' :
+            avail === 'In Project' ? 'text-amber-700' :
+            avail === 'On Leave' ? 'text-purple-700' : 'text-slate-600'
           }`}
         >
           <span
             className={`w-1.5 h-1.5 rounded-full ${
-              isDeployed ? 'bg-teal-500' :
-              displayAvail === 'Available' ? 'bg-[#007A61]' :
-              displayAvail === 'In Project' ? 'bg-amber-500' : 'bg-slate-400'
+              avail === 'Available' ? 'bg-[#007A61]' :
+              avail === 'In Project' ? 'bg-amber-500' :
+              avail === 'On Leave' ? 'bg-purple-500' : 'bg-slate-400'
             }`}
           />
-          <span>{isDeployed ? '🔒 Deployed' : displayAvail}</span>
+          <span>{avail}</span>
         </span>
       </td>
 
       <td className="py-3 px-3 whitespace-nowrap">
         <span
           className={`inline-flex items-center space-x-1.5 text-[11px] font-extrabold ${
-            isDeployed ? 'text-teal-700' : isActive ? 'text-[#007A61]' : 'text-rose-600'
+            status === 'Active' ? 'text-[#007A61]' :
+            status === 'On Leave' ? 'text-amber-700' : 'text-rose-600'
           }`}
         >
-          <span className={`w-1.5 h-1.5 rounded-full ${isDeployed ? 'bg-teal-500' : isActive ? 'bg-[#007A61]' : 'bg-rose-500'}`} />
-          <span>{isDeployed ? 'Deployed' : (isActive ? 'Active' : 'Inactive')}</span>
+          <span
+            className={`w-1.5 h-1.5 rounded-full ${
+              status === 'Active' ? 'bg-[#007A61]' :
+              status === 'On Leave' ? 'bg-amber-500' : 'bg-rose-500'
+            }`}
+          />
+          <span>{status}</span>
         </span>
       </td>
 

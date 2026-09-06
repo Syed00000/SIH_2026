@@ -80,8 +80,8 @@ export const SolutionProposalsPanel = () => {
 
       const matchesStatus =
         selectedStatus === 'All' ||
-        (selectedStatus === 'Pending' && item.status !== 'Approved' && item.status !== 'Rejected') ||
-        (selectedStatus === 'Approved' && (item.status === 'Approved' || item.budgetStatus === 'Grant Sanctioned by Government')) ||
+        (selectedStatus === 'Pending' && !item.isFunded && item.status !== 'Rejected') ||
+        (selectedStatus === 'Approved' && (item.isFunded || item.status === 'Approved' || item.budgetStatus === 'Grant Sanctioned by Government')) ||
         (selectedStatus === 'Rejected' && item.status === 'Rejected');
 
       return matchesSearch && matchesSector && matchesDistrict && matchesStatus;

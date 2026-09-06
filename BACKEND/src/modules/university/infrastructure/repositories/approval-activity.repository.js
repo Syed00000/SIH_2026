@@ -91,6 +91,8 @@ export class ApprovalActivityRepository {
           projectUpdate.prototypeStatus = status === 'Approved' ? 'Ready for Deployment' : status === 'Changes Required' ? 'Changes Required by University' : 'Under Review';
           if (status === 'Approved') {
             projectUpdate.sentToGovernment = true;
+            projectUpdate.prototypeSentToGovernment = true;
+            projectUpdate.prototypeForwardedAt = new Date();
             projectUpdate.governmentStatus = 'Under State Evaluation';
             projectUpdate.milestonesCompleted = 6;
             projectUpdate.progressPercentage = 86;
