@@ -32,7 +32,7 @@ export const NodalNotificationPopover = ({ user, nodalDistrict = '', onSelectNot
           const isDeployed = c.status === 'Deployed' || Boolean(c.isDeployed) || Boolean(c.isLocked);
           let category = isDeployed ? 'Deployed' : (c.status === 'In Progress' || c.assignedUniversity?.name) ? 'HEI Working' : c.status === 'Clarification Requested' ? 'Clarification' : 'Under Review';
           let badgeColor = isDeployed ? 'bg-emerald-50 text-emerald-800 border-emerald-300' : category === 'HEI Working' ? 'bg-blue-50 text-blue-800 border-blue-200' : category === 'Clarification' ? 'bg-purple-50 text-purple-800 border-purple-200' : 'bg-amber-50 text-amber-800 border-amber-200';
-          let title = isDeployed ? `🔒 Deployed: ${c.title}` : category === 'HEI Working' ? `Assigned: ${c.title}` : `Problem: ${c.title}`;
+          let title = isDeployed ? `✅ Deployed: ${c.title}` : category === 'HEI Working' ? `Assigned: ${c.title}` : `Problem: ${c.title}`;
           return {
             id: c.challengeId || c.id || String(c._id),
             challenge: c,
@@ -95,11 +95,11 @@ export const NodalNotificationPopover = ({ user, nodalDistrict = '', onSelectNot
       </button>
 
       {isOpen && (
-        <div className="fixed top-[52px] right-2 w-[320px] sm:absolute sm:top-auto sm:right-0 sm:mt-2 sm:w-[410px] bg-white border border-slate-200/90 rounded-2xl shadow-2xl z-50 overflow-hidden flex flex-col max-h-[85vh] origin-top-right select-none animate-in fade-in duration-150">
+        <div className="fixed top-[52px] right-2 w-[320px] sm:absolute sm:top-auto sm:right-0 sm:mt-2 sm:w-[410px] bg-white border border-slate-200/90 rounded-md shadow-2xl z-50 overflow-hidden flex flex-col max-h-[85vh] origin-top-right select-none animate-in fade-in duration-150">
           <div className="px-4 py-3 border-b border-slate-100 flex items-center justify-between bg-slate-50/70 shrink-0">
             <div className="flex items-center space-x-2">
               <h3 className="text-xs sm:text-sm font-extrabold text-slate-900">Live Database Notifications</h3>
-              <span className="text-[10px] font-bold text-[#047857] bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+              <span className="text-[10px] font-bold text-[#047857] bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
                 {notifications.length}
               </span>
             </div>
@@ -151,7 +151,7 @@ export const NodalNotificationPopover = ({ user, nodalDistrict = '', onSelectNot
                   >
                     <div className="space-y-1 min-w-0 flex-1">
                       <div className="flex items-center space-x-2">
-                        <span className={`text-[9.5px] font-bold px-1.5 py-0.5 rounded-full border ${n.badgeColor}`}>
+                        <span className={`text-[9.5px] font-bold px-1.5 py-0.5 rounded-md border ${n.badgeColor}`}>
                           {n.category}
                         </span>
                         <span className="font-mono text-[9.5px] text-slate-400 font-bold">{n.id}</span>

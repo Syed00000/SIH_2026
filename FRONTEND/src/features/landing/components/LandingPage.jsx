@@ -26,6 +26,7 @@ import indiaGovLogo from '../assets/india_gov_logo.png';
 import digitalIndiaLogo from '../assets/digital_india_logo.png';
 
 import { LandingLayout } from './layout/LandingLayout';
+import { JharkhandDistrictMapModal } from './JharkhandDistrictMapModal';
 
 // Update thumbnails
 import updateMeet from '../assets/update_meet.png';
@@ -51,6 +52,7 @@ export const LandingPage = ({ onNavigate }) => {
 
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
+  const [isDistrictMapOpen, setIsDistrictMapOpen] = useState(false);
 
   const heroSlides = [
     {
@@ -440,12 +442,19 @@ export const LandingPage = ({ onNavigate }) => {
             <div className="bg-white rounded-none border border-gray-200/90 shadow-xs p-4 md:p-5 flex flex-col justify-between">
               <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
                 {/* Left: District Map */}
-                <div className="w-full sm:w-1/2 flex items-center justify-center">
+                <div 
+                  onClick={() => setIsDistrictMapOpen(true)}
+                  className="w-full sm:w-1/2 flex items-center justify-center cursor-pointer group relative"
+                  title="Click to open interactive GPS District Map"
+                >
                   <img 
                     src={jharkhandMapTight} 
                     alt="Jharkhand District Map" 
-                    className="max-h-[175px] w-auto max-w-full object-contain" 
+                    className="max-h-[175px] w-auto max-w-full object-contain group-hover:scale-105 transition-transform duration-300" 
                   />
+                  <span className="absolute bottom-1 bg-[#0f4b3a]/90 text-white text-[9.5px] font-extrabold px-2 py-0.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-xs">
+                    Click to Open Map 🗺️
+                  </span>
                 </div>
 
                 {/* Right: Info list */}
@@ -479,8 +488,8 @@ export const LandingPage = ({ onNavigate }) => {
               {/* Bottom Button */}
               <div className="mt-4 pt-1">
                 <button 
-                  onClick={() => handleNav('/about')}
-                  className="w-full py-1.5 px-3 rounded-none border border-[#0f4b3a] text-[#0f4b3a] text-[11px] sm:text-xs font-bold hover:bg-[#0f4b3a] hover:text-white transition-colors inline-flex items-center justify-center gap-1.5 shadow-2xs"
+                  onClick={() => setIsDistrictMapOpen(true)}
+                  className="w-full py-1.5 px-3 rounded-none border border-[#0f4b3a] text-[#0f4b3a] text-[11px] sm:text-xs font-bold hover:bg-[#0f4b3a] hover:text-white transition-colors inline-flex items-center justify-center gap-1.5 shadow-2xs cursor-pointer"
                 >
                   View District Map <ArrowRight className="w-3.5 h-3.5" />
                 </button>
@@ -690,6 +699,12 @@ export const LandingPage = ({ onNavigate }) => {
 
         </div>
       </section>
+
+      {/* Interactive Jharkhand District Map Modal */}
+      <JharkhandDistrictMapModal 
+        isOpen={isDistrictMapOpen} 
+        onClose={() => setIsDistrictMapOpen(false)} 
+      />
 
     </LandingLayout>
   );

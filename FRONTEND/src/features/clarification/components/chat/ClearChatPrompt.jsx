@@ -17,14 +17,14 @@ export const ClearChatPrompt = ({
           type="button"
           onClick={onConfirmClear}
           disabled={clearing}
-          className="px-3 py-1 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-lg text-xs cursor-pointer shadow-xs"
+          className="px-3 py-1 bg-[#dc2626] hover:bg-[#b91c1c] text-white font-bold rounded-md text-xs cursor-pointer shadow-xs transition-colors"
         >
           {clearing ? 'Clearing...' : 'Clear All'}
         </button>
         <button
           type="button"
           onClick={onCancel}
-          className="px-3 py-1 bg-white hover:bg-slate-100 text-slate-700 font-bold rounded-lg text-xs border border-slate-300 cursor-pointer"
+          className="px-3 py-1 bg-white hover:bg-slate-100 text-slate-700 font-bold rounded-md text-xs border border-slate-300 cursor-pointer transition-colors"
         >
           Cancel
         </button>

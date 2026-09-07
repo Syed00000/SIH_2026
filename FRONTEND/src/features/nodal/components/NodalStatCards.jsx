@@ -63,7 +63,7 @@ export const NodalStatCards = ({ stats = {}, onCardClick }) => {
             onClick={() => onCardClick && onCardClick(card.id)}
             className={`group bg-white border ${
               card.highlight ? 'border-amber-400 bg-amber-50/20 ring-1 ring-amber-300' : 'border-slate-200/90 hover:border-slate-300'
-            } rounded-2xl p-4 shadow-2xs transition-all duration-150 flex flex-col justify-between cursor-pointer`}
+            } rounded-md p-4 shadow-2xs transition-all duration-150 flex flex-col justify-between cursor-pointer`}
           >
             <div>
               <div className="flex items-center justify-between">
@@ -75,7 +75,7 @@ export const NodalStatCards = ({ stats = {}, onCardClick }) => {
               <div className="text-2xl sm:text-3xl font-black text-slate-900 mt-2 tracking-tight flex items-baseline justify-between">
                 <span>{card.value}</span>
                 {card.highlight && (
-                  <span className="text-[10px] font-bold font-mono bg-amber-100 text-amber-900 px-2 py-0.5 rounded-full border border-amber-300">
+                  <span className="text-[10px] font-bold font-mono bg-amber-100 text-amber-900 px-2 py-0.5 rounded-md border border-amber-300">
                     Action
                   </span>
                 )}

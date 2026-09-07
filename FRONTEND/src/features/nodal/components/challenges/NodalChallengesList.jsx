@@ -74,7 +74,7 @@ export const NodalChallengesList = ({
                         <span className="font-mono text-[10px] font-bold text-slate-700 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200">
                           {chlId}
                         </span>
-                        <span className="text-[9.5px] font-bold text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded-full border border-slate-200">
+                        <span className="text-[9.5px] font-bold text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded-md border border-slate-200">
                           {chl.domain || 'General Need'}
                         </span>
                       </div>
@@ -102,7 +102,7 @@ export const NodalChallengesList = ({
 
                   <td className="py-3.5 px-4 whitespace-nowrap">
                     <div className="space-y-1.5">
-                      <span className={`inline-block text-[10px] font-bold px-2 py-0.5 rounded-full border ${
+                      <span className={`inline-block text-[10px] font-bold px-2 py-0.5 rounded-md border ${
                         isDeployed
                           ? 'bg-emerald-100 text-emerald-900 border-emerald-300'
                           : chl.status === 'Resolved'
@@ -130,7 +130,7 @@ export const NodalChallengesList = ({
                   </td>
 
                   <td className="py-3.5 px-4 whitespace-nowrap text-center">
-                    <span className={`inline-block text-[10.5px] font-bold px-2 py-0.5 rounded-full border ${
+                    <span className={`inline-block text-[10.5px] font-bold px-2 py-0.5 rounded-md border ${
                       chl.priority === 'Critical'
                         ? 'bg-rose-100 text-rose-800 border-rose-200'
                         : chl.priority === 'High'
