@@ -1,11 +1,13 @@
 import React from 'react';
-import { Bell, Menu, Shield } from 'lucide-react';
+import { Menu, Shield } from 'lucide-react';
+import { NodalNotificationPopover } from './notifications/NodalNotificationPopover.jsx';
 
 export const NodalHeader = ({
   institutionName = 'Jharkhand State Innovation Cell',
   nodalName = 'State Nodal Officer',
   nodalDistrict = '',
-  notificationCount = 4,
+  user,
+  onSelectNotification,
   onToggleSidebar
 }) => {
   const avatarInitials = (nodalName || 'Nodal Officer')
@@ -48,20 +50,12 @@ export const NodalHeader = ({
 
       {/* Right Controls: Notification Bell & Officer Profile Pill */}
       <div className="flex items-center space-x-2.5">
-        {/* Notification Bell */}
-        <div className="relative">
-          <button
-            className="p-1.5 sm:p-2 border border-slate-200 rounded-lg hover:bg-slate-50 text-slate-600 transition-colors bg-white cursor-pointer shadow-2xs flex items-center justify-center"
-            title="Notifications"
-          >
-            <Bell className="w-4 h-4" />
-            {notificationCount > 0 && (
-              <span className="absolute -top-1 -right-1 bg-[#047857] text-white text-[9px] font-black w-4 h-4 rounded-full flex items-center justify-center border-2 border-white shadow-2xs">
-                {notificationCount}
-              </span>
-            )}
-          </button>
-        </div>
+        {/* Live Notification Popover */}
+        <NodalNotificationPopover
+          user={user}
+          nodalDistrict={nodalDistrict}
+          onSelectNotification={onSelectNotification}
+        />
 
         {/* Nodal Officer Avatar Pill */}
         <div className="flex items-center space-x-2 pl-2 border-l border-slate-200">

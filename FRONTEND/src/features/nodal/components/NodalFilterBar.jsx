@@ -1,5 +1,5 @@
 import React from 'react';
-import { Search } from 'lucide-react';
+import { Search, LayoutGrid, LayoutList } from 'lucide-react';
 import { JHARKHAND_DISTRICTS_LIST, SECTORS_LIST } from '../../government/data/governmentConstants.js';
 
 export const NodalFilterBar = ({
@@ -13,15 +13,49 @@ export const NodalFilterBar = ({
   setDistrictFilter,
   priorityFilter,
   setPriorityFilter,
-  totalCount
+  totalCount,
+  viewMode = 'grid',
+  setViewMode
 }) => {
   return (
     <div className="bg-white border border-slate-200/90 rounded-2xl p-4 shadow-2xs space-y-3 select-none">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-2.5">
         <h2 className="font-extrabold text-slate-900 text-sm tracking-tight">Citizen Ground Submissions Triage Directory</h2>
-        <span className="text-xs font-bold text-[#047857] bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
-          {totalCount} problem statements loaded
-        </span>
+        <div className="flex items-center space-x-2">
+          <span className="text-xs font-bold text-[#047857] bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">
+            {totalCount} problem statements loaded
+          </span>
+          {setViewMode && (
+            <div className="flex items-center bg-slate-100 p-0.5 rounded-lg border border-slate-200 text-xs font-semibold">
+              <button
+                type="button"
+                onClick={() => setViewMode('list')}
+                title="List View"
+                className={`flex items-center space-x-1.5 px-2.5 py-1 rounded-md text-xs font-bold transition-all cursor-pointer ${
+                  viewMode === 'list'
+                    ? 'bg-white text-slate-900 shadow-2xs'
+                    : 'text-slate-500 hover:text-slate-900'
+                }`}
+              >
+                <LayoutList className="w-3.5 h-3.5" />
+                <span>List</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setViewMode('grid')}
+                title="Grid View"
+                className={`flex items-center space-x-1.5 px-2.5 py-1 rounded-md text-xs font-bold transition-all cursor-pointer ${
+                  viewMode === 'grid'
+                    ? 'bg-white text-slate-900 shadow-2xs'
+                    : 'text-slate-500 hover:text-slate-900'
+                }`}
+              >
+                <LayoutGrid className="w-3.5 h-3.5" />
+                <span>Grid</span>
+              </button>
+            </div>
+          )}
+        </div>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-2 text-xs">

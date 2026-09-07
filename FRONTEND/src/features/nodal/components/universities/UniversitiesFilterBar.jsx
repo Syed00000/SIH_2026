@@ -1,5 +1,5 @@
 import React from 'react';
-import { Search, LayoutList, LayoutGrid } from 'lucide-react';
+import { Search, LayoutGrid, LayoutList } from 'lucide-react';
 import { JHARKHAND_DISTRICTS_LIST } from '../../../government/data/jharkhandDistrictsMeta.js';
 
 const ALLOCATION_STATUS_TABS = ['All', 'Assigned', 'Unassigned'];
@@ -11,7 +11,7 @@ export const UniversitiesFilterBar = ({
   setFilterAllocationStatus,
   filterDistrict,
   setFilterDistrict,
-  viewMode = 'table',
+  viewMode = 'list',
   setViewMode
 }) => {
   return (
@@ -58,32 +58,32 @@ export const UniversitiesFilterBar = ({
         </select>
 
         {setViewMode && (
-          <div className="flex items-center bg-slate-100/90 p-1 rounded-md border border-slate-200">
+          <div className="flex items-center bg-slate-100 p-0.5 rounded-lg border border-slate-200 text-xs font-semibold">
             <button
               type="button"
-              onClick={() => setViewMode('table')}
-              className={`p-1.5 rounded text-xs font-bold transition-all cursor-pointer flex items-center space-x-1 ${
-                viewMode === 'table'
-                  ? 'bg-[#047857] text-white shadow-2xs'
-                  : 'text-slate-600 hover:text-slate-900'
+              onClick={() => setViewMode('list')}
+              title="List View"
+              className={`flex items-center space-x-1.5 px-2.5 py-1.5 rounded-md text-xs font-bold transition-all cursor-pointer ${
+                viewMode === 'list'
+                  ? 'bg-white text-slate-900 shadow-2xs'
+                  : 'text-slate-500 hover:text-slate-900'
               }`}
-              title="Form / List Table View"
             >
               <LayoutList className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline text-[11px]">List</span>
+              <span>List</span>
             </button>
             <button
               type="button"
               onClick={() => setViewMode('grid')}
-              className={`p-1.5 rounded text-xs font-bold transition-all cursor-pointer flex items-center space-x-1 ${
+              title="Grid View"
+              className={`flex items-center space-x-1.5 px-2.5 py-1.5 rounded-md text-xs font-bold transition-all cursor-pointer ${
                 viewMode === 'grid'
-                  ? 'bg-[#047857] text-white shadow-2xs'
-                  : 'text-slate-600 hover:text-slate-900'
+                  ? 'bg-white text-slate-900 shadow-2xs'
+                  : 'text-slate-500 hover:text-slate-900'
               }`}
-              title="Card Grid View"
             >
               <LayoutGrid className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline text-[11px]">Cards</span>
+              <span>Grid</span>
             </button>
           </div>
         )}
