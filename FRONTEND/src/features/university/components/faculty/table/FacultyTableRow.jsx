@@ -1,12 +1,13 @@
 import React from 'react';
-import { Eye, Edit3 } from 'lucide-react';
+import { Eye, Edit3, Trash2 } from 'lucide-react';
 
 export const FacultyTableRow = ({
   f,
   globalIndex,
   isSelected,
   onSelectFaculty,
-  onEditFaculty
+  onEditFaculty,
+  onDeleteFaculty
 }) => {
   const name = f.name || 'Faculty Mentor';
   const firstLetter = name.replace(/^Dr\.\s*|^Prof\.\s*/i, '').charAt(0).toUpperCase() || 'F';
@@ -137,6 +138,16 @@ export const FacultyTableRow = ({
               title="Edit Faculty Mentor Credentials"
             >
               <Edit3 className="w-3.5 h-3.5" />
+            </button>
+          )}
+          {onDeleteFaculty && (
+            <button
+              type="button"
+              onClick={() => onDeleteFaculty(f)}
+              className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
+              title="Delete Faculty Mentor"
+            >
+              <Trash2 className="w-3.5 h-3.5" />
             </button>
           )}
         </div>
