@@ -11,9 +11,11 @@ export const createUserHandler = (userService) => {
           email: user.email,
           mobileNumber: user.mobileNumber,
           role: user.role,
+          deptId: user.deptId || user.profile?.deptId || '',
+          department: user.department || user.profile?.department || user.fullName || '',
           district: user.profile?.district || user.district || '',
           profile: user.profile,
-          emailVerified: user.isEmailVerified,
+          emailVerified: user.isEmailVerified ?? user.emailVerified,
           accountStatus: user.accountStatus
         }
       });

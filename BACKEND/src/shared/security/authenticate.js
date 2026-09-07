@@ -18,6 +18,8 @@ export const authenticate = (req, res, next) => {
       id: decoded.sub,
       role: decoded.role,
       email: decoded.email,
+      deptId: decoded.deptId || '',
+      department: decoded.department || '',
       district: decoded.district || ''
     };
     next();

@@ -14,6 +14,7 @@ import { NodalPortal } from '../features/nodal/NodalPortal.jsx';
 import { UniversityLayout } from '../features/university/components/layout/UniversityLayout.jsx';
 import { FacultyLayout } from '../features/faculty/components/layout/FacultyLayout.jsx';
 import { GovernmentLayout } from '../features/government/components/layout/GovernmentLayout.jsx';
+import { DepartmentPortal } from '../features/department/DepartmentPortal.jsx';
 import { LandingPage } from '../features/landing/components/LandingPage.jsx';
 import { AboutPage } from '../features/landing/components/AboutPage.jsx';
 import { ImpactPage } from '../features/landing/components/ImpactPage.jsx';
@@ -169,6 +170,15 @@ export function Router() {
       return (
         <ProtectedRoute allowedRoles={['GOVERNMENT', 'ADMIN', 'SUPER_ADMIN']} onNavigate={navigate}>
           <GovernmentLayout onLogout={handleLogout} />
+        </ProtectedRoute>
+      );
+    }
+
+    // (e) Department Authority Portal
+    if (currentPath === '/department' || currentPath === '/department-portal') {
+      return (
+        <ProtectedRoute allowedRoles={['DEPARTMENT', 'GOVERNMENT', 'ADMIN', 'NODAL', 'CITIZEN']} onNavigate={navigate}>
+          <DepartmentPortal user={user} onLogout={handleLogout} />
         </ProtectedRoute>
       );
     }

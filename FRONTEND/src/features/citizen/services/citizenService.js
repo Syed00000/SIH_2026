@@ -10,7 +10,13 @@ export const citizenService = {
     try {
       const query = new URLSearchParams(params).toString();
       const response = await apiClient.get(`citizen/challenges${query ? `?${query}` : ''}`);
-      return response.data || { challenges: [], total: 0, page: 1, totalPages: 1 };
+      const payload = response.data?.data || response.data || {};
+      return {
+        challenges: payload.challenges || (Array.isArray(payload) ? payload : []),
+        total: payload.total || 0,
+        page: payload.page || 1,
+        totalPages: payload.totalPages || 1
+      };
     } catch (err) {
       console.warn('API error fetching challenges:', err);
       return { challenges: [], total: 0, page: 1, totalPages: 1 };
@@ -21,7 +27,13 @@ export const citizenService = {
     try {
       const query = new URLSearchParams(params).toString();
       const response = await apiClient.get(`citizen/challenges/my${query ? `?${query}` : ''}`);
-      return response.data || { challenges: [], total: 0, page: 1, totalPages: 1 };
+      const payload = response.data?.data || response.data || {};
+      return {
+        challenges: payload.challenges || (Array.isArray(payload) ? payload : []),
+        total: payload.total || 0,
+        page: payload.page || 1,
+        totalPages: payload.totalPages || 1
+      };
     } catch (err) {
       console.warn('API error fetching my challenges:', err);
       return { challenges: [], total: 0, page: 1, totalPages: 1 };

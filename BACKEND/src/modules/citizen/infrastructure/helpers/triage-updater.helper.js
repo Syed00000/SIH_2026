@@ -62,6 +62,33 @@ export function applyTriageChanges(challenge, triageData, user = null) {
     }
   }
 
+  if (triageData.assignedDepartment && (triageData.assignedDepartment.name || triageData.assignedDepartment.deptId || triageData.assignedDepartment.id)) {
+    const dept = triageData.assignedDepartment;
+    challenge.assignedDepartment = {
+      id: dept.id || dept.deptId || '',
+      deptId: dept.deptId || dept.id || '',
+      name: dept.name || 'Assigned Department',
+      category: dept.category || 'District Department',
+      headName: dept.headName || '',
+      headEmail: dept.headEmail || '',
+      headRole: dept.headRole || '',
+      district: dept.district || challenge.district || challenge.location?.district || '',
+      instructions: dept.instructions || triageData.instructions || '',
+      assignedAt: new Date(),
+      assignedBy: user?.fullName || 'State Nodal Officer',
+      priority: triageData.priority || challenge.priority || 'Medium',
+      targetDate: dept.targetDate || null,
+      status: 'Assigned'
+    };
+    if (!triageData.status && (challenge.status === 'Submitted' || challenge.status === 'Under Review')) {
+      challenge.status = 'In Progress';
+    }
+  }
+
+  if (challenge.location && (!challenge.location.geoJSON?.coordinates || challenge.location.geoJSON.coordinates.length !== 2)) {
+    challenge.location.geoJSON = undefined;
+  }
+
   // Milestones progression
   if (challenge.milestones && challenge.milestones.length >= 4) {
     if (newStatus === 'Rejected') {

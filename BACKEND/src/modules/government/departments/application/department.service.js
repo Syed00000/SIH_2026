@@ -30,7 +30,7 @@ export class DepartmentService {
     const departments = await this.repo.find(mongoFilter);
     const [allAdmins, allChallenges] = await Promise.all([
       Admin.find({ status: { $ne: 'Removed' } }).select('fullName email mobileNumber district assignedDepartment role primaryRole status').lean(),
-      CitizenChallenge.find({ isDeleted: { $ne: true } }).select('challengeId title district domain priority status location isDeployed').lean()
+      CitizenChallenge.find({ isDeleted: { $ne: true } }).select('challengeId title description district domain priority status location isDeployed assignedDepartment submitter submittedAt mediaUrls media').lean()
     ]);
 
     return departments.map((dept) => {
@@ -49,6 +49,13 @@ export class DepartmentService {
       });
 
       const matchedChallenges = allChallenges.filter((c) => {
+        const assignedDeptId = c.assignedDepartment?.deptId || c.assignedDepartment?.id;
+        if (assignedDeptId && (assignedDeptId === dept.deptId || assignedDeptId === dept.id || assignedDeptId === dept._id?.toString())) {
+          return true;
+        }
+        if (c.assignedDepartment?.name && c.assignedDepartment.name.toLowerCase() === dept.name.toLowerCase()) {
+          return true;
+        }
         const domainClean = (c.domain || '').toLowerCase().replace(/&/g, 'and').trim();
         if (domainClean && (domainClean.includes(deptCodeLower) || deptNameLower.includes(domainClean) || domainClean.includes(deptNameLower))) {
           return true;
@@ -114,9 +121,12 @@ export class DepartmentService {
   }
 
   async getDepartment(id) {
-    const dept = await this.repo.findById(id);
-    if (!dept) throw new Error('Department not found');
-    return dept;
+    const departments = await this.listDepartments();
+    const dept = departments.find((d) => d.deptId === id || d.id === id || d._id?.toString() === id);
+    if (dept) return dept;
+    const direct = await this.repo.findById(id);
+    if (!direct) throw new Error('Department not found');
+    return direct;
   }
 
   async updateDepartment(id, updates) {
