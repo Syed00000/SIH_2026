@@ -77,12 +77,12 @@ export const NodalPortal = ({ user: propUser, onLogout }) => {
 
       {/* 2. Main Viewport */}
       <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden bg-white">
-        {/* Sticky Header with Real Institution & Officer Info */}
         <NodalHeader
           institutionName={institutionName}
           nodalName={nodalName}
           nodalDistrict={nodalDistrict}
-          notificationCount={4}
+          user={user}
+          onSelectNotification={() => handleNavigateChallenges('All Status')}
           onToggleSidebar={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
         />
 
