@@ -18,7 +18,7 @@ export const FacultyKpiGrid = ({
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
       <div
         onClick={() => onNavigateTab('challenges')}
-        className="p-4 bg-white border border-slate-200/90 rounded-xl shadow-2xs hover:border-slate-300 transition-all cursor-pointer group"
+        className="p-4 bg-white border border-slate-200/90 rounded-2xl shadow-2xs hover:border-slate-300 transition-all cursor-pointer group"
       >
         <div className="flex items-center justify-between">
           <span className="text-[10.5px] font-bold uppercase tracking-wider text-slate-500">
@@ -37,7 +37,7 @@ export const FacultyKpiGrid = ({
 
       <div
         onClick={() => onNavigateTab('projects')}
-        className="p-4 bg-white border border-slate-200/90 rounded-xl shadow-2xs hover:border-slate-300 transition-all cursor-pointer group"
+        className="p-4 bg-white border border-slate-200/90 rounded-2xl shadow-2xs hover:border-slate-300 transition-all cursor-pointer group"
       >
         <div className="flex items-center justify-between">
           <span className="text-[10.5px] font-bold uppercase tracking-wider text-slate-500">
@@ -56,7 +56,7 @@ export const FacultyKpiGrid = ({
 
       <div
         onClick={() => onNavigateTab('projects')}
-        className="p-4 bg-white border border-slate-200/90 rounded-xl shadow-2xs hover:border-slate-300 transition-all cursor-pointer group"
+        className="p-4 bg-white border border-slate-200/90 rounded-2xl shadow-2xs hover:border-slate-300 transition-all cursor-pointer group"
       >
         <div className="flex items-center justify-between">
           <span className="text-[10.5px] font-bold uppercase tracking-wider text-slate-500">
@@ -75,7 +75,7 @@ export const FacultyKpiGrid = ({
 
       <div
         onClick={() => onNavigateTab('projects')}
-        className="p-4 bg-white border border-slate-200/90 rounded-xl shadow-2xs hover:border-slate-300 transition-all cursor-pointer group"
+        className="p-4 bg-white border border-slate-200/90 rounded-2xl shadow-2xs hover:border-slate-300 transition-all cursor-pointer group"
       >
         <div className="flex items-center justify-between">
           <span className="text-[10.5px] font-bold uppercase tracking-wider text-slate-500">

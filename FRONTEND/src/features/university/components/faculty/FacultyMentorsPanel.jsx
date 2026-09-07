@@ -104,7 +104,7 @@ export const FacultyMentorsPanel = ({ onNavigateTab, onSelectFacultyDetail, onSe
 
   return (
     <div className="space-y-3.5 max-w-7xl mx-auto select-none">
-      <div>
+      <div className="bg-white border border-slate-200/90 rounded-2xl shadow-2xs p-4">
         <h1 className="text-xl font-bold text-slate-900 tracking-tight">Faculty Management</h1>
         <p className="text-xs text-slate-500 mt-0.5">Manage faculty profiles, expertise, mentorship capacity, and departmental allocations.</p>
       </div>

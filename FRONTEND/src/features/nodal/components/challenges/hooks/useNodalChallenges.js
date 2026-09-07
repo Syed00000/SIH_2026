@@ -4,8 +4,9 @@ import apiClient from '../../../../../infrastructure/api/client.js';
 import { filterChallengesList } from '../filterChallenges.helper.js';
 
 export const useNodalChallenges = ({ initialStatusFilter = 'All Status', nodalDistrict = '' }) => {
+  const safeInitialStatus = typeof initialStatusFilter === 'string' ? initialStatusFilter : 'All Status';
   const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState(initialStatusFilter);
+  const [statusFilter, setStatusFilter] = useState(safeInitialStatus);
   const [domainFilter, setDomainFilter] = useState('All Domains');
   const [districtFilter, setDistrictFilter] = useState(nodalDistrict || 'All Districts');
   const [priorityFilter, setPriorityFilter] = useState('All Priority');
@@ -22,7 +23,7 @@ export const useNodalChallenges = ({ initialStatusFilter = 'All Status', nodalDi
 
   useEffect(() => {
     if (initialStatusFilter) {
-      setStatusFilter(initialStatusFilter);
+      setStatusFilter(typeof initialStatusFilter === 'string' ? initialStatusFilter : 'All Status');
     }
   }, [initialStatusFilter]);
 

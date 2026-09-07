@@ -3,7 +3,7 @@ import { Users, Plus, Search, Sparkles, AlertCircle, FolderGit2 } from 'lucide-r
 import { ExpertsKpiCards } from './ExpertsKpiCards.jsx';
 import { ExpertsListTable } from './ExpertsListTable.jsx';
 import { AddExpertModal } from './AddExpertModal.jsx';
-import { AssignProblemModal } from './AssignProblemModal.jsx';
+import { IndustryAssignProblemPanel } from './IndustryAssignProblemPanel.jsx';
 
 export const IndustryExpertsView = ({
   user,
@@ -18,6 +18,20 @@ export const IndustryExpertsView = ({
   const [selectedExpertForAssign, setSelectedExpertForAssign] = useState(null);
 
   const awaitingCount = mentorshipProblemsAwaiting.length;
+
+  if (selectedExpertForAssign) {
+    return (
+      <IndustryAssignProblemPanel
+        expert={selectedExpertForAssign}
+        eligibleProblems={mentorshipProblemsAwaiting}
+        onBack={() => setSelectedExpertForAssign(null)}
+        onSuccess={() => {
+          setSelectedExpertForAssign(null);
+          onRefresh && onRefresh();
+        }}
+      />
+    );
+  }
 
   return (
     <div className="space-y-4 max-w-7xl mx-auto select-none pb-12 text-left">
@@ -116,16 +130,6 @@ export const IndustryExpertsView = ({
         isOpen={isAddModalOpen}
         user={user}
         onClose={() => setIsAddModalOpen(false)}
-        onSuccess={() => {
-          onRefresh && onRefresh();
-        }}
-      />
-
-      <AssignProblemModal
-        isOpen={Boolean(selectedExpertForAssign)}
-        expert={selectedExpertForAssign}
-        eligibleProblems={mentorshipProblemsAwaiting}
-        onClose={() => setSelectedExpertForAssign(null)}
         onSuccess={() => {
           onRefresh && onRefresh();
         }}

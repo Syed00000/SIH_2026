@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { ProjectsKpis } from './ProjectsKpis.jsx';
 import { ProjectsFilterBar } from './ProjectsFilterBar.jsx';
 import { ProjectsTable } from './ProjectsTable.jsx';
-import { ProjectDrawer } from './ProjectDrawer.jsx';
+import { ProjectDetailPanel } from './ProjectDetailPanel.jsx';
+import { ProblemEvidenceDossierPanel } from '../../../nodal/components/ProblemEvidenceDossierPanel.jsx';
 import { ProjectCreateModal } from './ProjectCreateModal.jsx';
 import { ProjectEditModal } from './ProjectEditModal.jsx';
 import { AssignFacultyMentorModal } from './AssignFacultyMentorModal.jsx';
@@ -12,6 +13,7 @@ export const ProjectsPanel = ({ onNavigateTab }) => {
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedProject, setSelectedProject] = useState(null);
+  const [dossierChallenge, setDossierChallenge] = useState(null);
   const [assignModalProject, setAssignModalProject] = useState(null);
   const [search, setSearch] = useState('');
   const [domainFilter, setDomainFilter] = useState('All');
@@ -24,70 +26,36 @@ export const ProjectsPanel = ({ onNavigateTab }) => {
   const fetchProjects = async () => {
     setLoading(true);
     const data = await universityApiService.getProjects('RU001');
-    const list = Array.isArray(data) ? data : [];
-    setProjects(list);
+    setProjects(Array.isArray(data) ? data : []);
     setLoading(false);
   };
 
-  useEffect(() => {
-    fetchProjects();
-  }, []);
+  useEffect(() => { fetchProjects(); }, []);
 
   const totalCount = projects.length;
   const deployedCount = projects.filter((p) => p.status === 'Deployed' || p.isDeployed || p.isLocked).length;
   const inProgressCount = projects.filter((p) => (p.status === 'In Progress' || p.status === 'Active R&D') && !p.isDeployed && !p.isLocked && p.status !== 'Deployed').length;
   const planningCount = projects.filter((p) => p.status === 'Proposal Stage' || p.status === 'Planning' || p.status === 'Pending Proposal' || !p.status).length;
   const completedCount = projects.filter((p) => p.status === 'Completed').length;
-
-  const facultyOptions = Array.from(
-    new Set(projects.map((p) => p.facultyMentor?.name || p.leadMentor).filter(Boolean))
-  );
-
-  const handleResetFilters = () => {
-    setSearch('');
-    setDomainFilter('All');
-    setStatusFilter('All');
-    setFacultyFilter('All');
-  };
-
-  const handleCreateProject = async (newProj) => {
-    await universityApiService.createProject({
-      ...newProj,
-      projectId: `PRJ-${Math.floor(1000 + Math.random() * 9000)}`,
-      status: 'Proposal Stage',
-      progressPercentage: 14
-    });
-    await fetchProjects();
-  };
+  const facultyOptions = Array.from(new Set(projects.map((p) => p.facultyMentor?.name || p.leadMentor).filter(Boolean)));
 
   const handleUpdateProject = async (updatedProj) => {
     await universityApiService.updateProject(updatedProj.projectId || updatedProj._id, updatedProj);
-    setProjects(projects.map((p) => (p.projectId === updatedProj.projectId ? updatedProj : p)));
-    if (selectedProject?.projectId === updatedProj.projectId) {
-      setSelectedProject(updatedProj);
-    }
+    setProjects((prev) => prev.map((p) => (p.projectId === updatedProj.projectId ? updatedProj : p)));
+    if (selectedProject?.projectId === updatedProj.projectId) setSelectedProject(updatedProj);
   };
 
   const handleMarkAsCompleted = async (proj) => {
     if (window.confirm(`Mark project "${proj.title}" as Completed (100% Verified)?`)) {
-      const updated = {
-        ...proj,
-        status: 'Completed',
-        progressPercentage: 100,
-        milestonesCompleted: proj.milestonesTotal || 7,
-        daysLeft: 'Completed'
-      };
-      await handleUpdateProject(updated);
+      await handleUpdateProject({ ...proj, status: 'Completed', progressPercentage: 100, milestonesCompleted: proj.milestonesTotal || 7, daysLeft: 'Completed' });
     }
   };
 
   const handleSoftDeleteProject = async (proj) => {
-    if (window.confirm(`Permanently delete project "${proj.title}"? This will purge all associated assignments, faculty allocations, and records.`)) {
+    if (window.confirm(`Permanently delete project "${proj.title}"?`)) {
       await universityApiService.deleteProject(proj.projectId || proj._id);
       setProjects((prev) => prev.filter((p) => p.projectId !== proj.projectId && p._id !== proj._id));
-      if (selectedProject?.projectId === proj.projectId || selectedProject?._id === proj._id) {
-        setSelectedProject(null);
-      }
+      if (selectedProject?.projectId === proj.projectId) setSelectedProject(null);
       await fetchProjects();
     }
   };
@@ -99,58 +67,76 @@ export const ProjectsPanel = ({ onNavigateTab }) => {
         if (p.status !== 'Proposal Stage' && p.status !== 'Planning' && p.status !== 'Pending Proposal') return false;
       } else if (statusFilter === 'Deployed') {
         if (p.status !== 'Deployed' && !p.isDeployed && !p.isLocked) return false;
-      } else if (p.status !== statusFilter) {
-        return false;
-      }
+      } else if (p.status !== statusFilter) return false;
     }
-    if (facultyFilter !== 'All') {
-      const mentor = p.facultyMentor?.name || p.leadMentor;
-      if (mentor !== facultyFilter) return false;
-    }
+    if (facultyFilter !== 'All' && (p.facultyMentor?.name || p.leadMentor) !== facultyFilter) return false;
     if (search.trim()) {
       const q = search.toLowerCase();
-      return (
-        (p.title || '').toLowerCase().includes(q) ||
-        (p.projectId || '').toLowerCase().includes(q) ||
-        (p.challengeId || '').toLowerCase().includes(q) ||
-        (p.domain || '').toLowerCase().includes(q) ||
-        (p.facultyMentor?.name || p.leadMentor || '').toLowerCase().includes(q)
-      );
+      return (p.title || '').toLowerCase().includes(q) || (p.projectId || '').toLowerCase().includes(q) || (p.challengeId || '').toLowerCase().includes(q);
     }
     return true;
   });
 
+  if (dossierChallenge) {
+    return (
+      <div className="space-y-4 max-w-7xl mx-auto select-none animate-in fade-in duration-150">
+        <ProblemEvidenceDossierPanel
+          challenge={{ ...dossierChallenge, challengeId: dossierChallenge.challengeId || dossierChallenge.projectId, description: dossierChallenge.problemStatement || dossierChallenge.description }}
+          onClose={() => setDossierChallenge(null)}
+          isUniversityView={true}
+        />
+      </div>
+    );
+  }
+
+  if (selectedProject) {
+    return (
+      <div className="space-y-4 max-w-7xl mx-auto select-none animate-in fade-in duration-150">
+        <ProjectDetailPanel
+          project={selectedProject}
+          onClose={() => setSelectedProject(null)}
+          onEdit={(p) => { setEditingProject(p); setIsEditModalOpen(true); }}
+          onAssignMentor={(p) => setAssignModalProject(p)}
+          onEndProject={handleSoftDeleteProject}
+          onMarkCompleted={handleMarkAsCompleted}
+          onViewProblemDossier={(p) => setDossierChallenge(p)}
+        />
+        {assignModalProject && (
+          <AssignFacultyMentorModal
+            isOpen={Boolean(assignModalProject)}
+            project={assignModalProject}
+            onClose={() => setAssignModalProject(null)}
+            onSuccess={async (updated) => {
+              setProjects((prev) => prev.map((p) => (p.projectId === updated.projectId ? { ...p, ...updated } : p)));
+              setSelectedProject((prev) => ({ ...prev, ...updated }));
+              await fetchProjects();
+            }}
+          />
+        )}
+        <ProjectEditModal
+          isOpen={isEditModalOpen}
+          onClose={() => { setIsEditModalOpen(false); setEditingProject(null); }}
+          project={editingProject}
+          onUpdate={handleUpdateProject}
+        />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-3 max-w-7xl mx-auto select-none">
-      <div>
-        <h1 className="text-xl font-bold text-slate-900 tracking-tight">Projects</h1>
+      <div className="bg-white border border-slate-200/90 rounded-2xl shadow-2xs p-4">
+        <h1 className="text-xl font-bold text-slate-900 tracking-tight">Projects Portfolio</h1>
         <p className="text-xs text-slate-600 mt-0.5">Track and monitor all university projects from planning to completion.</p>
       </div>
 
-      <ProjectsKpis
-        total={totalCount}
-        inProgress={inProgressCount}
-        planning={planningCount}
-        completed={completedCount}
-        deployed={deployedCount}
-        loading={loading}
-      />
+      <ProjectsKpis total={totalCount} inProgress={inProgressCount} planning={planningCount} completed={completedCount} deployed={deployedCount} loading={loading} />
 
       <ProjectsFilterBar
-        search={search}
-        setSearch={setSearch}
-        domainFilter={domainFilter}
-        setDomainFilter={setDomainFilter}
-        statusFilter={statusFilter}
-        setStatusFilter={setStatusFilter}
-        facultyFilter={facultyFilter}
-        setFacultyFilter={setFacultyFilter}
-        facultyOptions={facultyOptions}
-        onResetFilters={handleResetFilters}
-        onOpenCreateModal={() => {
-          if (onNavigateTab) onNavigateTab('create-project');
-          else setIsCreateModalOpen(true);
-        }}
+        search={search} setSearch={setSearch} domainFilter={domainFilter} setDomainFilter={setDomainFilter}
+        statusFilter={statusFilter} setStatusFilter={setStatusFilter} facultyFilter={facultyFilter} setFacultyFilter={setFacultyFilter}
+        facultyOptions={facultyOptions} onResetFilters={() => { setSearch(''); setDomainFilter('All'); setStatusFilter('All'); setFacultyFilter('All'); }}
+        onOpenCreateModal={() => { if (onNavigateTab) onNavigateTab('create-project'); else setIsCreateModalOpen(true); }}
       />
 
       <div className="w-full">
@@ -164,70 +150,10 @@ export const ProjectsPanel = ({ onNavigateTab }) => {
         />
       </div>
 
-      {selectedProject && (
-        <div
-          className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-5 animate-in fade-in duration-150"
-          onClick={() => setSelectedProject(null)}
-        >
-          <div
-            className="bg-white border border-slate-200/90 rounded-xl shadow-2xl max-w-2xl w-full max-h-[88vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-150"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <ProjectDrawer
-              project={selectedProject}
-              onClose={() => setSelectedProject(null)}
-              onEdit={(p) => {
-                setEditingProject(p);
-                setIsEditModalOpen(true);
-              }}
-              onAssignMentor={(p) => setAssignModalProject(p)}
-              onEndProject={handleSoftDeleteProject}
-              onMarkCompleted={handleMarkAsCompleted}
-            />
-          </div>
-        </div>
-      )}
-
-      {/* Assign Lead Faculty Mentor Modal */}
-      {assignModalProject && (
-        <AssignFacultyMentorModal
-          isOpen={Boolean(assignModalProject)}
-          project={assignModalProject}
-          onClose={() => setAssignModalProject(null)}
-          onSuccess={async (updated) => {
-            setProjects((prev) =>
-              prev.map((p) =>
-                p.projectId === updated.projectId || p._id === updated._id
-                  ? { ...p, ...updated }
-                  : p
-              )
-            );
-            if (
-              selectedProject?.projectId === updated.projectId ||
-              selectedProject?._id === updated._id
-            ) {
-              setSelectedProject((prev) => ({ ...prev, ...updated }));
-            }
-            await fetchProjects();
-          }}
-        />
-      )}
-
-      <ProjectCreateModal
-        isOpen={isCreateModalOpen}
-        onClose={() => setIsCreateModalOpen(false)}
-        onSave={handleCreateProject}
-      />
-
-      <ProjectEditModal
-        isOpen={isEditModalOpen}
-        onClose={() => {
-          setIsEditModalOpen(false);
-          setEditingProject(null);
-        }}
-        project={editingProject}
-        onUpdate={handleUpdateProject}
-      />
+      <ProjectCreateModal isOpen={isCreateModalOpen} onClose={() => setIsCreateModalOpen(false)} onSave={async (newProj) => {
+        await universityApiService.createProject({ ...newProj, projectId: `PRJ-${Math.floor(1000 + Math.random() * 9000)}`, status: 'Proposal Stage', progressPercentage: 14 });
+        await fetchProjects();
+      }} />
     </div>
   );
 };

@@ -39,7 +39,7 @@ export const NodalWelcomeBanner = ({
         </button>
 
         <button
-          onClick={onNavigateChallenges}
+          onClick={() => onNavigateChallenges && onNavigateChallenges('All Status')}
           className="flex items-center space-x-1.5 bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold px-3.5 py-2 rounded-lg shadow-2xs transition-all cursor-pointer"
         >
           <span>Triage Challenges</span>
