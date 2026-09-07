@@ -20,6 +20,8 @@ export const createSessionHandler = (authService) => {
             email: result.user.email,
             mobileNumber: result.user.mobileNumber,
             role: result.user.role,
+            deptId: result.user.deptId || result.user.profile?.deptId || '',
+            department: result.user.department || result.user.profile?.department || result.user.fullName || '',
             district: result.user.profile?.district || result.user.district || '',
             profile: result.user.profile || {},
             emailVerified: result.user.emailVerified,

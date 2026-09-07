@@ -105,6 +105,10 @@ export const citizenChallengeSchema = new mongoose.Schema(
       type: assignedUniversitySchema,
       default: () => ({})
     },
+    assignedDepartment: {
+      type: mongoose.Schema.Types.Mixed,
+      default: null
+    },
     allocatedBy: {
       type: allocatedBySchema,
       default: null
@@ -175,6 +179,13 @@ export const citizenChallengeSchema = new mongoose.Schema(
     collection: 'citizen_challenges'
   }
 );
+
+citizenChallengeSchema.pre('save', function (next) {
+  if (this.location && (!this.location.geoJSON?.coordinates || this.location.geoJSON.coordinates.length !== 2)) {
+    this.location.geoJSON = undefined;
+  }
+  next();
+});
 
 citizenChallengeSchema.index({ 'assignedUniversity.id': 1, status: 1 });
 citizenChallengeSchema.index({ 'assignedUniversity.id': 1, acceptanceStatus: 1 });

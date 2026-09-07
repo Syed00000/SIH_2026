@@ -17,6 +17,8 @@ export class TokenService {
         sub: user.id,
         role: user.role,
         email: user.email,
+        deptId: user.deptId || user.profile?.deptId || '',
+        department: user.department || user.profile?.department || '',
         district: user.profile?.district || user.district || ''
       },
       config.JWT_ACCESS_SECRET,

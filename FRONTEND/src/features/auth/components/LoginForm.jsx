@@ -56,7 +56,18 @@ export const LoginForm = ({ onNavigate }) => {
     setIsSubmitting(true);
 
     try {
-      await login(email.trim(), password);
+      const res = await login(email.trim(), password);
+      const loggedUser = res?.user;
+      if (loggedUser?.role === 'DEPARTMENT' || loggedUser?.deptId) {
+        const targetId = loggedUser.deptId || loggedUser.id;
+        const dest = `/department?deptId=${encodeURIComponent(targetId)}`;
+        if (onNavigate) {
+          onNavigate(dest);
+        } else {
+          window.location.href = dest;
+        }
+        return;
+      }
       if (onNavigate) {
         onNavigate('/dashboard');
       } else {

@@ -1,5 +1,10 @@
 import { NotFoundError } from '../../../shared/errors/AppError.js';
 import User from '../domain/user.js';
+import {
+  findDepartmentById,
+  findDepartmentByIdentifier,
+  toDepartmentUserEntity
+} from '../../auth/application/services/department-auth.helper.js';
 
 export class UserService {
   constructor(userRepository) {
@@ -7,22 +12,46 @@ export class UserService {
   }
 
   async getUserById(id) {
-    const user = await this.userRepository.findById(id);
+    let user = null;
+    try {
+      user = await this.userRepository.findById(id);
+    } catch {
+      user = null;
+    }
+
     if (!user) {
+      const dept = await findDepartmentById(id);
+      if (dept) {
+        return toDepartmentUserEntity(dept);
+      }
       throw new NotFoundError('User not found');
     }
     return user;
   }
 
   async getUserByEmail(email) {
-    return this.userRepository.findByEmail(email);
+    const user = await this.userRepository.findByEmail(email);
+    if (!user) {
+      const dept = await findDepartmentByIdentifier(email);
+      if (dept) return toDepartmentUserEntity(dept);
+    }
+    return user;
   }
 
   async getUserByIdentifier(identifier) {
+    let user = null;
     if (this.userRepository.findByIdentifier) {
-      return this.userRepository.findByIdentifier(identifier);
+      user = await this.userRepository.findByIdentifier(identifier);
+    } else {
+      user = await this.userRepository.findByEmail(identifier);
     }
-    return this.userRepository.findByEmail(identifier);
+
+    if (!user) {
+      const dept = await findDepartmentByIdentifier(identifier);
+      if (dept) return toDepartmentUserEntity(dept);
+    }
+
+    return user;
   }
 
   async getUserByMobile(mobileNumber) {
@@ -35,7 +64,11 @@ export class UserService {
   }
 
   async updateResetCredentials(id, updateData) {
-    return this.userRepository.update(id, updateData);
+    try {
+      return await this.userRepository.update(id, updateData);
+    } catch {
+      return null;
+    }
   }
 }
 

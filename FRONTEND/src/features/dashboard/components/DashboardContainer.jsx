@@ -10,6 +10,7 @@ import { GovernmentLayout } from '../../government/components/layout/GovernmentL
 import { UniversityLayout } from '../../university/components/layout/UniversityLayout.jsx';
 import { FacultyLayout } from '../../faculty/components/layout/FacultyLayout.jsx';
 import { NodalPortal } from '../../nodal/NodalPortal.jsx';
+import { DepartmentPortal } from '../../department/DepartmentPortal.jsx';
 import { IndustrySidebar } from '../../industry/components/layout/IndustrySidebar.jsx';
 import { IndustryDashboard } from '../../industry/components/dashboard/IndustryDashboard.jsx';
 import { RoleProfile } from './RoleProfile.jsx';
@@ -64,6 +65,7 @@ export const DashboardContainer = ({ onNavigate }) => {
   if (urlPortal === 'faculty' || role.includes('FACULTY')) return <FacultyLayout user={user} onLogout={handleLogout} />;
   if (urlPortal === 'university' || role === 'UNIVERSITY' || role === 'HEI') return <UniversityLayout user={user} onLogout={handleLogout} />;
   if (role === 'GOVERNMENT' || role === 'ADMIN') return <GovernmentLayout onLogout={handleLogout} />;
+  if (urlPortal === 'department' || role === 'DEPARTMENT' || role.includes('DEPT')) return <DepartmentPortal user={user} onLogout={handleLogout} />;
 
   return (
     <div
