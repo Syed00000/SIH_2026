@@ -10,7 +10,7 @@ import { FileText, Image, MapPin, Download, Lock } from 'lucide-react';
 const DOSSIER_TABS = [
   { id: 'dossier', label: 'Problem Dossier & Vetting', icon: FileText },
   { id: 'media', label: 'Ground Truth Media & Evidence', icon: Image },
-  { id: 'location', label: 'Geo-Coordinates & Demographics', icon: MapPin }
+  { id: 'location', label: 'Location & Demographics', icon: MapPin }
 ];
 
 export const ProblemEvidenceDossierPanel = ({
@@ -33,8 +33,7 @@ export const ProblemEvidenceDossierPanel = ({
   const district = challenge.location?.district || challenge.district || 'Jharkhand';
   const block = challenge.location?.block && challenge.location.block !== 'Not specified' ? challenge.location.block : (challenge.location?.subDivision || 'Not specified');
   const panchayat = challenge.location?.panchayatOrWard && challenge.location.panchayatOrWard !== 'Not specified' ? challenge.location.panchayatOrWard : (challenge.location?.gramPanchayat || 'Not specified');
-  const fullAddress = challenge.location?.fullAddress || [panchayat, block, district, 'Jharkhand'].filter(b => b && b !== 'Not specified').join(', ') || `${district}, Jharkhand`;
-  const coordinates = challenge.location?.coordinates || 'Coordinates not provided';
+  const landmark = challenge.location?.landmark || 'Not specified';
 
   const formattedDate = challenge.submittedAt
     ? new Date(challenge.submittedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
@@ -126,12 +125,10 @@ export const ProblemEvidenceDossierPanel = ({
         {activeTab === 'media' && <DossierMediaTab evidenceMedia={evidenceMedia} />}
         {activeTab === 'location' && (
           <DossierLocationTab
-            location={challenge.location}
             district={district}
             block={block}
             panchayat={panchayat}
-            fullAddress={fullAddress}
-            coordinates={coordinates}
+            landmark={landmark}
           />
         )}
       </div>

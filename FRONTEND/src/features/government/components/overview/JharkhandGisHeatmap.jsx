@@ -14,6 +14,7 @@ import {
   Info
 } from 'lucide-react';
 import apiClient from '../../../../infrastructure/api/client.js';
+import { getMapTileConfig } from '../../utils/mapTileConfig.js';
 
 export const JharkhandGisHeatmap = ({ selectedDistrict = 'All', onSelectDistrict }) => {
   const mapContainerRef = useRef(null);
@@ -154,21 +155,12 @@ export const JharkhandGisHeatmap = ({ selectedDistrict = 'All', onSelectDistrict
       mapInstanceRef.current.removeLayer(baseTileLayerRef.current);
     }
 
-    let url = 'https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png';
-    let subdomains = 'abcd';
-    let maxZoom = 19;
-
-    if (mode === 'satellite') {
-      url = 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}';
-      subdomains = 'abc';
-      maxZoom = 18;
-    } else if (mode === 'topo') {
-      url = 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager_nolabels/{z}/{x}/{y}{r}.png';
-      subdomains = 'abcd';
-      maxZoom = 19;
-    }
-
-    const newTileLayer = L.tileLayer(url, { subdomains, maxZoom, attribution: '' });
+    const tileCfg = getMapTileConfig({ mode });
+    const newTileLayer = L.tileLayer(tileCfg.url, {
+      subdomains: tileCfg.subdomains || 'abc',
+      maxZoom: tileCfg.maxZoom || 19,
+      attribution: tileCfg.attribution
+    });
     newTileLayer.addTo(mapInstanceRef.current);
     newTileLayer.bringToBack();
     baseTileLayerRef.current = newTileLayer;
@@ -187,9 +179,11 @@ export const JharkhandGisHeatmap = ({ selectedDistrict = 'All', onSelectDistrict
         maxZoom: 13
       });
 
-      const baseTile = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png', {
-        subdomains: 'abcd',
-        maxZoom: 19
+      const tileCfg = getMapTileConfig({ mode: 'light' });
+      const baseTile = L.tileLayer(tileCfg.url, {
+        subdomains: tileCfg.subdomains || 'abc',
+        maxZoom: tileCfg.maxZoom || 19,
+        attribution: tileCfg.attribution
       }).addTo(map);
       baseTileLayerRef.current = baseTile;
 

@@ -8,7 +8,18 @@ export const locationSchema = new mongoose.Schema(
     landmark: { type: String, default: '' },
     pincode: { type: String, default: '' },
     fullAddress: { type: String, default: '' },
-    coordinates: { type: String, default: '' }
+    coordinates: { type: String, default: '' },
+    geoJSON: {
+      type: {
+        type: String,
+        enum: ['Point'],
+        default: 'Point'
+      },
+      coordinates: {
+        type: [Number],
+        default: undefined
+      }
+    }
   },
   { _id: false }
 );

@@ -79,7 +79,7 @@ export const ProblemEvidenceDossierModal = ({
                   : 'border-transparent text-slate-500 hover:text-slate-900'
               }`}
             >
-              {tab === 'dossier' ? 'Ground Truth Overview' : tab === 'media' ? `Evidence Media (${evidenceMedia.length})` : 'Geolocation Mapping'}
+              {tab === 'dossier' ? 'Ground Truth Overview' : tab === 'media' ? `Evidence Media (${evidenceMedia.length})` : 'Location & Demographics'}
             </button>
           ))}
         </div>
@@ -102,12 +102,10 @@ export const ProblemEvidenceDossierModal = ({
 
           {activeTab === 'location' && (
             <DossierLocationTab
-              fullAddress={fullAddress}
               district={district}
               block={block}
               panchayat={panchayat}
               landmark={landmark}
-              coordinates={coordinates}
             />
           )}
         </div>

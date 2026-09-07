@@ -178,5 +178,6 @@ export const citizenChallengeSchema = new mongoose.Schema(
 
 citizenChallengeSchema.index({ 'assignedUniversity.id': 1, status: 1 });
 citizenChallengeSchema.index({ 'assignedUniversity.id': 1, acceptanceStatus: 1 });
+citizenChallengeSchema.index({ 'location.geoJSON': '2dsphere' }, { sparse: true });
 
 export default citizenChallengeSchema;

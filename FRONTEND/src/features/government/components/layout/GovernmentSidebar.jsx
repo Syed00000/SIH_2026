@@ -29,7 +29,8 @@ import {
   CheckCircle2,
   Cpu,
   Rocket,
-  Lightbulb
+  Lightbulb,
+  Landmark
 } from 'lucide-react';
 
 export const GovernmentSidebar = ({
@@ -79,7 +80,7 @@ export const GovernmentSidebar = ({
         { id: 'governance_universities', label: 'Manage Universities', icon: Building2 },
         { id: 'governance_industries', label: 'Manage Industries', icon: Briefcase },
         { id: 'users_admin', label: 'User Admin', icon: ShieldCheck },
-        { id: 'users_audit', label: 'Audit Logs', icon: FileText }
+        { id: 'governance_departments', label: 'Departments', icon: Landmark }
       ]
     },
     {

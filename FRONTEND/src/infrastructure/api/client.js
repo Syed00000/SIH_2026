@@ -50,10 +50,19 @@ export function onUnauthorized(callback) {
   onUnauthorizedCallback = callback;
 }
 
-const buildUrl = (endpoint) => {
+const buildUrl = (endpoint, params) => {
   const base = config.api.baseUrl.endsWith('/') ? config.api.baseUrl : `${config.api.baseUrl}/`;
   const ep = endpoint.startsWith('/') ? endpoint.slice(1) : endpoint;
-  return `${base}${ep}`;
+  let fullUrl = `${base}${ep}`;
+  if (params && typeof params === 'object') {
+    const searchParams = new URLSearchParams();
+    Object.entries(params).forEach(([k, v]) => {
+      if (v !== undefined && v !== null && v !== '') searchParams.append(k, v);
+    });
+    const qs = searchParams.toString();
+    if (qs) fullUrl += (fullUrl.includes('?') ? '&' : '?') + qs;
+  }
+  return fullUrl;
 };
 
 export const performTokenRefresh = async () => {
@@ -86,7 +95,7 @@ export const performTokenRefresh = async () => {
 };
 
 const request = async (endpoint, options = {}, isRetry = false, isNetworkRetry = false) => {
-  const url = buildUrl(endpoint);
+  const url = buildUrl(endpoint, options.params);
   const token = getAccessToken();
 
   const isFormData = typeof FormData !== 'undefined' && options.body instanceof FormData;

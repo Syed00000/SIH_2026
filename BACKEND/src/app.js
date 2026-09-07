@@ -23,6 +23,7 @@ import industryFundRoutes from './modules/industry/funds/routes.js';
 import industryExpertRoutes from './modules/industry/experts/routes.js';
 import industryTechRoutes from './modules/industry/tech/routes.js';
 import mediaRoutes from './modules/media/presentation/routes.js';
+import gisRoutes from './modules/government/gis/presentation/routes.js';
 
 const app = express();
 
@@ -86,6 +87,8 @@ app.use('/api/v1/industries', industryRoutes);
 app.use('/api/v1/government/industries', industryRoutes);
 
 app.use('/api/v1/government/admins', adminRoutes);
+app.use('/api/v1/admin/gis', gisRoutes);
+app.use('/api/v1/government/gis', gisRoutes);
 app.use('/api/v1/government/overview', overviewRoutes);
 app.use('/api/v1/government/funds', grantRoutes);
 app.use('/api/v1/university', universityRoutes);
