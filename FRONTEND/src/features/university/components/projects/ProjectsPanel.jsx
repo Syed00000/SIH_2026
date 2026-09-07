@@ -125,7 +125,7 @@ export const ProjectsPanel = ({ onNavigateTab }) => {
 
   return (
     <div className="space-y-3 max-w-7xl mx-auto select-none">
-      <div>
+      <div className="bg-white border border-slate-200/90 rounded-2xl shadow-2xs p-4">
         <h1 className="text-xl font-bold text-slate-900 tracking-tight">Projects Portfolio</h1>
         <p className="text-xs text-slate-600 mt-0.5">Track and monitor all university projects from planning to completion.</p>
       </div>

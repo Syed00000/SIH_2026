@@ -70,7 +70,7 @@ export const UniversityHeader = ({
         {/* Interactive Notifications Details Dropdown */}
         {isDropdownOpen && (
           <div className="absolute right-0 top-11 w-80 sm:w-96 bg-white border border-slate-200 rounded-2xl shadow-2xl z-50 overflow-hidden text-left">
-            <div className="px-4 py-3 bg-gradient-to-r from-emerald-50/90 to-amber-50/70 border-b border-slate-100 flex items-center justify-between">
+            <div className="px-4 py-3 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
               <div className="flex items-center space-x-2">
                 <span className="text-xs font-black text-slate-900 uppercase tracking-wide">
                   Institutional Notifications

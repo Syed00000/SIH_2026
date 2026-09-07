@@ -107,7 +107,7 @@ export const FacultyPrototypePanel = ({ project, faculty, onRefresh }) => {
   return (
     <div className="space-y-4 max-w-7xl mx-auto select-none text-left">
       {project?.prototypeWorkRequested && (
-        <div className="p-3.5 bg-gradient-to-r from-emerald-50 via-teal-50 to-emerald-50 border border-emerald-300 rounded-2xl flex items-center justify-between">
+        <div className="p-3.5 bg-white border border-emerald-200/90 rounded-2xl flex items-center justify-between shadow-2xs">
           <div className="flex items-center space-x-2.5">
             <div className="w-8 h-8 rounded-lg bg-[#007A61] text-white flex items-center justify-center shrink-0"><Rocket className="w-4 h-4" /></div>
             <div>
