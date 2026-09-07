@@ -1,19 +1,19 @@
 import React, { useState } from 'react';
 import { useIndustryData } from './hooks/useIndustryData.js';
 import { 
-  Panel1_Overview, Panel2_Profile, Panel3_Capabilities, Panel4_Collaboration, 
+  Panel1_Overview, Panel2_Profile, Panel4_Collaboration, 
   Panel5_Projects, Panel6_Funding 
 } from './panels/IndustryPanels1To6.jsx';
 import { 
-  Panel7_Labs, Panel8_Experts, Panel9_Documents, Panel10_IP, 
-  Panel11_Internships, Panel12_Communication, Panel14_Impact, 
+  Panel7_Labs, Panel8_Experts, Panel10_IP, 
   Panel15_Settings, Panel16_QuickActions 
 } from './panels/IndustryPanels7To16.jsx';
-import { IndustryRequestActionModal } from './IndustryRequestActionModal.jsx';
+import { IndustryRequestDetailPanel } from './IndustryRequestDetailPanel.jsx';
 import { IndustryFundingView } from '../funding/IndustryFundingView.jsx';
 import { IndustryActiveProjectsView } from '../projects/IndustryActiveProjectsView.jsx';
 import { IndustryTestingLabsView } from '../labs/IndustryTestingLabsView.jsx';
 import { IndustryExpertsView } from '../experts/IndustryExpertsView.jsx';
+import { IndustryTechTransferView } from '../tech/IndustryTechTransferView.jsx';
 import { IndustryComingSoonPanel } from '../common/IndustryComingSoonPanel.jsx';
 
 export const IndustryDashboard = ({ activeTab, setActiveTab, user }) => {
@@ -24,14 +24,11 @@ export const IndustryDashboard = ({ activeTab, setActiveTab, user }) => {
     stats,
     collaborationRequests,
     projects,
-    capabilitiesData,
     fundingData,
     labsData,
     expertsData,
     expertStats,
     mentorshipProblemsAwaiting,
-    documentsData,
-    internshipsData,
     refreshData
   } = useIndustryData(user);
 
@@ -52,7 +49,6 @@ export const IndustryDashboard = ({ activeTab, setActiveTab, user }) => {
           </div>
           <div className="grid grid-cols-1 xl:grid-cols-8 gap-4">
             <Panel2_Profile user={user} industry={industryProfile} />
-            <Panel3_Capabilities data={capabilitiesData} industry={industryProfile} />
           </div>
           <div className="grid grid-cols-1 xl:grid-cols-8 gap-4">
             <Panel4_Collaboration 
@@ -72,16 +68,8 @@ export const IndustryDashboard = ({ activeTab, setActiveTab, user }) => {
             <Panel7_Labs data={labsData} />
             <Panel8_Experts data={expertsData} />
           </div>
-          <div className="grid grid-cols-1 xl:grid-cols-10 gap-4">
-            <Panel9_Documents data={documentsData} />
-            <Panel10_IP />
-          </div>
-          <div className="grid grid-cols-1 xl:grid-cols-10 gap-4">
-            <Panel11_Internships data={internshipsData} />
-            <Panel12_Communication />
-          </div>
           <div className="grid grid-cols-1 xl:grid-cols-12 gap-4">
-            <Panel14_Impact stats={stats} fundingData={fundingData} />
+            <Panel10_IP />
             <Panel15_Settings />
             <Panel16_QuickActions onNavigate={setActiveTab} />
           </div>
@@ -104,8 +92,6 @@ export const IndustryDashboard = ({ activeTab, setActiveTab, user }) => {
         return <IndustryTestingLabsView projects={projects} />;
       case 'profile':
         return <IndustryComingSoonPanel title="Industry Profile & Credentials" onBackToDashboard={() => setActiveTab('dashboard')} />;
-      case 'capabilities':
-        return <IndustryComingSoonPanel title="R&D Capabilities & Infrastructure" onBackToDashboard={() => setActiveTab('dashboard')} />;
       case 'experts':
         return (
           <IndustryExpertsView
@@ -116,17 +102,10 @@ export const IndustryDashboard = ({ activeTab, setActiveTab, user }) => {
             onRefresh={refreshData}
           />
         );
-      case 'documents':
-        return <IndustryComingSoonPanel title="Legal Dossiers & MOUs" onBackToDashboard={() => setActiveTab('dashboard')} />;
       case 'ip_transfer':
-        return <IndustryComingSoonPanel title="IP Licensing & Patent Commercialization" onBackToDashboard={() => setActiveTab('dashboard')} />;
-      case 'internships':
-        return <IndustryComingSoonPanel title="Student Internships & Talent Hiring" onBackToDashboard={() => setActiveTab('dashboard')} />;
-      case 'communication':
-        return <IndustryComingSoonPanel title="Direct University R&D Communications" onBackToDashboard={() => setActiveTab('dashboard')} />;
+        return <IndustryTechTransferView user={user} onRefresh={refreshData} />;
       case 'reports':
-      case 'impact':
-        return <IndustryComingSoonPanel title="Impact Assessment & Milestone Analytics" onBackToDashboard={() => setActiveTab('dashboard')} />;
+        return <IndustryComingSoonPanel title="Reports & Analytics" onBackToDashboard={() => setActiveTab('dashboard')} />;
       case 'settings':
         return <IndustryComingSoonPanel title="Security & Organization Settings" onBackToDashboard={() => setActiveTab('dashboard')} />;
       default:
@@ -134,22 +113,20 @@ export const IndustryDashboard = ({ activeTab, setActiveTab, user }) => {
     }
   };
 
-  return (
-    <>
-      {renderContent()}
-      
-      {selectedRequest && (
-        <IndustryRequestActionModal
-          request={selectedRequest}
-          onClose={() => setSelectedRequest(null)}
-          onSuccess={() => {
-            setSelectedRequest(null);
-            if (typeof refreshData === 'function') refreshData();
-          }}
-        />
-      )}
-    </>
-  );
+  if (selectedRequest) {
+    return (
+      <IndustryRequestDetailPanel
+        request={selectedRequest}
+        onClose={() => setSelectedRequest(null)}
+        onSuccess={() => {
+          setSelectedRequest(null);
+          if (typeof refreshData === 'function') refreshData();
+        }}
+      />
+    );
+  }
+
+  return renderContent();
 };
 
 export default IndustryDashboard;

@@ -24,7 +24,8 @@ export const NodalPortal = ({ user: propUser, onLogout }) => {
   const [challengeFilter, setChallengeFilter] = useState('All Status');
 
   const handleNavigateChallenges = (filter = 'All Status') => {
-    setChallengeFilter(filter);
+    const safeFilter = typeof filter === 'string' ? filter : 'All Status';
+    setChallengeFilter(safeFilter);
     setActiveTab('challenges');
   };
 

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Lightbulb, Lock, Rocket, Send, CheckCircle2, Cpu, FlaskConical, Factory, Loader2 } from 'lucide-react';
+import { Lightbulb, Lock, Rocket, Send, CheckCircle2, Cpu, FlaskConical, Factory, Loader2, Save } from 'lucide-react';
 import { facultyApiService } from '../../services/facultyApiService.js';
 import { PrototypeStatusBanner } from './PrototypeStatusBanner.jsx';
 import { PrototypeDetailsTab } from './PrototypeDetailsTab.jsx';
@@ -65,14 +65,16 @@ export const FacultyPrototypePanel = ({ project, faculty, onRefresh }) => {
     });
   };
 
-  const handleSubmit = async () => {
-    if (isLocked || !pId) return;
-    if (!protoData?.title?.trim()) {
-      alert('Please enter a Prototype Working Title in Tab 1 before submitting.');
-      setActiveTab(0);
-      return;
+  const handleSaveOrSubmit = async (isFormalSubmit = false) => {
+    if (!pId) return;
+    if (isFormalSubmit) {
+      if (!protoData?.title?.trim()) {
+        alert('Please enter a Prototype Working Title in Tab 1 before submitting.');
+        setActiveTab(0);
+        return;
+      }
+      if (!confirm('Submit prototype dossier for University Review & Lab Approval?')) return;
     }
-    if (!confirm('Submit prototype dossier for University Review & Lab Approval?')) return;
     setSubmitting(true);
     try {
       await facultyApiService.submitPrototype(pId, {
@@ -86,7 +88,7 @@ export const FacultyPrototypePanel = ({ project, faculty, onRefresh }) => {
       if (onRefresh) await onRefresh();
       setTimeout(() => setSubmitSuccess(false), 3000);
     } catch (err) {
-      alert('Submission failed: ' + (err.message || 'Error'));
+      alert('Save failed: ' + (err.message || 'Error'));
     } finally {
       setSubmitting(false);
     }
@@ -130,10 +132,25 @@ export const FacultyPrototypePanel = ({ project, faculty, onRefresh }) => {
         </div>
 
         <div className="flex items-center space-x-2 self-end md:self-auto">
+          <button
+            type="button"
+            onClick={() => handleSaveOrSubmit(false)}
+            disabled={submitting}
+            className="flex items-center space-x-1.5 px-3.5 py-2 bg-[#007A61] hover:bg-[#00604c] text-white font-bold text-xs rounded-xl shadow-xs transition-all cursor-pointer disabled:opacity-50"
+          >
+            {submitting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
+            <span>{submitSuccess ? 'Specs Saved! 🎉' : 'Save / Update Specs'}</span>
+          </button>
+
           {!isLocked && (
-            <button onClick={handleSubmit} disabled={submitting} className="flex items-center space-x-1.5 px-4 py-2 bg-[#007A61] hover:bg-[#00604c] text-white font-bold text-xs rounded-xl shadow-xs transition-all cursor-pointer">
-              {submitting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Send className="w-3.5 h-3.5" />}
-              <span>{submitSuccess ? 'Submitted! 🎉' : 'Submit for Review'}</span>
+            <button
+              type="button"
+              onClick={() => handleSaveOrSubmit(true)}
+              disabled={submitting}
+              className="flex items-center space-x-1.5 px-3.5 py-2 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-xl shadow-xs transition-all cursor-pointer"
+            >
+              <Send className="w-3.5 h-3.5" />
+              <span>Submit for Review</span>
             </button>
           )}
 
@@ -168,7 +185,7 @@ export const FacultyPrototypePanel = ({ project, faculty, onRefresh }) => {
 
       {/* Active Tab Panel */}
       <div>
-        {activeTab === 0 && <PrototypeDetailsTab project={project} prototypeData={protoData} onChangeData={handleChangeData} isLocked={isLocked} onRefresh={onRefresh} milestoneStages={protoData?.milestoneRoadmap || project?.milestoneRoadmap || []} onMilestoneChange={(stages) => handleChangeData('milestoneRoadmap', stages)} />}
+        {activeTab === 0 && <PrototypeDetailsTab project={project} prototypeData={protoData} onChangeData={handleChangeData} isLocked={false} onRefresh={onRefresh} milestoneStages={protoData?.milestoneRoadmap || project?.milestoneRoadmap || []} onMilestoneChange={(stages) => handleChangeData('milestoneRoadmap', stages)} />}
         {activeTab === 1 && <PrototypeLabTestsTab prototypeData={protoData} onChangeData={handleChangeData} isLocked={isLocked} />}
         {activeTab === 2 && <PrototypeIndustryRequisitionTab project={project} prototypeData={protoData} onChangeData={handleChangeData} isLocked={isLocked} />}
       </div>

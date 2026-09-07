@@ -2,6 +2,7 @@ import React from 'react';
 import { Cpu, Globe } from 'lucide-react';
 import { PrototypeMilestonesSection } from './PrototypeMilestonesSection.jsx';
 import { PrototypePdfSection } from './PrototypePdfSection.jsx';
+import { PrototypeTechStackFields } from './PrototypeTechStackFields.jsx';
 
 export const PrototypeDetailsTab = ({
   project,
@@ -26,42 +27,33 @@ export const PrototypeDetailsTab = ({
           </h4>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <div>
-            <label className="text-[10.5px] font-bold text-slate-500 uppercase block mb-1">
-              Prototype Working Title / Nomenclature
-            </label>
-            <input
-              type="text"
-              disabled={isLocked}
-              value={prototypeData?.title || ''}
-              onChange={(e) => onChangeData('title', e.target.value)}
-              placeholder="e.g., IoT Solar Telemetry Node v2.1"
-              className="w-full text-xs font-bold text-slate-800 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 focus:bg-white focus:outline-[#007A61]"
-            />
-          </div>
-
-          <div>
-            <label className="text-[10.5px] font-bold text-slate-500 uppercase block mb-1">
-              Core Tech Stack & Controller Array
-            </label>
-            <input
-              type="text"
-              disabled={isLocked}
-              value={prototypeData?.techStack || ''}
-              onChange={(e) => onChangeData('techStack', e.target.value)}
-              placeholder="e.g., ESP32, FreeRTOS, LoRaWAN, Python FastApi"
-              className="w-full text-xs font-bold text-slate-800 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 focus:bg-white focus:outline-[#007A61]"
-            />
-          </div>
+        <div>
+          <label className="text-[10.5px] font-bold text-slate-500 uppercase block mb-1">
+            Prototype Working Title / Nomenclature *
+          </label>
+          <input
+            type="text"
+            value={prototypeData?.title || ''}
+            onChange={(e) => onChangeData('title', e.target.value)}
+            placeholder="e.g., IoT Solar Telemetry Node v2.1"
+            className="w-full text-xs font-bold text-slate-800 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 focus:bg-white focus:outline-[#007A61]"
+          />
         </div>
+
+        {/* Department / Category & Required Industry Tech Tool & Stack */}
+        <PrototypeTechStackFields
+          department={prototypeData?.department || ''}
+          requiredTechTool={prototypeData?.requiredTechTool || ''}
+          techStack={prototypeData?.techStack || ''}
+          onChangeData={onChangeData}
+          isLocked={false}
+        />
 
         <div>
           <label className="text-[10.5px] font-bold text-slate-500 uppercase block mb-1">
             Working Mechanism & Methodology
           </label>
           <textarea
-            disabled={isLocked}
             rows={3}
             value={prototypeData?.mechanism || ''}
             onChange={(e) => onChangeData('mechanism', e.target.value)}
@@ -77,7 +69,6 @@ export const PrototypeDetailsTab = ({
             </label>
             <input
               type="text"
-              disabled={isLocked}
               value={prototypeData?.bomSensors || ''}
               onChange={(e) => onChangeData('bomSensors', e.target.value)}
               placeholder="e.g., MQ-135, DHT22, SX1276 LoRa, LiFePO4 5000mAh"
@@ -92,7 +83,6 @@ export const PrototypeDetailsTab = ({
             </label>
             <input
               type="url"
-              disabled={isLocked}
               value={prototypeData?.demoUrl || ''}
               onChange={(e) => onChangeData('demoUrl', e.target.value)}
               placeholder="https://wokwi.com/projects/... or live telemetry dashboard"

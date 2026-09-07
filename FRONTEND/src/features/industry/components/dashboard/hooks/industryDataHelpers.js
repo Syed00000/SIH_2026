@@ -30,6 +30,8 @@ export function formatIncomingRequests(liveFunds, fallbackReqs = []) {
       pdfUrl: r.pdfUrl || r.prototypeData?.pdfUrl || '',
       pdfName: r.pdfName || r.prototypeData?.pdfName || '',
       prototypeData: r.prototypeData || null,
+      purpose: r.purpose || r.collaborationPurpose || '',
+      collaborationPurpose: r.collaborationPurpose || r.purpose || '',
       date: r.submittedAt ? new Date(r.submittedAt).toLocaleDateString('en-IN') : 'Recent'
     };
   };
@@ -88,7 +90,10 @@ export function extractActiveProjectsList(liveFunds, formattedRequests = []) {
         pdfUrl: item.pdfUrl || item.prototypeData?.pdfUrl || '',
         pdfName: item.pdfName || item.prototypeData?.pdfName || '',
         testingStages: item.testingStages || [],
-        labAccessRequested: item.labAccessRequested
+        purpose: item.purpose || item.collaborationPurpose || '',
+        collaborationPurpose: item.collaborationPurpose || item.purpose || '',
+        labAccessRequested: Boolean(item.labAccessRequested === true && item.collaborationPurpose !== 'Mentorship' && item.purpose !== 'Mentorship'),
+        mentorshipRequested: Boolean(item.mentorshipRequested === true || item.collaborationPurpose === 'Mentorship' || item.purpose === 'Mentorship')
       });
     }
   };

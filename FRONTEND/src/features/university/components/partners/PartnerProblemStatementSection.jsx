@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { FolderGit2, FileText, UserCheck, Lock, Clock, ExternalLink, Users, Sparkles, FlaskConical } from 'lucide-react';
 import { universityApiService } from '../../services/universityApiService.js';
 import { getPdfViewUrl } from '../../../../shared/utils/openPdf.js';
+import { GrantedTechHelpBadge } from './GrantedTechHelpBadge.jsx';
 
 export const PartnerProblemStatementSection = ({
   partner, partnerRequests = [], selectedProblem, onSelectProblem
@@ -13,7 +14,6 @@ export const PartnerProblemStatementSection = ({
     universityApiService.getProjects('RU001')
       .then((prjData) => {
         const prjs = (Array.isArray(prjData) ? prjData : (Array.isArray(prjData?.data) ? prjData.data : []));
-        // ONLY show projects when submitted by student research team!
         const submitted = prjs
           .filter((p) => p.sentToUniversity || p.prototypeStatus === 'In Review' || p.prototypeStatus === 'Approved')
           .map((p) => ({
@@ -23,14 +23,13 @@ export const PartnerProblemStatementSection = ({
             prototypeData: p.prototypeData, pdfUrl: p.pdfUrl || p.prototypeData?.pdfUrl,
             pdfName: p.pdfName || p.prototypeData?.pdfName || 'Prototype_Report.pdf',
             sanctionedBudget: p.sanctionedBudget || p.disbursedAmount || '₹ 80,000',
-            industryMentor: p.industryMentor || null
+            industryMentor: p.industryMentor || null,
+            grantedTechHelp: p.grantedTechHelp || []
           }));
 
         setProblemStatements(submitted);
         if (submitted.length > 0) {
-          if (!selectedProblem || !submitted.some((s) => s.id === selectedProblem.id)) {
-            onSelectProblem(submitted[0]);
-          }
+          if (!selectedProblem || !submitted.some((s) => s.id === selectedProblem.id)) onSelectProblem(submitted[0]);
         } else {
           onSelectProblem(null);
         }
@@ -47,6 +46,7 @@ export const PartnerProblemStatementSection = ({
   const isApproved = matchedReq?.status === 'Approved';
   const isPending = matchedReq?.status === 'Pending';
   const assignedMentor = matchedReq?.assignedMentor || activeProblem?.industryMentor;
+  const grantedTech = matchedReq?.grantedTechHelp?.length ? matchedReq.grantedTechHelp : activeProblem?.grantedTechHelp;
 
   return (
     <div className="bg-white border border-slate-200/90 rounded-2xl p-4 shadow-2xs space-y-3">
@@ -67,7 +67,7 @@ export const PartnerProblemStatementSection = ({
           <FlaskConical className="w-6 h-6 text-slate-400 mx-auto" />
           <p className="text-xs font-bold text-slate-700">No Student Prototypes Submitted Yet</p>
           <p className="text-[11px] text-slate-500 leading-relaxed">
-            Data will only appear here once the student team uploads their technical PDF and submits the prototype to Ranchi University.
+            Data will appear once student teams upload their blueprint and submit to Ranchi University.
           </p>
         </div>
       ) : (
@@ -77,12 +77,10 @@ export const PartnerProblemStatementSection = ({
             const found = problemStatements.find((p) => p.id === e.target.value);
             if (found) onSelectProblem(found);
           }}
-          className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-800 focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#007A61] focus:border-[#007A61] shadow-2xs cursor-pointer"
+          className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-800 focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#007A61]"
         >
           {problemStatements.map((p) => (
-            <option key={p.id} value={p.id}>
-              [{p.id}] {p.title} ({p.studentTeam})
-            </option>
+            <option key={p.id} value={p.id}>[{p.id}] {p.title} ({p.studentTeam})</option>
           ))}
         </select>
       )}
@@ -98,7 +96,6 @@ export const PartnerProblemStatementSection = ({
             </span>
           </div>
 
-          {/* 1. Ground Problem Statement */}
           <div className="space-y-1 pt-1 border-t border-emerald-100/60">
             <span className="text-[9.5px] font-black uppercase tracking-wider text-slate-400 block flex items-center space-x-1">
               <FileText className="w-3 h-3 text-[#007A61]" />
@@ -109,7 +106,6 @@ export const PartnerProblemStatementSection = ({
             </p>
           </div>
 
-          {/* 2. Solution Prototype Details */}
           <div className="space-y-1.5 p-2.5 bg-white rounded-lg border border-slate-200/80">
             <div className="flex items-center justify-between text-[10px] font-black text-slate-400 uppercase tracking-wider">
               <span className="flex items-center space-x-1">
@@ -127,7 +123,7 @@ export const PartnerProblemStatementSection = ({
             </div>
           </div>
 
-          {/* 3. Assigned Corporate Industry Technical Mentor */}
+          {/* Assigned Industry Mentor */}
           {assignedMentor && (
             <div className="p-2.5 bg-gradient-to-r from-teal-50 to-emerald-50 border border-emerald-300 rounded-xl space-y-1">
               <div className="flex items-center justify-between">
@@ -146,14 +142,13 @@ export const PartnerProblemStatementSection = ({
                   <p className="text-[10px] text-slate-600 font-medium truncate">{assignedMentor.designation} • {assignedMentor.specialization}</p>
                 </div>
               </div>
-              <div className="flex items-center space-x-3 text-[9.5px] text-slate-500 font-semibold pt-1 border-t border-emerald-200/50">
-                <span>✉️ {assignedMentor.email}</span>
-                <span>📞 {assignedMentor.phone}</span>
-              </div>
             </div>
           )}
 
-          {/* 4. Attached Cloudinary PDF */}
+          {/* Real-Time Granted Tech Help & Tools */}
+          <GrantedTechHelpBadge techHelp={grantedTech} />
+
+          {/* Attached Blueprint PDF */}
           {activeProblem.pdfUrl && (
             <div className="flex items-center justify-between p-2.5 bg-rose-50/80 border border-rose-200 rounded-xl">
               <div className="flex items-center space-x-2">
@@ -163,14 +158,13 @@ export const PartnerProblemStatementSection = ({
                   <div className="text-[9.5px] text-emerald-700 font-semibold">✓ Verified Cloudinary Technical Blueprint</div>
                 </div>
               </div>
-              <a href={getPdfViewUrl(activeProblem.pdfUrl, activeProblem.pdfName)} target="_blank" rel="noopener noreferrer" className="px-3 py-1 bg-white hover:bg-rose-100 text-rose-700 border border-rose-300 rounded-lg text-xs font-bold transition-all flex items-center space-x-1 shadow-2xs cursor-pointer">
-                <span>View Attached PDF</span>
+              <a href={getPdfViewUrl(activeProblem.pdfUrl, activeProblem.pdfName)} target="_blank" rel="noopener noreferrer" className="px-3 py-1 bg-white hover:bg-rose-100 text-rose-700 border border-rose-300 rounded-lg text-xs font-bold transition-all flex items-center space-x-1 shadow-2xs">
+                <span>View PDF</span>
                 <ExternalLink className="w-3 h-3" />
               </a>
             </div>
           )}
 
-          {/* Footer & Status */}
           <div className="flex items-center justify-between pt-1 border-t border-slate-100">
             <div className="flex items-center space-x-1.5 text-[11px] text-slate-600 font-medium">
               <UserCheck className="w-3.5 h-3.5 text-[#007A61]" />

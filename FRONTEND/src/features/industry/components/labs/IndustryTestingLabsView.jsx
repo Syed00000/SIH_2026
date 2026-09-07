@@ -5,7 +5,8 @@ import { IndustryTestingDetailPanel } from './IndustryTestingDetailPanel.jsx';
 
 export const IndustryTestingLabsView = ({ projects = {} }) => {
   const activeProjects = (projects?.ongoing || []).filter(
-    (p) => !p.labChargesQuoted || p.quoteStatus === 'Accepted'
+    (p) => (!p.labChargesQuoted || p.quoteStatus === 'Accepted') &&
+      Boolean(p.labAccessRequested === true && p.collaborationPurpose !== 'Mentorship' && p.purpose !== 'Mentorship')
   );
   const [selectedProjectId, setSelectedProjectId] = useState(null);
   const [stagesState, setStagesState] = useState({});
@@ -111,8 +112,14 @@ export const IndustryTestingLabsView = ({ projects = {} }) => {
         </div>
 
         {filtered.length === 0 ? (
-          <div className="p-10 text-center text-xs text-slate-400">
-            No matching problem statements found undergoing laboratory testing.
+          <div className="p-12 text-center text-xs flex flex-col items-center justify-center space-y-2.5">
+            <div className="w-12 h-12 rounded-2xl bg-slate-100 border border-slate-200 text-slate-400 flex items-center justify-center">
+              <FlaskConical className="w-6 h-6" />
+            </div>
+            <div className="font-extrabold text-slate-800 text-sm">No Problems Undergoing Laboratory Testing</div>
+            <p className="max-w-md text-slate-500 text-xs leading-relaxed">
+              Mentorship-focused problems are routed to <strong>Experts &amp; Engineers</strong>. Only projects requiring laboratory apparatus testing appear here.
+            </p>
           </div>
         ) : (
           <div className="divide-y divide-slate-100">
