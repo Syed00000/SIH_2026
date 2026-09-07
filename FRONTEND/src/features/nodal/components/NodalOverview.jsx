@@ -36,7 +36,7 @@ export const NodalOverview = ({ onNavigateChallenges, onNavigateUniversities, no
       {loading ? (
         <SkeletonStatCards />
       ) : (
-        <NodalStatCards stats={stats} loading={loading} onCardClick={onNavigateChallenges} />
+        <NodalStatCards stats={stats} loading={loading} />
       )}
 
       {/* 3. Operational Dashboards Grid (Renders SkeletonOverviewPanels during loading) */}

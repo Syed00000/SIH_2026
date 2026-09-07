@@ -18,7 +18,7 @@ export default defineConfig({
     },
   },
   optimizeDeps: {
-    include: ['react-quill-new', 'lucide-react', 'axios', 'recharts', 'leaflet', 'jspdf'],
+    include: ['react-quill-new', 'lucide-react', 'axios', 'recharts', 'leaflet', 'jspdf', 'leaflet.heat', 'leaflet.markercluster'],
     force: true,
   },
   server: {

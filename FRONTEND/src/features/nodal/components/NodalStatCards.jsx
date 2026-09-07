@@ -4,18 +4,16 @@ import {
   CheckCircle2,
   Building,
   Clock,
-  ArrowRight,
   HelpCircle
 } from 'lucide-react';
 
-export const NodalStatCards = ({ stats = {}, onCardClick }) => {
+export const NodalStatCards = ({ stats = {} }) => {
   const cards = [
     {
       id: 'All Status',
       title: 'Total Citizen Submissions',
       value: stats.total || 0,
       subtext: 'Ground issues across 24 districts',
-      actionText: 'View All Problems',
       icon: Layers
     },
     {
@@ -23,7 +21,6 @@ export const NodalStatCards = ({ stats = {}, onCardClick }) => {
       title: 'Awaiting Nodal Triage',
       value: stats.underReview || stats.submitted || 0,
       subtext: 'Pending initial screening',
-      actionText: 'Triage Pending',
       icon: Clock
     },
     {
@@ -31,7 +28,6 @@ export const NodalStatCards = ({ stats = {}, onCardClick }) => {
       title: 'Clarifications Pending',
       value: stats.clarificationRequested || 0,
       subtext: 'Queries from HEI research desks',
-      actionText: 'Review Queries',
       icon: HelpCircle,
       highlight: (stats.clarificationRequested || 0) > 0
     },
@@ -40,7 +36,6 @@ export const NodalStatCards = ({ stats = {}, onCardClick }) => {
       title: 'Allocated to Universities',
       value: stats.inProgress || 0,
       subtext: 'Active HEI research & pilots',
-      actionText: 'Explore Allocations',
       icon: Building
     },
     {
@@ -48,7 +43,6 @@ export const NodalStatCards = ({ stats = {}, onCardClick }) => {
       title: 'Field Verified & Resolved',
       value: stats.resolved || 0,
       subtext: 'Completed solutions on ground',
-      actionText: 'View Resolved',
       icon: CheckCircle2
     }
   ];
@@ -60,10 +54,9 @@ export const NodalStatCards = ({ stats = {}, onCardClick }) => {
         return (
           <div
             key={card.id}
-            onClick={() => onCardClick && onCardClick(card.id)}
-            className={`group bg-white border ${
-              card.highlight ? 'border-amber-400 bg-amber-50/20 ring-1 ring-amber-300' : 'border-slate-200/90 hover:border-slate-300'
-            } rounded-md p-4 shadow-2xs transition-all duration-150 flex flex-col justify-between cursor-pointer`}
+            className={`bg-white border ${
+              card.highlight ? 'border-amber-400 bg-amber-50/20 ring-1 ring-amber-300' : 'border-slate-200/90'
+            } rounded-md p-4 shadow-2xs transition-all duration-150 flex flex-col justify-between cursor-default`}
           >
             <div>
               <div className="flex items-center justify-between">
@@ -82,12 +75,8 @@ export const NodalStatCards = ({ stats = {}, onCardClick }) => {
               </div>
             </div>
 
-            <div className="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-between text-[11px]">
-              <span className="text-slate-500 font-medium truncate">{card.subtext}</span>
-              <span className="font-bold text-slate-800 group-hover:text-slate-900 group-hover:translate-x-0.5 transition-all flex items-center space-x-0.5 shrink-0 ml-1">
-                <span>{card.actionText}</span>
-                <ArrowRight className="w-3 h-3 text-slate-500" />
-              </span>
+            <div className="mt-3 pt-2.5 border-t border-slate-100 text-[11px] text-slate-500 font-medium leading-normal">
+              <span>{card.subtext}</span>
             </div>
           </div>
         );

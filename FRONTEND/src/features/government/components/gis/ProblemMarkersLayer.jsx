@@ -1,5 +1,10 @@
 import React, { useEffect, useRef } from 'react';
 import L from 'leaflet';
+
+if (typeof window !== 'undefined' && !window.L) {
+  window.L = L;
+}
+
 import 'leaflet.markercluster/dist/MarkerCluster.css';
 import 'leaflet.markercluster/dist/MarkerCluster.Default.css';
 import 'leaflet.markercluster';
