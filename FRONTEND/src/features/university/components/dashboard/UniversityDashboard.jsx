@@ -71,7 +71,7 @@ export const UniversityDashboard = ({
 
   return (
     <div className="space-y-4 max-w-7xl mx-auto select-none">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 bg-white p-4 rounded-xl border border-slate-200/90 shadow-2xs">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 bg-white p-4 rounded-2xl border border-slate-200/90 shadow-2xs">
         <div>
           <div className="flex items-center space-x-2">
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>

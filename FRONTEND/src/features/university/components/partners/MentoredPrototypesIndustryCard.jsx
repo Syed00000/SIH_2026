@@ -1,8 +1,8 @@
 import React from 'react';
-import { Rocket, FileText, ArrowUpRight, Users, CheckCircle2, FlaskConical, Cpu } from 'lucide-react';
+import { Rocket, FileText, ArrowUpRight, Users, CheckCircle2, FlaskConical, Cpu, Eye } from 'lucide-react';
 import { getPdfViewUrl } from '../../../../shared/utils/openPdf.js';
 
-export const MentoredPrototypesIndustryCard = ({ prototypes = [], onConnectIndustry }) => {
+export const MentoredPrototypesIndustryCard = ({ prototypes = [], onConnectIndustry, onViewProblem }) => {
   if (!prototypes || prototypes.length === 0) return null;
 
   return (
@@ -81,13 +81,6 @@ export const MentoredPrototypesIndustryCard = ({ prototypes = [], onConnectIndus
                     <p className="text-[10.5px] font-bold text-[#007A61]">
                       🎯 Requested Industry Facility: {targetPartner}
                     </p>
-                  )}
-                  {p.industryMentor && (
-                    <div className="flex items-center justify-between text-[10.5px] font-bold text-emerald-900 bg-white p-2 rounded-lg border border-emerald-300">
-                      <span className="flex items-center space-x-1.5"><Users className="w-3 h-3 text-[#007A61]" /><span>Industry Mentor: <strong>{p.industryMentor.name}</strong> ({p.industryMentor.designation})</span></span>
-                      <span className="text-[9.5px] text-emerald-700 font-mono">{p.industryMentor.email}</span>
-                    </div>
-                  )}
                 </div>
               </div>
 
@@ -106,6 +99,15 @@ export const MentoredPrototypesIndustryCard = ({ prototypes = [], onConnectIndus
                 ) : (
                   <span className="text-[10.5px] text-slate-400 italic">No PDF uploaded</span>
                 )}
+
+                <button
+                  type="button"
+                  onClick={() => onViewProblem && onViewProblem(p)}
+                  className="px-3 py-1.5 bg-teal-50 hover:bg-teal-100 text-[#007A61] border border-teal-200 rounded-xl text-xs font-bold transition-all flex items-center space-x-1 shadow-2xs cursor-pointer"
+                >
+                  <Eye className="w-3.5 h-3.5" />
+                  <span>Inspect Problem</span>
+                </button>
 
                 <button
                   type="button"

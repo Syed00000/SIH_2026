@@ -113,21 +113,21 @@ export const FacultyHeader = ({
           <div
             ref={panelRef}
             style={{ position: 'fixed', top: '60px', right: '16px', zIndex: 50, width: '390px', maxWidth: 'calc(100vw - 32px)', maxHeight: '82vh' }}
-            className="bg-white rounded-2xl shadow-2xl border border-slate-200 flex flex-col overflow-hidden"
+            className="bg-white rounded-2xl shadow-xl border border-slate-200 flex flex-col overflow-hidden"
           >
-            <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 bg-gradient-to-r from-emerald-50/70 to-amber-50/60">
+            <div className="flex items-center justify-between px-5 py-3.5 border-b border-slate-200 bg-slate-50">
               <div className="flex items-center gap-2">
                 <Bell className="w-4 h-4 text-[#007A61]" />
-                <span className="font-bold text-slate-900 text-sm">Notifications & Directives</span>
-                {unread > 0 && <span className="px-1.5 py-0.5 bg-amber-500 text-white text-[10px] font-bold rounded-full">{unread}</span>}
+                <span className="font-bold text-slate-900 text-xs uppercase tracking-wider">Notifications & Directives</span>
+                {unread > 0 && <span className="px-1.5 py-0.5 bg-[#007A61] text-white text-[10px] font-bold rounded-full">{unread}</span>}
               </div>
               <div className="flex items-center gap-1">
                 {unread > 0 && (
-                  <button onClick={markAllRead} className="flex items-center gap-1 text-[11px] font-semibold text-[#007A61] hover:text-emerald-800 px-2 py-1 rounded-lg hover:bg-emerald-50 transition-colors">
+                  <button onClick={markAllRead} className="flex items-center gap-1 text-[11px] font-semibold text-[#007A61] hover:text-emerald-900 px-2 py-1 rounded-lg hover:bg-emerald-50 transition-colors cursor-pointer">
                     <CheckCheck className="w-3.5 h-3.5" /> Read
                   </button>
                 )}
-                <button onClick={() => setOpen(false)} className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors">
+                <button onClick={() => setOpen(false)} className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer">
                   <X className="w-4 h-4" />
                 </button>
               </div>

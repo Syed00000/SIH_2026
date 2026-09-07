@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { X, Factory, ShieldCheck, Send, Lock, Clock, MapPin, ExternalLink } from 'lucide-react';
 import { universityApiService } from '../../services/universityApiService.js';
 import { PartnerSpocCard } from './PartnerSpocCard.jsx';
-import { PartnerDomainBadges } from './PartnerDomainBadges.jsx';
 import { PartnerProblemStatementSection } from './PartnerProblemStatementSection.jsx';
 
 export const PartnerDetailModal = ({
@@ -133,9 +132,6 @@ export const PartnerDetailModal = ({
             selectedProblem={selectedProblem}
             onSelectProblem={setSelectedProblem}
           />
-
-          {/* Research Domains & Support Capabilities */}
-          <PartnerDomainBadges domains={domains} supportModes={supportModes} />
         </div>
 
         {/* Footer with ONLY 1 Request Lab Access button */}

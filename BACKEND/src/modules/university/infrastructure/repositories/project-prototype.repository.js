@@ -11,14 +11,13 @@ export class ProjectPrototypeRepository {
   async submitPrototype(projectId, universityCode, prototypeData) {
     try {
       const code = (universityCode || 'RU001').toUpperCase();
+      const existing = await UniversityProject.findOne({ $or: [{ projectId }, { challengeId: projectId }] }).lean();
+      const status = (existing?.prototypeStatus === 'Approved' || existing?.prototypeStatus === 'Deployed') ? existing.prototypeStatus : 'In Review';
       const project = await UniversityProject.findOneAndUpdate(
         { $or: [{ projectId }, { challengeId: projectId }] },
         { 
           $set: { 
-            prototypeStatus: 'In Review', 
-            prototypeData,
-            sentToUniversity: true,
-            submittedToUniversityAt: new Date(),
+            prototypeStatus: status, prototypeData, sentToUniversity: true, submittedToUniversityAt: new Date(),
             ...(prototypeData?.pdfUrl ? { pdfUrl: prototypeData.pdfUrl, pdfName: prototypeData.pdfName } : {}),
             ...(Array.isArray(prototypeData?.milestoneRoadmap) && prototypeData.milestoneRoadmap.length ? { milestoneRoadmap: prototypeData.milestoneRoadmap } : {}),
             ...(Array.isArray(prototypeData?.testingStages) && prototypeData.testingStages.length ? { testingStages: prototypeData.testingStages } : {}),

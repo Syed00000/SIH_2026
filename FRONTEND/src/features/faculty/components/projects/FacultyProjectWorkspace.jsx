@@ -37,7 +37,7 @@ export const FacultyProjectWorkspace = ({ project, projects = [], teams = [], fa
 
   return (
     <div className="space-y-4 max-w-7xl mx-auto select-none pb-12 text-left">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-200">
+      <div className="bg-white border border-slate-200/90 rounded-2xl p-5 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <button onClick={onBack} className="flex items-center space-x-1.5 text-xs font-bold text-slate-500 hover:text-slate-900 transition-colors mb-2 cursor-pointer">
             <ArrowLeft className="w-3.5 h-3.5" />
@@ -62,12 +62,12 @@ export const FacultyProjectWorkspace = ({ project, projects = [], teams = [], fa
               </span>
             ) : null}
           </div>
-          <h1 className="text-xl font-bold text-slate-900 tracking-tight mt-1">{project.title}</h1>
+          <h1 className="text-xl font-bold text-slate-900 tracking-tight mt-1.5">{project.title}</h1>
         </div>
       </div>
 
       {hasRevision && (
-        <div className="bg-amber-50/90 border border-amber-300 rounded-2xl p-4 space-y-2 text-left">
+        <div className="bg-amber-50/80 border border-amber-300 rounded-2xl p-4 space-y-2 text-left shadow-2xs">
           <div className="flex items-center justify-between border-b border-amber-200/80 pb-1.5">
             <div className="flex items-center space-x-2 text-amber-900 font-bold text-xs">
               <RotateCcw className="w-4 h-4 text-amber-600" />
@@ -75,16 +75,16 @@ export const FacultyProjectWorkspace = ({ project, projects = [], teams = [], fa
             </div>
             <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-amber-500 text-white">Action Required</span>
           </div>
-          <p className="text-xs text-amber-950 font-medium italic bg-white/70 p-2.5 rounded-xl border border-amber-200">
+          <p className="text-xs text-amber-950 font-medium italic bg-white/80 p-2.5 rounded-xl border border-amber-200">
             "{project.adminRemarks || project.universityRemarks || 'Revisions requested by university review committee.'}"
           </p>
         </div>
       )}
 
       {project.prototypeWorkRequested && (
-        <div className="bg-gradient-to-r from-emerald-500/10 via-teal-500/10 to-emerald-500/5 border border-emerald-300 rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-left">
+        <div className="bg-white border border-emerald-200/90 rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-left shadow-2xs">
           <div className="flex items-start space-x-3">
-            <div className="w-9 h-9 rounded-xl bg-[#007A61] text-white flex items-center justify-center shrink-0 mt-0.5">
+            <div className="w-9 h-9 rounded-xl bg-[#007A61] text-white flex items-center justify-center shrink-0 mt-0.5 shadow-2xs">
               <FlaskConical className="w-5 h-5" />
             </div>
             <div>

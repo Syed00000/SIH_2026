@@ -84,8 +84,6 @@ export const NodalAssignModal = ({
             )}
 
             <TriageVerificationCard
-              verificationStatus={verificationStatus}
-              setVerificationStatus={setVerificationStatus}
               selectedDomain={selectedDomain}
               setSelectedDomain={setSelectedDomain}
               selectedPriority={selectedPriority}
@@ -93,7 +91,6 @@ export const NodalAssignModal = ({
             />
 
             <InstitutionalTargetingCard
-              verificationStatus={verificationStatus}
               isUniversityTargetMode={isUniversityTargetMode}
               universities={universities}
               selectedUniCode={selectedUniCode}
