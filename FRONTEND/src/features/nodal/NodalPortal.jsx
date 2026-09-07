@@ -68,7 +68,9 @@ export const NodalPortal = ({ user: propUser, onLogout }) => {
         institutionName={institutionName}
         nodalName={nodalName}
         nodalDistrict={nodalDistrict}
+        user={user}
         notificationCount={4}
+        onSelectNotification={() => handleNavigateChallenges('All Status')}
         onToggleSidebar={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
       />
 

@@ -26,7 +26,7 @@ export const NodalProcessWorkflowCard = () => {
   ];
 
   return (
-    <div className="bg-white border border-slate-200/90 rounded-2xl p-5 shadow-2xs space-y-4">
+    <div className="bg-white border border-slate-200/90 rounded-md p-5 shadow-2xs space-y-4">
       <h3 className="text-xs font-black text-slate-500 uppercase tracking-wider">
         State Innovation Triage & Allocation Workflow
       </h3>
@@ -37,7 +37,7 @@ export const NodalProcessWorkflowCard = () => {
           return (
             <div
               key={idx}
-              className="p-4 bg-slate-50/70 rounded-xl border border-slate-200/80 space-y-2 hover:bg-slate-50 hover:border-slate-300 transition-all"
+              className="p-4 bg-slate-50/70 rounded-md border border-slate-200/80 space-y-2 hover:bg-slate-50 hover:border-slate-300 transition-all"
             >
               <div className="flex items-center space-x-2">
                 <Icon className="w-4 h-4 text-[#0f4b3a] shrink-0 stroke-[2.2]" />

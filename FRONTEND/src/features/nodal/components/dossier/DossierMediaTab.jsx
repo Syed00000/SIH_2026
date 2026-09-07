@@ -64,7 +64,7 @@ export const DossierMediaTab = ({ evidenceMedia = [] }) => {
           return (
             <div
               key={idx}
-              className="rounded-xl border border-slate-200/90 bg-white overflow-hidden shadow-2xs hover:shadow-xs transition-all flex flex-col justify-between"
+              className="rounded-md border border-slate-200/90 bg-white overflow-hidden shadow-2xs hover:shadow-xs transition-all flex flex-col justify-between"
             >
               {/* Media Display */}
               {media.type === 'image' && (
@@ -107,7 +107,7 @@ export const DossierMediaTab = ({ evidenceMedia = [] }) => {
                     href={getPdfViewUrl(media.url, media.name)}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="mt-2 inline-flex items-center space-x-1 text-[10px] font-bold text-[#007A61] bg-emerald-50 hover:bg-emerald-100 px-2 py-0.5 rounded-full border border-emerald-200 transition-colors cursor-pointer"
+                    className="mt-2 inline-flex items-center space-x-1 text-[10px] font-bold text-[#007A61] bg-emerald-50 hover:bg-emerald-100 px-2 py-0.5 rounded-md border border-emerald-200 transition-colors cursor-pointer"
                   >
                     <ExternalLink className="w-3 h-3" />
                     <span>Open Document</span>
@@ -120,7 +120,7 @@ export const DossierMediaTab = ({ evidenceMedia = [] }) => {
                 <div className="min-w-0 pr-2">
                   <p className="font-bold text-slate-900 truncate text-[11px]">{media.name}</p>
                   <p className="text-[10px] text-slate-400 capitalize">
-                    {media.type} {media.size ? `• ${media.size}` : ''}
+                    {media.type} {media.size ? `â€¢ ${media.size}` : ''}
                   </p>
                 </div>
                 <a
@@ -141,7 +141,7 @@ export const DossierMediaTab = ({ evidenceMedia = [] }) => {
       {/* Full Photo Lightbox Modal */}
       {selectedPreview && selectedPreview.type === 'image' && (
         <div className="fixed inset-0 z-60 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-xs">
-          <div className="relative max-w-3xl w-full bg-white rounded-xl overflow-hidden shadow-2xl p-3 flex flex-col">
+          <div className="relative max-w-3xl w-full bg-white rounded-md overflow-hidden shadow-2xl p-3 flex flex-col">
             <div className="flex items-center justify-between pb-2 mb-2 border-b border-slate-100 text-xs font-bold text-slate-900">
               <span className="truncate">{selectedPreview.name}</span>
               <div className="flex items-center space-x-2">

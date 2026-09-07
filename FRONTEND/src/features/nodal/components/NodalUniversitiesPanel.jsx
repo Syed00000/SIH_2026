@@ -7,7 +7,8 @@ import { UniversityProblemsDetailView } from './UniversityProblemsDetailView.jsx
 import { NodalAssignModal } from './NodalAssignModal.jsx';
 
 export const NodalUniversitiesPanel = ({ onNavigateChallenges }) => {
-  const [viewMode, setViewMode] = useState('table');
+  const [viewMode, setViewMode] = useState('table'); // Default Table/List View Mode
+
   const {
     universities,
     challenges,
