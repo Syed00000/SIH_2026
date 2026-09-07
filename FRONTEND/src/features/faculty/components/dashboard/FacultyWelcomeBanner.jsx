@@ -3,7 +3,7 @@ import { UserCheck, Building } from 'lucide-react';
 
 export const FacultyWelcomeBanner = ({ faculty }) => {
   return (
-    <div className="bg-white border border-slate-200/90 rounded-xl p-5 shadow-2xs">
+    <div className="bg-white border border-slate-200/90 rounded-2xl p-5 shadow-2xs">
       <div className="space-y-1.5">
         <div className="flex items-center space-x-2">
           <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider bg-slate-100 text-slate-700 border border-slate-200">

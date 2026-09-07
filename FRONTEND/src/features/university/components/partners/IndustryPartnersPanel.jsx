@@ -115,11 +115,11 @@ export const IndustryPartnersPanel = () => {
 
   return (
     <div className="space-y-4 max-w-7xl mx-auto select-none pb-12 text-left">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-200">
+      <div className="bg-white border border-slate-200/90 rounded-2xl shadow-2xs p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h1 className="text-xl font-bold text-slate-900 tracking-tight flex items-center space-x-2">
             <Factory className="w-5 h-5 text-[#007A61]" />
-            <span>Corporate & CSR Industry Partners</span>
+            <span>Corporate &amp; CSR Industry Partners</span>
           </h1>
           <p className="text-xs text-slate-500 mt-0.5">Connect state innovation projects with Jharkhand's verified industrial CSR funds, laboratories, and mentors.</p>
         </div>

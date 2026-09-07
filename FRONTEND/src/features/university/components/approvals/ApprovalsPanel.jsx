@@ -116,9 +116,9 @@ export const ApprovalsPanel = () => {
   return (
     <div className="space-y-4 max-w-7xl mx-auto select-none pb-12 text-left">
       <ApprovalsNotificationBanner pendingCount={pending} onFilterPending={() => { setStatusFilter('Pending'); setActiveTab('budget'); }} />
-      <div>
-        <h1 className="text-xl font-bold text-slate-900 tracking-tight">University Approvals & Proposal Dossiers</h1>
-        <p className="text-xs text-slate-600 mt-0.5">Review, evaluate technical methodologies, and forward R&D project proposals to the Government.</p>
+      <div className="bg-white border border-slate-200/90 rounded-2xl shadow-2xs p-4">
+        <h1 className="text-xl font-bold text-slate-900 tracking-tight">University Approvals &amp; Proposal Dossiers</h1>
+        <p className="text-xs text-slate-600 mt-0.5">Review, evaluate technical methodologies, and forward R&amp;D project proposals to the Government.</p>
       </div>
 
       <ApprovalsKpis total={validApprovals.length} pending={pending} approved={validApprovals.filter((a) => (a.status === 'Approved' || a.isForwarded) && !a.isDeployed).length} deployed={validApprovals.filter((a) => a.isDeployed).length} loading={loading} />
