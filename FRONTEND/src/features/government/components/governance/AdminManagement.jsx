@@ -2,8 +2,8 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Plus, RefreshCw, AlertCircle } from 'lucide-react';
 import { AdminSummaryCards } from './AdminSummaryCards.jsx';
 import { AdminDirectoryTable } from './AdminDirectoryTable.jsx';
-import { AdminFormModal } from './AdminFormModal.jsx';
-import { AdminViewModal } from './AdminViewModal.jsx';
+import { AdminDetailPanel } from './AdminDetailPanel.jsx';
+import { AdminEditPanel } from './AdminEditPanel.jsx';
 import { adminService } from '../../services/adminService.js';
 
 export const AdminManagement = () => {
@@ -11,7 +11,9 @@ export const AdminManagement = () => {
   const [stats, setStats] = useState({ totalAdmins: 0, activeAdmins: 0, suspendedAdmins: 0, removedAdmins: 0 });
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [isFormOpen, setIsFormOpen] = useState(false);
+
+  // View state: 'list' | 'detail' | 'edit'
+  const [activeView, setActiveView] = useState('list');
   const [editingAdmin, setEditingAdmin] = useState(null);
   const [viewingAdmin, setViewingAdmin] = useState(null);
 
@@ -48,12 +50,12 @@ export const AdminManagement = () => {
       } else {
         await adminService.createAdmin(formData);
       }
-      setIsFormOpen(false);
       setEditingAdmin(null);
       await fetchAdmins();
     } catch (err) {
       const msg = err.response?.data?.error?.message || err.response?.data?.message || err.message || 'Error saving administrator';
       alert(msg);
+      throw err;
     }
   };
 
@@ -65,6 +67,10 @@ export const AdminManagement = () => {
     try {
       await adminService.toggleAdminStatus(targetId);
       await fetchAdmins();
+      if (viewingAdmin && (viewingAdmin.id === targetId || viewingAdmin._id === targetId)) {
+        const nextStatus = viewingAdmin.status === 'Active' ? 'Suspended' : 'Active';
+        setViewingAdmin(prev => ({ ...prev, status: nextStatus }));
+      }
     } catch (err) {
       alert(err.response?.data?.error?.message || 'Error updating status');
     }
@@ -83,8 +89,36 @@ export const AdminManagement = () => {
     }
   };
 
+  if (activeView === 'detail' && viewingAdmin) {
+    return (
+      <AdminDetailPanel
+        admin={viewingAdmin}
+        onBack={() => setActiveView('list')}
+        onEdit={(adm) => { setEditingAdmin(adm); setActiveView('edit'); }}
+        onToggleStatus={handleToggleStatus}
+        onDelete={async (id) => {
+          await handleDeleteAdmin(id);
+          setActiveView('list');
+        }}
+      />
+    );
+  }
+
+  if (activeView === 'edit') {
+    return (
+      <AdminEditPanel
+        admin={editingAdmin}
+        onBack={() => setActiveView('list')}
+        onSave={async (formData) => {
+          await handleFormSubmit(formData);
+          setActiveView('list');
+        }}
+      />
+    );
+  }
+
   return (
-    <div className="space-y-4 pb-8 max-w-[1600px] mx-auto">
+    <div className="space-y-4 pb-8 max-w-[1600px] mx-auto select-none">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pt-1">
         <div>
           <h1 className="text-xl md:text-2xl font-black text-slate-900 tracking-tight">Admin Management</h1>
@@ -99,7 +133,7 @@ export const AdminManagement = () => {
             <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin text-blue-600' : ''}`} />
           </button>
           <button
-            onClick={() => { setEditingAdmin(null); setIsFormOpen(true); }}
+            onClick={() => { setEditingAdmin(null); setActiveView('edit'); }}
             className="inline-flex items-center space-x-2 bg-slate-900 hover:bg-black text-white font-semibold px-3.5 py-2 rounded-md text-xs shadow-xs transition-colors cursor-pointer"
           >
             <Plus className="w-4 h-4" />
@@ -120,24 +154,10 @@ export const AdminManagement = () => {
       <AdminDirectoryTable
         admins={admins}
         isLoading={isLoading}
-        onViewAdmin={(admin) => setViewingAdmin(admin)}
-        onEditAdmin={(admin) => { setEditingAdmin(admin); setIsFormOpen(true); }}
+        onViewAdmin={(admin) => { setViewingAdmin(admin); setActiveView('detail'); }}
+        onEditAdmin={(admin) => { setEditingAdmin(admin); setActiveView('edit'); }}
         onToggleStatus={handleToggleStatus}
         onDeleteAdmin={handleDeleteAdmin}
-      />
-
-      <AdminFormModal
-        isOpen={isFormOpen}
-        onClose={() => { setIsFormOpen(false); setEditingAdmin(null); }}
-        onSubmit={handleFormSubmit}
-        initialData={editingAdmin}
-      />
-
-      <AdminViewModal
-        isOpen={Boolean(viewingAdmin)}
-        onClose={() => setViewingAdmin(null)}
-        admin={viewingAdmin}
-        onAdminUpdated={fetchAdmins}
       />
     </div>
   );

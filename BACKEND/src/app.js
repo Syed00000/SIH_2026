@@ -24,6 +24,7 @@ import industryExpertRoutes from './modules/industry/experts/routes.js';
 import industryTechRoutes from './modules/industry/tech/routes.js';
 import mediaRoutes from './modules/media/presentation/routes.js';
 import gisRoutes from './modules/government/gis/presentation/routes.js';
+import departmentRoutes from './modules/government/departments/presentation/department.routes.js';
 
 const app = express();
 
@@ -86,6 +87,7 @@ app.use('/api/v1/admin/industries', industryRoutes);
 app.use('/api/v1/industries', industryRoutes);
 app.use('/api/v1/government/industries', industryRoutes);
 
+app.use('/api/v1/government/departments', departmentRoutes);
 app.use('/api/v1/government/admins', adminRoutes);
 app.use('/api/v1/admin/gis', gisRoutes);
 app.use('/api/v1/government/gis', gisRoutes);
