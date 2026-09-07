@@ -10,6 +10,7 @@ export const useNodalUniversities = () => {
   const [filterAllocationStatus, setFilterAllocationStatus] = useState('All');
   const [filterDistrict, setFilterDistrict] = useState('All');
   const [selectedUniForDetails, setSelectedUniForDetails] = useState(null);
+  const [viewMode, setViewMode] = useState('list');
 
   // Modal states
   const [selectedChallenge, setSelectedChallenge] = useState(null);
@@ -107,6 +108,8 @@ export const useNodalUniversities = () => {
     isAssignModalOpen,
     setIsAssignModalOpen,
     toastMsg,
+    viewMode,
+    setViewMode,
     loadData,
     getAssignedChallengesForUni,
     handleAllocateNewToUni,

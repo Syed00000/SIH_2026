@@ -10,6 +10,7 @@ export const useNodalChallenges = ({ initialStatusFilter = 'All Status', nodalDi
   const [districtFilter, setDistrictFilter] = useState(nodalDistrict || 'All Districts');
   const [priorityFilter, setPriorityFilter] = useState('All Priority');
   const [chatChallenge, setChatChallenge] = useState(null);
+  const [viewMode, setViewMode] = useState('grid');
 
   const [challenges, setChallenges] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -144,6 +145,8 @@ export const useNodalChallenges = ({ initialStatusFilter = 'All Status', nodalDi
     setSelectedDossierChallenge,
     toastMsg,
     deletingId,
+    viewMode,
+    setViewMode,
     loadChallenges,
     handleOpenTriage,
     handleQuickReject,

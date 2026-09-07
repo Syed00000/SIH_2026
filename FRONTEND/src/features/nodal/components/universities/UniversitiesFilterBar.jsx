@@ -1,5 +1,5 @@
 import React from 'react';
-import { Search } from 'lucide-react';
+import { Search, LayoutGrid, LayoutList } from 'lucide-react';
 import { JHARKHAND_DISTRICTS_LIST } from '../../../government/data/jharkhandDistrictsMeta.js';
 
 const ALLOCATION_STATUS_TABS = ['All', 'Assigned', 'Unassigned'];
@@ -10,7 +10,9 @@ export const UniversitiesFilterBar = ({
   filterAllocationStatus,
   setFilterAllocationStatus,
   filterDistrict,
-  setFilterDistrict
+  setFilterDistrict,
+  viewMode = 'list',
+  setViewMode
 }) => {
   return (
     <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 bg-white border border-slate-200/90 rounded-lg p-3.5 shadow-2xs">
@@ -54,6 +56,37 @@ export const UniversitiesFilterBar = ({
             </option>
           ))}
         </select>
+
+        {setViewMode && (
+          <div className="flex items-center bg-slate-100 p-0.5 rounded-lg border border-slate-200 text-xs font-semibold">
+            <button
+              type="button"
+              onClick={() => setViewMode('list')}
+              title="List View"
+              className={`flex items-center space-x-1.5 px-2.5 py-1.5 rounded-md text-xs font-bold transition-all cursor-pointer ${
+                viewMode === 'list'
+                  ? 'bg-white text-slate-900 shadow-2xs'
+                  : 'text-slate-500 hover:text-slate-900'
+              }`}
+            >
+              <LayoutList className="w-3.5 h-3.5" />
+              <span>List</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setViewMode('grid')}
+              title="Grid View"
+              className={`flex items-center space-x-1.5 px-2.5 py-1.5 rounded-md text-xs font-bold transition-all cursor-pointer ${
+                viewMode === 'grid'
+                  ? 'bg-white text-slate-900 shadow-2xs'
+                  : 'text-slate-500 hover:text-slate-900'
+              }`}
+            >
+              <LayoutGrid className="w-3.5 h-3.5" />
+              <span>Grid</span>
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
