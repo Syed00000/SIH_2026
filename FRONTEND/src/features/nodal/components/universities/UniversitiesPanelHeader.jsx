@@ -25,7 +25,7 @@ export const UniversitiesPanelHeader = ({ onReload, loading, toastMsg }) => {
           <button
             onClick={onReload}
             disabled={loading}
-            className="flex items-center space-x-1.5 p-2 rounded-lg border border-slate-200 hover:bg-slate-50 text-slate-600 hover:text-slate-900 text-xs font-bold transition-colors cursor-pointer shadow-2xs"
+            className="flex items-center space-x-1.5 px-3 py-2 rounded-md border border-slate-300 hover:bg-[#047857] text-slate-700 hover:text-white hover:border-[#047857] text-xs font-bold transition-all cursor-pointer shadow-3xs"
             title="Refresh Universities"
           >
             <RotateCcw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />

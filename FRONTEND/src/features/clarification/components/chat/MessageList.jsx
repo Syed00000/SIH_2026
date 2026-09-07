@@ -28,9 +28,7 @@ export const MessageList = ({
         </div>
       ) : messages.length === 0 ? (
         <div className="flex flex-col items-center justify-center h-full text-center space-y-2.5 text-slate-400 p-6">
-          <div className="w-12 h-12 rounded-full bg-emerald-50 border border-emerald-200 flex items-center justify-center text-[#007A61]">
-            <MessageSquare className="w-6 h-6" />
-          </div>
+          <MessageSquare className="w-8 h-8 text-[#047857] mb-1 stroke-[1.75]" />
           <div>
             <h4 className="font-bold text-slate-800 text-sm">Direct Clarification Channel</h4>
             <p className="text-xs text-slate-500 max-w-sm mt-0.5">

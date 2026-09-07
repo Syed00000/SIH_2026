@@ -48,7 +48,7 @@ export const AssignModalActions = ({
         <button
           type="button"
           onClick={onClose}
-          className="px-3.5 py-2 rounded-lg border border-slate-200 text-slate-700 text-xs font-bold hover:bg-slate-100 cursor-pointer shadow-3xs"
+          className="px-3.5 py-2 rounded-md border border-slate-300 text-slate-700 text-xs font-bold hover:bg-slate-100 cursor-pointer shadow-3xs"
         >
           Cancel
         </button>
@@ -56,7 +56,7 @@ export const AssignModalActions = ({
         <button
           type="submit"
           disabled={submitting}
-          className="px-4 py-2 rounded-lg bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold flex items-center space-x-1.5 cursor-pointer shadow-2xs"
+          className="px-4 py-2 rounded-md bg-[#047857] hover:bg-[#064e3b] text-white text-xs font-bold flex items-center space-x-1.5 cursor-pointer shadow-xs transition-all"
         >
           {submitting ? (
             <RotateCcw className="w-3.5 h-3.5 animate-spin" />

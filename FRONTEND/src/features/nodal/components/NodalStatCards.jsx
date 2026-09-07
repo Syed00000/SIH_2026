@@ -11,7 +11,7 @@ import {
 export const NodalStatCards = ({ stats = {}, onCardClick }) => {
   const cards = [
     {
-      id: 'all',
+      id: 'All Status',
       title: 'Total Citizen Submissions',
       value: stats.total || 0,
       subtext: 'Ground issues across 24 districts',
@@ -19,7 +19,7 @@ export const NodalStatCards = ({ stats = {}, onCardClick }) => {
       icon: Layers
     },
     {
-      id: 'review',
+      id: 'Under Review',
       title: 'Awaiting Nodal Triage',
       value: stats.underReview || stats.submitted || 0,
       subtext: 'Pending initial screening',
@@ -27,7 +27,7 @@ export const NodalStatCards = ({ stats = {}, onCardClick }) => {
       icon: Clock
     },
     {
-      id: 'clarifications',
+      id: 'Clarification Requested',
       title: 'Clarifications Pending',
       value: stats.clarificationRequested || 0,
       subtext: 'Queries from HEI research desks',
@@ -36,7 +36,7 @@ export const NodalStatCards = ({ stats = {}, onCardClick }) => {
       highlight: (stats.clarificationRequested || 0) > 0
     },
     {
-      id: 'assigned',
+      id: 'In Progress',
       title: 'Allocated to Universities',
       value: stats.inProgress || 0,
       subtext: 'Active HEI research & pilots',
@@ -44,7 +44,7 @@ export const NodalStatCards = ({ stats = {}, onCardClick }) => {
       icon: Building
     },
     {
-      id: 'resolved',
+      id: 'Resolved',
       title: 'Field Verified & Resolved',
       value: stats.resolved || 0,
       subtext: 'Completed solutions on ground',
@@ -63,16 +63,14 @@ export const NodalStatCards = ({ stats = {}, onCardClick }) => {
             onClick={() => onCardClick && onCardClick(card.id)}
             className={`group bg-white border ${
               card.highlight ? 'border-amber-400 bg-amber-50/20 ring-1 ring-amber-300' : 'border-slate-200/90 hover:border-slate-300'
-            } rounded-xl p-4 shadow-2xs transition-all duration-150 flex flex-col justify-between cursor-pointer`}
+            } rounded-2xl p-4 shadow-2xs transition-all duration-150 flex flex-col justify-between cursor-pointer`}
           >
             <div>
               <div className="flex items-center justify-between">
                 <span className="text-[11px] font-bold text-slate-500 leading-tight">{card.title}</span>
-                <div className={`w-7 h-7 rounded-lg flex items-center justify-center ${
-                  card.highlight ? 'bg-amber-100 text-amber-900' : 'bg-slate-100 text-slate-600'
-                }`}>
-                  <Icon className="w-4 h-4" />
-                </div>
+                <Icon className={`w-4.5 h-4.5 stroke-[2] ${
+                  card.highlight ? 'text-amber-700' : 'text-slate-600'
+                }`} />
               </div>
               <div className="text-2xl sm:text-3xl font-black text-slate-900 mt-2 tracking-tight flex items-baseline justify-between">
                 <span>{card.value}</span>

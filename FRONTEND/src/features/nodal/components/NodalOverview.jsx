@@ -32,7 +32,7 @@ export const NodalOverview = ({ onNavigateChallenges, onNavigateUniversities, no
       />
 
       {/* 2. Top Metric KPI Grid */}
-      <NodalStatCards stats={stats} loading={loading} />
+      <NodalStatCards stats={stats} loading={loading} onCardClick={onNavigateChallenges} />
 
       {/* 3. Operational Dashboards Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">

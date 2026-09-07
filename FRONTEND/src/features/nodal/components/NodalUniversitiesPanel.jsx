@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNodalUniversities } from './universities/hooks/useNodalUniversities.js';
 import { UniversitiesPanelHeader } from './universities/UniversitiesPanelHeader.jsx';
 import { UniversitiesFilterBar } from './universities/UniversitiesFilterBar.jsx';
@@ -7,6 +7,7 @@ import { UniversityProblemsDetailView } from './UniversityProblemsDetailView.jsx
 import { NodalAssignModal } from './NodalAssignModal.jsx';
 
 export const NodalUniversitiesPanel = ({ onNavigateChallenges }) => {
+  const [viewMode, setViewMode] = useState('table');
   const {
     universities,
     challenges,
@@ -58,6 +59,8 @@ export const NodalUniversitiesPanel = ({ onNavigateChallenges }) => {
         setFilterAllocationStatus={setFilterAllocationStatus}
         filterDistrict={filterDistrict}
         setFilterDistrict={setFilterDistrict}
+        viewMode={viewMode}
+        setViewMode={setViewMode}
       />
 
       <UniversitiesGrid
@@ -66,6 +69,7 @@ export const NodalUniversitiesPanel = ({ onNavigateChallenges }) => {
         getAssignedChallengesForUni={getAssignedChallengesForUni}
         onSelectUniversity={setSelectedUniForDetails}
         onAllocateNew={handleAllocateNewToUni}
+        viewMode={viewMode}
       />
 
       {isAssignModalOpen && (

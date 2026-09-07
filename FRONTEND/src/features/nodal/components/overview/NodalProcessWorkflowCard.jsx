@@ -26,28 +26,26 @@ export const NodalProcessWorkflowCard = () => {
   ];
 
   return (
-    <div className="bg-white border border-slate-200/90 rounded-lg p-5 shadow-2xs space-y-3.5">
-      <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+    <div className="bg-white border border-slate-200/90 rounded-2xl p-5 shadow-2xs space-y-4">
+      <h3 className="text-xs font-black text-slate-500 uppercase tracking-wider">
         State Innovation Triage & Allocation Workflow
       </h3>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
         {steps.map((step, idx) => {
           const Icon = step.icon;
           return (
             <div
               key={idx}
-              className="p-3.5 bg-slate-50 rounded-lg border border-slate-200/80 space-y-1.5"
+              className="p-4 bg-slate-50/70 rounded-xl border border-slate-200/80 space-y-2 hover:bg-slate-50 hover:border-slate-300 transition-all"
             >
               <div className="flex items-center space-x-2">
-                <div className="p-1.5 rounded-md bg-white border border-slate-200 shadow-3xs text-slate-900">
-                  <Icon className="w-3.5 h-3.5" />
-                </div>
-                <h4 className="text-xs font-bold text-slate-900 line-clamp-1">
+                <Icon className="w-4 h-4 text-[#0f4b3a] shrink-0 stroke-[2.2]" />
+                <h4 className="text-xs font-bold text-slate-900 leading-tight">
                   {step.title}
                 </h4>
               </div>
-              <p className="text-[11px] text-slate-500 font-medium leading-relaxed">
+              <p className="text-[11px] text-slate-600 font-medium leading-relaxed">
                 {step.desc}
               </p>
             </div>

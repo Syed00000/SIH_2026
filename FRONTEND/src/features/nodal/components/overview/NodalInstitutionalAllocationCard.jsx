@@ -9,11 +9,11 @@ export const NodalInstitutionalAllocationCard = ({
   const topUnis = universities.slice(0, 5);
 
   return (
-    <div className="bg-white border border-slate-200/90 rounded-lg p-5 shadow-2xs flex flex-col justify-between space-y-4">
+    <div className="bg-white border border-slate-200/90 rounded-2xl p-5 shadow-2xs flex flex-col justify-between space-y-4">
       <div>
         <div className="flex items-center justify-between border-b border-slate-100 pb-3">
           <div className="flex items-center space-x-2">
-            <GraduationCap className="w-4 h-4 text-[#047857]" />
+            <GraduationCap className="w-4 h-4 text-[#047857] stroke-[2]" />
             <h3 className="text-sm font-extrabold text-slate-900">
               Accredited HEI Capacity & Problem Load
             </h3>
@@ -50,14 +50,14 @@ export const NodalInstitutionalAllocationCard = ({
                 <div
                   key={uni.id || uni._id || uni.code}
                   onClick={onNavigateUniversities}
-                  className="py-3 flex items-center justify-between gap-3 hover:bg-slate-50/70 p-2 rounded-lg transition-colors cursor-pointer group"
+                  className="py-3 flex items-center justify-between gap-3 hover:bg-slate-50/70 p-2 rounded-xl transition-colors cursor-pointer group"
                 >
                   <div className="space-y-0.5">
                     <div className="flex items-center space-x-2">
                       <h4 className="text-xs font-bold text-slate-900 group-hover:text-slate-800">
                         {uni.name}
                       </h4>
-                      <span className="font-mono text-[10px] font-bold text-slate-600 bg-slate-100 px-1.5 py-0.2 rounded border border-slate-200">
+                      <span className="font-mono text-[10px] font-bold text-slate-600 bg-slate-100 px-1.5 py-0.2 rounded-full border border-slate-200">
                         {uni.code}
                       </span>
                     </div>
@@ -84,7 +84,7 @@ export const NodalInstitutionalAllocationCard = ({
         </div>
       </div>
 
-      <div className="p-3 bg-emerald-50/70 rounded-lg border border-emerald-200/70 flex items-center justify-between text-xs">
+      <div className="p-3 bg-emerald-50/70 rounded-xl border border-emerald-200/70 flex items-center justify-between text-xs">
         <div className="flex items-center space-x-2">
           <Building className="w-4 h-4 text-[#047857] shrink-0" />
           <span className="font-semibold text-emerald-950">

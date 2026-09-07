@@ -36,7 +36,7 @@ export const DossierOverviewTab = ({ challenge, submitter, formattedDate, assign
           <div className="space-y-1 text-xs text-slate-600 font-medium">
             <p><span className="text-slate-400">Institution:</span> <span className="font-bold text-slate-900">{assignedUni.name || 'Not Yet Assigned'}</span></p>
             <p><span className="text-slate-400">Department:</span> {assignedUni.department || 'General R&D'}</p>
-            <p><span className="text-slate-400">Acceptance:</span> <span className="font-bold text-[#047857]">{acceptance}</span></p>
+            <p><span className="text-slate-400">Acceptance:</span> <span className="font-bold text-[#047857]">{acceptance || assignedUni.acceptanceStatus || challenge.acceptanceStatus || (assignedUni.name ? 'Pending Review' : 'Not Assigned')}</span></p>
           </div>
         </div>
       </div>

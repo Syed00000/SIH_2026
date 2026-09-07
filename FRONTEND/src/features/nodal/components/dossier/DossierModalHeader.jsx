@@ -12,15 +12,15 @@ export const DossierModalHeader = ({
   return (
     <div className="flex items-center justify-between p-4 border-b border-slate-100 bg-slate-50/50">
       <div className="flex items-center space-x-2">
-        <FileText className="w-4 h-4 text-slate-900" />
+        <FileText className="w-4 h-4 text-[#047857]" />
         <h3 className="text-sm font-bold text-slate-900">
           Ground Truth Evidence Dossier
         </h3>
-        <span className="font-mono text-[10.5px] font-bold text-slate-700 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">
+        <span className="font-mono text-xs font-bold text-[#047857]">
           {chlId}
         </span>
-        <span className="text-[10px] font-bold text-slate-700 bg-slate-100 px-2 py-0.5 rounded-full border border-slate-200">
-          {domain || 'Civic Problem'}
+        <span className="text-xs font-semibold text-slate-600">
+          &bull; {domain || 'Civic Problem'}
         </span>
       </div>
 

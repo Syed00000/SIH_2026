@@ -10,14 +10,14 @@ export const AssignModalHeader = ({
   return (
     <div className="flex items-center justify-between p-4 border-b border-slate-100 bg-slate-50/50">
       <div className="flex items-center space-x-2">
-        <Layers className="w-4 h-4 text-slate-900" />
+        <Layers className="w-4 h-4 text-[#047857]" />
         <h3 className="text-sm font-bold text-slate-900">
           {isUniversityTargetMode
             ? `Allocate Problem to ${targetUniversity?.name || 'University'}`
             : 'Triage & Institutional Allocation'}
         </h3>
         {activeChallenge && (
-          <span className="font-mono text-[10.5px] font-bold text-slate-700 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">
+          <span className="font-mono text-xs font-bold text-[#047857]">
             {activeChallenge.challengeId || activeChallenge.id}
           </span>
         )}

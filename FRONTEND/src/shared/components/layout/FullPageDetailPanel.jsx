@@ -17,7 +17,7 @@ export const FullPageDetailPanel = ({
   stickyFooter
 }) => {
   return (
-    <div className="w-full flex flex-col min-h-[calc(100vh-140px)] bg-slate-50/60 rounded-3xl border border-slate-200 shadow-xs overflow-hidden select-none animate-fadeIn">
+    <div className="w-full flex flex-col min-h-[calc(100vh-140px)] bg-slate-50/60 rounded-xl border border-slate-200 shadow-xs overflow-hidden select-none animate-fadeIn">
       {/* Top Navigation & Header Bar */}
       <div className="bg-white border-b border-slate-200 px-6 py-4 shrink-0 space-y-3">
         {/* Breadcrumb & Back button */}
@@ -26,7 +26,7 @@ export const FullPageDetailPanel = ({
             <button
               type="button"
               onClick={onBack}
-              className="inline-flex items-center space-x-1 font-bold text-slate-700 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 px-2.5 py-1 rounded-lg transition-colors cursor-pointer"
+              className="inline-flex items-center space-x-1 font-bold text-slate-700 hover:text-white bg-slate-100 hover:bg-[#047857] px-2.5 py-1 rounded-md transition-colors cursor-pointer"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
               <span>{backLabel}</span>
@@ -56,7 +56,7 @@ export const FullPageDetailPanel = ({
           <div className="space-y-1">
             <div className="flex items-center space-x-2.5 flex-wrap">
               {idBadge && (
-                <span className="font-mono text-xs font-black bg-slate-900 text-white px-2 py-0.5 rounded-md">
+                <span className="font-mono text-xs font-bold text-[#047857]">
                   {idBadge}
                 </span>
               )}
@@ -86,7 +86,7 @@ export const FullPageDetailPanel = ({
                   onClick={() => onTabChange?.(t.id)}
                   className={`py-2.5 px-3.5 text-xs font-bold border-b-2 transition-all cursor-pointer inline-flex items-center space-x-1.5 whitespace-nowrap ${
                     isActive
-                      ? 'border-[#007A61] text-[#007A61] font-black bg-emerald-50/50'
+                      ? 'border-[#047857] text-[#047857] font-black bg-emerald-50/60'
                       : 'border-transparent text-slate-500 hover:text-slate-800 hover:bg-slate-50'
                   }`}
                 >

@@ -25,21 +25,21 @@ export const UniversityProblemCard = ({
       <div className="space-y-2.5">
         {/* Card Header */}
         <div className="flex items-center justify-between gap-2">
-          <div className="flex items-center space-x-2">
-            <span className="font-mono text-[10.5px] font-bold text-slate-700 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">
+          <div className="flex items-center space-x-2.5">
+            <span className="font-mono text-xs font-bold text-[#047857]">
               {chlId}
             </span>
-            <span className="text-[10px] font-bold text-slate-700 bg-slate-100 px-2 py-0.5 rounded-full border border-slate-200">
-              {chl.domain || 'General Need'}
+            <span className="text-xs font-semibold text-slate-600">
+              &bull; {chl.domain || 'General Need'}
             </span>
           </div>
 
           {isDeployed ? (
-            <span className="text-[10.5px] font-bold px-2 py-0.5 rounded-full border bg-teal-50 text-teal-800 border-teal-300">
+            <span className="text-xs font-bold px-2.5 py-0.5 rounded-md border bg-teal-50 text-teal-800 border-teal-300">
               🔒 Deployed
             </span>
           ) : (
-            <span className={`text-[10.5px] font-bold px-2 py-0.5 rounded-full border ${
+            <span className={`text-xs font-bold px-2.5 py-0.5 rounded-md border ${
               acceptance === 'Accepted'
                 ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
                 : acceptance === 'Declined'
@@ -53,7 +53,7 @@ export const UniversityProblemCard = ({
 
         {/* Title & Description */}
         <div>
-          <h3 className="text-sm font-bold text-slate-900 line-clamp-1 group-hover:text-slate-800">
+          <h3 className="text-sm font-bold text-slate-900 line-clamp-1 group-hover:text-[#047857] transition-colors">
             {chl.title}
           </h3>
           <p className="text-xs text-slate-500 line-clamp-2 mt-1 leading-relaxed">
@@ -121,7 +121,7 @@ export const UniversityProblemCard = ({
               e.stopPropagation();
               onOpenEditOrReassign(chl);
             }}
-            className="flex items-center space-x-1.5 bg-white hover:bg-slate-900 text-slate-900 hover:text-white border border-slate-200/90 text-xs font-bold px-3 py-1.5 rounded-md shadow-3xs transition-all"
+            className="flex items-center space-x-1.5 bg-white hover:bg-[#047857] text-slate-800 hover:text-white border border-slate-300 hover:border-[#047857] text-xs font-bold px-3 py-1.5 rounded-md shadow-3xs transition-all"
           >
             <RotateCcw className="w-3 h-3" />
             <span>Edit / Reassign</span>
