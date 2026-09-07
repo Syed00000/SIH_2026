@@ -42,7 +42,7 @@ export const DossierLocationTab = ({ fullAddress, district, block, panchayat, la
             href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(fullAddress)}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center space-x-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold px-3 py-1.5 rounded-md border border-slate-200 transition-colors"
+            className="flex items-center space-x-1.5 bg-slate-100 hover:bg-[#047857] text-slate-800 hover:text-white text-xs font-bold px-3 py-1.5 rounded-md border border-slate-200 hover:border-[#047857] transition-all"
           >
             <span>Open in Google Maps</span>
             <ExternalLink className="w-3.5 h-3.5" />

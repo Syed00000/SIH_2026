@@ -6,30 +6,35 @@ export const filterChallengesList = ({
   priorityFilter = 'All Priority',
   searchTerm = ''
 }) => {
-  const safeStatusFilter = typeof statusFilter === 'string' ? statusFilter : 'All Status';
-  const safeDomainFilter = typeof domainFilter === 'string' ? domainFilter : 'All Domains';
-  const safeDistrictFilter = typeof districtFilter === 'string' ? districtFilter : 'All Districts';
-  const safePriorityFilter = typeof priorityFilter === 'string' ? priorityFilter : 'All Priority';
+  const safeStatusStr = typeof statusFilter === 'string' ? statusFilter : (statusFilter?.status && typeof statusFilter.status === 'string' ? statusFilter.status : 'All Status');
+  const safeDomainStr = typeof domainFilter === 'string' ? domainFilter : 'All Domains';
+  const safeDistrictStr = typeof districtFilter === 'string' ? districtFilter : 'All Districts';
+  const safePriorityStr = typeof priorityFilter === 'string' ? priorityFilter : 'All Priority';
+  const safeSearchStr = typeof searchTerm === 'string' ? searchTerm : '';
 
-  return challenges.filter((chl) => {
-    const status = String(chl.status || 'Under Review');
-    const domain = String(chl.domain || 'Other');
-    const district = String(chl.location?.district || chl.district || chl.assignedNodalOfficer?.district || 'Jharkhand');
-    const priority = String(chl.priority || 'Medium');
+  const safeList = Array.isArray(challenges) ? challenges : [];
 
-    if (safeStatusFilter !== 'All Status' && status.toLowerCase() !== safeStatusFilter.toLowerCase()) return false;
-    if (safeDomainFilter !== 'All Domains' && domain.toLowerCase() !== safeDomainFilter.toLowerCase()) return false;
-    if (safeDistrictFilter !== 'All Districts' && district.toLowerCase() !== safeDistrictFilter.toLowerCase()) return false;
-    if (safePriorityFilter !== 'All Priority' && priority.toLowerCase() !== safePriorityFilter.toLowerCase()) return false;
+  return safeList.filter((chl) => {
+    if (!chl) return false;
 
-    if (typeof searchTerm === 'string' && searchTerm.trim()) {
-      const q = searchTerm.toLowerCase();
+    const status = (chl.status || 'Under Review').toString();
+    const domain = (chl.domain || 'Other').toString();
+    const district = (chl.location?.district || chl.district || chl.assignedNodalOfficer?.district || 'Jharkhand').toString();
+    const priority = (chl.priority || 'Medium').toString();
+
+    if (safeStatusStr !== 'All Status' && status.toLowerCase() !== safeStatusStr.toLowerCase()) return false;
+    if (safeDomainStr !== 'All Domains' && domain.toLowerCase() !== safeDomainStr.toLowerCase()) return false;
+    if (safeDistrictStr !== 'All Districts' && district.toLowerCase() !== safeDistrictStr.toLowerCase()) return false;
+    if (safePriorityStr !== 'All Priority' && priority.toLowerCase() !== safePriorityStr.toLowerCase()) return false;
+
+    if (safeSearchStr.trim()) {
+      const q = safeSearchStr.toLowerCase();
       const match =
-        (chl.title || '').toLowerCase().includes(q) ||
-        (chl.challengeId || chl.id || '').toLowerCase().includes(q) ||
-        (chl.description || '').toLowerCase().includes(q) ||
-        (chl.location?.district || chl.district || '').toLowerCase().includes(q) ||
-        (chl.assignedUniversity?.name || '').toLowerCase().includes(q);
+        (chl.title || '').toString().toLowerCase().includes(q) ||
+        (chl.challengeId || chl.id || '').toString().toLowerCase().includes(q) ||
+        (chl.description || '').toString().toLowerCase().includes(q) ||
+        (chl.location?.district || chl.district || '').toString().toLowerCase().includes(q) ||
+        (chl.assignedUniversity?.name || '').toString().toLowerCase().includes(q);
       if (!match) return false;
     }
     return true;

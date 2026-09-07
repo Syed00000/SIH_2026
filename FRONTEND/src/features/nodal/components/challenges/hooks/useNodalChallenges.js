@@ -23,7 +23,8 @@ export const useNodalChallenges = ({ initialStatusFilter = 'All Status', nodalDi
 
   useEffect(() => {
     if (initialStatusFilter) {
-      setStatusFilter(typeof initialStatusFilter === 'string' ? initialStatusFilter : 'All Status');
+      const validFilter = typeof initialStatusFilter === 'string' ? initialStatusFilter : 'All Status';
+      setStatusFilter(validFilter);
     }
   }, [initialStatusFilter]);
 

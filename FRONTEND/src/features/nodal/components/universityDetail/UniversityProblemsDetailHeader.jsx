@@ -29,19 +29,19 @@ export const UniversityProblemsDetailHeader = ({
           </button>
 
           <div>
-            <div className="flex flex-wrap items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2.5">
               <h2 className="text-lg font-black text-slate-900 tracking-tight">
                 {university.name}
               </h2>
-              <span className="font-mono text-xs font-bold text-slate-700 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">
+              <span className="font-mono text-xs font-bold text-[#047857]">
                 {university.code}
               </span>
-              <span className="text-xs font-bold text-slate-500">
+              <span className="text-xs font-semibold text-slate-500">
                 &bull; {university.district || 'Jharkhand'}
               </span>
             </div>
             <p className="text-xs text-slate-500 font-medium mt-0.5">
-              {university.legalName || university.name} &bull; AISHE: {university.aisheCode || 'U-0000'} &bull; Type: {university.universityType || university.type || 'State University'}
+              {university.legalName || university.name} &bull; AISHE: {university.aisheCode || 'U-0205'} &bull; Type: {university.universityType || university.type || 'State University'}
             </p>
           </div>
         </div>
@@ -49,15 +49,15 @@ export const UniversityProblemsDetailHeader = ({
         <div className="flex items-center space-x-2 shrink-0">
           <button
             onClick={() => setShowProfileDrawer(!showProfileDrawer)}
-            className="flex items-center space-x-1.5 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 text-xs font-bold px-3.5 py-2 rounded-lg shadow-2xs transition-all cursor-pointer"
+            className="flex items-center space-x-1.5 bg-white hover:bg-[#047857] text-slate-700 hover:text-white border border-slate-300 hover:border-[#047857] text-xs font-bold px-3.5 py-2 rounded-md shadow-3xs transition-all cursor-pointer"
           >
-            <Info className="w-3.5 h-3.5 text-slate-500" />
+            <Info className="w-3.5 h-3.5" />
             <span>{showProfileDrawer ? 'Hide Profile' : 'Institution Profile'}</span>
           </button>
 
           <button
             onClick={onOpenAssignNew}
-            className="flex items-center justify-center space-x-2 bg-white hover:bg-[#064e3b] text-slate-900 hover:text-white border border-slate-200/90 hover:border-[#064e3b] text-xs font-bold px-4 py-2 rounded-lg shadow-2xs transition-all cursor-pointer active:scale-95"
+            className="flex items-center justify-center space-x-1.5 bg-[#047857] hover:bg-[#064e3b] text-white text-xs font-bold px-4 py-2 rounded-md shadow-xs transition-all cursor-pointer active:scale-95"
           >
             <Plus className="w-4 h-4 stroke-[2.5]" />
             <span>Allocate Problem</span>

@@ -15,7 +15,7 @@ export const ChatInputFooter = ({
   return (
     <form
       onSubmit={onSendMessage}
-      className="p-3 border-t border-slate-200 bg-[#f0f2f5] flex items-center space-x-2 flex-shrink-0"
+      className="p-3 border-t border-slate-200 bg-slate-50 flex items-center space-x-2 flex-shrink-0"
     >
       <input
         ref={inputRef}
@@ -31,13 +31,13 @@ export const ChatInputFooter = ({
                 ? `Message ${uniName}...`
                 : 'Message University (Not Assigned)...'
         }
-        className="flex-1 bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-[#007A61] transition-all shadow-xs"
+        className="flex-1 bg-white border border-slate-200 rounded-md px-4 py-2.5 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-[#047857] focus:ring-1 focus:ring-[#047857] transition-all shadow-2xs"
       />
 
       <button
         type="submit"
         disabled={!inputText.trim() || sending}
-        className="px-4 py-2.5 bg-[#007A61] hover:bg-[#006650] disabled:bg-slate-300 disabled:text-slate-500 text-white rounded-xl text-xs font-bold flex items-center space-x-1.5 transition-colors cursor-pointer shadow-xs shrink-0"
+        className="px-4 py-2.5 bg-[#047857] hover:bg-[#064e3b] disabled:bg-slate-200 disabled:text-slate-400 text-white rounded-md text-xs font-bold flex items-center space-x-1.5 transition-all cursor-pointer shadow-xs shrink-0"
       >
         <Send className="w-3.5 h-3.5" />
         <span>{sending ? 'Sending...' : 'Send'}</span>
