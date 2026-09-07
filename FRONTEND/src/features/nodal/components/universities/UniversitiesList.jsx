@@ -98,7 +98,7 @@ export const UniversitiesList = ({
                         <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                         <span>{uni.district || 'Jharkhand'}</span>
                       </div>
-                      <span className="inline-block text-[10px] font-bold text-slate-600 bg-slate-100 px-2 py-0.5 rounded-full border border-slate-200">
+                      <span className="inline-block text-[10px] font-bold text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md border border-slate-200">
                         {uni.universityType || uni.type || 'State University'}
                       </span>
                     </div>

@@ -13,7 +13,7 @@ export const ApprovalsTableHeader = ({
         <h3 className="text-sm font-black text-slate-900 tracking-tight">
           Pending Nodal Approvals & Triage
         </h3>
-        <span className="text-[10.5px] font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200">
+        <span className="text-[10.5px] font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200">
           Action Required
         </span>
       </div>
@@ -34,7 +34,7 @@ export const ApprovalsTableHeader = ({
               >
                 <span>{tab.label}</span>
                 {typeof tab.count === 'number' && (
-                  <span className={`ml-1 text-[10px] px-1.5 py-0.2 rounded-full ${
+                  <span className={`ml-1 text-[10px] px-1.5 py-0.2 rounded-md ${
                     isActive ? 'bg-slate-100 text-slate-900 font-extrabold' : 'bg-slate-200/70 text-slate-600'
                   }`}>
                     {tab.count}

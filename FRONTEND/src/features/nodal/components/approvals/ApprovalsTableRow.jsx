@@ -32,13 +32,13 @@ export const ApprovalsTableRow = ({ item, onViewItem, onApproveItem }) => {
         </div>
       </td>
       <td className="py-3 px-3.5 whitespace-nowrap">
-        <span className={`text-[10.5px] font-bold px-2 py-0.5 rounded-full border ${item.typeBadge || 'bg-slate-100 text-slate-700 border-slate-200'}`}>
+        <span className={`text-[10.5px] font-bold px-2 py-0.5 rounded-md border ${item.typeBadge || 'bg-slate-100 text-slate-700 border-slate-200'}`}>
           {item.type}
         </span>
       </td>
       <td className="py-3 px-3.5 whitespace-nowrap">
         {item.priority ? (
-          <span className={`text-[10.5px] font-bold px-2 py-0.5 rounded-full border ${item.priorityBadge || 'bg-amber-50 text-amber-700 border-amber-200'}`}>
+          <span className={`text-[10.5px] font-bold px-2 py-0.5 rounded-md border ${item.priorityBadge || 'bg-amber-50 text-amber-700 border-amber-200'}`}>
             {item.priority}
           </span>
         ) : (

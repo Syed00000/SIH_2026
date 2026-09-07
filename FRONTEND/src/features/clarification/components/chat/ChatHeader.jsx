@@ -25,9 +25,11 @@ export const ChatHeader = ({
   return (
     <div className="p-3.5 border-b border-slate-200 bg-slate-50 flex items-center justify-between flex-shrink-0">
       <div className="flex items-center space-x-3">
-        <div className="p-2 rounded-lg bg-emerald-50 border border-emerald-200/80 text-[#047857] shrink-0">
-          {isUniversityView ? <Shield className="w-4 h-4 text-[#047857]" /> : <GraduationCap className="w-4 h-4 text-[#047857]" />}
-        </div>
+        {isUniversityView ? (
+          <Shield className="w-5 h-5 text-[#047857] shrink-0" />
+        ) : (
+          <GraduationCap className="w-5 h-5 text-[#047857] shrink-0" />
+        )}
 
         <div>
           <div className="flex items-center space-x-2">
@@ -62,7 +64,7 @@ export const ChatHeader = ({
         </div>
       </div>
 
-      <div className="flex items-center space-x-1.5">
+      <div className="flex items-center space-x-1">
         <button
           type="button"
           onClick={onShowClearConfirm}
@@ -84,7 +86,7 @@ export const ChatHeader = ({
         {isUniversityView && (
           <a
             href={`tel:${nodalPhone}`}
-            className="hidden sm:flex items-center space-x-1.5 bg-emerald-50 hover:bg-emerald-100 text-[#047857] border border-emerald-300 px-3 py-1.5 rounded-md text-xs font-bold transition-all shadow-2xs"
+            className="hidden sm:flex items-center space-x-1.5 bg-emerald-50 hover:bg-emerald-100 text-[#047857] border border-emerald-300 px-2.5 py-1.5 rounded-md text-xs font-bold transition-all shadow-2xs"
             title="Direct Hotline with State Nodal Admin"
           >
             <Phone className="w-3.5 h-3.5 text-[#047857]" />
@@ -95,7 +97,8 @@ export const ChatHeader = ({
         <button
           type="button"
           onClick={onClose}
-          className="p-1.5 text-slate-400 hover:text-slate-800 hover:bg-slate-200 rounded-md cursor-pointer transition-colors"
+          className="p-1.5 text-slate-400 hover:text-white hover:bg-[#dc2626] rounded-md cursor-pointer transition-colors"
+          title="Close Chat Modal"
         >
           <X className="w-4.5 h-4.5" />
         </button>

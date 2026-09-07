@@ -11,7 +11,7 @@ export const NodalUnassignedQueueCard = ({
     .slice(0, 5);
 
   return (
-    <div className="bg-white border border-slate-200/90 rounded-2xl p-5 shadow-2xs flex flex-col justify-between space-y-4">
+    <div className="bg-white border border-slate-200/90 rounded-md p-5 shadow-2xs flex flex-col justify-between space-y-4">
       <div>
         <div className="flex items-center justify-between border-b border-slate-100 pb-3">
           <div className="flex items-center space-x-2">
@@ -41,14 +41,14 @@ export const NodalUnassignedQueueCard = ({
               <div
                 key={chl.id || chl._id || chl.challengeId}
                 onClick={() => onOpenAssign?.(chl)}
-                className="py-3 flex items-start justify-between gap-3 hover:bg-slate-50/70 p-2 rounded-xl transition-colors cursor-pointer group"
+                className="py-3 flex items-start justify-between gap-3 hover:bg-slate-50/70 p-2 rounded-md transition-colors cursor-pointer group"
               >
                 <div className="space-y-1">
                   <div className="flex items-center space-x-2">
                     <span className="font-mono text-[10.5px] font-bold text-slate-600">
                       {chl.challengeId || chl.id}
                     </span>
-                    <span className="text-[10px] font-bold text-slate-700 bg-slate-100 px-1.5 py-0.2 rounded-full border border-slate-200">
+                    <span className="text-[10px] font-bold text-slate-700 bg-slate-100 px-1.5 py-0.2 rounded-md border border-slate-200">
                       {chl.domain || 'General Need'}
                     </span>
                   </div>
@@ -72,7 +72,7 @@ export const NodalUnassignedQueueCard = ({
                     e.stopPropagation();
                     onOpenAssign?.(chl);
                   }}
-                  className="bg-white hover:bg-slate-900 text-slate-700 hover:text-white border border-slate-200/90 text-[11px] font-bold px-2.5 py-1 rounded-xl shadow-2xs transition-all shrink-0 mt-1 cursor-pointer"
+                  className="bg-white hover:bg-slate-900 text-slate-700 hover:text-white border border-slate-200/90 text-[11px] font-bold px-2.5 py-1 rounded-md shadow-2xs transition-all shrink-0 mt-1 cursor-pointer"
                 >
                   Allocate
                 </button>
@@ -82,7 +82,7 @@ export const NodalUnassignedQueueCard = ({
         </div>
       </div>
 
-      <div className="p-3 bg-amber-50/70 rounded-xl border border-amber-200/70 flex items-center justify-between text-xs">
+      <div className="p-3 bg-amber-50/70 rounded-md border border-amber-200/70 flex items-center justify-between text-xs">
         <div className="flex items-center space-x-2">
           <Clock className="w-4 h-4 text-amber-700 shrink-0" />
           <span className="font-semibold text-amber-900">

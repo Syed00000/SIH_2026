@@ -19,7 +19,7 @@ export const UniversityCapacityProfileDrawer = ({ university, assignedChallenges
           <GraduationCap className="w-5 h-5 text-[#047857]" />
           <h3 className="text-sm font-extrabold text-slate-900">Institution Profile & Research Capacity</h3>
         </div>
-        <span className="text-[11px] font-bold text-emerald-800 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
+        <span className="text-[11px] font-bold text-emerald-800 bg-emerald-50 px-2.5 py-0.5 rounded-md border border-emerald-200">
           Verified HEI Record
         </span>
       </div>

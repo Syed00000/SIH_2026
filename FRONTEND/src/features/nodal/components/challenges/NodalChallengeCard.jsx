@@ -23,17 +23,17 @@ export const NodalChallengeCard = ({
         {/* Header Tags */}
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center space-x-2">
-            <span className="font-mono text-[10.5px] font-bold text-slate-700 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">
+            <span className="font-mono text-[10.5px] font-bold text-slate-700 bg-slate-50 px-2 py-0.5 rounded-md border border-slate-200">
               {chl.challengeId || chl.id}
             </span>
-            <span className="text-[10px] font-bold text-slate-700 bg-slate-100 px-2 py-0.5 rounded-full border border-slate-200">
+            <span className="text-[10px] font-bold text-slate-700 bg-slate-50 px-2 py-0.5 rounded-md border border-slate-200">
               {chl.domain || 'General Need'}
             </span>
           </div>
 
-          <span className={`text-[10.5px] font-bold px-2 py-0.5 rounded-full border ${
+          <span className={`text-[10.5px] font-bold px-2 py-0.5 rounded-md border ${
             isDeployed
-              ? 'bg-emerald-100 text-emerald-900 border-emerald-300'
+              ? 'bg-emerald-50 text-emerald-900 border-emerald-300'
               : chl.status === 'Resolved'
               ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
               : chl.status === 'In Progress'

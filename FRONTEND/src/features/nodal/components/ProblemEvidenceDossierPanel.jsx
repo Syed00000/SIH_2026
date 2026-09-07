@@ -57,18 +57,18 @@ export const ProblemEvidenceDossierPanel = ({
       breadcrumbs={['Nodal Officer Cell', 'Problem Statement Dossier', chlId]}
       idBadge={chlId}
       statusBadge={
-        <span className={`px-2.5 py-0.5 rounded-md text-xs font-bold border flex items-center space-x-1 ${
+        <span className={`text-xs font-bold flex items-center space-x-1 ${
           isDeployed
-            ? 'bg-emerald-50 text-emerald-800 border-emerald-300'
+            ? 'text-emerald-800 font-extrabold'
             : isAccepted
-            ? 'bg-emerald-50 text-emerald-800 border-emerald-300'
+            ? 'text-emerald-800 font-extrabold'
             : isDeclined
-            ? 'bg-rose-50 text-rose-800 border-rose-300'
-            : 'bg-amber-50 text-amber-800 border-amber-300'
+            ? 'text-rose-800 font-extrabold'
+            : 'text-amber-800 font-extrabold'
         }`}>
           {isDeployed ? (
             <>
-              <Lock className="w-3.5 h-3.5 text-emerald-700" />
+              <Lock className="w-3.5 h-3.5 text-emerald-700 inline" />
               <span>✓ Deployed (TRL-9) · Locked</span>
             </>
           ) : (

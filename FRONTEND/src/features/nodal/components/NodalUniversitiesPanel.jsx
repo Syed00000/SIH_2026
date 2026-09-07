@@ -3,12 +3,12 @@ import { useNodalUniversities } from './universities/hooks/useNodalUniversities.
 import { UniversitiesPanelHeader } from './universities/UniversitiesPanelHeader.jsx';
 import { UniversitiesFilterBar } from './universities/UniversitiesFilterBar.jsx';
 import { UniversitiesGrid } from './universities/UniversitiesGrid.jsx';
-import { UniversitiesList } from './universities/UniversitiesList.jsx';
 import { UniversityProblemsDetailView } from './UniversityProblemsDetailView.jsx';
 import { NodalAssignModal } from './NodalAssignModal.jsx';
 
 export const NodalUniversitiesPanel = ({ onNavigateChallenges }) => {
-  const [viewMode, setViewMode] = useState('table');
+  const [viewMode, setViewMode] = useState('table'); // Default Table/List View Mode
+
   const {
     universities,
     challenges,
@@ -26,8 +26,6 @@ export const NodalUniversitiesPanel = ({ onNavigateChallenges }) => {
     isAssignModalOpen,
     setIsAssignModalOpen,
     toastMsg,
-    viewMode,
-    setViewMode,
     loadData,
     getAssignedChallengesForUni,
     handleAllocateNewToUni,
@@ -66,23 +64,14 @@ export const NodalUniversitiesPanel = ({ onNavigateChallenges }) => {
         setViewMode={setViewMode}
       />
 
-      {viewMode === 'grid' ? (
-        <UniversitiesGrid
-          loading={loading}
-          universities={filteredUniversities}
-          getAssignedChallengesForUni={getAssignedChallengesForUni}
-          onSelectUniversity={setSelectedUniForDetails}
-          onAllocateNew={handleAllocateNewToUni}
-        />
-      ) : (
-        <UniversitiesList
-          loading={loading}
-          universities={filteredUniversities}
-          getAssignedChallengesForUni={getAssignedChallengesForUni}
-          onSelectUniversity={setSelectedUniForDetails}
-          onAllocateNew={handleAllocateNewToUni}
-        />
-      )}
+      <UniversitiesGrid
+        loading={loading}
+        universities={filteredUniversities}
+        getAssignedChallengesForUni={getAssignedChallengesForUni}
+        onSelectUniversity={setSelectedUniForDetails}
+        onAllocateNew={handleAllocateNewToUni}
+        viewMode={viewMode}
+      />
 
       {isAssignModalOpen && (
         <NodalAssignModal

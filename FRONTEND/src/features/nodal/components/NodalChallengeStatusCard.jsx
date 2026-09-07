@@ -24,7 +24,7 @@ export const NodalChallengeStatusCard = ({
   let accumulatedPercent = 0;
 
   return (
-    <div className="bg-white border border-slate-200/90 rounded-xl p-4 shadow-2xs flex flex-col justify-between h-full">
+    <div className="bg-white border border-slate-200/90 rounded-md p-4 shadow-2xs flex flex-col justify-between h-full">
       {/* Header */}
       <div className="flex items-center justify-between pb-2 border-b border-slate-100">
         <h3 className="font-bold text-slate-900 text-sm">Challenge Status</h3>

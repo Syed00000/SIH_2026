@@ -7,6 +7,7 @@ import { TriageVerificationCard } from './assign/TriageVerificationCard.jsx';
 import { InstitutionalTargetingCard } from './assign/InstitutionalTargetingCard.jsx';
 import { NodalNotesAndClarificationCard } from './assign/NodalNotesAndClarificationCard.jsx';
 import { AssignModalActions } from './assign/AssignModalActions.jsx';
+import { SkeletonModalForm } from './common/NodalSkeletonLoaders.jsx';
 
 export const NodalAssignModal = ({
   isOpen,
@@ -57,7 +58,7 @@ export const NodalAssignModal = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-150">
-      <div className="bg-white rounded-xl max-w-xl w-full border border-slate-200/90 shadow-xl overflow-hidden flex flex-col max-h-[90vh] animate-in zoom-in-95 duration-150 text-left">
+      <div className="bg-white rounded-md max-w-xl w-full border border-slate-300 shadow-2xl overflow-hidden flex flex-col max-h-[90vh] animate-in zoom-in-95 duration-150 text-left">
         <AssignModalHeader
           isUniversityTargetMode={isUniversityTargetMode}
           targetUniversity={targetUniversity}
@@ -65,61 +66,64 @@ export const NodalAssignModal = ({
           onClose={onClose}
         />
 
-        <form onSubmit={handleFormSubmit} className="flex flex-col flex-1 overflow-hidden">
-          <div className="p-5 overflow-y-auto space-y-4 text-xs">
-            {errorMsg && (
-              <div className="p-3 bg-rose-50 border border-rose-200 rounded-lg flex items-center space-x-2 text-rose-700 font-bold">
-                <AlertCircle className="w-4 h-4 shrink-0" />
-                <span>{errorMsg}</span>
-              </div>
-            )}
+        {loadingData ? (
+          <SkeletonModalForm />
+        ) : (
+          <form onSubmit={handleFormSubmit} className="flex flex-col flex-1 overflow-hidden">
+            <div className="p-5 overflow-y-auto space-y-4 text-xs">
+              {errorMsg && (
+                <div className="p-3 bg-rose-50 border border-rose-200 rounded-md flex items-center space-x-2 text-rose-700 font-bold">
+                  <AlertCircle className="w-4 h-4 shrink-0" />
+                  <span>{errorMsg}</span>
+                </div>
+              )}
 
-            {isUniversityTargetMode && (
-              <ChallengeSelectorCard
-                allChallenges={allChallenges}
-                selectedChallengeId={selectedChallengeId}
-                onSelectChallengeChange={handleSelectChallengeChange}
-                activeChallenge={activeChallenge}
+              {isUniversityTargetMode && (
+                <ChallengeSelectorCard
+                  allChallenges={allChallenges}
+                  selectedChallengeId={selectedChallengeId}
+                  onSelectChallengeChange={handleSelectChallengeChange}
+                  activeChallenge={activeChallenge}
+                />
+              )}
+
+              <TriageVerificationCard
+                selectedDomain={selectedDomain}
+                setSelectedDomain={setSelectedDomain}
+                selectedPriority={selectedPriority}
+                setSelectedPriority={setSelectedPriority}
               />
-            )}
 
-            <TriageVerificationCard
-              selectedDomain={selectedDomain}
-              setSelectedDomain={setSelectedDomain}
-              selectedPriority={selectedPriority}
-              setSelectedPriority={setSelectedPriority}
+              <InstitutionalTargetingCard
+                isUniversityTargetMode={isUniversityTargetMode}
+                universities={universities}
+                selectedUniCode={selectedUniCode}
+                setSelectedUniCode={setSelectedUniCode}
+                targetDepartment={targetDepartment}
+                setTargetDepartment={setTargetDepartment}
+                acceptanceStatus={acceptanceStatus}
+                setAcceptanceStatus={setAcceptanceStatus}
+              />
+
+              <NodalNotesAndClarificationCard
+                nodalRemarks={nodalRemarks}
+                setNodalRemarks={setNodalRemarks}
+                clarificationResponse={clarificationResponse}
+                setClarificationResponse={setClarificationResponse}
+              />
+            </div>
+
+            <AssignModalActions
+              submitting={submitting}
+              deleting={deleting}
+              isConfirmingDelete={isConfirmingDelete}
+              setIsConfirmingDelete={setIsConfirmingDelete}
+              handleDeleteChallenge={handleDeleteChallenge}
+              onClose={onClose}
+              activeChallenge={activeChallenge}
             />
-
-            <InstitutionalTargetingCard
-              isUniversityTargetMode={isUniversityTargetMode}
-              universities={universities}
-              selectedUniCode={selectedUniCode}
-              setSelectedUniCode={setSelectedUniCode}
-              targetDepartment={targetDepartment}
-              setTargetDepartment={setTargetDepartment}
-              acceptanceStatus={acceptanceStatus}
-              setAcceptanceStatus={setAcceptanceStatus}
-            />
-
-            <NodalNotesAndClarificationCard
-              verificationStatus={verificationStatus}
-              nodalRemarks={nodalRemarks}
-              setNodalRemarks={setNodalRemarks}
-              clarificationResponse={clarificationResponse}
-              setClarificationResponse={setClarificationResponse}
-            />
-          </div>
-
-          <AssignModalActions
-            onClose={onClose}
-            submitting={submitting}
-            activeChallenge={activeChallenge}
-            isConfirmingDelete={isConfirmingDelete}
-            setIsConfirmingDelete={setIsConfirmingDelete}
-            onDeleteChallenge={handleDeleteChallenge}
-            deleting={deleting}
-          />
-        </form>
+          </form>
+        )}
       </div>
     </div>
   );
