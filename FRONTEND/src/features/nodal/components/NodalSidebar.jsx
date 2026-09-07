@@ -8,13 +8,15 @@ import {
   X,
   Menu,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  User
 } from 'lucide-react';
 
 const NAV_ITEMS = [
   { id: 'dashboard', label: 'Triage Overview', icon: Home },
   { id: 'universities', label: 'HEI Directory', icon: Landmark },
-  { id: 'challenges', label: 'Citizen Challenges', icon: Layers }
+  { id: 'challenges', label: 'Citizen Challenges', icon: Layers },
+  { id: 'profile', label: 'Profile', icon: User }
 ];
 
 export const NodalSidebar = ({
