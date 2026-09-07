@@ -2,40 +2,18 @@ import React, { useEffect, useRef } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { MapPin, Building2, AlertCircle, CheckCircle2, ArrowRight, Compass } from 'lucide-react';
+import { getMapTileConfig } from '../../utils/mapTileConfig.js';
+import { JHARKHAND_DISTRICTS_DICT } from '../../data/jharkhandDistrictsMeta.js';
 
 export const ProjectSpecificLocationMap = ({ project, height = '360px' }) => {
   const mapContainerRef = useRef(null);
   const mapInstanceRef = useRef(null);
 
-  // Coordinate fallbacks based on district
-  const districtCoordsMap = {
-    Ranchi: { lat: 23.3441, lng: 85.3096 },
-    Dhanbad: { lat: 23.7957, lng: 86.4304 },
-    'East Singhbhum': { lat: 22.8046, lng: 86.2029 },
-    Bokaro: { lat: 23.6693, lng: 86.1511 },
-    Hazaribagh: { lat: 23.9937, lng: 85.3623 },
-    Deoghar: { lat: 24.4826, lng: 86.7001 },
-    Dumka: { lat: 24.2677, lng: 87.2535 },
-    Palamu: { lat: 24.0416, lng: 84.0725 },
-    'West Singhbhum': { lat: 22.5539, lng: 85.8078 },
-    Giridih: { lat: 24.1856, lng: 86.3094 },
-    Ramgarh: { lat: 23.6322, lng: 85.5186 },
-    'Saraikela Kharsawan': { lat: 22.7001, lng: 85.9304 },
-    Chatra: { lat: 24.2096, lng: 84.8715 },
-    Garhwa: { lat: 24.1611, lng: 83.8055 },
-    Godda: { lat: 24.8306, lng: 87.2144 },
-    Gumla: { lat: 23.0435, lng: 84.5414 },
-    Jamtara: { lat: 23.9632, lng: 86.8021 },
-    Khunti: { lat: 23.0722, lng: 85.2778 },
-    Koderma: { lat: 24.4674, lng: 85.5939 },
-    Latehar: { lat: 23.7438, lng: 84.5028 },
-    Lohardaga: { lat: 23.4357, lng: 84.6806 },
-    Pakur: { lat: 24.6344, lng: 87.8492 },
-    Sahibganj: { lat: 25.2425, lng: 87.6433 },
-    Simdega: { lat: 22.6169, lng: 84.5089 }
-  };
-
-  const baseCoord = districtCoordsMap[project?.district] || { lat: 23.65, lng: 85.55 };
+  const distKey = String(project?.district || '').toLowerCase().replace(/[-_ ]/g, '');
+  const foundDist = Object.values(JHARKHAND_DISTRICTS_DICT).find(
+    (d) => d.name.toLowerCase().replace(/[-_ ]/g, '') === distKey
+  );
+  const baseCoord = foundDist ? { lat: foundDist.lat, lng: foundDist.lng } : { lat: 23.65, lng: 85.55 };
 
   // Generate realistic offset for problem location vs university work site
   const problemLoc = {
@@ -63,10 +41,12 @@ export const ProjectSpecificLocationMap = ({ project, height = '360px' }) => {
         attributionControl: false
       });
 
-      // Clean Light Basemap
-      L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-        subdomains: 'abcd',
-        maxZoom: 19
+      // Clean Basemap via getMapTileConfig
+      const tileCfg = getMapTileConfig({ mode: 'light' });
+      L.tileLayer(tileCfg.url, {
+        subdomains: tileCfg.subdomains || 'abc',
+        maxZoom: tileCfg.maxZoom || 19,
+        attribution: tileCfg.attribution
       }).addTo(map);
 
       L.control.zoom({ position: 'topright' }).addTo(map);
