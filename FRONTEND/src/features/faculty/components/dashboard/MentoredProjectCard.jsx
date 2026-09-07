@@ -1,5 +1,4 @@
 import React from 'react';
-import { ChevronRight } from 'lucide-react';
 import { computeDynamicMilestones } from '../../../../shared/utils/milestonesHelper.js';
 
 export const MentoredProjectCard = ({ project: p, index: i, onNavigateTab }) => {
@@ -39,7 +38,7 @@ export const MentoredProjectCard = ({ project: p, index: i, onNavigateTab }) => 
       </div>
 
       {/* Progress & Metrics */}
-      <div className="flex items-center space-x-6 shrink-0 ml-4 hidden md:flex">
+      <div className="flex items-center space-x-4 shrink-0 ml-4 hidden md:flex">
         <div className="flex flex-col items-end">
           <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">
             Lifecycle Progress
@@ -56,7 +55,6 @@ export const MentoredProjectCard = ({ project: p, index: i, onNavigateTab }) => 
             </span>
           </div>
         </div>
-        <ChevronRight className="w-4 h-4 text-slate-300 group-hover:text-[#007A61] transition-colors" />
       </div>
     </div>
   );
