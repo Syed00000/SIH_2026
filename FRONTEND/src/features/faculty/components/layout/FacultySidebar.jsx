@@ -79,7 +79,7 @@ export const FacultySidebar = ({
         <nav className="space-y-1">
           {NAV_ITEMS.map((item) => {
             const Icon = item.icon;
-            const isActive = activeTab === item.id;
+            const isActive = activeTab === item.id || (item.id === 'challenges' && activeTab === 'project-workspace');
             const hasAlert = item.id === 'revisions' && revisionCount > 0;
 
             return (

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { FacultyDashboard } from '../dashboard/FacultyDashboard.jsx';
 import { FacultyAssignedChallenges } from '../challenges/FacultyAssignedChallenges.jsx';
 import { FacultyTeamsPanel } from '../teams/FacultyTeamsPanel.jsx';
@@ -19,6 +19,8 @@ export const FacultyTabContent = ({
   setSelectedProjectId,
   loadData
 }) => {
+  const [returnTab, setReturnTab] = useState('challenges');
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64 text-xs font-semibold text-slate-500">
@@ -44,9 +46,87 @@ export const FacultyTabContent = ({
       <FacultyAssignedChallenges
         challenges={data.challenges || []}
         allChallenges={data.allChallenges || []}
+        projects={data.projects || []}
         faculty={data.faculty}
         onRefresh={loadData}
-        onDraftProposal={() => handleSetActiveTab('dashboard')}
+        onOpenProject={(projectId) => {
+          setReturnTab('challenges');
+          setSelectedProjectId(projectId);
+          handleSetActiveTab('project-workspace', projectId);
+        }}
+        onDraftProposal={(c) => {
+          const targetId = c.challengeId || c.id || c._id;
+          setReturnTab('challenges');
+          setSelectedProjectId(targetId);
+          handleSetActiveTab('project-workspace', targetId);
+        }}
+      />
+    );
+  }
+
+  if (activeTab === 'project-workspace') {
+    let selectedProj = data.projects?.find(
+      (p) => p.projectId === selectedProjectId || p.challengeId === selectedProjectId || p._id === selectedProjectId
+    );
+
+    if (!selectedProj) {
+      const challengeMatch = (data.challenges || data.allChallenges || []).find(
+        (c) => c.challengeId === selectedProjectId || c.id === selectedProjectId || c._id === selectedProjectId
+      );
+      if (challengeMatch) {
+        selectedProj = {
+          projectId: challengeMatch.challengeId || `PRJ-${selectedProjectId}`,
+          challengeId: challengeMatch.challengeId,
+          title: challengeMatch.title,
+          problemStatement: challengeMatch.problemStatement || challengeMatch.description,
+          domain: challengeMatch.domain || challengeMatch.category || 'Urban Development',
+          status: challengeMatch.status || 'Proposal Stage',
+          location: challengeMatch.location,
+          assignedFaculty: challengeMatch.assignedFaculty,
+          assignedUniversity: challengeMatch.assignedUniversity,
+          prototypeStatus: challengeMatch.prototypeStatus || 'Not Started',
+          governmentStatus: challengeMatch.governmentStatus || 'Pending',
+          disbursedAmount: '0',
+          sanctionedBudget: null
+        };
+      }
+    }
+
+    if (!selectedProj && data.projects?.length > 0) {
+      selectedProj = data.projects[0];
+    }
+
+    if (selectedProj) {
+      return (
+        <FacultyProjectWorkspace
+          project={selectedProj}
+          projects={data.projects}
+          teams={data.teams || []}
+          faculty={data.faculty}
+          onRefresh={loadData}
+          onBack={() => handleSetActiveTab(returnTab || 'projects')}
+        />
+      );
+    }
+
+    return (
+      <FacultyAssignedChallenges
+        challenges={data.challenges || []}
+        allChallenges={data.allChallenges || []}
+        projects={data.projects || []}
+        faculty={data.faculty}
+        onRefresh={loadData}
+        onOpenProject={(projectId) => {
+          setReturnTab('challenges');
+          setSelectedProjectId(projectId);
+          handleSetActiveTab('project-workspace', projectId);
+        }}
+        onDraftProposal={(c) => {
+          const targetId = c.challengeId || c.id || c._id;
+          setReturnTab('challenges');
+          setSelectedProjectId(targetId);
+          handleSetActiveTab('project-workspace', targetId);
+        }}
       />
     );
   }
@@ -58,39 +138,11 @@ export const FacultyTabContent = ({
         projects={data.projects || []}
         faculty={data.faculty}
         onRefresh={loadData}
-        onNavigateTab={(tab, id = null) => handleSetActiveTab(tab, id)}
+        onNavigateTab={(tab, id = null) => {
+          setReturnTab('revisions');
+          handleSetActiveTab(tab, id);
+        }}
       />
-    );
-  }
-
-  if (activeTab === 'project-workspace') {
-    const selectedProj = data.projects?.find(
-      (p) => p.projectId === selectedProjectId || p.challengeId === selectedProjectId
-    );
-
-    if (selectedProj) {
-      return (
-        <FacultyProjectWorkspace
-          project={selectedProj}
-          projects={data.projects}
-          teams={data.teams || []}
-          faculty={data.faculty}
-          onRefresh={loadData}
-          onBack={() => handleSetActiveTab('dashboard')}
-        />
-      );
-    }
-
-    return (
-      <div className="bg-white border border-slate-200/90 rounded-2xl p-10 text-center text-slate-500 space-y-3">
-        <p className="text-xs font-semibold text-slate-700">Project workspace could not locate selected project or is loading.</p>
-        <button
-          onClick={() => handleSetActiveTab('dashboard')}
-          className="px-4 py-2 bg-[#007A61] hover:bg-[#006650] text-white text-xs font-bold rounded-xl transition-all shadow-2xs cursor-pointer"
-        >
-          Back to Dashboard
-        </button>
-      </div>
     );
   }
 
@@ -100,7 +152,10 @@ export const FacultyTabContent = ({
         projects={data.projects}
         faculty={data.faculty}
         onRefresh={loadData}
-        onNavigateTab={(tab, id = null) => handleSetActiveTab(tab, id)}
+        onNavigateTab={(tab, id = null) => {
+          setReturnTab('projects');
+          handleSetActiveTab(tab, id);
+        }}
       />
     );
   }
@@ -126,7 +181,10 @@ export const FacultyTabContent = ({
       faculty={data.faculty}
       challenges={data.challenges}
       projects={data.projects}
-      onNavigateTab={(tab, id = null) => handleSetActiveTab(tab, id)}
+      onNavigateTab={(tab, id = null) => {
+        setReturnTab('dashboard');
+        handleSetActiveTab(tab, id);
+      }}
     />
   );
 };

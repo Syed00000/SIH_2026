@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ClipboardList, Search } from 'lucide-react';
+import { ClipboardList, Search, LayoutGrid, LayoutList } from 'lucide-react';
 import { ProblemEvidenceDossierPanel } from '../../../nodal/components/ProblemEvidenceDossierPanel.jsx';
 import { facultyApiService } from '../../services/facultyApiService.js';
 import { AssignedChallengesHeader } from './AssignedChallengesHeader.jsx';
@@ -9,17 +9,33 @@ import { DeleteChallengeModal } from './DeleteChallengeModal.jsx';
 export const FacultyAssignedChallenges = ({
   challenges = [],
   allChallenges = [],
+  projects = [],
   faculty,
   onRefresh,
+  onOpenProject,
   onDraftProposal
 }) => {
   const [search, setSearch] = useState('');
   const [domainFilter, setDomainFilter] = useState('All');
   const [allocationFilter, setAllocationFilter] = useState('my');
+  const [viewMode, setViewMode] = useState('grid');
   const [selectedDossier, setSelectedDossier] = useState(null);
   const [challengeToDelete, setChallengeToDelete] = useState(null);
   const [deleting, setDeleting] = useState(false);
   const [deletedIds, setDeletedIds] = useState(new Set());
+
+  const handleCardClick = (c) => {
+    const cId = c.challengeId || c.id || c._id;
+    const matchingProj = projects?.find(
+      (p) => p.challengeId === cId || p.projectId === cId || p._id === cId
+    );
+    const targetId = matchingProj?.projectId || matchingProj?.challengeId || cId;
+    if (onOpenProject) {
+      onOpenProject(targetId, c);
+    } else if (onDraftProposal) {
+      onDraftProposal(c);
+    }
+  };
 
   const getAssignmentStatus = (c) => {
     const cleanEmail = (faculty?.email || '').toLowerCase().trim();
@@ -89,7 +105,7 @@ export const FacultyAssignedChallenges = ({
 
   if (selectedDossier) {
     return (
-      <div className="space-y-4 max-w-7xl mx-auto select-none pb-12 animate-in fade-in duration-150 text-left">
+      <div className="space-y-4 max-w-7xl mx-auto select-none pb-12 text-left">
         <ProblemEvidenceDossierPanel
           challenge={selectedDossier}
           onClose={() => setSelectedDossier(null)}
@@ -109,8 +125,8 @@ export const FacultyAssignedChallenges = ({
         totalCount={pool.length}
       />
 
-      <div className="bg-white border border-slate-200/90 p-3 rounded-2xl shadow-2xs grid grid-cols-1 sm:grid-cols-3 gap-2.5 items-center">
-        <div className="relative sm:col-span-2">
+      <div className="bg-white border border-slate-200/90 p-3 rounded-2xl shadow-2xs flex flex-col md:flex-row gap-2.5 items-stretch md:items-center justify-between">
+        <div className="relative flex-1">
           <input
             type="text"
             value={search}
@@ -121,11 +137,11 @@ export const FacultyAssignedChallenges = ({
           <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2" />
         </div>
 
-        <div>
+        <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
           <select
             value={domainFilter}
             onChange={(e) => setDomainFilter(e.target.value)}
-            className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-800 focus:outline-none focus:ring-1 focus:ring-[#007A61] focus:bg-white shadow-2xs"
+            className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-800 focus:outline-none focus:ring-1 focus:ring-[#007A61] focus:bg-white shadow-2xs min-w-[170px]"
           >
             <option value="All">All Thematic Domains</option>
             <option value="Water">Water & Sanitation</option>
@@ -135,6 +151,36 @@ export const FacultyAssignedChallenges = ({
             <option value="Energy">Energy</option>
             <option value="Agriculture">Agriculture</option>
           </select>
+
+          {/* List & Grid View Switcher */}
+          <div className="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200 shadow-2xs shrink-0">
+            <button
+              type="button"
+              onClick={() => setViewMode('grid')}
+              title="Grid View"
+              className={`flex items-center space-x-1.5 px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                viewMode === 'grid'
+                  ? 'bg-white text-slate-900 shadow-2xs'
+                  : 'text-slate-500 hover:text-slate-900'
+              }`}
+            >
+              <LayoutGrid className="w-3.5 h-3.5" />
+              <span>Grid</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setViewMode('list')}
+              title="List View"
+              className={`flex items-center space-x-1.5 px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                viewMode === 'list'
+                  ? 'bg-white text-slate-900 shadow-2xs'
+                  : 'text-slate-500 hover:text-slate-900'
+              }`}
+            >
+              <LayoutList className="w-3.5 h-3.5" />
+              <span>List</span>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -155,7 +201,7 @@ export const FacultyAssignedChallenges = ({
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+        <div className={viewMode === 'grid' ? "grid grid-cols-1 md:grid-cols-2 gap-3.5" : "space-y-2.5"}>
           {filtered.map((c, idx) => {
             const status = getAssignmentStatus(c);
             const isDeployed = c.status === 'Deployed' || Boolean(c.isDeployed) || Boolean(c.isLocked);
@@ -168,6 +214,8 @@ export const FacultyAssignedChallenges = ({
                 onOpenDossier={setSelectedDossier}
                 onOpenDelete={setChallengeToDelete}
                 onDraftProposal={onDraftProposal}
+                onOpenProject={handleCardClick}
+                viewMode={viewMode}
               />
             );
           })}

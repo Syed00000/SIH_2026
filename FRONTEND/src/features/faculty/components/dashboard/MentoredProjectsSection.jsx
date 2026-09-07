@@ -1,5 +1,5 @@
 import React from 'react';
-import { ClipboardList, ArrowRight } from 'lucide-react';
+import { ClipboardList } from 'lucide-react';
 import { MentoredProjectCard } from './MentoredProjectCard.jsx';
 
 export const MentoredProjectsSection = ({ projects = [], onNavigateTab }) => {
@@ -12,14 +12,6 @@ export const MentoredProjectsSection = ({ projects = [], onNavigateTab }) => {
             Grassroots problem statements assigned to your innovation lab
           </p>
         </div>
-        <button
-          type="button"
-          onClick={() => onNavigateTab('projects')}
-          className="text-[11px] font-bold text-[#007A61] hover:underline cursor-pointer flex items-center space-x-1"
-        >
-          <span>View All Projects</span>
-          <ArrowRight className="w-3.5 h-3.5" />
-        </button>
       </div>
 
       {projects.length === 0 ? (
