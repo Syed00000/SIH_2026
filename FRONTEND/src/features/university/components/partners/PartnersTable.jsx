@@ -54,15 +54,15 @@ export const PartnersTable = ({
 
         {/* Table Body */}
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs text-slate-700">
-            <thead className="bg-slate-50/50 border-b border-slate-100 text-slate-400 font-extrabold uppercase tracking-wider text-[10px]">
+          <table className="w-full text-left text-xs text-slate-700 min-w-[980px]">
+            <thead className="bg-slate-50 border-b border-slate-200/80 text-slate-500 font-extrabold uppercase tracking-wider text-[10px]">
               <tr>
-                <th className="py-3 px-4">Partner Entity</th>
-                <th className="py-3 px-4">Ground Problem Statement</th>
-                <th className="py-3 px-4">Solution Prototype</th>
-                <th className="py-3 px-4">Technical Blueprint (PDF)</th>
-                <th className="py-3 px-4">Status</th>
-                <th className="py-3 px-4 text-right">Actions</th>
+                <th className="py-3.5 px-4 w-[24%]">Partner Entity</th>
+                <th className="py-3.5 px-4 w-[24%]">Ground Problem Statement</th>
+                <th className="py-3.5 px-4 w-[22%]">Solution Prototype</th>
+                <th className="py-3.5 px-4 w-[11%]">Technical Blueprint</th>
+                <th className="py-3.5 px-4 w-[9%]">Status</th>
+                <th className="py-3.5 px-4 w-[10%] text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 font-medium">

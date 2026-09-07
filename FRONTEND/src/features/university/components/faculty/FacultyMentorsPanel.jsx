@@ -62,6 +62,22 @@ export const FacultyMentorsPanel = ({ onNavigateTab, onSelectFacultyDetail, onSe
     await fetchFacultyAndProjects();
   };
 
+  const handleDeleteFaculty = async (faculty) => {
+    const id = faculty._id || faculty.id || faculty.facultyId || faculty.name;
+    const name = faculty.name || 'Faculty Member';
+    if (window.confirm(`Are you sure you want to remove faculty mentor "${name}"? This will deactivate their portal access.`)) {
+      try {
+        await universityApiService.deleteFaculty(id);
+        setFacultyList((prev) =>
+          prev.filter((item) => (item._id || item.id || item.name) !== (faculty._id || faculty.id || faculty.name))
+        );
+        await fetchFacultyAndProjects();
+      } catch (err) {
+        alert('Failed to delete faculty: ' + err.message);
+      }
+    }
+  };
+
   const handleConfirmAssign = async ({ faculty, challengeId, role }) => {
     const targetId = faculty.id || faculty._id || faculty.facultyId;
     const targetEmail = faculty.email;
@@ -152,6 +168,7 @@ export const FacultyMentorsPanel = ({ onNavigateTab, onSelectFacultyDetail, onSe
             else if (onSelectFacultyDetail) onSelectFacultyDetail(f, projectsList, challengesList);
             if (onNavigateTab) onNavigateTab('edit-faculty');
           }}
+          onDeleteFaculty={handleDeleteFaculty}
           loading={loading}
         />
       </div>

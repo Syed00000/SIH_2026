@@ -36,28 +36,43 @@ export const MilestoneOverviewSection = ({
         <div className="w-full h-[1px] bg-zinc-100" />
 
         {/* Detailed Table */}
-        <div className="flex-1 flex flex-col">
-          <div className="bg-zinc-50/50 rounded-t-lg border-b border-zinc-200 px-6 py-4 grid grid-cols-12 gap-4 text-xs font-semibold text-zinc-500 uppercase tracking-wider">
-            <div className="col-span-3">Project Stage</div>
-            <div className="col-span-2 text-right">Total</div>
-            <div className="col-span-2 text-right">Completed</div>
-            <div className="col-span-2 text-right">In Prog</div>
-            <div className="col-span-1 text-right">Pend</div>
-            <div className="col-span-2 pl-6">Completion</div>
+        <div className="flex-1 flex flex-col border border-slate-200 rounded-xl overflow-hidden">
+          <div className="bg-slate-50 border-b border-slate-200 px-5 py-3.5 grid grid-cols-12 gap-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+            <div className="col-span-4">Research & Implementation Stage</div>
+            <div className="col-span-2 text-center">Timeline</div>
+            <div className="col-span-2 text-right">Status</div>
+            <div className="col-span-4 pl-4 text-right">Stage Completion</div>
           </div>
-          <div className="divide-y divide-zinc-100 overflow-y-auto">
-            {milestoneByStage.map((s) => (
-              <div key={s.stage} className="px-6 py-4 grid grid-cols-12 gap-4 items-center text-sm group hover:bg-zinc-50 transition-colors">
-                <div className="col-span-3 font-semibold text-zinc-900">{s.stage}</div>
-                <div className="col-span-2 text-right font-medium text-zinc-500">{s.total}</div>
-                <div className="col-span-2 text-right font-bold text-zinc-950">{s.completed}</div>
-                <div className="col-span-2 text-right font-bold text-zinc-700">{s.inProgress}</div>
-                <div className="col-span-1 text-right font-medium text-zinc-400">{s.pending}</div>
-                <div className="col-span-2 pl-6 flex items-center space-x-3">
-                  <span className="font-bold text-zinc-900 w-10 text-right">{s.completionPct}%</span>
-                  <div className="flex-1 h-2 bg-zinc-100 rounded-full overflow-hidden">
-                    <div className="h-full bg-zinc-900 rounded-full" style={{ width: `${s.completionPct}%` }} />
+          <div className="divide-y divide-slate-100 overflow-y-auto bg-white">
+            {milestoneByStage.map((s, idx) => (
+              <div key={s.stage || idx} className="px-5 py-3.5 grid grid-cols-12 gap-3 items-center text-xs group hover:bg-slate-50/70 transition-colors">
+                <div className="col-span-4">
+                  <div className="font-bold text-slate-900">{s.stage}</div>
+                  {s.deliverable && (
+                    <div className="text-[11px] text-slate-500 truncate mt-0.5" title={s.deliverable}>
+                      {s.deliverable}
+                    </div>
+                  )}
+                </div>
+                <div className="col-span-2 text-center">
+                  <span className="px-2 py-0.5 bg-slate-100 border border-slate-200 text-slate-700 text-[10.5px] font-mono font-semibold rounded">
+                    {s.targetDays || 'Phase Active'}
+                  </span>
+                </div>
+                <div className="col-span-2 text-right">
+                  <span className={`px-2 py-0.5 text-[10.5px] font-bold rounded-md ${
+                    s.completionPct === 100
+                      ? 'bg-slate-900 text-white'
+                      : 'bg-slate-100 text-slate-700 border border-slate-200'
+                  }`}>
+                    {s.completionPct === 100 ? '✓ Verified' : 'In Progress'}
+                  </span>
+                </div>
+                <div className="col-span-4 pl-4 flex items-center justify-end space-x-2.5">
+                  <div className="flex-1 h-2 bg-slate-100 rounded-full overflow-hidden">
+                    <div className="h-full bg-slate-900 rounded-full" style={{ width: `${s.completionPct}%` }} />
                   </div>
+                  <span className="font-bold text-slate-900 font-mono w-10 text-right">{s.completionPct}%</span>
                 </div>
               </div>
             ))}

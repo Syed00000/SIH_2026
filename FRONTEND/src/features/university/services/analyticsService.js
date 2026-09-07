@@ -13,44 +13,56 @@ const UC = 'RU001';
 
 export const analyticsService = {
   async fetchAll() {
-    const [challenges, projects, faculty, teams, approvals, industriesRes] = await Promise.allSettled([
+    const [challenges, projects, faculty, teams, approvals, industriesRes, ledgerRes] = await Promise.allSettled([
       apiClient.get(`university/challenges?universityCode=${UC}&limit=5000`),
       apiClient.get(`university/projects?universityCode=${UC}&limit=5000`),
       apiClient.get(`university/faculty?universityCode=${UC}&limit=5000`),
       apiClient.get(`university/teams?universityCode=${UC}&limit=5000`),
       apiClient.get(`university/approvals?universityCode=${UC}&limit=5000`),
-      apiClient.get('government/industries?page=1&limit=5000')
+      apiClient.get('government/industries?page=1&limit=5000'),
+      apiClient.get('government/funds/ledger')
     ]);
 
-    const pick = (r) => (r.status === 'fulfilled' ? r.value?.data : null);
-
-    const raw = {
-      challenges: pick(challenges),
-      projects: pick(projects),
-      faculty: pick(faculty),
-      teams: pick(teams),
-      approvals: pick(approvals),
-      industries: pick(industriesRes)
+    const unwrap = (r) => {
+      if (r.status !== 'fulfilled' || !r.value?.data) return null;
+      const body = r.value.data;
+      return body?.data !== undefined ? body.data : body;
     };
 
-    const cArr = Array.isArray(raw.challenges?.challenges) ? raw.challenges.challenges : Array.isArray(raw.challenges) ? raw.challenges : [];
-    const pArr = Array.isArray(raw.projects) ? raw.projects : [];
-    const fArr = Array.isArray(raw.faculty) ? raw.faculty : [];
-    const tArr = Array.isArray(raw.teams) ? raw.teams : [];
-    const aArr = Array.isArray(raw.approvals) ? raw.approvals : [];
-    const indArr = Array.isArray(raw.industries?.records) ? raw.industries.records : Array.isArray(raw.industries) ? raw.industries : [];
+    const cData = unwrap(challenges);
+    const cArr = Array.isArray(cData?.challenges) ? cData.challenges : Array.isArray(cData) ? cData : [];
 
-    return { cArr, pArr, fArr, tArr, aArr, indArr };
+    const pData = unwrap(projects);
+    const pArr = Array.isArray(pData) ? pData : [];
+
+    const fData = unwrap(faculty);
+    const fArr = Array.isArray(fData) ? fData : [];
+
+    const tData = unwrap(teams);
+    const tArr = Array.isArray(tData) ? tData : [];
+
+    const aData = unwrap(approvals);
+    const aArr = Array.isArray(aData) ? aData : [];
+
+    const indData = unwrap(industriesRes);
+    const indArr = Array.isArray(indData?.records) ? indData.records : Array.isArray(indData) ? indData : [];
+
+    const lData = unwrap(ledgerRes);
+    const lArr = Array.isArray(lData) ? lData : [];
+
+    return { cArr, pArr, fArr, tArr, aArr, indArr, lArr };
   },
 
-  buildAnalytics({ cArr, pArr, fArr, tArr, aArr, indArr }) {
+  buildAnalytics({ cArr, pArr, fArr, tArr, aArr, indArr, lArr = [] }) {
     const uniqueUniversities = new Set([...pArr.map((p) => p.universityCode), ...cArr.map((c) => c.universityCode)]);
     uniqueUniversities.delete(undefined);
     uniqueUniversities.add('RU001');
 
     const totalFundingCr = indArr.reduce((s, i) => s + (i.financials?.csrCommittedCr || 0), 0);
     const prevFundingCr = indArr.filter((i) => !isThisMonth(i.createdAt)).reduce((s, i) => s + (i.financials?.csrCommittedCr || 0), 0);
-    const beneficiaries = pArr.reduce((s, p) => s + (p.impact?.beneficiaries || 0), 0);
+
+    const milestones = calculateMilestones(pArr);
+    const financials = calculateFinancials(pArr, totalFundingCr, lArr);
 
     const currChallenges = cArr.filter((c) => isThisMonth(c.createdAt)).length;
     const prevChallenges = cArr.filter((c) => isLastMonth(c.createdAt)).length;
@@ -64,67 +76,113 @@ export const analyticsService = {
       challengesGrowth: calcGrowth(currChallenges, prevChallenges),
       activeUniversities: uniqueUniversities.size,
       totalProjects: pArr.length,
+      deployedProjects: pArr.filter((p) => p.status === 'Deployed' || p.status === 'Completed' || p.isDeployed).length,
       projectsGrowth: calcGrowth(currProjects, prevProjects),
       industryPartners: indArr.length,
       partnersGrowth: calcGrowth(currPartners, prevPartners),
       totalFundingCr,
       fundingGrowth: calcGrowth(totalFundingCr - prevFundingCr, prevFundingCr),
-      beneficiariesLakh: parseFloat((beneficiaries / 100000).toFixed(2)) || 0
+      totalSanctionedGrant: financials.totalSanctionedGrant,
+      totalDisbursed: financials.totalDisbursed,
+      netUniversityFunds: financials.netUniversityFunds,
+      pendingGrantEscrow: financials.pendingGrantEscrow,
+      facultyCount: fArr.length,
+      teamsCount: tArr.length,
+      approvalsCount: aArr.length,
+      beneficiariesLakh: parseFloat((pArr.reduce((s, p) => s + (p.impact?.beneficiaries || 0), 0) / 100000).toFixed(2)) || 0
     };
 
     const impactStats = {
       villages: pArr.reduce((s, p) => s + (p.impact?.villages || 0), 0),
-      solutions: pArr.filter((p) => p.status === 'Completed' || p.stage === 'Deployment').length,
-      pilots: pArr.filter((p) => p.stage === 'Pilot').length
+      solutions: pArr.filter((p) => p.status === 'Completed' || p.status === 'Deployed' || p.stage === 'Deployment').length,
+      pilots: pArr.filter((p) => p.stage === 'Pilot' || p.stage === 'Testing').length
     };
 
     const domainCounts = {};
-    cArr.forEach((c) => { domainCounts[c.domain || 'Others'] = (domainCounts[c.domain || 'Others'] || 0) + 1; });
-    const challengesByDomain = Object.entries(domainCounts).map(([name, value], i) => ({ name, value, color: COLORS[i % COLORS.length] })).sort((a, b) => b.value - a.value);
+    cArr.forEach((c) => {
+      const dom = c.domain || 'Urban Development';
+      domainCounts[dom] = (domainCounts[dom] || 0) + 1;
+    });
+    if (Object.keys(domainCounts).length === 0 && pArr.length > 0) {
+      pArr.forEach((p) => {
+        const dom = p.domain || 'Urban Development';
+        domainCounts[dom] = (domainCounts[dom] || 0) + 1;
+      });
+    }
+    const challengesByDomain = Object.entries(domainCounts)
+      .map(([name, value], i) => ({ name, value, color: COLORS[i % COLORS.length] }))
+      .sort((a, b) => b.value - a.value);
 
     const pipeline = [
-      { label: 'Submitted', value: cArr.length, color: '#e4e4e7' },
-      { label: 'Assigned', value: cArr.filter((c) => c.status === 'Assigned' || c.assignedFaculty?.name).length, color: '#a1a1aa' },
-      { label: 'In Progress', value: pArr.filter((p) => p.status === 'In Progress').length, color: '#52525b' },
-      { label: 'Resolved', value: pArr.filter((p) => p.status === 'Completed').length, color: '#09090b' }
+      { label: 'Citizen Submitted', value: Math.max(cArr.length, pArr.length), color: '#d4d4d8' },
+      { label: 'Assigned to Faculty', value: Math.max(cArr.filter((c) => c.status === 'Assigned' || c.status === 'Accepted' || c.assignedFaculty?.name).length, pArr.length), color: '#a1a1aa' },
+      { label: 'Sanctioned & In Research', value: pArr.length, color: '#71717a' },
+      { label: 'Lab Verified / Prototype', value: pArr.filter((p) => p.testingCompleted || p.stage === 'Testing' || p.status === 'Deployed').length, color: '#3f3f46' },
+      { label: 'State Deployed (TRL-9)', value: pArr.filter((p) => p.status === 'Deployed' || p.status === 'Completed' || p.isDeployed).length, color: '#09090b' }
     ];
 
     const challengeMonthMap = {};
-    cArr.forEach((c) => {
-      const m = getMonthStr(c.createdAt || Date.now());
+    [...cArr, ...pArr].forEach((item) => {
+      const m = getMonthStr(item.createdAt || Date.now());
       if (!challengeMonthMap[m]) challengeMonthMap[m] = { month: m, received: 0, solved: 0 };
       challengeMonthMap[m].received += 1;
-      if (c.status === 'Completed' || c.status === 'Resolved') challengeMonthMap[m].solved += 1;
+      if (item.status === 'Completed' || item.status === 'Resolved' || item.status === 'Deployed') {
+        challengeMonthMap[m].solved += 1;
+      }
     });
     const challengesTrend = Object.values(challengeMonthMap).reverse().slice(0, 6).reverse();
     if (challengesTrend.length === 0) challengesTrend.push({ month: 'N/A', received: 0, solved: 0 });
 
     const hei = {
-      faculty: fArr.length,
-      students: tArr.reduce((s, t) => s + (t.membersCount || 4), 0),
+      faculty: fArr.length || 1,
+      students: tArr.reduce((s, t) => s + (t.membersCount || 4), 0) || 4,
       projects: pArr.length,
-      completed: pArr.filter((p) => p.status === 'Completed').length
+      completed: pArr.filter((p) => p.status === 'Completed' || p.status === 'Deployed').length
     };
 
     const univProjectCount = {};
     pArr.forEach((p) => {
-      const uName = p.universityCode === 'RU001' ? 'Ranchi University' : p.universityCode;
+      const uName = p.universityCode === 'RU001' || p.universityCode === 'U-0205' ? 'Ranchi University' : p.universityCode;
       univProjectCount[uName] = (univProjectCount[uName] || 0) + 1;
     });
     const topUniversities = Object.entries(univProjectCount).map(([name, projects]) => ({ name, projects })).sort((a, b) => b.projects - a.projects).slice(0, 5);
 
-    const statusMap = { 'Planning': 0, 'In Progress': 0, 'Delayed': 0, 'Completed': 0, 'On Hold': 0 };
-    pArr.forEach((p) => { statusMap[p.status] = (statusMap[p.status] || 0) + 1; });
-    const projectsByStatus = Object.entries(statusMap).map(([name, value]) => ({ name, value, color: name === 'In Progress' ? '#71717a' : name === 'Completed' ? '#27272a' : '#d4d4d8' }));
-    const projectsByStage = ['Proposal', 'Prototype', 'Testing', 'Pilot', 'Deployment'].map((s) => ({ stage: s, count: pArr.filter((p) => p.stage === s).length }));
+    const statusMap = { 'Planning': 0, 'In Progress': 0, 'Delayed': 0, 'Deployed': 0, 'Completed': 0 };
+    pArr.forEach((p) => {
+      const st = p.status || 'In Progress';
+      statusMap[st] = (statusMap[st] || 0) + 1;
+    });
+    const projectsByStatus = Object.entries(statusMap)
+      .filter(([, count]) => count > 0 || Object.keys(statusMap).length <= 4)
+      .map(([name, value]) => ({
+        name,
+        value,
+        color: name === 'Deployed' ? '#09090b' : name === 'Completed' ? '#27272a' : name === 'In Progress' ? '#52525b' : '#a1a1aa'
+      }));
 
-    const milestones = calculateMilestones(pArr);
-    const financials = calculateFinancials(pArr, totalFundingCr);
+    const stagesList = ['Proposal', 'Prototype', 'Testing', 'Pilot', 'Deployment'];
+    const projectsByStage = stagesList.map((s) => ({
+      stage: s,
+      count: pArr.filter((p) => (p.stage || (p.status === 'Deployed' ? 'Deployment' : 'Prototype')) === s).length
+    }));
 
     return {
-      kpis, impactStats, challengesByDomain, pipeline, challengesTrend,
-      hei, topUniversities, indArr, totalFunding: totalFundingCr,
-      projectsByStatus, projectsByStage, delayedCount: statusMap['Delayed'] || 0,
+      kpis,
+      impactStats,
+      challengesByDomain,
+      pipeline,
+      challengesTrend,
+      hei,
+      topUniversities,
+      indArr,
+      rawProjects: pArr,
+      rawChallenges: cArr,
+      rawFaculty: fArr,
+      rawLedger: lArr,
+      totalFunding: totalFundingCr,
+      projectsByStatus,
+      projectsByStage,
+      delayedCount: statusMap['Delayed'] || 0,
       ...milestones,
       ...financials
     };

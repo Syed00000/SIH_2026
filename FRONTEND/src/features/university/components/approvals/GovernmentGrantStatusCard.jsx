@@ -97,10 +97,10 @@ export const GovernmentGrantStatusCard = ({ approval }) => {
   };
 
   return (
-    <div className="bg-white border border-blue-200/90 rounded-xl p-4 shadow-2xs space-y-3 select-none">
-      <div className="flex items-center justify-between pb-2 border-b border-blue-100">
+    <div className="bg-white border border-slate-200/90 rounded-2xl p-4 shadow-2xs space-y-3 select-none">
+      <div className="flex items-center justify-between pb-2 border-b border-slate-100">
         <div className="flex items-center space-x-2">
-          <div className="w-8 h-8 rounded-lg bg-blue-50 border border-blue-200 flex items-center justify-center text-blue-700">
+          <div className="w-8 h-8 rounded-lg bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-700">
             <Landmark className="w-4 h-4" />
           </div>
           <div>
@@ -112,38 +112,38 @@ export const GovernmentGrantStatusCard = ({ approval }) => {
             </p>
           </div>
         </div>
-        <span className="px-2 py-0.5 bg-blue-100 text-blue-800 text-[10px] font-extrabold rounded-full">
+        <span className="px-2.5 py-0.5 bg-slate-100 border border-slate-200 text-slate-700 text-[10px] font-extrabold rounded-full">
           PFMS Direct Disbursal
         </span>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 text-xs">
-        <div className="p-3 bg-slate-50/80 border border-slate-200 rounded-xl space-y-0.5">
+        <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-0.5">
           <span className="text-[10px] font-bold text-slate-400 uppercase block">Government Sanctioned DPR</span>
-          <span className="text-sm font-black text-slate-900 font-mono">₹ {totalSanctionedNum.toLocaleString('en-IN')}</span>
-          <span className="text-[10px] text-emerald-800 font-bold block">Official State Sanction</span>
+          <span className="text-sm font-black text-slate-900 font-mono block">₹ {totalSanctionedNum.toLocaleString('en-IN')}</span>
+          <span className="text-[10px] text-slate-500 font-semibold block">Official State Sanction</span>
         </div>
 
-        <div className="p-3 bg-emerald-50/80 border border-emerald-200 rounded-xl space-y-0.5">
-          <span className="text-[10px] font-bold text-emerald-800 uppercase block">Amount Received (Disbursed)</span>
-          <span className="text-sm font-black text-[#007A61] font-mono">₹ {rawDisbursed.toLocaleString('en-IN')}</span>
-          <span className="text-[10px] text-[#007A61] font-bold block truncate">
-            {project?.testingLabFee ? `Net after ${project.testingLabFee} Lab Fee` : rawDisbursed > 0 ? 'Credited to University Escrow ✓' : 'Initial Release Pending'}
+        <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-0.5">
+          <span className="text-[10px] font-bold text-slate-400 uppercase block">Amount Received (Disbursed)</span>
+          <span className="text-sm font-black text-slate-900 font-mono block">₹ {rawDisbursed.toLocaleString('en-IN')}</span>
+          <span className="text-[10px] text-slate-500 font-semibold block truncate">
+            {project?.testingLabFee ? `Net after ${project.testingLabFee} Lab Fee` : rawDisbursed > 0 ? 'Credited to University Escrow' : 'Initial Release Pending'}
           </span>
         </div>
 
-        <div className="p-3 bg-blue-50/80 border border-blue-200 rounded-xl space-y-0.5">
-          <span className="text-[10px] font-bold text-blue-800 uppercase block">Pending State Escrow Balance</span>
-          <span className="text-sm font-black text-blue-900 font-mono">₹ {pendingVal.toLocaleString('en-IN')}</span>
-          <span className="text-[10px] text-blue-700 font-bold block">
+        <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-0.5">
+          <span className="text-[10px] font-bold text-slate-400 uppercase block">Pending State Escrow Balance</span>
+          <span className="text-sm font-black text-slate-900 font-mono block">₹ {pendingVal.toLocaleString('en-IN')}</span>
+          <span className="text-[10px] text-slate-500 font-semibold block">
             {pendingVal > 0 ? 'Available for Release' : 'Fully Settled (100%)'}
           </span>
         </div>
       </div>
 
       {feedbackMsg && (
-        <div className="p-2.5 bg-emerald-50 border border-emerald-300 rounded-lg text-emerald-900 text-xs font-bold flex items-center space-x-1.5">
-          <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+        <div className="p-2.5 bg-slate-100 border border-slate-300 rounded-lg text-slate-800 text-xs font-bold flex items-center space-x-1.5">
+          <CheckCircle2 className="w-4 h-4 text-slate-700 shrink-0" />
           <span>{feedbackMsg}</span>
         </div>
       )}
@@ -159,12 +159,12 @@ export const GovernmentGrantStatusCard = ({ approval }) => {
       )}
 
       {isFullyDisbursed || project?.isDeployed ? (
-        <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center justify-between text-xs">
-          <div className="flex items-center space-x-2 text-emerald-900 font-bold">
-            <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+        <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between text-xs">
+          <div className="flex items-center space-x-2 text-slate-800 font-bold">
+            <CheckCircle2 className="w-4 h-4 text-slate-700" />
             <span>{project?.isDeployed ? '✓ Project Deployed to Public Registry (PFMS Escrow Settled)' : 'Government Grant 100% Fully Disbursed & Received in Escrow'}</span>
           </div>
-          <span className="px-2 py-0.5 bg-emerald-600 text-white font-mono text-[10px] font-bold rounded">
+          <span className="px-2.5 py-0.5 bg-slate-900 text-white font-mono text-[10px] font-bold rounded-md">
             {project?.isDeployed ? 'DEPLOYED' : 'SETTLED'}
           </span>
         </div>

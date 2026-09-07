@@ -136,13 +136,13 @@ export const ApprovalDetailPanel = ({
         </div>
         <div className="bg-white p-3.5 rounded-2xl border border-slate-200 shadow-2xs space-y-1">
           <span className="text-[10px] font-bold text-slate-400 uppercase block">Quoted Budget</span>
-          <span className="text-xs font-black text-emerald-700 block font-mono">{approval.amount || approval.budget || '₹ 80,000'}</span>
+          <span className="text-xs font-black text-slate-900 block font-mono">{approval.amount || approval.budget || '₹ 80,000'}</span>
           <span className="text-[10.5px] text-slate-500">First Installment: 50%</span>
         </div>
         <div className="bg-white p-3.5 rounded-2xl border border-slate-200 shadow-2xs space-y-1">
           <span className="text-[10px] font-bold text-slate-400 uppercase block">Lead Faculty Mentor</span>
           <span className="text-xs font-black text-slate-900 block truncate">{approval.teamLead || 'Faculty Guide'}</span>
-          <span className="text-[10.5px] text-[#007A61]">Department Mentor</span>
+          <span className="text-[10.5px] text-slate-500">Department Mentor</span>
         </div>
         <div className="bg-white p-3.5 rounded-2xl border border-slate-200 shadow-2xs space-y-1">
           <span className="text-[10px] font-bold text-slate-400 uppercase block">Associated Reference</span>

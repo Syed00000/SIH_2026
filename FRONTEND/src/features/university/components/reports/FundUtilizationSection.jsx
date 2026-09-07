@@ -1,30 +1,33 @@
 import React from 'react';
-import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts';
-import { IndianRupee, Landmark, Wallet, Receipt } from 'lucide-react';
+import {
+  PieChart, Pie, Cell, Tooltip, ResponsiveContainer,
+  BarChart, Bar, XAxis, YAxis, CartesianGrid
+} from 'recharts';
+import { Landmark, IndianRupee, Wallet, Receipt, ShieldCheck, CheckCircle2 } from 'lucide-react';
 
 const FundStat = ({ icon: Icon, label, value, sub }) => (
-  <div className="flex items-center space-x-4 p-5 rounded-lg border border-zinc-200 bg-white hover:shadow-sm transition-shadow">
-    <div className="w-12 h-12 flex items-center justify-center rounded-md bg-zinc-50 border border-zinc-200 text-zinc-900">
-      <Icon className="w-6 h-6" />
+  <div className="flex items-center space-x-3.5 p-4 rounded-xl border border-slate-200 bg-white hover:border-slate-300 transition-colors">
+    <div className="w-10 h-10 flex items-center justify-center rounded-lg bg-slate-100 border border-slate-200 text-slate-800 shrink-0">
+      <Icon className="w-5 h-5" />
     </div>
-    <div>
-      <div className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">{label}</div>
-      <div className="flex items-baseline space-x-2 mt-1">
-        <span className="text-2xl font-bold tracking-tight text-zinc-950">{value}</span>
-        {sub && <span className="text-xs font-semibold text-zinc-400">({sub})</span>}
+    <div className="min-w-0 flex-1">
+      <div className="text-[10.5px] font-bold text-slate-400 uppercase tracking-wider truncate">{label}</div>
+      <div className="flex items-baseline space-x-1.5 mt-0.5">
+        <span className="text-lg font-black tracking-tight text-slate-900 font-mono">{value}</span>
+        {sub && <span className="text-[10px] font-semibold text-slate-500 truncate">({sub})</span>}
       </div>
     </div>
   </div>
 );
 
-const CustomTooltip = ({ active, payload, label }) => {
+const CustomDonutTooltip = ({ active, payload }) => {
   if (active && payload && payload.length) {
+    const d = payload[0].payload;
     return (
-      <div className="bg-white border border-zinc-200 p-3 rounded-lg shadow-md">
-        <div className="flex items-center space-x-2 text-sm">
-          <div className="w-2 h-2 rounded-full" style={{ backgroundColor: payload[0].payload.color }} />
-          <span className="font-medium text-zinc-700">{payload[0].name}:</span>
-          <span className="font-bold text-zinc-950">₹{payload[0].value}L</span>
+      <div className="bg-slate-900 text-white border border-slate-700 px-3 py-2 rounded-xl shadow-xl text-xs">
+        <div className="font-bold">{d.name}</div>
+        <div className="text-slate-300 font-mono mt-0.5">
+          ₹ {Number(d.value).toLocaleString('en-IN')} {d.sharePct ? `(${d.sharePct}%)` : ''}
         </div>
       </div>
     );
@@ -32,98 +35,217 @@ const CustomTooltip = ({ active, payload, label }) => {
   return null;
 };
 
+const CustomBarTooltip = ({ active, payload }) => {
+  if (active && payload && payload.length) {
+    const d = payload[0].payload;
+    return (
+      <div className="bg-slate-900 text-white border border-slate-700 px-3 py-2 rounded-xl shadow-xl text-xs">
+        <div className="font-bold">{d.name}</div>
+        <div className="text-slate-300 font-mono mt-0.5">₹ {Number(d.amount).toLocaleString('en-IN')}</div>
+      </div>
+    );
+  }
+  return null;
+};
+
 export const FundUtilizationSection = ({
-  totalFundingL = 0, utilizedL = 0, availableL = 0, thisMonthL = 0,
-  expenseByCategory = [], fundDonut = []
+  totalSanctionedGrant = 80000,
+  totalDisbursed = 40000,
+  netUniversityFunds = 15000,
+  pendingGrantEscrow = 40000,
+  totalLabFees = 25000,
+  expenseByCategory = [],
+  fundDonut = [],
+  cashFlowBarData = [],
+  ledgerTransactions = []
 }) => {
-  const utilPct = totalFundingL > 0 ? ((utilizedL / totalFundingL) * 100).toFixed(1) : 0;
-  const availPct = totalFundingL > 0 ? ((availableL / totalFundingL) * 100).toFixed(1) : 0;
-  const monthPct = totalFundingL > 0 ? ((thisMonthL / totalFundingL) * 100).toFixed(1) : 0;
+  const disbursalPct = totalSanctionedGrant > 0 ? Math.round((totalDisbursed / totalSanctionedGrant) * 100) : 0;
+  const escrowPendingPct = totalSanctionedGrant > 0 ? Math.round((pendingGrantEscrow / totalSanctionedGrant) * 100) : 0;
+
+  // Fallback cash flow data if not passed directly
+  const chartData = cashFlowBarData.length > 0 ? cashFlowBarData : [
+    { name: 'Sanctioned DPR', amount: totalSanctionedGrant, fill: '#09090b' },
+    { name: 'Disbursed (PFMS)', amount: totalDisbursed, fill: '#27272a' },
+    { name: 'Partner Lab Fee', amount: totalLabFees, fill: '#71717a' },
+    { name: 'Net HEI Escrow', amount: netUniversityFunds, fill: '#52525b' },
+    { name: 'Pending Escrow', amount: pendingGrantEscrow, fill: '#a1a1aa' }
+  ];
 
   return (
-    <div className="rounded-xl border bg-card text-card-foreground shadow-sm bg-white overflow-hidden w-full">
-      <div className="flex flex-col space-y-1.5 p-6 border-b border-zinc-100">
-        <h3 className="text-lg font-semibold leading-none tracking-tight text-zinc-950">Fund Utilization</h3>
-        <p className="text-sm text-muted-foreground text-zinc-500">CSR financial breakdown and expense categorization.</p>
+    <div className="rounded-2xl border border-slate-200 bg-white overflow-hidden w-full shadow-2xs">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between p-5 border-b border-slate-100 gap-2">
+        <div>
+          <h3 className="text-base font-bold text-slate-900 uppercase tracking-wide">
+            Government Grant Sanction & PFMS Escrow Cash Flow
+          </h3>
+          <p className="text-xs text-slate-500 font-medium">
+            Direct state disbursal analytics, research expenditure categories & university escrow tracking.
+          </p>
+        </div>
+        <div className="flex items-center space-x-2">
+          <span className="px-2.5 py-1 bg-slate-100 border border-slate-200 text-slate-700 text-[11px] font-bold rounded-lg flex items-center space-x-1">
+            <ShieldCheck className="w-3.5 h-3.5 text-slate-700" />
+            <span>PFMS Verified</span>
+          </span>
+        </div>
       </div>
 
-      <div className="p-6 flex flex-col gap-8">
+      <div className="p-5 flex flex-col gap-6">
         {/* KPI Row */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <FundStat icon={Landmark} label="Total (CSR)" value={`₹${totalFundingL}L`} />
-          <FundStat icon={IndianRupee} label="Utilized" value={`₹${utilizedL}L`} sub={`${utilPct}%`} />
-          <FundStat icon={Wallet} label="Available" value={`₹${availableL}L`} sub={`${availPct}%`} />
-          <FundStat icon={Receipt} label="Monthly Burn" value={`₹${thisMonthL}L`} sub={`${monthPct}%`} />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+          <FundStat
+            icon={Landmark}
+            label="Sanctioned DPR"
+            value={`₹ ${totalSanctionedGrant.toLocaleString('en-IN')}`}
+            sub="Official State Sanction"
+          />
+          <FundStat
+            icon={IndianRupee}
+            label="PFMS Disbursed"
+            value={`₹ ${totalDisbursed.toLocaleString('en-IN')}`}
+            sub={`${disbursalPct}% Released`}
+          />
+          <FundStat
+            icon={Wallet}
+            label="Net HEI Escrow"
+            value={`₹ ${netUniversityFunds.toLocaleString('en-IN')}`}
+            sub={totalLabFees > 0 ? `After ₹ ${totalLabFees.toLocaleString('en-IN')} Lab Fee` : 'Full Credit'}
+          />
+          <FundStat
+            icon={Receipt}
+            label="Pending Escrow"
+            value={`₹ ${pendingGrantEscrow.toLocaleString('en-IN')}`}
+            sub={pendingGrantEscrow > 0 ? `${escrowPendingPct}% for Phase 2` : 'Fully Settled'}
+          />
         </div>
 
-        <div className="w-full h-[1px] bg-zinc-100" />
-
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-8 flex-1">
-          {/* Donut Chart */}
-          <div className="col-span-1 md:col-span-5 flex flex-col">
-             <p className="text-sm font-semibold text-zinc-900 mb-6">Utilization Overview</p>
-             <div className="flex items-center flex-1">
-               <div className="relative w-48 h-48 shrink-0">
-                 <ResponsiveContainer width="100%" height="100%">
-                   <PieChart>
-                     <Pie data={fundDonut} cx="50%" cy="50%" innerRadius={60} outerRadius={85} dataKey="value" stroke="none" paddingAngle={2}>
-                       {fundDonut.map((d, i) => <Cell key={i} fill={d.color} />)}
-                     </Pie>
-                     <Tooltip content={<CustomTooltip />} cursor={{fill: 'transparent'}} />
-                   </PieChart>
-                 </ResponsiveContainer>
-                 <div className="absolute inset-0 flex items-center justify-center pointer-events-none mt-1">
-                    <div className="text-center">
-                      <div className="text-3xl font-bold text-zinc-950 tracking-tight">{utilPct}%</div>
-                      <div className="text-xs font-medium text-zinc-500 mt-1">Utilized</div>
-                    </div>
-                 </div>
-               </div>
-               <div className="ml-8 flex-1 space-y-4">
-                 {fundDonut.map((d) => (
-                   <div key={d.name} className="flex justify-between items-center text-sm">
-                     <div className="flex items-center space-x-3">
-                       <div className="w-3 h-3 rounded-full shadow-sm" style={{ backgroundColor: d.color }} />
-                       <span className="font-medium text-zinc-700">{d.name}</span>
-                     </div>
-                     <div className="text-right">
-                       <div className="font-bold text-zinc-950">₹{d.value}L</div>
-                       <div className="text-xs font-semibold text-zinc-400">({((d.value/(totalFundingL||1))*100).toFixed(1)}%)</div>
-                     </div>
-                   </div>
-                 ))}
-               </div>
-             </div>
+        {/* Charts Section: Cash Flow Bar Chart & DPR Category Donut */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+          {/* Cash Flow Bar Chart (Left 7 Cols) */}
+          <div className="col-span-1 lg:col-span-7 bg-slate-50/60 border border-slate-200 rounded-xl p-4 flex flex-col">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <p className="text-xs font-bold text-slate-900 uppercase tracking-wider">Grant Cash Flow & Escrow Disbursal</p>
+                <p className="text-[11px] text-slate-500 font-medium">Comparison of Sanctioned vs Released vs Remaining Escrow</p>
+              </div>
+              <span className="text-[11px] font-mono font-bold text-slate-600 bg-white border border-slate-200 px-2 py-0.5 rounded">
+                INR (₹)
+              </span>
+            </div>
+            <div className="h-64 w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={chartData} margin={{ top: 10, right: 10, left: 10, bottom: 25 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" vertical={false} />
+                  <XAxis
+                    dataKey="name"
+                    tick={{ fontSize: 10, fill: '#64748b', fontWeight: 600 }}
+                    angle={-15}
+                    textAnchor="end"
+                    interval={0}
+                  />
+                  <YAxis
+                    tick={{ fontSize: 10, fill: '#64748b' }}
+                    tickFormatter={(v) => `₹${v >= 1000 ? `${v / 1000}k` : v}`}
+                  />
+                  <Tooltip content={<CustomBarTooltip />} />
+                  <Bar dataKey="amount" radius={[6, 6, 0, 0]}>
+                    {chartData.map((entry, index) => (
+                      <Cell key={`bar-${index}`} fill={entry.fill || '#1e293b'} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
           </div>
 
-          <div className="hidden md:block col-span-1 w-[1px] bg-zinc-100 mx-auto h-full" />
+          {/* DPR Allocation Donut & Legend (Right 5 Cols) */}
+          <div className="col-span-1 lg:col-span-5 bg-slate-50/60 border border-slate-200 rounded-xl p-4 flex flex-col justify-between">
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-xs font-bold text-slate-900 uppercase tracking-wider">DPR Budget Breakdown</p>
+                <span className="text-[10px] font-mono font-bold text-slate-600">
+                  {expenseByCategory.length} Categories
+                </span>
+              </div>
+              <p className="text-[11px] text-slate-500 font-medium mb-3">Allocations vetted by University Research Board</p>
 
-          {/* Category Progress Bars */}
-          <div className="col-span-1 md:col-span-6 flex flex-col">
-            <p className="text-sm font-semibold text-zinc-900 mb-6">Expense Categories</p>
-            <div className="space-y-5 flex-1 flex flex-col justify-center">
-              {expenseByCategory.map((c) => {
-                const maxVal = expenseByCategory[0]?.value || 1;
-                const widthPct = Math.max(5, (c.value / maxVal) * 100);
-                const sharePct = ((c.value / (utilizedL||1)) * 100).toFixed(1);
-                return (
-                  <div key={c.name} className="flex items-center space-x-4 text-sm group">
-                    <div className="w-36 shrink-0 font-medium text-zinc-700 truncate">{c.name}</div>
-                    <div className="flex-1 flex items-center space-x-4">
-                      <div className="flex-1 h-3 bg-zinc-100 rounded-full overflow-hidden">
-                        <div className="h-full rounded-full transition-all duration-300 group-hover:opacity-80" style={{ width: `${widthPct}%`, backgroundColor: c.color }} />
+              {expenseByCategory.length > 0 ? (
+                <div className="space-y-2.5">
+                  {expenseByCategory.map((c) => (
+                    <div key={c.name} className="p-2 bg-white rounded-lg border border-slate-200 text-xs">
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="font-semibold text-slate-800 truncate pr-2 text-[11.5px]">{c.name}</span>
+                        <span className="font-black text-slate-900 font-mono shrink-0">{c.formattedAmount}</span>
                       </div>
-                      <div className="w-24 text-right">
-                        <span className="font-bold text-zinc-950 mr-2">₹{c.value}L</span>
-                        <span className="text-xs font-semibold text-zinc-400">({sharePct}%)</span>
+                      <div className="flex items-center space-x-2">
+                        <div className="flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                          <div
+                            className="h-full bg-slate-800 rounded-full"
+                            style={{ width: `${Math.max(8, c.sharePct)}%` }}
+                          />
+                        </div>
+                        <span className="text-[10px] font-bold text-slate-500 font-mono w-10 text-right">{c.sharePct}%</span>
                       </div>
                     </div>
-                  </div>
-                );
-              })}
+                  ))}
+                </div>
+              ) : (
+                <div className="flex items-center justify-center h-48 text-xs text-slate-400">
+                  No breakdown recorded
+                </div>
+              )}
             </div>
           </div>
         </div>
+
+        {/* Live PFMS Disbursal Ledger Audit Table */}
+        {ledgerTransactions.length > 0 && (
+          <div className="border border-slate-200 rounded-xl overflow-hidden bg-white">
+            <div className="px-4 py-3 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <CheckCircle2 className="w-4 h-4 text-slate-700" />
+                <span className="text-xs font-black text-slate-900 uppercase tracking-wide">
+                  PFMS Escrow Transaction Ledger
+                </span>
+              </div>
+              <span className="text-[10px] font-bold text-slate-500">
+                {ledgerTransactions.length} Settled Record(s)
+              </span>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead className="bg-slate-50/50 text-[10px] font-bold text-slate-500 uppercase tracking-wider border-b border-slate-100">
+                  <tr>
+                    <th className="px-4 py-2.5">TX / Payment ID</th>
+                    <th className="px-4 py-2.5">PFMS UTR Number</th>
+                    <th className="px-4 py-2.5">Project Reference</th>
+                    <th className="px-4 py-2.5">Amount Disbursed</th>
+                    <th className="px-4 py-2.5">Treasury Verification</th>
+                    <th className="px-4 py-2.5">Bank Status</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {ledgerTransactions.map((tx, idx) => (
+                    <tr key={tx.id || tx.paymentId || idx} className="hover:bg-slate-50/70">
+                      <td className="px-4 py-2.5 font-mono font-bold text-slate-900">{tx.paymentId || tx.id || 'N/A'}</td>
+                      <td className="px-4 py-2.5 font-mono text-slate-600">{tx.utrNumber || tx.utr || 'N/A'}</td>
+                      <td className="px-4 py-2.5 font-medium text-slate-800">{tx.project || tx.projectRef || 'State R&D'}</td>
+                      <td className="px-4 py-2.5 font-mono font-bold text-slate-900">{tx.amount || `₹ ${tx.rawAmount}`}</td>
+                      <td className="px-4 py-2.5">
+                        <span className="px-2 py-0.5 bg-slate-100 border border-slate-200 text-slate-700 text-[10px] font-bold rounded-md">
+                          {tx.makerCheckerStatus || 'Approved'}
+                        </span>
+                      </td>
+                      <td className="px-4 py-2.5 text-slate-600 font-medium">
+                        {tx.bankAckStatus || tx.bankAck || 'Credited to University Escrow'}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
