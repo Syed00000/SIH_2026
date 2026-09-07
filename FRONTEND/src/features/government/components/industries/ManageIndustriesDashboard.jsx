@@ -4,9 +4,9 @@ import { industryService } from '../../services/industryService.js';
 import { IndustrySummaryCards } from './IndustrySummaryCards.jsx';
 import { IndustryFiltersToolbar } from './IndustryFiltersToolbar.jsx';
 import { IndustryTable } from './IndustryTable.jsx';
+import { IndustryDetailPanel } from './IndustryDetailPanel.jsx';
+import { IndustryEditPanel } from './IndustryEditPanel.jsx';
 import { AddIndustryDrawer } from './AddIndustryDrawer.jsx';
-import { EditIndustryDrawer } from './EditIndustryDrawer.jsx';
-import { IndustryDetailsModal } from './IndustryDetailsModal.jsx';
 import { IndustrySuccessModal } from './IndustrySuccessModal.jsx';
 import { ApproveIndustryModal } from './ApproveIndustryModal.jsx';
 
@@ -17,6 +17,11 @@ export const ManageIndustriesDashboard = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState(null);
 
+  // View Mode: 'list' | 'view' | 'edit'
+  const [viewMode, setViewMode] = useState('list');
+  const [viewingIndustry, setViewingIndustry] = useState(null);
+  const [editingIndustry, setEditingIndustry] = useState(null);
+
   // Filters State
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All Categories');
@@ -26,12 +31,9 @@ export const ManageIndustriesDashboard = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [totalRecords, setTotalRecords] = useState(0);
-  const [totalPages, setTotalPages] = useState(1);
 
-  // Modal / Drawer States
+  // Drawer / Modals
   const [isAddDrawerOpen, setIsAddDrawerOpen] = useState(false);
-  const [viewingIndustry, setViewingIndustry] = useState(null);
-  const [editingIndustry, setEditingIndustry] = useState(null);
   const [approvingIndustry, setApprovingIndustry] = useState(null);
   const [successCredentials, setSuccessCredentials] = useState(null);
 
@@ -40,19 +42,12 @@ export const ManageIndustriesDashboard = () => {
       setIsLoading(true);
       setError(null);
       const data = await industryService.getIndustries({
-        search: searchTerm,
-        category: selectedCategory,
-        thematicDomain: selectedDomain,
-        status: selectedStatus,
-        verificationStatus: selectedVerification,
-        page: currentPage,
-        limit: itemsPerPage
+        search: searchTerm, category: selectedCategory, thematicDomain: selectedDomain,
+        status: selectedStatus, verificationStatus: selectedVerification, page: currentPage, limit: itemsPerPage
       });
-
       if (data) {
         setIndustries(data.records || []);
         setTotalRecords(data.total || 0);
-        setTotalPages(data.totalPages || 1);
         if (data.kpis) setKpis(data.kpis);
       }
     } catch (err) {
@@ -81,42 +76,17 @@ export const ManageIndustriesDashboard = () => {
     }
   };
 
-  const handleApproveApplication = async (id, payload) => {
-    try {
-      setIsSubmitting(true);
-      const res = await industryService.approveApplication(id, payload);
-      setApprovingIndustry(null);
-      const creds = res?.credentials || res?.data?.credentials;
-      if (creds) setSuccessCredentials(creds);
-      await fetchIndustries();
-    } catch (err) {
-      alert(err.response?.data?.error?.message || err.message || 'Error approving application');
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const handleRejectApplication = async (id, payload) => {
-    try {
-      setIsSubmitting(true);
-      await industryService.rejectApplication(id, payload);
-      setApprovingIndustry(null);
-      await fetchIndustries();
-    } catch (err) {
-      alert(err.response?.data?.error?.message || err.message || 'Error rejecting application');
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
   const handleUpdateIndustry = async (id, payload) => {
     try {
       setIsSubmitting(true);
-      await industryService.updateIndustry(id, payload);
+      const updated = await industryService.updateIndustry(id, payload);
       setEditingIndustry(null);
       await fetchIndustries();
+      if (viewingIndustry && (viewingIndustry._id === id || viewingIndustry.id === id)) {
+        setViewingIndustry(updated?.data || updated || { ...viewingIndustry, ...payload });
+      }
     } catch (err) {
-      alert(err.response?.data?.error?.message || err.message || 'Error updating industry details');
+      alert(err.response?.data?.error?.message || err.message || 'Error updating industry');
     } finally {
       setIsSubmitting(false);
     }
@@ -125,24 +95,23 @@ export const ManageIndustriesDashboard = () => {
   const handleToggleStatus = async (ind) => {
     const isCurrentlyActive = ind.status === 'Active' && ind.accessStatus !== 'Disabled';
     const confirmMsg = isCurrentlyActive
-      ? `Are you sure you want to disable "${ind.legalName}"?\n\nThe organization will no longer be able to log in, and all active sessions will be terminated.`
+      ? `Are you sure you want to disable "${ind.legalName}"?`
       : `Enable portal access for "${ind.legalName}"?`;
-
     if (!window.confirm(confirmMsg)) return;
 
     try {
       await industryService.toggleStatus(ind._id || ind.id);
       await fetchIndustries();
+      if (viewingIndustry && (viewingIndustry._id === ind._id || viewingIndustry.id === ind.id)) {
+        setViewingIndustry(prev => ({ ...prev, accessStatus: isCurrentlyActive ? 'Disabled' : 'Enabled' }));
+      }
     } catch (err) {
       alert(err.response?.data?.error?.message || err.message || 'Error updating status');
     }
   };
 
   const handleResetPassword = async (ind) => {
-    if (!window.confirm(`Regenerate security credentials for "${ind.legalName}"?\n\nThis will generate a new access key and invalidate current sessions.`)) {
-      return;
-    }
-
+    if (!window.confirm(`Regenerate credentials for "${ind.legalName}"?`)) return;
     try {
       const res = await industryService.resetPassword(ind._id || ind.id);
       const creds = res?.data || res;
@@ -161,28 +130,42 @@ export const ManageIndustriesDashboard = () => {
   };
 
   const handleResetFilters = () => {
-    setSearchTerm('');
-    setSelectedCategory('All Categories');
-    setSelectedDomain('All Domains');
-    setSelectedStatus('All Status');
-    setSelectedVerification('All Verification');
-    setCurrentPage(1);
+    setSearchTerm(''); setSelectedCategory('All Categories'); setSelectedDomain('All Domains');
+    setSelectedStatus('All Status'); setSelectedVerification('All Verification'); setCurrentPage(1);
   };
+
+  if (viewMode === 'view' && viewingIndustry) {
+    return (
+      <IndustryDetailPanel
+        industry={viewingIndustry}
+        onBack={() => setViewMode('list')}
+        onEdit={(ind) => { setEditingIndustry(ind || viewingIndustry); setViewMode('edit'); }}
+        onToggleStatus={handleToggleStatus}
+        onResetPassword={handleResetPassword}
+      />
+    );
+  }
+
+  if (viewMode === 'edit' && editingIndustry) {
+    return (
+      <IndustryEditPanel
+        industry={editingIndustry}
+        onBack={() => setViewMode('list')}
+        onSubmit={async (p) => { await handleUpdateIndustry(editingIndustry._id || editingIndustry.id, p); setViewMode('list'); }}
+        isLoading={isSubmitting}
+      />
+    );
+  }
 
   return (
     <div className="space-y-4 pb-8 max-w-[1600px] w-full mx-auto select-none">
-      {/* Header */}
       <div>
         <h1 className="text-base sm:text-lg font-bold text-slate-900 tracking-tight">Industry & Enterprise Governance</h1>
-        <p className="text-xs text-slate-500 mt-0.5">
-          Manage, verify and monitor industry partnerships, corporate support and enterprise participation.
-        </p>
+        <p className="text-xs text-slate-500 mt-0.5">Manage, verify and monitor industry partnerships, corporate support and enterprise participation.</p>
       </div>
 
-      {/* Summary KPI Cards */}
       <IndustrySummaryCards kpis={kpis} isLoading={isLoading} />
 
-      {/* Main Directory Table Card */}
       <div className="bg-white rounded-lg border border-slate-200/90 shadow-2xs p-4 sm:p-5 space-y-3.5">
         <IndustryFiltersToolbar
           searchTerm={searchTerm}
@@ -214,57 +197,19 @@ export const ManageIndustriesDashboard = () => {
           itemsPerPage={itemsPerPage}
           onPageChange={setCurrentPage}
           onLimitChange={(l) => { setItemsPerPage(l); setCurrentPage(1); }}
-          onView={setViewingIndustry}
-          onEdit={setEditingIndustry}
+          onView={(ind) => { setViewingIndustry(ind); setViewMode('view'); }}
+          onEdit={(ind) => { setEditingIndustry(ind); setViewMode('edit'); }}
           onApprove={setApprovingIndustry}
-          onReject={(ind) => handleRejectApplication(ind._id, { reason: 'Application rejected by administration' })}
+          onReject={(ind) => industryService.rejectApplication(ind._id, { reason: 'Application rejected' }).then(fetchIndustries)}
           onToggleStatus={handleToggleStatus}
           onResetPassword={handleResetPassword}
           onResetFilters={handleResetFilters}
         />
       </div>
 
-      {/* Modals & Drawers */}
-      <AddIndustryDrawer
-        isOpen={isAddDrawerOpen}
-        onClose={() => setIsAddDrawerOpen(false)}
-        onSubmit={handleCreateIndustry}
-        isLoading={isSubmitting}
-      />
-
-      <EditIndustryDrawer
-        isOpen={Boolean(editingIndustry)}
-        industry={editingIndustry}
-        onClose={() => setEditingIndustry(null)}
-        onSubmit={(payload) => handleUpdateIndustry(editingIndustry._id, payload)}
-        isLoading={isSubmitting}
-      />
-
-      <ApproveIndustryModal
-        isOpen={Boolean(approvingIndustry)}
-        industry={approvingIndustry}
-        onClose={() => setApprovingIndustry(null)}
-        onApprove={handleApproveApplication}
-        onReject={handleRejectApplication}
-        isLoading={isSubmitting}
-      />
-
-      <IndustryDetailsModal
-        isOpen={Boolean(viewingIndustry)}
-        industry={viewingIndustry}
-        onClose={() => setViewingIndustry(null)}
-        onEdit={(ind) => {
-          setViewingIndustry(null);
-          setEditingIndustry(ind);
-        }}
-        onToggleStatus={handleToggleStatus}
-      />
-
-      <IndustrySuccessModal
-        isOpen={Boolean(successCredentials)}
-        credentials={successCredentials}
-        onClose={() => setSuccessCredentials(null)}
-      />
+      <AddIndustryDrawer isOpen={isAddDrawerOpen} onClose={() => setIsAddDrawerOpen(false)} onSubmit={handleCreateIndustry} isLoading={isSubmitting} />
+      <ApproveIndustryModal isOpen={Boolean(approvingIndustry)} industry={approvingIndustry} onClose={() => setApprovingIndustry(null)} onApprove={(id, p) => industryService.approveApplication(id, p).then(fetchIndustries)} onReject={(id, p) => industryService.rejectApplication(id, p).then(fetchIndustries)} isLoading={isSubmitting} />
+      <IndustrySuccessModal isOpen={Boolean(successCredentials)} credentials={successCredentials} onClose={() => setSuccessCredentials(null)} />
     </div>
   );
 };

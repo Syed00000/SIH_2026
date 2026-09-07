@@ -5,4 +5,6 @@ export { EditIndustryDrawer } from './EditIndustryDrawer.jsx';
 export { IndustryDetailsModal } from './IndustryDetailsModal.jsx';
 export { IndustrySuccessModal } from './IndustrySuccessModal.jsx';
 export { ApproveIndustryModal } from './ApproveIndustryModal.jsx';
+export { IndustryDetailPanel } from './IndustryDetailPanel.jsx';
+export { IndustryEditPanel } from './IndustryEditPanel.jsx';
 export { ManageIndustriesDashboard, default } from './ManageIndustriesDashboard.jsx';

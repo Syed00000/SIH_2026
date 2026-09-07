@@ -34,6 +34,12 @@ export const ProblemEvidenceDossierPanel = ({
   const block = challenge.location?.block && challenge.location.block !== 'Not specified' ? challenge.location.block : (challenge.location?.subDivision || 'Not specified');
   const panchayat = challenge.location?.panchayatOrWard && challenge.location.panchayatOrWard !== 'Not specified' ? challenge.location.panchayatOrWard : (challenge.location?.gramPanchayat || 'Not specified');
   const landmark = challenge.location?.landmark || 'Not specified';
+  const fullAddress =
+    challenge.location?.fullAddress ||
+    [landmark !== 'Not specified' ? landmark : '', panchayat !== 'Not specified' ? panchayat : '', block !== 'Not specified' ? block : '', district, 'Jharkhand']
+      .filter(Boolean)
+      .join(', ') || `${district}, Jharkhand`;
+  const coordinates = challenge.location?.coordinates || 'Coordinates not provided';
 
   const formattedDate = challenge.submittedAt
     ? new Date(challenge.submittedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })

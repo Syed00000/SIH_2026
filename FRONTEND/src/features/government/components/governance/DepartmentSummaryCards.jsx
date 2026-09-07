@@ -2,7 +2,7 @@ import React from 'react';
 import { Landmark, Users, AlertCircle, FolderKanban } from 'lucide-react';
 
 export const DepartmentSummaryCards = ({
-  totalDepartments = 8,
+  totalDepartments = 0,
   totalOfficers = 0,
   totalChallenges = 0,
   activeProjects = 0
