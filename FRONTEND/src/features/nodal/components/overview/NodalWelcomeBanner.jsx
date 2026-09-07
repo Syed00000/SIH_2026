@@ -16,7 +16,7 @@ export const NodalWelcomeBanner = ({
             {nodalDistrict ? `${nodalDistrict} District Innovation & Triage Center` : 'State Innovation & Problem Triage Center'}
           </h2>
           {nodalDistrict && (
-            <span className="px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 text-[10px] font-extrabold flex items-center gap-1">
+            <span className="px-2.5 py-0.5 rounded-md bg-emerald-50 text-emerald-800 border border-emerald-200 text-[10px] font-extrabold flex items-center gap-1">
               <span>📍</span> <span>{nodalDistrict}</span>
             </span>
           )}

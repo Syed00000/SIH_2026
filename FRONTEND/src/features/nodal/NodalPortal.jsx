@@ -62,37 +62,39 @@ export const NodalPortal = ({ user: propUser, onLogout }) => {
   };
 
   return (
-    <div className="min-h-screen bg-white flex flex-row overflow-hidden h-screen text-slate-800 antialiased select-none">
-      {/* 1. Left Nodal Sidebar */}
-      <NodalSidebar
-        activeTab={activeTab}
-        setActiveTab={setActiveTab}
-        isSidebarExpanded={isSidebarExpanded}
-        setIsSidebarExpanded={setIsSidebarExpanded}
-        isMobileMenuOpen={isMobileMenuOpen}
-        setIsMobileMenuOpen={setIsMobileMenuOpen}
-        onLogout={onLogout}
+    <div className="min-h-screen bg-white flex flex-col overflow-hidden h-screen text-slate-800 antialiased select-none">
+      {/* 1. Top Full-Width Header - Extends 100% edge-to-edge across viewport */}
+      <NodalHeader
         institutionName={institutionName}
+        nodalName={nodalName}
+        nodalDistrict={nodalDistrict}
+        notificationCount={4}
+        onToggleSidebar={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
       />
 
-      {/* 2. Main Viewport */}
-      <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden bg-white">
-        {/* Sticky Header with Real Institution & Officer Info */}
-        <NodalHeader
+      {/* 2. Main Body Container (Left Sidebar below Header + Right Viewport) */}
+      <div className="flex-1 flex flex-row min-w-0 min-h-0 overflow-hidden bg-white">
+        {/* Left Nodal Sidebar (Sits directly beneath the Top Header) */}
+        <NodalSidebar
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+          isSidebarExpanded={isSidebarExpanded}
+          setIsSidebarExpanded={setIsSidebarExpanded}
+          isMobileMenuOpen={isMobileMenuOpen}
+          setIsMobileMenuOpen={setIsMobileMenuOpen}
+          onLogout={onLogout}
           institutionName={institutionName}
-          nodalName={nodalName}
-          nodalDistrict={nodalDistrict}
-          notificationCount={4}
-          onToggleSidebar={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
         />
 
-        {/* Main Scrollable Content */}
-        <main className="flex-1 p-3 sm:p-4 overflow-y-auto min-h-0 custom-scrollbar">
-          <div className="max-w-7xl mx-auto w-full">{renderContent()}</div>
-        </main>
+        {/* Right Main Scrollable Viewport */}
+        <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden bg-white">
+          <main className="flex-1 p-3 sm:p-4 overflow-y-auto min-h-0 custom-scrollbar">
+            <div className="max-w-7xl mx-auto w-full">{renderContent()}</div>
+          </main>
 
-        {/* Pinned Bottom Footer - always fixed cleanly at the bottom */}
-        <GovernmentFooter />
+          {/* Pinned Bottom Footer */}
+          <GovernmentFooter />
+        </div>
       </div>
     </div>
   );

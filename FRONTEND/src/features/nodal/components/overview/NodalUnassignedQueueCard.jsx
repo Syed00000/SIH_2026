@@ -48,7 +48,7 @@ export const NodalUnassignedQueueCard = ({
                     <span className="font-mono text-[10.5px] font-bold text-slate-600">
                       {chl.challengeId || chl.id}
                     </span>
-                    <span className="text-[10px] font-bold text-slate-700 bg-slate-100 px-1.5 py-0.2 rounded-full border border-slate-200">
+                    <span className="text-[10px] font-bold text-slate-700 bg-slate-100 px-1.5 py-0.2 rounded-md border border-slate-200">
                       {chl.domain || 'General Need'}
                     </span>
                   </div>

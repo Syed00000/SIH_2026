@@ -70,7 +70,7 @@ export const ClarificationChatModal = ({
 
   return (
     <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-2 sm:p-4 select-none animate-in fade-in duration-150">
-      <div className="bg-white text-slate-900 border border-slate-200 rounded-xl w-full max-w-2xl h-[90vh] max-h-[760px] shadow-2xl flex flex-col overflow-hidden animate-in zoom-in-95 duration-150">
+      <div className="bg-white text-slate-900 border border-slate-300 rounded-md w-full max-w-2xl h-[90vh] max-h-[760px] shadow-2xl flex flex-col overflow-hidden animate-in zoom-in-95 duration-150">
         <ChatHeader
           isUniversityView={isUniversityView}
           challengeId={challengeId}

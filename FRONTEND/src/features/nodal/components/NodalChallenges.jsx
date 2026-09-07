@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { NodalFilterBar } from './NodalFilterBar.jsx';
 import { NodalAssignModal } from './NodalAssignModal.jsx';
 import { ProblemEvidenceDossierPanel } from './ProblemEvidenceDossierPanel.jsx';
@@ -6,8 +6,11 @@ import { ClarificationChatModal } from '../../clarification/components/Clarifica
 import { useNodalChallenges } from './challenges/hooks/useNodalChallenges.js';
 import { NodalChallengesHeader } from './challenges/NodalChallengesHeader.jsx';
 import { NodalChallengesGrid } from './challenges/NodalChallengesGrid.jsx';
+import { NodalChallengesTable } from './challenges/NodalChallengesTable.jsx';
 
 export const NodalChallenges = ({ initialStatusFilter = 'All Status', nodalDistrict = '' }) => {
+  const [viewMode, setViewMode] = useState('table'); // Default View Mode is Table/List View as requested!
+
   const {
     searchTerm,
     setSearchTerm,
@@ -23,6 +26,7 @@ export const NodalChallenges = ({ initialStatusFilter = 'All Status', nodalDistr
     setChatChallenge,
     loading,
     selectedChallenge,
+    setSelectedChallenge,
     isAssignModalOpen,
     setIsAssignModalOpen,
     selectedDossierChallenge,
@@ -87,7 +91,7 @@ export const NodalChallenges = ({ initialStatusFilter = 'All Status', nodalDistr
         toastMsg={toastMsg}
       />
 
-      {/* 2. Comprehensive Filter Toolbar */}
+      {/* 2. Comprehensive Filter Toolbar with View Mode Toggle */}
       <NodalFilterBar
         searchTerm={searchTerm}
         setSearchTerm={setSearchTerm}
@@ -100,19 +104,34 @@ export const NodalChallenges = ({ initialStatusFilter = 'All Status', nodalDistr
         priorityFilter={priorityFilter}
         setPriorityFilter={setPriorityFilter}
         totalCount={filteredChallenges.length}
+        viewMode={viewMode}
+        setViewMode={setViewMode}
       />
 
-      {/* 3. Problem Cards Grid */}
-      <NodalChallengesGrid
-        loading={loading}
-        challenges={filteredChallenges}
-        deletingId={deletingId}
-        onOpenDossier={setSelectedDossierChallenge}
-        onOpenChat={setChatChallenge}
-        onQuickReject={handleQuickReject}
-        onQuickDelete={handleQuickDelete}
-        onOpenTriage={handleOpenTriage}
-      />
+      {/* 3. Problem Statements View (Table/List View by default or Grid View) */}
+      {viewMode === 'table' ? (
+        <NodalChallengesTable
+          loading={loading}
+          challenges={filteredChallenges}
+          deletingId={deletingId}
+          onOpenDossier={setSelectedDossierChallenge}
+          onOpenChat={setChatChallenge}
+          onQuickReject={handleQuickReject}
+          onQuickDelete={handleQuickDelete}
+          onOpenTriage={handleOpenTriage}
+        />
+      ) : (
+        <NodalChallengesGrid
+          loading={loading}
+          challenges={filteredChallenges}
+          deletingId={deletingId}
+          onOpenDossier={setSelectedDossierChallenge}
+          onOpenChat={setChatChallenge}
+          onQuickReject={handleQuickReject}
+          onQuickDelete={handleQuickDelete}
+          onOpenTriage={handleOpenTriage}
+        />
+      )}
 
       {/* Triage / Institutional Assignment Modal */}
       {isAssignModalOpen && (

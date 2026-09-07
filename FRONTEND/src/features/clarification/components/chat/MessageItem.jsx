@@ -34,8 +34,9 @@ export const MessageItem = ({
   return (
     <div
       id={`msg-${msg._id}`}
-      className={`flex flex-col ${isMine ? 'items-end' : 'items-start'} group relative transition-all duration-300 ${isHighlighted ? 'scale-[1.02] ring-2 ring-emerald-500 rounded-2xl' : ''
-        }`}
+      className={`flex flex-col ${isMine ? 'items-end' : 'items-start'} group relative transition-all duration-300 ${
+        isHighlighted ? 'scale-[1.02] ring-2 ring-emerald-500 rounded-md' : ''
+      }`}
     >
       {/* Sender Header */}
       <div className="flex items-center space-x-1.5 text-[10.5px] px-1 font-semibold text-slate-500 mb-0.5">
@@ -48,18 +49,19 @@ export const MessageItem = ({
           </span>
         ) : (
           <span className="flex items-center space-x-1 text-teal-800 font-bold">
-            <GraduationCap className="w-3 h-3 text-[#007A61]" />
+            <GraduationCap className="w-3 h-3 text-[#047857]" />
             <span>{msg.universityName || uniName}</span>
           </span>
         )}
       </div>
 
-      {/* Bubble */}
+      {/* Bubble - Clean Shadcn rounded-md Corners */}
       <div
-        className={`relative max-w-[85%] sm:max-w-[75%] p-2.5 sm:p-3 rounded-2xl text-xs leading-relaxed shadow-xs group ${isMine
-          ? 'bg-[#d9fdd3] text-slate-900 border border-emerald-200/80 rounded-tr-xs'
-          : 'bg-white text-slate-900 border border-slate-200/90 rounded-tl-xs'
-          }`}
+        className={`relative max-w-[85%] sm:max-w-[75%] p-2.5 sm:p-3 rounded-md text-xs leading-relaxed shadow-2xs group ${
+          isMine
+            ? 'bg-[#d9fdd3] text-slate-900 border border-emerald-200/80'
+            : 'bg-white text-slate-900 border border-slate-200/90'
+        }`}
       >
         {/* Dropdown Menu Trigger */}
         {!isDeleted && (
@@ -70,7 +72,7 @@ export const MessageItem = ({
                 e.stopPropagation();
                 setActiveMenuMsgId(activeMenuMsgId === msg._id ? null : msg._id);
               }}
-              className="p-1 rounded-full bg-slate-200/80 hover:bg-slate-300 text-slate-700 cursor-pointer transition-colors shadow-2xs"
+              className="p-1 rounded-md bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 cursor-pointer transition-colors shadow-2xs"
               title="Message Options"
             >
               <ChevronDown className="w-3.5 h-3.5" />
@@ -92,13 +94,14 @@ export const MessageItem = ({
         {msg.replyTo && msg.replyTo.message && (
           <div
             onClick={() => onScrollToMessage(msg.replyTo.messageId)}
-            className={`mb-2 p-2 rounded-lg border-l-4 cursor-pointer text-[11px] transition-colors ${isMine
-              ? 'bg-emerald-50/80 border-[#007A61] hover:bg-emerald-100/80'
-              : 'bg-slate-100/90 border-[#007A61] hover:bg-slate-200/80'
-              }`}
+            className={`mb-2 p-2 rounded-md border-l-4 cursor-pointer text-[11px] transition-colors ${
+              isMine
+                ? 'bg-emerald-50/80 border-[#047857] hover:bg-emerald-100/80'
+                : 'bg-slate-100/90 border-[#047857] hover:bg-slate-200/80'
+            }`}
             title="Click to view quoted message"
           >
-            <div className="font-bold flex items-center space-x-1 mb-0.5 text-[#007A61]">
+            <div className="font-bold flex items-center space-x-1 mb-0.5 text-[#047857]">
               <CornerDownRight className="w-2.5 h-2.5 opacity-70" />
               <span>{msg.replyTo.senderName || 'Original Message'}</span>
             </div>

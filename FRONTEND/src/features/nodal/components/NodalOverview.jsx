@@ -6,6 +6,7 @@ import { NodalWelcomeBanner } from './overview/NodalWelcomeBanner.jsx';
 import { NodalUnassignedQueueCard } from './overview/NodalUnassignedQueueCard.jsx';
 import { NodalInstitutionalAllocationCard } from './overview/NodalInstitutionalAllocationCard.jsx';
 import { NodalProcessWorkflowCard } from './overview/NodalProcessWorkflowCard.jsx';
+import { SkeletonStatCards, SkeletonOverviewPanels } from './common/NodalSkeletonLoaders.jsx';
 
 export const NodalOverview = ({ onNavigateChallenges, onNavigateUniversities, nodalDistrict = '' }) => {
   const {
@@ -31,23 +32,31 @@ export const NodalOverview = ({ onNavigateChallenges, onNavigateUniversities, no
         nodalDistrict={nodalDistrict}
       />
 
-      {/* 2. Top Metric KPI Grid */}
-      <NodalStatCards stats={stats} loading={loading} onCardClick={onNavigateChallenges} />
+      {/* 2. Top Metric KPI Grid (Renders SkeletonStatCards during loading) */}
+      {loading ? (
+        <SkeletonStatCards />
+      ) : (
+        <NodalStatCards stats={stats} loading={loading} onCardClick={onNavigateChallenges} />
+      )}
 
-      {/* 3. Operational Dashboards Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-        <NodalUnassignedQueueCard
-          challenges={allChallenges}
-          onNavigateChallenges={onNavigateChallenges}
-          onOpenAssign={handleOpenAssignModal}
-        />
+      {/* 3. Operational Dashboards Grid (Renders SkeletonOverviewPanels during loading) */}
+      {loading ? (
+        <SkeletonOverviewPanels />
+      ) : (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+          <NodalUnassignedQueueCard
+            challenges={allChallenges}
+            onNavigateChallenges={onNavigateChallenges}
+            onOpenAssign={handleOpenAssignModal}
+          />
 
-        <NodalInstitutionalAllocationCard
-          universities={universities}
-          challenges={allChallenges}
-          onNavigateUniversities={onNavigateUniversities}
-        />
-      </div>
+          <NodalInstitutionalAllocationCard
+            universities={universities}
+            challenges={allChallenges}
+            onNavigateUniversities={onNavigateUniversities}
+          />
+        </div>
+      )}
 
       {/* 4. State Triage Workflow Guide */}
       <NodalProcessWorkflowCard />
