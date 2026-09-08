@@ -11,6 +11,8 @@ import { UniversityLayout } from '../../university/components/layout/UniversityL
 import { FacultyLayout } from '../../faculty/components/layout/FacultyLayout.jsx';
 import { NodalPortal } from '../../nodal/NodalPortal.jsx';
 import { DepartmentPortal } from '../../department/DepartmentPortal.jsx';
+import { BlockPortal } from '../../block/BlockPortal.jsx';
+import { TechnicianPortal } from '../../technician/TechnicianPortal.jsx';
 import { IndustrySidebar } from '../../industry/components/layout/IndustrySidebar.jsx';
 import { IndustryDashboard } from '../../industry/components/dashboard/IndustryDashboard.jsx';
 import { RoleProfile } from './RoleProfile.jsx';
@@ -66,6 +68,8 @@ export const DashboardContainer = ({ onNavigate }) => {
   if (urlPortal === 'university' || role === 'UNIVERSITY' || role === 'HEI') return <UniversityLayout user={user} onLogout={handleLogout} />;
   if (role === 'GOVERNMENT' || role === 'ADMIN') return <GovernmentLayout onLogout={handleLogout} />;
   if (urlPortal === 'department' || role === 'DEPARTMENT' || role.includes('DEPT')) return <DepartmentPortal user={user} onLogout={handleLogout} />;
+  if (urlPortal === 'block' || role === 'BLOCK') return <BlockPortal user={user} onLogout={handleLogout} />;
+  if (urlPortal === 'technician' || role === 'TECHNICIAN' || role.includes('TECH')) return <TechnicianPortal user={user} onLogout={handleLogout} />;
 
   return (
     <div

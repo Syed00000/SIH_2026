@@ -4,4 +4,4 @@ export { DepartmentSidebar } from './components/DepartmentSidebar.jsx';
 export { DepartmentOverview } from './components/DepartmentOverview.jsx';
 export { DepartmentProblemsPanel } from './components/DepartmentProblemsPanel.jsx';
 export { DepartmentProblemActionPanel } from './components/DepartmentProblemActionPanel.jsx';
-export { DepartmentProfilePanel } from './components/DepartmentProfilePanel.jsx';
+export { DepartmentTechniciansPanel } from './components/DepartmentTechniciansPanel.jsx';

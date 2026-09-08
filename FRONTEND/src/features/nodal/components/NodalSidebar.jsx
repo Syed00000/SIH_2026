@@ -17,7 +17,7 @@ const NAV_ITEMS = [
   { id: 'dashboard', label: 'Triage Overview', icon: Home },
   { id: 'universities', label: 'HEI Directory', icon: Landmark },
   { id: 'challenges', label: 'Citizen Challenges', icon: Layers },
-  { id: 'district-issues', label: 'District Civic Issues', icon: Building2 },
+  { id: 'district-issues', label: 'Block Directory', icon: Building2 },
   { id: 'profile', label: 'Profile', icon: User }
 ];
 

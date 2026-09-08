@@ -7,8 +7,8 @@ export class DepartmentController {
 
   async getDepartments(req, res, next) {
     try {
-      const { district, category, status } = req.query;
-      const departments = await this.service.listDepartments({ district, category, status });
+      const { district, block, category, status } = req.query;
+      const departments = await this.service.listDepartments({ district, block, category, status });
       return res.status(200).json({
         success: true,
         data: departments,

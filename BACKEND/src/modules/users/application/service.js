@@ -5,6 +5,16 @@ import {
   findDepartmentByIdentifier,
   toDepartmentUserEntity
 } from '../../auth/application/services/department-auth.helper.js';
+import {
+  findBlockById,
+  findBlockByIdentifier,
+  toBlockUserEntity
+} from '../../auth/application/services/block-auth.helper.js';
+import {
+  findTechnicianById,
+  findTechnicianByIdentifier,
+  toTechnicianUserEntity
+} from '../../auth/application/services/technician-auth.helper.js';
 
 export class UserService {
   constructor(userRepository) {
@@ -21,9 +31,14 @@ export class UserService {
 
     if (!user) {
       const dept = await findDepartmentById(id);
-      if (dept) {
-        return toDepartmentUserEntity(dept);
-      }
+      if (dept) return toDepartmentUserEntity(dept);
+
+      const block = await findBlockById(id);
+      if (block) return toBlockUserEntity(block);
+
+      const tech = await findTechnicianById(id);
+      if (tech) return toTechnicianUserEntity(tech);
+
       throw new NotFoundError('User not found');
     }
     return user;
@@ -34,6 +49,12 @@ export class UserService {
     if (!user) {
       const dept = await findDepartmentByIdentifier(email);
       if (dept) return toDepartmentUserEntity(dept);
+
+      const block = await findBlockByIdentifier(email);
+      if (block) return toBlockUserEntity(block);
+
+      const tech = await findTechnicianByIdentifier(email);
+      if (tech) return toTechnicianUserEntity(tech);
     }
     return user;
   }
@@ -49,6 +70,12 @@ export class UserService {
     if (!user) {
       const dept = await findDepartmentByIdentifier(identifier);
       if (dept) return toDepartmentUserEntity(dept);
+
+      const block = await findBlockByIdentifier(identifier);
+      if (block) return toBlockUserEntity(block);
+
+      const tech = await findTechnicianByIdentifier(identifier);
+      if (tech) return toTechnicianUserEntity(tech);
     }
 
     return user;

@@ -23,7 +23,9 @@ export const ProblemEvidenceDossierPanel = ({
   onRequestClarification,
   onDecline,
   onAssignFaculty,
-  onOpenChat
+  onOpenChat,
+  onOpenAssignBlock,
+  problemScope = 'big'
 }) => {
   const [activeTab, setActiveTab] = useState('dossier');
 
@@ -105,6 +107,8 @@ export const ProblemEvidenceDossierPanel = ({
           assignedUni={assignedUni}
           onOpenChat={onOpenChat}
           onOpenTriage={onOpenTriage}
+          onOpenAssignBlock={onOpenAssignBlock}
+          problemScope={problemScope}
           onOpenReassign={onOpenReassign}
           onAccept={onAccept}
           onRequestClarification={onRequestClarification}

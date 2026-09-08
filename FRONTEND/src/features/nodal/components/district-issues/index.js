@@ -4,3 +4,8 @@ export { DistrictIssuesFilterBar } from './DistrictIssuesFilterBar.jsx';
 export { DistrictIssuesTable } from './DistrictIssuesTable.jsx';
 export { DistrictProblemDetailPanel } from './DistrictProblemDetailPanel.jsx';
 export { DistrictDepartmentAssignCard } from './DistrictDepartmentAssignCard.jsx';
+export { DistrictBlocksList } from './DistrictBlocksList.jsx';
+export { AddBlockModal } from './AddBlockModal.jsx';
+export { ViewBlockModal } from './ViewBlockModal.jsx';
+export { EditBlockModal } from './EditBlockModal.jsx';
+export { BlockAssignProblemModal } from './BlockAssignProblemModal.jsx';

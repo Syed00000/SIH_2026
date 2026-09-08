@@ -109,6 +109,10 @@ export const citizenChallengeSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.Mixed,
       default: null
     },
+    assignedTechnician: {
+      type: mongoose.Schema.Types.Mixed,
+      default: null
+    },
     allocatedBy: {
       type: allocatedBySchema,
       default: null
