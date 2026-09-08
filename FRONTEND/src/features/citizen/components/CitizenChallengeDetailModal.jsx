@@ -5,6 +5,7 @@ import { citizenService } from '../services/citizenService.js';
 import { CitizenChallengeEvidenceSection } from './detail/CitizenChallengeEvidenceSection.jsx';
 import { CitizenTimelineMilestones } from './detail/CitizenTimelineMilestones.jsx';
 import { CitizenChallengeActionAlerts } from './detail/CitizenChallengeActionAlerts.jsx';
+import { CitizenAssignedPartyCard } from './detail/CitizenAssignedPartyCard.jsx';
 import { openPdfDocument } from '../../../shared/utils/openPdf.js';
 
 export const CitizenChallengeDetailModal = ({ challenge = null, isOpen, onClose, onChallengeDeleted, onChallengeUpdated }) => {
@@ -52,14 +53,6 @@ export const CitizenChallengeDetailModal = ({ challenge = null, isOpen, onClose,
     } catch (err) { setActionError(err.message || 'Failed to delete problem.'); }
     finally { setIsProcessing(false); }
   };
-
-  const milestones = [
-    { step: 1, title: 'Problem Submitted', description: 'Filed with location & citizen verification.', status: 'COMPLETED' },
-    { step: 2, title: 'Under Review', description: 'Government nodal team evaluating problem scope.', status: challenge.status === 'Submitted' ? 'PENDING' : 'COMPLETED' },
-    { step: 3, title: 'University Assigned', description: 'Assigned to relevant university research lab.', status: assignedUni.name ? 'COMPLETED' : 'PENDING' },
-    { step: 4, title: 'Solution Development', description: 'Faculty and students building targeted solution.', status: isResolved ? 'COMPLETED' : (challenge.status === 'In Progress' ? 'CURRENT' : 'PENDING') },
-    { step: 5, title: 'Field Deployment & Resolved', description: 'Solution deployed on-ground.', status: isResolved ? 'COMPLETED' : 'PENDING' }
-  ];
 
   const formattedDate = challenge.submittedAt
     ? new Date(challenge.submittedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
@@ -136,23 +129,11 @@ export const CitizenChallengeDetailModal = ({ challenge = null, isOpen, onClose,
             </div>
           )}
 
-          {assignedUni.name && !isWithdrawn && (
-            <div className="space-y-1.5 text-xs p-3 rounded-xl bg-slate-50 border border-slate-200/80">
-              <div className="flex items-center justify-between font-bold text-slate-900">
-                <div className="flex items-center space-x-1.5 text-emerald-950">
-                  <Building className="w-4 h-4 text-[#047857]" />
-                  <span>Assigned University</span>
-                </div>
-                <span className="text-[10.5px] text-emerald-800 font-extrabold">{isAccepted ? 'Accepted' : 'Pending Review'}</span>
-              </div>
-              <div className="text-slate-700 text-xs">
-                <span className="font-bold text-slate-900">{assignedUni.name}</span>
-                {assignedUni.department && <span className="text-slate-500"> • {assignedUni.department}</span>}
-              </div>
-            </div>
-          )}
+          {/* Assigned Field Technician, Block Department, or University Card */}
+          <CitizenAssignedPartyCard challenge={challenge} />
 
-          <CitizenTimelineMilestones milestones={milestones} />
+          {/* Dynamic Progress Timeline based on Scope */}
+          <CitizenTimelineMilestones challenge={challenge} />
         </div>
 
         {/* Footer */}

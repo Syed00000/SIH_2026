@@ -5,58 +5,62 @@ import { ProblemEvidenceDossierPanel } from './ProblemEvidenceDossierPanel.jsx';
 import { ClarificationChatModal } from '../../clarification/components/ClarificationChatModal.jsx';
 import { useNodalChallenges } from './challenges/hooks/useNodalChallenges.js';
 import { NodalChallengesHeader } from './challenges/NodalChallengesHeader.jsx';
+import { ProblemScopeTabs } from './challenges/ProblemScopeTabs.jsx';
+import { AssignProblemToBlockModal } from './challenges/AssignProblemToBlockModal.jsx';
 import { NodalChallengesGrid } from './challenges/NodalChallengesGrid.jsx';
 import { NodalChallengesTable } from './challenges/NodalChallengesTable.jsx';
 
 export const NodalChallenges = ({ initialStatusFilter = 'All Status', nodalDistrict = '' }) => {
-  const [viewMode, setViewMode] = useState('table'); // Default View Mode is Table/List View as requested!
+  const [viewMode, setViewMode] = useState('table');
+  const [problemScopeTab, setProblemScopeTab] = useState('big'); // 'big' | 'small'
+  const [isAssignBlockOpen, setIsAssignBlockOpen] = useState(false);
+  const [blockAssignChallenge, setBlockAssignChallenge] = useState(null);
 
   const {
-    searchTerm,
-    setSearchTerm,
-    statusFilter,
-    setStatusFilter,
-    domainFilter,
-    setDomainFilter,
-    districtFilter,
-    setDistrictFilter,
-    priorityFilter,
-    setPriorityFilter,
-    chatChallenge,
-    setChatChallenge,
-    loading,
-    selectedChallenge,
-    setSelectedChallenge,
-    isAssignModalOpen,
-    setIsAssignModalOpen,
-    selectedDossierChallenge,
-    setSelectedDossierChallenge,
-    toastMsg,
-    deletingId,
-    loadChallenges,
-    handleOpenTriage,
-    handleQuickReject,
-    handleQuickDelete,
-    handleTriageSuccess,
-    filteredChallenges
+    searchTerm, setSearchTerm, statusFilter, setStatusFilter, domainFilter, setDomainFilter,
+    districtFilter, setDistrictFilter, priorityFilter, setPriorityFilter,
+    chatChallenge, setChatChallenge, loading, selectedChallenge, setSelectedChallenge,
+    isAssignModalOpen, setIsAssignModalOpen, selectedDossierChallenge, setSelectedDossierChallenge,
+    toastMsg, deletingId, loadChallenges, handleOpenTriage, handleQuickReject, handleQuickDelete,
+    handleTriageSuccess, filteredChallenges
   } = useNodalChallenges({ initialStatusFilter, nodalDistrict });
+
+  const handleOpenAssignBlock = (chl) => {
+    setBlockAssignChallenge(chl);
+    setIsAssignBlockOpen(true);
+  };
+
+  const handleBlockAssignedSuccess = (updated) => {
+    handleTriageSuccess(updated);
+    setSelectedDossierChallenge(null);
+    setIsAssignBlockOpen(false);
+    setBlockAssignChallenge(null);
+  };
 
   if (selectedDossierChallenge) {
     return (
       <div className="space-y-4 select-none text-left animate-in fade-in duration-150">
         <ProblemEvidenceDossierPanel
           challenge={selectedDossierChallenge}
+          problemScope={problemScopeTab}
           onClose={() => setSelectedDossierChallenge(null)}
-          onOpenTriage={() => {
+          onOpenTriage={problemScopeTab === 'big' ? () => {
             setSelectedChallenge(selectedDossierChallenge);
             setIsAssignModalOpen(true);
-          }}
-          onOpenChat={() => {
-            setChatChallenge(selectedDossierChallenge);
-          }}
+          } : null}
+          onOpenAssignBlock={problemScopeTab === 'small' ? () => handleOpenAssignBlock(selectedDossierChallenge) : null}
+          onOpenChat={() => setChatChallenge(selectedDossierChallenge)}
         />
 
-        {/* Triage / Institutional Assignment Modal */}
+        {isAssignBlockOpen && (
+          <AssignProblemToBlockModal
+            isOpen={isAssignBlockOpen}
+            onClose={() => { setIsAssignBlockOpen(false); setBlockAssignChallenge(null); }}
+            challenge={blockAssignChallenge || selectedDossierChallenge}
+            onAssigned={handleBlockAssignedSuccess}
+          />
+        )}
+
         {isAssignModalOpen && (
           <NodalAssignModal
             isOpen={isAssignModalOpen}
@@ -69,7 +73,6 @@ export const NodalChallenges = ({ initialStatusFilter = 'All Status', nodalDistr
           />
         )}
 
-        {/* Direct Citizen / University Clarification Chat */}
         {chatChallenge && (
           <ClarificationChatModal
             isOpen={Boolean(chatChallenge)}
@@ -84,52 +87,42 @@ export const NodalChallenges = ({ initialStatusFilter = 'All Status', nodalDistr
 
   return (
     <div className="space-y-4 select-none text-left animate-in fade-in duration-150">
-      {/* 1. Header Toolbar with Live Sync */}
-      <NodalChallengesHeader
-        onReload={loadChallenges}
-        loading={loading}
-        toastMsg={toastMsg}
-      />
+      <NodalChallengesHeader onReload={loadChallenges} loading={loading} toastMsg={toastMsg} />
 
-      {/* 2. Comprehensive Filter Toolbar with View Mode Toggle */}
+      <ProblemScopeTabs activeTab={problemScopeTab} onTabChange={setProblemScopeTab} totalCount={filteredChallenges.length} />
+
       <NodalFilterBar
-        searchTerm={searchTerm}
-        setSearchTerm={setSearchTerm}
-        statusFilter={statusFilter}
-        setStatusFilter={setStatusFilter}
-        domainFilter={domainFilter}
-        setDomainFilter={setDomainFilter}
-        districtFilter={districtFilter}
-        setDistrictFilter={setDistrictFilter}
-        priorityFilter={priorityFilter}
-        setPriorityFilter={setPriorityFilter}
-        totalCount={filteredChallenges.length}
-        viewMode={viewMode}
-        setViewMode={setViewMode}
+        searchTerm={searchTerm} setSearchTerm={setSearchTerm} statusFilter={statusFilter} setStatusFilter={setStatusFilter}
+        domainFilter={domainFilter} setDomainFilter={setDomainFilter} districtFilter={districtFilter} setDistrictFilter={setDistrictFilter}
+        priorityFilter={priorityFilter} setPriorityFilter={setPriorityFilter} totalCount={filteredChallenges.length}
+        viewMode={viewMode} setViewMode={setViewMode}
       />
 
-      {/* 3. Problem Statements View (Table/List View by default or Grid View) */}
       {viewMode === 'table' ? (
         <NodalChallengesTable
-          loading={loading}
-          challenges={filteredChallenges}
-          deletingId={deletingId}
-          onOpenDossier={setSelectedDossierChallenge}
-          onOpenChat={setChatChallenge}
-          onQuickReject={handleQuickReject}
-          onQuickDelete={handleQuickDelete}
-          onOpenTriage={handleOpenTriage}
+          loading={loading} challenges={filteredChallenges} deletingId={deletingId}
+          onOpenDossier={setSelectedDossierChallenge} onOpenChat={setChatChallenge}
+          onQuickReject={handleQuickReject} onQuickDelete={handleQuickDelete}
+          problemScope={problemScopeTab}
+          onOpenTriage={(chl) => (problemScopeTab === 'small' ? handleOpenAssignBlock(chl) : handleOpenTriage(chl))}
         />
       ) : (
         <NodalChallengesGrid
-          loading={loading}
-          challenges={filteredChallenges}
-          deletingId={deletingId}
-          onOpenDossier={setSelectedDossierChallenge}
-          onOpenChat={setChatChallenge}
-          onQuickReject={handleQuickReject}
-          onQuickDelete={handleQuickDelete}
-          onOpenTriage={handleOpenTriage}
+          loading={loading} challenges={filteredChallenges} deletingId={deletingId}
+          onOpenDossier={setSelectedDossierChallenge} onOpenChat={setChatChallenge}
+          onQuickReject={handleQuickReject} onQuickDelete={handleQuickDelete}
+          problemScope={problemScopeTab}
+          onOpenTriage={(chl) => (problemScopeTab === 'small' ? handleOpenAssignBlock(chl) : handleOpenTriage(chl))}
+        />
+      )}
+
+      {/* Assign Problem to Block Modal */}
+      {isAssignBlockOpen && (
+        <AssignProblemToBlockModal
+          isOpen={isAssignBlockOpen}
+          onClose={() => { setIsAssignBlockOpen(false); setBlockAssignChallenge(null); }}
+          challenge={blockAssignChallenge}
+          onAssigned={handleBlockAssignedSuccess}
         />
       )}
 
@@ -143,7 +136,7 @@ export const NodalChallenges = ({ initialStatusFilter = 'All Status', nodalDistr
         />
       )}
 
-      {/* Direct Citizen / University Clarification Chat */}
+      {/* Direct Clarification Chat */}
       {chatChallenge && (
         <ClarificationChatModal
           isOpen={Boolean(chatChallenge)}

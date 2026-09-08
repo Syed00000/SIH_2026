@@ -1,24 +1,43 @@
 import React from 'react';
-import { CheckCircle2, Loader2 } from 'lucide-react';
+import { CheckCircle2, Loader2, Wrench, GraduationCap } from 'lucide-react';
+import { getChallengeMilestones } from '../helpers/challengeMilestones.helper.js';
 
-export const CitizenTimelineMilestones = ({ milestones = [] }) => {
+export const CitizenTimelineMilestones = ({ milestones, challenge = null }) => {
+  const activeMilestones = (milestones && milestones.length > 0)
+    ? milestones
+    : getChallengeMilestones(challenge || {});
+
+  const isBlockTrack = Boolean(
+    challenge?.assignedDepartment?.name ||
+    challenge?.assignedDepartment?.block ||
+    challenge?.assignedBlock
+  );
+
   return (
-    <div className="space-y-3 pt-1">
+    <div className="space-y-3 pt-1 select-none text-left">
       <div className="flex items-center justify-between">
-        <span className="text-xs font-bold text-slate-900 uppercase tracking-wider">
-          Resolution Progress Timeline
-        </span>
-        <span className="text-[11px] font-semibold text-slate-400">{milestones.length} Stages</span>
+        <div className="flex items-center gap-2">
+          <span className="text-xs font-bold text-slate-900 uppercase tracking-wider">
+            Resolution Progress Timeline
+          </span>
+          <span className={`inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full border ${
+            isBlockTrack ? 'bg-blue-50 text-blue-800 border-blue-200' : 'bg-emerald-50 text-emerald-800 border-emerald-200'
+          }`}>
+            {isBlockTrack ? <Wrench className="w-3 h-3 text-blue-600" /> : <GraduationCap className="w-3 h-3 text-emerald-600" />}
+            <span>{isBlockTrack ? 'Block & Civic Remediation' : 'University R&D Track'}</span>
+          </span>
+        </div>
+        <span className="text-[11px] font-semibold text-slate-400">{activeMilestones.length} Stages</span>
       </div>
 
       <div className="bg-white border border-slate-200/90 rounded-xl p-4 space-y-4 shadow-2xs">
-        {milestones.map((ms, idx) => {
+        {activeMilestones.map((ms, idx) => {
           const isCompleted = ms.status === 'COMPLETED';
           const isCurrent = ms.status === 'CURRENT';
 
           return (
             <div key={idx} className="flex items-start space-x-3 relative">
-              {idx < milestones.length - 1 && (
+              {idx < activeMilestones.length - 1 && (
                 <div
                   className={`absolute left-[13px] top-[26px] bottom-[-16px] w-[2px] ${
                     isCompleted ? 'bg-emerald-600' : 'bg-slate-200'
@@ -31,7 +50,7 @@ export const CitizenTimelineMilestones = ({ milestones = [] }) => {
                   isCompleted
                     ? 'bg-emerald-600 text-white shadow-xs'
                     : isCurrent
-                    ? 'bg-[#047857] text-white shadow-sm ring-4 ring-emerald-100'
+                    ? 'bg-[#007A61] text-white shadow-sm ring-4 ring-emerald-100'
                     : 'bg-slate-100 text-slate-400 border border-slate-200'
                 }`}
               >
@@ -70,3 +89,4 @@ export const CitizenTimelineMilestones = ({ milestones = [] }) => {
 };
 
 export default CitizenTimelineMilestones;
+

@@ -15,6 +15,8 @@ import { UniversityLayout } from '../features/university/components/layout/Unive
 import { FacultyLayout } from '../features/faculty/components/layout/FacultyLayout.jsx';
 import { GovernmentLayout } from '../features/government/components/layout/GovernmentLayout.jsx';
 import { DepartmentPortal } from '../features/department/DepartmentPortal.jsx';
+import { BlockPortal } from '../features/block/BlockPortal.jsx';
+import { TechnicianPortal } from '../features/technician/TechnicianPortal.jsx';
 import { LandingPage } from '../features/landing/components/LandingPage.jsx';
 import { AboutPage } from '../features/landing/components/AboutPage.jsx';
 import { ImpactPage } from '../features/landing/components/ImpactPage.jsx';
@@ -33,20 +35,14 @@ export function Router() {
       const params = Object.fromEntries(new URLSearchParams(window.location.search));
       setQueryParams(params);
     };
-
     window.addEventListener('popstate', handlePopState);
     handlePopState();
-
     return () => window.removeEventListener('popstate', handlePopState);
   }, []);
 
   const navigate = (path, searchObj) => {
-    let url = path;
-    if (searchObj) {
-      const searchStr = new URLSearchParams(searchObj).toString();
-      url = `${path}?${searchStr}`;
-    }
-    window.history.pushState({}, '', url);
+    const searchStr = searchObj ? `?${new URLSearchParams(searchObj).toString()}` : '';
+    window.history.pushState({}, '', `${path}${searchStr}`);
     setCurrentPath(path);
     setQueryParams(searchObj || {});
   };
@@ -56,16 +52,11 @@ export function Router() {
     navigate('/login');
   };
 
-  // Show loading indicator during initial auth resolution
   if (loading) {
     return (
       <RootLayout>
         <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
           <div className="flex items-center space-x-3 text-slate-600 font-semibold text-sm">
-            <svg className="animate-spin h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24">
-              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-            </svg>
             <span>Authenticating JoharSetu session...</span>
           </div>
         </div>
@@ -75,61 +66,32 @@ export function Router() {
 
   const renderComponent = () => {
     const publicRoutes = [
-      '/',
-      '/landing',
-      '/about',
-      '/impact',
-      '/industry',
-      '/institutions',
-      '/contact',
-      '/login',
-      '/register',
-      '/register/industry',
-      '/apply-industry',
-      '/forgot-password',
-      '/reset-password',
-      '/verify-email'
+      '/', '/landing', '/about', '/impact', '/industry', '/institutions', '/contact',
+      '/login', '/register', '/register/industry', '/apply-industry',
+      '/forgot-password', '/reset-password', '/verify-email'
     ];
 
     if (publicRoutes.includes(currentPath)) {
-      if (isAuthenticated) {
-        return <DashboardContainer onNavigate={navigate} />;
-      }
-
+      if (isAuthenticated) return <DashboardContainer onNavigate={navigate} />;
       switch (currentPath) {
         case '/':
-        case '/landing':
-          return <LandingPage onNavigate={navigate} />;
-        case '/about':
-          return <AboutPage onNavigate={navigate} />;
-        case '/impact':
-          return <ImpactPage onNavigate={navigate} />;
-        case '/industry':
-          return <IndustryLandingPage onNavigate={navigate} />;
-        case '/institutions':
-          return <InstitutionsPage onNavigate={navigate} />;
-        case '/contact':
-          return <ContactPage onNavigate={navigate} />;
-        case '/login':
-          return <LoginForm onNavigate={navigate} />;
-        case '/register':
-          return <RegisterForm onNavigate={navigate} />;
+        case '/landing': return <LandingPage onNavigate={navigate} />;
+        case '/about': return <AboutPage onNavigate={navigate} />;
+        case '/impact': return <ImpactPage onNavigate={navigate} />;
+        case '/industry': return <IndustryLandingPage onNavigate={navigate} />;
+        case '/institutions': return <InstitutionsPage onNavigate={navigate} />;
+        case '/contact': return <ContactPage onNavigate={navigate} />;
+        case '/login': return <LoginForm onNavigate={navigate} />;
+        case '/register': return <RegisterForm onNavigate={navigate} />;
         case '/register/industry':
-        case '/apply-industry':
-          return <IndustryRegistrationPage onNavigate={navigate} />;
-        case '/forgot-password':
-          return <ForgotPassword onNavigate={navigate} />;
-        case '/reset-password':
-          return <ResetPassword emailQuery={queryParams.email} onNavigate={navigate} />;
-        case '/verify-email':
-          return <VerifyEmail emailQuery={queryParams.email} onNavigate={navigate} />;
-        default:
-          return <LoginForm onNavigate={navigate} />;
+        case '/apply-industry': return <IndustryRegistrationPage onNavigate={navigate} />;
+        case '/forgot-password': return <ForgotPassword onNavigate={navigate} />;
+        case '/reset-password': return <ResetPassword emailQuery={queryParams.email} onNavigate={navigate} />;
+        case '/verify-email': return <VerifyEmail emailQuery={queryParams.email} onNavigate={navigate} />;
+        default: return <LoginForm onNavigate={navigate} />;
       }
     }
 
-    // 2. PROTECTED DEDICATED PORTAL ROUTES
-    // (a) Citizen Portal
     if (currentPath === '/citizen' || currentPath === '/citizen-portal') {
       return (
         <ProtectedRoute allowedRoles={['CITIZEN', 'GOVERNMENT', 'ADMIN']} onNavigate={navigate}>
@@ -138,7 +100,6 @@ export function Router() {
       );
     }
 
-    // (b) Nodal Officer Portal
     if (currentPath === '/nodal' || currentPath === '/nodal-portal') {
       return (
         <ProtectedRoute allowedRoles={['NODAL', 'GOVERNMENT', 'ADMIN']} onNavigate={navigate}>
@@ -147,7 +108,6 @@ export function Router() {
       );
     }
 
-    // (c) Faculty Portal
     if (currentPath === '/faculty' || currentPath === '/faculty-portal') {
       return (
         <ProtectedRoute allowedRoles={['FACULTY', 'UNIVERSITY', 'GOVERNMENT', 'ADMIN']} onNavigate={navigate}>
@@ -156,7 +116,6 @@ export function Router() {
       );
     }
 
-    // (d) University / HEI Portal
     if (currentPath === '/university' || currentPath === '/hei' || currentPath === '/university-portal') {
       return (
         <ProtectedRoute allowedRoles={['UNIVERSITY', 'HEI', 'GOVERNMENT', 'ADMIN']} onNavigate={navigate}>
@@ -165,7 +124,6 @@ export function Router() {
       );
     }
 
-    // (d) Government Admin Console
     if (currentPath === '/government' || currentPath === '/admin' || currentPath === '/admin-portal') {
       return (
         <ProtectedRoute allowedRoles={['GOVERNMENT', 'ADMIN', 'SUPER_ADMIN']} onNavigate={navigate}>
@@ -174,7 +132,6 @@ export function Router() {
       );
     }
 
-    // (e) Department Authority Portal
     if (currentPath === '/department' || currentPath === '/department-portal') {
       return (
         <ProtectedRoute allowedRoles={['DEPARTMENT', 'GOVERNMENT', 'ADMIN', 'NODAL', 'CITIZEN']} onNavigate={navigate}>
@@ -183,7 +140,22 @@ export function Router() {
       );
     }
 
-    // 3. DEFAULT PROTECTED ROUTE (/dashboard, /, /profile)
+    if (currentPath === '/block' || currentPath === '/block-portal') {
+      return (
+        <ProtectedRoute allowedRoles={['GOVERNMENT', 'ADMIN', 'NODAL', 'DEPARTMENT', 'CITIZEN', 'BLOCK']} onNavigate={navigate}>
+          <BlockPortal user={user} onLogout={handleLogout} />
+        </ProtectedRoute>
+      );
+    }
+
+    if (currentPath === '/technician' || currentPath === '/technician-portal') {
+      return (
+        <ProtectedRoute allowedRoles={['TECHNICIAN', 'GOVERNMENT', 'ADMIN', 'DEPARTMENT']} onNavigate={navigate}>
+          <TechnicianPortal user={user} onLogout={handleLogout} />
+        </ProtectedRoute>
+      );
+    }
+
     return (
       <ProtectedRoute onNavigate={navigate}>
         <DashboardContainer onNavigate={navigate} />

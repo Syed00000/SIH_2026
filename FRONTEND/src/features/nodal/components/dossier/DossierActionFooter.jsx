@@ -1,5 +1,5 @@
 import React from 'react';
-import { Send, MessageSquare, Check, X, UserPlus, HelpCircle, GraduationCap } from 'lucide-react';
+import { Send, MessageSquare, Check, HelpCircle, GraduationCap, Building2 } from 'lucide-react';
 
 export const DossierActionFooter = ({
   isUniversityView,
@@ -11,6 +11,8 @@ export const DossierActionFooter = ({
   onAssignFaculty,
   onOpenChat,
   onOpenTriage,
+  onOpenAssignBlock,
+  problemScope = 'big',
   onClose,
   challenge = {}
 }) => {
@@ -66,22 +68,37 @@ export const DossierActionFooter = ({
             )}
           </>
         ) : (
-          onOpenTriage && (
-            challenge?.status === 'Withdrawn' ? (
-              <span className="text-xs font-bold text-slate-400 bg-slate-100 px-3 py-2 rounded-md border border-slate-200 cursor-not-allowed">
-                Withdrawn (Cannot Allocate)
-              </span>
-            ) : (
+          <>
+            {/* Small Problems ONLY: Assign to Administrative Block */}
+            {problemScope === 'small' && onOpenAssignBlock && (
               <button
                 type="button"
-                onClick={onOpenTriage}
-                className="flex items-center space-x-1.5 px-4 py-2 rounded-md bg-[#047857] hover:bg-[#064e3b] text-white text-xs font-bold cursor-pointer shadow-xs transition-all"
+                onClick={onOpenAssignBlock}
+                className="flex items-center space-x-1.5 px-4 py-2 rounded-xl bg-[#007A61] hover:bg-[#006651] text-white text-xs font-bold cursor-pointer shadow-xs transition-all"
               >
-                <Send className="w-3.5 h-3.5 text-emerald-200" />
-                <span>{challenge?.assignedUniversity?.id ? 'Reassign Problem' : 'Allocate to University'}</span>
+                <Building2 className="w-3.5 h-3.5 text-emerald-200" />
+                <span>Assign to Block</span>
               </button>
-            )
-          )
+            )}
+
+            {/* Big Problems ONLY: Allocate to University */}
+            {problemScope !== 'small' && onOpenTriage && (
+              challenge?.status === 'Withdrawn' ? (
+                <span className="text-xs font-bold text-slate-400 bg-slate-100 px-3 py-2 rounded-md border border-slate-200 cursor-not-allowed">
+                  Withdrawn (Cannot Allocate)
+                </span>
+              ) : (
+                <button
+                  type="button"
+                  onClick={onOpenTriage}
+                  className="flex items-center space-x-1.5 px-4 py-2 rounded-md bg-[#047857] hover:bg-[#064e3b] text-white text-xs font-bold cursor-pointer shadow-xs transition-all"
+                >
+                  <Send className="w-3.5 h-3.5 text-emerald-200" />
+                  <span>{challenge?.assignedUniversity?.id ? 'Reassign Problem' : 'Allocate to University'}</span>
+                </button>
+              )
+            )}
+          </>
         )}
       </div>
     </div>

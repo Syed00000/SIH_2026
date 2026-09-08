@@ -15,10 +15,57 @@ export class DepartmentService {
     return candidate;
   }
 
+  async ensureDefaultBlockDepartments(blockName = 'Kanke Block', district = 'Ranchi') {
+    try {
+      const existing = await this.repo.find({ block: new RegExp(`^${blockName.trim()}$`, 'i') });
+      if (existing.length === 0) {
+        const defaults = [
+          { name: 'Drinking Water & Sanitation', code: 'DWSD', email: 'water.kanke@jharkhand.gov.in', phone: '+91 94311 00101' },
+          { name: 'Electricity & Power', code: 'JBVNL', email: 'electric.kanke@jharkhand.gov.in', phone: '+91 94311 00102' },
+          { name: 'Roads & Rural Works', code: 'RWD', email: 'roads.kanke@jharkhand.gov.in', phone: '+91 94311 00103' },
+          { name: 'Sanitation & Solid Waste', code: 'SWM', email: 'waste.kanke@jharkhand.gov.in', phone: '+91 94311 00104' },
+          { name: 'Public Health & Anganwadi', code: 'HLTH', email: 'health.kanke@jharkhand.gov.in', phone: '+91 94311 00105' }
+        ];
+        for (let i = 0; i < defaults.length; i++) {
+          const d = defaults[i];
+          const deptId = `DEPT-KNK-0${i + 1}`;
+          await this.repo.create({
+            deptId,
+            name: `${d.name} (${blockName})`,
+            code: d.code,
+            category: 'Block / Tehsil Office',
+            district,
+            block: blockName,
+            headName: `Incharge - ${d.name}`,
+            headRole: 'Block Departmental Officer',
+            headEmail: d.email,
+            headPhone: d.phone,
+            credentials: {
+              loginId: deptId,
+              loginEmail: d.email,
+              password: 'Dept@JH2026!',
+              generatedPassword: 'Dept@JH2026!'
+            },
+            status: 'Active'
+          });
+        }
+      }
+    } catch (err) {
+      console.warn('Auto-seed block departments error:', err.message);
+    }
+  }
+
   async listDepartments(filters = {}) {
+    if (filters.block && filters.block !== 'all') {
+      await this.ensureDefaultBlockDepartments(filters.block, filters.district || 'Ranchi');
+    }
+
     const mongoFilter = {};
     if (filters.district && filters.district !== 'all' && filters.district !== 'All Districts') {
       mongoFilter.district = new RegExp(`^${filters.district.trim()}$`, 'i');
+    }
+    if (filters.block && filters.block !== 'all') {
+      mongoFilter.block = new RegExp(`^${filters.block.trim()}$`, 'i');
     }
     if (filters.category && filters.category !== 'all') {
       mongoFilter.category = filters.category;
@@ -39,13 +86,7 @@ export class DepartmentService {
 
       const matchedOfficers = allAdmins.filter((a) => {
         const adminDept = (a.assignedDepartment || '').toLowerCase().replace(/&/g, 'and').trim();
-        if (adminDept && (adminDept.includes(deptCodeLower) || deptNameLower.includes(adminDept) || adminDept.includes(deptNameLower))) {
-          return true;
-        }
-        if (dept.category === 'Gram Panchayat' && dept.district?.toLowerCase() === a.district?.toLowerCase()) {
-          return true;
-        }
-        return false;
+        return adminDept && (adminDept.includes(deptCodeLower) || deptNameLower.includes(adminDept) || adminDept.includes(deptNameLower));
       });
 
       const matchedChallenges = allChallenges.filter((c) => {
@@ -57,27 +98,13 @@ export class DepartmentService {
           return true;
         }
         const domainClean = (c.domain || '').toLowerCase().replace(/&/g, 'and').trim();
-        if (domainClean && (domainClean.includes(deptCodeLower) || deptNameLower.includes(domainClean) || domainClean.includes(deptNameLower))) {
-          return true;
-        }
-        if (dept.category === 'Gram Panchayat' && dept.district?.toLowerCase() === c.district?.toLowerCase()) {
-          return true;
-        }
-        return false;
+        return domainClean && (domainClean.includes(deptCodeLower) || deptNameLower.includes(domainClean) || domainClean.includes(deptNameLower));
       });
 
-      const deptDigits = (dept.deptId || '').replace(/\D/g, '') || '2026';
-      const defaultPass = dept.credentials?.password || dept.credentials?.generatedPassword || `Dept@JH${deptDigits}!`;
-      const loginEmail = dept.credentials?.loginEmail || dept.headEmail || `${(dept.deptId || 'dept').toLowerCase()}@jharkhand.gov.in`;
-
+      const raw = typeof dept?.toJSON === 'function' ? dept.toJSON() : dept;
       return {
-        ...dept,
-        credentials: {
-          loginId: dept.credentials?.loginId || dept.deptId,
-          loginEmail,
-          password: defaultPass,
-          generatedPassword: defaultPass
-        },
+        ...raw,
+        id: raw._id?.toString() || raw.id || raw.deptId,
         officers: matchedOfficers,
         problems: matchedChallenges,
         officersCount: matchedOfficers.length,
@@ -99,9 +126,9 @@ export class DepartmentService {
       deptId,
       name: data.name.trim(),
       code,
-      category: data.category || 'District Department',
+      category: data.category || 'Block / Tehsil Office',
       headName: data.headName?.trim() || null,
-      headRole: data.headRole?.trim() || 'Department Head',
+      headRole: data.headRole?.trim() || 'Department Officer',
       headEmail: data.headEmail?.trim() || null,
       headPhone: data.headPhone?.trim() || null,
       district: data.district?.trim() || 'Ranchi',
@@ -109,7 +136,7 @@ export class DepartmentService {
       panchayat: data.panchayat?.trim() || '',
       description: data.description?.trim() || '',
       credentials: {
-        loginId: deptId,
+        loginId: data.loginId?.trim() || deptId,
         loginEmail,
         password,
         generatedPassword: password
@@ -130,12 +157,12 @@ export class DepartmentService {
   }
 
   async updateDepartment(id, updates) {
-    if (updates.password || updates.headEmail) {
+    if (updates.password || updates.headEmail || updates.loginId) {
       const existing = await this.repo.findById(id);
       const prevCreds = existing?.credentials || {};
-      const newPass = updates.password?.trim() || prevCreds.password || prevCreds.generatedPassword;
+      const newPass = updates.password?.trim() || prevCreds.password || prevCreds.generatedPassword || 'Dept@JH2026!';
       updates.credentials = {
-        loginId: prevCreds.loginId || existing?.deptId || id,
+        loginId: updates.loginId?.trim() || prevCreds.loginId || existing?.deptId || id,
         loginEmail: updates.headEmail?.trim() || prevCreds.loginEmail,
         password: newPass,
         generatedPassword: newPass

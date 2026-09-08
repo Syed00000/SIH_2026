@@ -243,15 +243,9 @@ export const CitizenMyChallenges = ({
                               </div>
                               <div className="text-[10px] text-slate-500 mt-1 flex items-center flex-wrap gap-1.5">
                                 <span>Code: {ch.challengeId}</span>
-                                {ch.priority && (
-                                  <span className={`text-[9px] font-extrabold uppercase tracking-wide ${
-                                    ch.priority === 'Critical' ? 'text-rose-600' : 
-                                    ch.priority === 'High' ? 'text-orange-600' : 
-                                    'text-slate-500'
-                                  }`}>
-                                    {ch.priority}
-                                  </span>
-                                )}
+                                {ch.priority && <span className={`text-[9px] font-extrabold uppercase ${ch.priority === 'Critical' ? 'text-rose-600' : ch.priority === 'High' ? 'text-orange-600' : 'text-slate-500'}`}>{ch.priority}</span>}
+                                {ch.assignedTechnician?.name && <span className="text-[9px] font-bold text-blue-700 bg-blue-50 border border-blue-200 px-1.5 py-0.2 rounded">Tech: {ch.assignedTechnician.name}</span>}
+                                {ch.assignedDepartment?.block && !ch.assignedTechnician?.name && <span className="text-[9px] font-bold text-emerald-800 bg-emerald-50 border border-emerald-200 px-1.5 py-0.2 rounded">{ch.assignedDepartment.block}</span>}
                               </div>
                             </div>
                           </div>
