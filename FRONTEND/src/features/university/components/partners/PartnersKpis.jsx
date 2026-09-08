@@ -25,7 +25,7 @@ export const PartnersKpis = ({
   return (
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5 select-none">
       {/* Total Partners */}
-      <div className="bg-white border border-slate-200/90 rounded-2xl p-4 flex items-center justify-between shadow-2xs hover:border-[#007A61]/40 transition-all">
+      <div className="bg-white border border-slate-200/90 rounded-none p-4 flex items-center justify-between shadow-2xs hover:border-[#007A61]/40 transition-all">
         <div className="space-y-1">
           <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 block">
             Total Partners
@@ -35,13 +35,13 @@ export const PartnersKpis = ({
             <span>Govt Verified DB</span>
           </span>
         </div>
-        <div className="w-11 h-11 rounded-xl bg-emerald-50 border border-emerald-100 text-[#007A61] flex items-center justify-center shrink-0 shadow-2xs">
-          <Building2 className="w-5 h-5" />
+        <div className="text-[#007A61] flex items-center justify-center shrink-0">
+          <Building2 className="w-6 h-6" />
         </div>
       </div>
 
       {/* Active Partners */}
-      <div className="bg-white border border-slate-200/90 rounded-2xl p-4 flex items-center justify-between shadow-2xs hover:border-[#007A61]/40 transition-all">
+      <div className="bg-white border border-slate-200/90 rounded-none p-4 flex items-center justify-between shadow-2xs hover:border-[#007A61]/40 transition-all">
         <div className="space-y-1">
           <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 block">
             Active Collaborations
@@ -51,13 +51,13 @@ export const PartnersKpis = ({
             <span>Signed MoUs & Grants</span>
           </span>
         </div>
-        <div className="w-11 h-11 rounded-xl bg-[#007A61]/10 border border-[#007A61]/20 text-[#007A61] flex items-center justify-center shrink-0 shadow-2xs">
-          <Handshake className="w-5 h-5" />
+        <div className="text-[#007A61] flex items-center justify-center shrink-0">
+          <Handshake className="w-6 h-6" />
         </div>
       </div>
 
       {/* Pending Requests */}
-      <div className="bg-white border border-slate-200/90 rounded-2xl p-4 flex items-center justify-between shadow-2xs hover:border-amber-300 transition-all">
+      <div className="bg-white border border-slate-200/90 rounded-none p-4 flex items-center justify-between shadow-2xs hover:border-amber-300 transition-all">
         <div className="space-y-1">
           <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 block">
             Requests Dispatched
@@ -67,13 +67,13 @@ export const PartnersKpis = ({
             <span>Under Evaluation</span>
           </span>
         </div>
-        <div className="w-11 h-11 rounded-xl bg-amber-50 border border-amber-200 text-amber-600 flex items-center justify-center shrink-0 shadow-2xs">
-          <Clock className="w-5 h-5" />
+        <div className="text-amber-600 flex items-center justify-center shrink-0">
+          <Clock className="w-6 h-6" />
         </div>
       </div>
 
       {/* CSR Impact */}
-      <div className="bg-white border border-slate-200/90 rounded-2xl p-4 flex items-center justify-between shadow-2xs hover:border-[#007A61]/40 transition-all">
+      <div className="bg-white border border-slate-200/90 rounded-none p-4 flex items-center justify-between shadow-2xs hover:border-[#007A61]/40 transition-all">
         <div className="space-y-1">
           <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 block">
             CSR Capital Pool
@@ -83,8 +83,8 @@ export const PartnersKpis = ({
             <span>R&D Grant Fund</span>
           </span>
         </div>
-        <div className="w-11 h-11 rounded-xl bg-emerald-50 border border-emerald-100 text-[#007A61] flex items-center justify-center shrink-0 shadow-2xs">
-          <TrendingUp className="w-5 h-5" />
+        <div className="text-[#007A61] flex items-center justify-center shrink-0">
+          <TrendingUp className="w-6 h-6" />
         </div>
       </div>
     </div>

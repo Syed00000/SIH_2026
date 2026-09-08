@@ -76,12 +76,9 @@ export const UniversitySidebar = ({
         <div className="flex items-center justify-between pb-3 px-1 border-b border-slate-100">
           {isSidebarExpanded && (
             <div className="min-w-0 pr-2">
-              <div className="text-xs font-black text-slate-900 truncate uppercase tracking-tight font-sans">
+              <h3 className="font-extrabold text-[12px] text-slate-800 uppercase tracking-widest leading-none">
                 {universityName}
-              </div>
-              <div className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mt-0.5">
-                HEI PORTAL NODE
-              </div>
+              </h3>
             </div>
           )}
           <button

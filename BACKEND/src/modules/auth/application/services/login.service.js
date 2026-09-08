@@ -79,19 +79,21 @@ export class LoginService {
     if (!isMatch && ['NODAL', 'GOVERNMENT', 'ADMIN'].includes(user.role)) {
       try {
         let plainCandidate = null;
+        const userEmailStr = user.email || '';
+        
         if (
           config.GOVT_ADMIN_EMAIL &&
-          user.email.toLowerCase() === config.GOVT_ADMIN_EMAIL.toLowerCase()
+          userEmailStr.toLowerCase() === config.GOVT_ADMIN_EMAIL.toLowerCase()
         ) {
           plainCandidate = config.GOVT_ADMIN_PASSWORD || 'Admin@123456';
         }
 
-        if (!plainCandidate) {
+        if (!plainCandidate && userEmailStr) {
           const MongooseAdmin = (await import('../../../government/admins/infrastructure/model.js')).default;
           const adminDoc = await MongooseAdmin.findOne({
             $or: [
-              { email: user.email.toLowerCase() },
-              { username: user.email.split('@')[0].toLowerCase() }
+              { email: userEmailStr.toLowerCase() },
+              { username: userEmailStr.split('@')[0].toLowerCase() }
             ]
           });
           if (adminDoc?.password) plainCandidate = adminDoc.password.trim();

@@ -13,29 +13,29 @@ export const ApprovalsTableHeader = ({
         <h3 className="text-sm font-black text-slate-900 tracking-tight">
           Pending Nodal Approvals & Triage
         </h3>
-        <span className="text-[10.5px] font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200">
+        <span className="text-[10.5px] font-bold text-[#007A61]">
           Action Required
         </span>
       </div>
 
       <div className="flex items-center justify-between sm:justify-end gap-2 overflow-x-auto">
-        <div className="flex items-center bg-slate-100/80 p-0.5 rounded-lg border border-slate-200/80 text-xs font-semibold">
+        <div className="flex items-center bg-slate-50 p-0.5 rounded-none border border-slate-200 text-xs font-semibold">
           {tabs.map((tab) => {
             const isActive = activeTab === tab.id;
             return (
               <button
                 key={tab.id}
                 onClick={() => onTabChange(tab.id)}
-                className={`px-2.5 py-1 rounded-md transition-all cursor-pointer text-[11px] ${
+                className={`px-3 py-1.5 rounded-none transition-colors cursor-pointer text-[11px] font-bold ${
                   isActive
-                    ? 'bg-white text-slate-900 font-bold shadow-2xs'
-                    : 'text-slate-600 hover:text-slate-900'
+                    ? 'bg-[#007A61] text-white'
+                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
                 }`}
               >
                 <span>{tab.label}</span>
                 {typeof tab.count === 'number' && (
-                  <span className={`ml-1 text-[10px] px-1.5 py-0.2 rounded-md ${
-                    isActive ? 'bg-slate-100 text-slate-900 font-extrabold' : 'bg-slate-200/70 text-slate-600'
+                  <span className={`ml-1.5 text-[10px] px-1 py-0.5 rounded-none ${
+                    isActive ? 'bg-[#00604c] text-white' : 'bg-slate-200/50 text-slate-500'
                   }`}>
                     {tab.count}
                   </span>
@@ -48,7 +48,7 @@ export const ApprovalsTableHeader = ({
         {onViewAll && (
           <button
             onClick={onViewAll}
-            className="flex items-center space-x-1 text-xs font-bold text-slate-700 hover:text-slate-900 transition-colors shrink-0 ml-1 cursor-pointer"
+            className="flex items-center space-x-1 text-[11px] font-bold text-[#007A61] hover:text-[#00604c] transition-colors shrink-0 ml-1 cursor-pointer"
           >
             <span>View All</span>
             <ArrowRight className="w-3 h-3" />

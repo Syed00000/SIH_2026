@@ -19,8 +19,8 @@ export const UniversityProblemsList = ({
 
   if (challenges.length === 0) {
     return (
-      <div className="bg-white border border-slate-200 rounded-md p-12 text-center text-slate-500 space-y-2 shadow-2xs">
-        <Layers className="w-10 h-10 text-slate-300 mx-auto" />
+      <div className="bg-white border border-slate-100 rounded-none p-12 text-center text-slate-500 space-y-2 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.03)]">
+        <Layers className="w-10 h-10 text-[#007A61] mx-auto" />
         <h3 className="text-sm font-bold text-slate-900">No allocated problems match filter</h3>
         <p className="text-xs text-slate-400">Allocate new problems from the button above or change filter options.</p>
       </div>

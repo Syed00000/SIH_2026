@@ -35,9 +35,6 @@ export const ChallengesTableRow = ({
 
       <td className="py-3 px-3">
         <div className="flex items-center space-x-2.5">
-          <div className="w-8 h-8 rounded-xl bg-emerald-50 text-[#007A61] font-black text-xs flex items-center justify-center shrink-0 border border-emerald-200 shadow-2xs">
-            {firstLetter}
-          </div>
           <div className="min-w-0 max-w-[210px]">
             <div
               className="font-extrabold text-slate-900 group-hover:text-[#007A61] text-xs truncate leading-tight transition-colors"
@@ -65,7 +62,7 @@ export const ChallengesTableRow = ({
         {c.assignedFaculty?.name ? (
           <div className="text-xs">
             <div className="font-bold text-slate-900 truncate max-w-[130px]">{c.assignedFaculty.name}</div>
-            <div className="text-[10px] text-slate-400 truncate max-w-[130px]">{c.assignedFaculty.department || 'Faculty Mentor'}</div>
+            <div className="text-[10px] text-[#007A61] font-semibold mt-0.5 truncate max-w-[130px]">{c.assignedFaculty.department || 'Faculty Mentor'}</div>
           </div>
         ) : (
           <div className="text-xs">
@@ -75,27 +72,9 @@ export const ChallengesTableRow = ({
         )}
       </td>
 
-      <td className="py-3 px-3">
-        <div className="flex flex-wrap gap-1 max-w-[170px]">
-          {skills.slice(0, 2).map((skill, idx) => (
-            <span
-              key={idx}
-              className="text-[9.5px] font-bold px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 border border-slate-200 truncate max-w-[110px]"
-            >
-              {skill}
-            </span>
-          ))}
-          {skills.length > 2 && (
-            <span className="text-[9.5px] font-bold px-1.5 py-0.5 rounded-md bg-slate-50 text-slate-400 border border-slate-100">
-              +{skills.length - 2}
-            </span>
-          )}
-        </div>
-      </td>
-
       <td className="py-3 px-3 whitespace-nowrap">
         <span
-          className={`inline-flex items-center space-x-1.5 text-[11px] font-extrabold ${
+          className={`text-[11px] font-extrabold ${
             c.priority === 'High' || c.priority === 'Critical'
               ? 'text-rose-600'
               : c.priority === 'Low'
@@ -103,52 +82,28 @@ export const ChallengesTableRow = ({
               : 'text-amber-600'
           }`}
         >
-          <span
-            className={`w-1.5 h-1.5 rounded-full ${
-              c.priority === 'High' || c.priority === 'Critical'
-                ? 'bg-rose-500'
-                : c.priority === 'Low'
-                ? 'bg-slate-400'
-                : 'bg-amber-500'
-            }`}
-          />
-          <span>{c.priority || 'Medium'}</span>
+          {c.priority || 'Medium'}
         </span>
       </td>
 
       <td className="py-3 px-3 whitespace-nowrap">
-        <span
-          className={`inline-flex items-center space-x-1.5 text-[11px] font-extrabold ${
-            normStatus === 'Resolved & Deployed'
-              ? 'text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200'
-              : normStatus === 'Accepted'
-              ? 'text-[#007A61]'
-              : normStatus === 'Clarified'
-              ? 'text-emerald-700'
-              : normStatus === 'Clarification Requested'
-              ? 'text-amber-700'
-              : normStatus === 'Pending'
-              ? 'text-slate-600'
-              : 'text-rose-600'
-          }`}
-        >
-          <span
-            className={`w-1.5 h-1.5 rounded-full ${
-              normStatus === 'Resolved & Deployed'
-                ? 'bg-emerald-600'
-                : normStatus === 'Accepted'
-                ? 'bg-[#007A61]'
-                : normStatus === 'Clarified'
-                ? 'bg-emerald-500'
-                : normStatus === 'Clarification Requested'
-                ? 'bg-amber-500'
-                : normStatus === 'Pending'
-                ? 'bg-slate-400 animate-pulse'
-                : 'bg-rose-500'
-            }`}
-          />
-          <span>{normStatus === 'Resolved & Deployed' ? '✓ Deployed & Solved' : normStatus}</span>
-        </span>
+        {normStatus === 'Accepted' || normStatus === 'Resolved & Deployed' ? (
+          <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-[#e6f2ef] text-[#007A61] text-[10px] font-bold">
+            {normStatus === 'Resolved & Deployed' ? 'Deployed & Solved' : 'Completed'}
+          </span>
+        ) : normStatus === 'Pending' ? (
+          <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 text-[10px] font-bold">
+            Pending
+          </span>
+        ) : normStatus === 'Clarification Requested' || normStatus === 'Clarified' ? (
+          <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 text-[10px] font-bold">
+            {normStatus === 'Clarified' ? 'Clarified' : 'Active'}
+          </span>
+        ) : (
+          <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-rose-100 text-rose-600 text-[10px] font-bold">
+            {normStatus}
+          </span>
+        )}
       </td>
 
       <td className="py-3 px-3 text-right whitespace-nowrap" onClick={(e) => e.stopPropagation()}>

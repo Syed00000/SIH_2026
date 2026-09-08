@@ -32,7 +32,7 @@ export const FacultyTableRow = ({
 
       <td className="py-3 px-3">
         <div className="flex items-center space-x-2.5">
-          <div className="w-8 h-8 rounded-xl bg-emerald-50 text-[#007A61] font-black text-xs flex items-center justify-center shrink-0 border border-emerald-200 shadow-2xs">
+          <div className="text-[16px] font-black text-[#007A61] flex items-center justify-center shrink-0">
             {firstLetter}
           </div>
           <div className="min-w-0 max-w-[210px]">
@@ -70,7 +70,7 @@ export const FacultyTableRow = ({
           {specs.slice(0, 2).map((spec, sIdx) => (
             <span
               key={sIdx}
-              className="px-2 py-0.5 bg-slate-50 border border-slate-200 text-slate-700 rounded-md text-[10px] font-semibold"
+              className="px-2 py-0.5 text-slate-700 text-[10px] font-bold"
             >
               {spec}
             </span>
@@ -85,37 +85,24 @@ export const FacultyTableRow = ({
 
       <td className="py-3 px-3 whitespace-nowrap">
         <span
-          className={`inline-flex items-center space-x-1.5 text-[11px] font-bold ${
+          className={`text-[11px] font-bold ${
             avail === 'Available' ? 'text-[#007A61]' :
             avail === 'In Project' ? 'text-amber-700' :
             avail === 'On Leave' ? 'text-purple-700' : 'text-slate-600'
           }`}
         >
-          <span
-            className={`w-1.5 h-1.5 rounded-full ${
-              avail === 'Available' ? 'bg-[#007A61]' :
-              avail === 'In Project' ? 'bg-amber-500' :
-              avail === 'On Leave' ? 'bg-purple-500' : 'bg-slate-400'
-            }`}
-          />
-          <span>{avail}</span>
+          {avail}
         </span>
       </td>
 
       <td className="py-3 px-3 whitespace-nowrap">
         <span
-          className={`inline-flex items-center space-x-1.5 text-[11px] font-extrabold ${
+          className={`text-[11px] font-extrabold ${
             status === 'Active' ? 'text-[#007A61]' :
             status === 'On Leave' ? 'text-amber-700' : 'text-rose-600'
           }`}
         >
-          <span
-            className={`w-1.5 h-1.5 rounded-full ${
-              status === 'Active' ? 'bg-[#007A61]' :
-              status === 'On Leave' ? 'bg-amber-500' : 'bg-rose-500'
-            }`}
-          />
-          <span>{status}</span>
+          {status}
         </span>
       </td>
 

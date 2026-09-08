@@ -49,40 +49,27 @@ export const UniversityAssignedChallenges = ({
   const paginatedItems = filtered.slice(startIndex, startIndex + itemsPerPage);
 
   return (
-    <div className="border border-slate-200/90 rounded-2xl overflow-hidden flex flex-col w-full shadow-xs select-none bg-white">
+    <div className="bg-white rounded-md border border-slate-200 p-5 shadow-sm hover:shadow-md transition-all flex flex-col w-full select-none">
       {/* Header bar */}
-      <div className="px-5 py-3.5 border-b border-slate-100 flex items-center justify-between bg-gradient-to-r from-emerald-50/50 to-white">
-        <div className="flex items-center space-x-2">
-          <span className="w-2 h-2 rounded-full bg-[#007A61]"></span>
-          <h2 className="text-xs font-extrabold text-slate-900 uppercase tracking-wider">
-            Assigned Grassroots Challenges
-          </h2>
-        </div>
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-[15px] font-extrabold text-slate-800 tracking-tight font-sans">
+          Recent Challenges
+        </h2>
         <button
           onClick={onViewAll}
-          className="text-xs font-bold text-[#007A61] hover:underline cursor-pointer"
+          className="text-[12px] font-bold text-[#007A61] hover:text-[#005a48] transition-colors cursor-pointer"
         >
-          View All ({filtered.length})
+          View all
         </button>
       </div>
 
-      <DashboardChallengesFilters
-        statusFilter={statusFilter}
-        setStatusFilter={setStatusFilter}
-        domainFilter={domainFilter}
-        setDomainFilter={setDomainFilter}
-        districtFilter={districtFilter}
-        setDistrictFilter={setDistrictFilter}
-        searchTerm={searchTerm}
-        setSearchTerm={setSearchTerm}
-        onFilterChange={() => setCurrentPage(1)}
-      />
+
 
       <div className="overflow-x-auto w-full">
         <table className="w-full text-left border-collapse min-w-[850px]">
           <thead>
-            <tr className="border-b border-slate-100 bg-slate-50/60 text-[10.5px] font-extrabold text-slate-400 uppercase tracking-wider select-none">
-              <th className="py-3 px-3 w-[45px] text-center">#</th>
+            <tr className="border-b border-slate-100 text-[13px] font-semibold text-slate-500 tracking-wide select-none">
+              <th className="py-4 px-3 w-[45px] text-center font-semibold">#</th>
               <th className="py-3 px-3 min-w-[220px]">Challenge / Problem</th>
               <th className="py-3 px-3 w-[160px]">Domain & Ground Location</th>
               <th className="py-3 px-3 w-[160px]">Faculty Mentor</th>

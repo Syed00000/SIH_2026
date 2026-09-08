@@ -13,7 +13,7 @@ export const PartnersFilterBar = ({
   onResetFilters
 }) => {
   return (
-    <div className="bg-white border border-slate-200/90 p-3 rounded-2xl shadow-2xs select-none">
+    <div className="bg-white border border-slate-200/90 p-3 rounded-none shadow-2xs select-none">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 items-center">
         {/* Search */}
         <div className="relative">
@@ -22,7 +22,7 @@ export const PartnersFilterBar = ({
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search by company name, sector, domain..."
-            className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 placeholder:text-slate-400 focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#007A61] focus:border-[#007A61] shadow-2xs"
+            className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-none text-xs font-semibold text-slate-900 placeholder:text-slate-400 focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#007A61] focus:border-[#007A61] shadow-2xs"
           />
           <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
         </div>
@@ -32,7 +32,7 @@ export const PartnersFilterBar = ({
           <select
             value={industryFilter}
             onChange={(e) => setIndustryFilter(e.target.value)}
-            className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-800 focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#007A61] focus:border-[#007A61] shadow-2xs cursor-pointer"
+            className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-none text-xs font-semibold text-slate-800 focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#007A61] focus:border-[#007A61] shadow-2xs cursor-pointer"
           >
             <option value="All">All Categories</option>
             <option value="Private Industry">Private Industry</option>
@@ -48,7 +48,7 @@ export const PartnersFilterBar = ({
           <select
             value={supportFilter}
             onChange={(e) => setSupportFilter(e.target.value)}
-            className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-800 focus:bg-white focus:outline-none focus:border-[#007A61] focus:ring-1 focus:ring-[#007A61] shadow-2xs cursor-pointer"
+            className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-none text-xs font-semibold text-slate-800 focus:bg-white focus:outline-none focus:border-[#007A61] focus:ring-1 focus:ring-[#007A61] shadow-2xs cursor-pointer"
           >
             <option value="All">All Support Types</option>
             <option value="Funding">Direct CSR Co-Funding</option>
@@ -63,7 +63,7 @@ export const PartnersFilterBar = ({
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="flex-1 px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-800 focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#007A61] focus:border-[#007A61] shadow-2xs cursor-pointer"
+            className="flex-1 px-3 py-2 bg-slate-50 border border-slate-200 rounded-none text-xs font-semibold text-slate-800 focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#007A61] focus:border-[#007A61] shadow-2xs cursor-pointer"
           >
             <option value="All">All Statuses</option>
             <option value="Active">Active / Verified</option>
@@ -73,7 +73,7 @@ export const PartnersFilterBar = ({
           <button
             onClick={onResetFilters}
             title="Reset Filters"
-            className="p-2 border border-slate-200 hover:bg-slate-50 text-slate-600 rounded-xl flex items-center justify-center cursor-pointer transition-colors shadow-2xs shrink-0"
+            className="p-2 border border-slate-200 hover:bg-slate-50 text-slate-600 rounded-none flex items-center justify-center cursor-pointer transition-colors shadow-2xs shrink-0"
           >
             <RotateCcw className="w-4 h-4 text-slate-500" />
           </button>

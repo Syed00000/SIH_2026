@@ -47,7 +47,7 @@ export const ProjectsTableRow = ({
       {/* Main Entity Tile */}
       <td className="py-2.5 px-3">
         <div className="flex items-center space-x-2.5">
-          <div className="w-7 h-7 rounded-md bg-emerald-50 text-[#007A61] font-bold text-[11px] flex items-center justify-center shrink-0 border border-emerald-200">
+          <div className="text-[16px] font-black text-[#007A61] flex items-center justify-center shrink-0">
             {firstLetter}
           </div>
           <div className="min-w-0 max-w-[210px]">
@@ -95,7 +95,7 @@ export const ProjectsTableRow = ({
           </>
         ) : (
           <>
-            <span className="text-amber-800 font-bold text-[10.5px] bg-amber-50 px-2 py-0.5 rounded border border-amber-200 inline-block">
+            <span className="text-amber-800 font-bold text-[10.5px] inline-block">
               Unassigned
             </span>
             <div className="text-[9.5px] text-slate-400 mt-0.5 font-mono">Needs Lead Mentor</div>
@@ -131,13 +131,12 @@ export const ProjectsTableRow = ({
       {/* Status */}
       <td className="py-2.5 px-2.5 whitespace-nowrap">
         {isDeployed ? (
-          <span className="inline-flex items-center gap-1 text-[10.5px] font-bold text-teal-800 bg-teal-50 border border-teal-200 px-2 py-0.5 rounded-full">
+          <span className="text-[10.5px] font-bold text-[#007A61]">
             🔒 Deployed
           </span>
         ) : (
-          <span className={`inline-flex items-center space-x-1.5 text-[11px] font-semibold ${statusStyle.text}`}>
-            <span className={`w-1.5 h-1.5 rounded-full ${statusStyle.dot}`} />
-            <span>{p.status || 'In Progress'}</span>
+          <span className={`text-[11px] font-semibold ${statusStyle.text}`}>
+            {p.status || 'In Progress'}
           </span>
         )}
       </td>
