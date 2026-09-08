@@ -115,7 +115,7 @@ export const IndustryPartnersPanel = () => {
 
   return (
     <div className="space-y-4 max-w-7xl mx-auto select-none pb-12 text-left">
-      <div className="bg-white border border-slate-200/90 rounded-2xl shadow-2xs p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div className="bg-white border border-slate-200/90 rounded-none shadow-2xs p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h1 className="text-xl font-bold text-slate-900 tracking-tight flex items-center space-x-2">
             <Factory className="w-5 h-5 text-[#007A61]" />
@@ -125,7 +125,7 @@ export const IndustryPartnersPanel = () => {
         </div>
         <button
           onClick={() => { setRequestPartner(null); setRequestProblem(submittedPrototypes[0] || null); setIsCreateModalOpen(true); }}
-          className="px-4 py-2.5 bg-[#007A61] hover:bg-[#00604c] text-white text-xs font-bold rounded-xl flex items-center space-x-2 shadow-sm cursor-pointer"
+          className="px-4 py-2.5 bg-[#007A61] hover:bg-[#00604c] text-white text-xs font-bold rounded-none flex items-center space-x-2 shadow-sm cursor-pointer"
         >
           <Plus className="w-4 h-4" />
           <span>New Partnership Proposal</span>

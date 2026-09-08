@@ -1,5 +1,5 @@
 import React from 'react';
-import { Building2, Handshake, Clock, TrendingUp } from 'lucide-react';
+import { Building2, Handshake, Clock, CheckCircle2, TrendingUp, Sparkles } from 'lucide-react';
 
 export const PartnersKpis = ({
   total = 0,
@@ -24,67 +24,67 @@ export const PartnersKpis = ({
 
   return (
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5 select-none">
-      {/* 1. Total Partners */}
-      <div className="bg-white border border-slate-200/90 rounded-2xl p-4 flex items-center justify-between shadow-2xs hover:border-[#007A61]/30 transition-colors">
+      {/* Total Partners */}
+      <div className="bg-white border border-slate-200/90 rounded-none p-4 flex items-center justify-between shadow-2xs hover:border-[#007A61]/40 transition-all">
         <div className="space-y-1">
           <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 block">
             Total Partners
           </span>
           <div className="text-2xl font-black text-slate-900">{total}</div>
-          <span className="text-[11px] text-slate-500 font-semibold block">
-            Govt Verified DB
+          <span className="text-[11px] text-slate-500 font-semibold flex items-center space-x-1">
+            <span>Govt Verified DB</span>
           </span>
         </div>
-        <div className="w-11 h-11 rounded-xl bg-slate-50 border border-slate-200/80 text-[#007A61] flex items-center justify-center shrink-0 shadow-2xs">
-          <Building2 className="w-5 h-5" />
+        <div className="text-[#007A61] flex items-center justify-center shrink-0">
+          <Building2 className="w-6 h-6" />
         </div>
       </div>
 
-      {/* 2. Active Collaborations */}
-      <div className="bg-white border border-slate-200/90 rounded-2xl p-4 flex items-center justify-between shadow-2xs hover:border-[#007A61]/30 transition-colors">
+      {/* Active Partners */}
+      <div className="bg-white border border-slate-200/90 rounded-none p-4 flex items-center justify-between shadow-2xs hover:border-[#007A61]/40 transition-all">
         <div className="space-y-1">
           <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 block">
             Active Collaborations
           </span>
-          <div className="text-2xl font-black text-slate-900">{active}</div>
-          <span className="text-[11px] text-emerald-700 font-semibold block">
-            Signed MoUs &amp; Grants
+          <div className="text-2xl font-black text-[#007A61]">{active}</div>
+          <span className="text-[11px] text-emerald-700 font-semibold flex items-center space-x-1">
+            <span>Signed MoUs & Grants</span>
           </span>
         </div>
-        <div className="w-11 h-11 rounded-xl bg-emerald-50 border border-emerald-200 text-[#007A61] flex items-center justify-center shrink-0 shadow-2xs">
-          <Handshake className="w-5 h-5" />
+        <div className="text-[#007A61] flex items-center justify-center shrink-0">
+          <Handshake className="w-6 h-6" />
         </div>
       </div>
 
-      {/* 3. Requests Dispatched */}
-      <div className="bg-white border border-slate-200/90 rounded-2xl p-4 flex items-center justify-between shadow-2xs hover:border-[#007A61]/30 transition-colors">
+      {/* Pending Requests */}
+      <div className="bg-white border border-slate-200/90 rounded-none p-4 flex items-center justify-between shadow-2xs hover:border-amber-300 transition-all">
         <div className="space-y-1">
           <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 block">
             Requests Dispatched
           </span>
-          <div className="text-2xl font-black text-slate-900">{pending}</div>
-          <span className="text-[11px] text-slate-500 font-semibold block">
-            Under Evaluation
+          <div className="text-2xl font-black text-amber-600">{pending}</div>
+          <span className="text-[11px] text-amber-700 font-semibold flex items-center space-x-1">
+            <span>Under Evaluation</span>
           </span>
         </div>
-        <div className="w-11 h-11 rounded-xl bg-slate-50 border border-slate-200/80 text-amber-600 flex items-center justify-center shrink-0 shadow-2xs">
-          <Clock className="w-5 h-5" />
+        <div className="text-amber-600 flex items-center justify-center shrink-0">
+          <Clock className="w-6 h-6" />
         </div>
       </div>
 
-      {/* 4. CSR Capital Pool */}
-      <div className="bg-white border border-slate-200/90 rounded-2xl p-4 flex items-center justify-between shadow-2xs hover:border-[#007A61]/30 transition-colors">
+      {/* CSR Impact */}
+      <div className="bg-white border border-slate-200/90 rounded-none p-4 flex items-center justify-between shadow-2xs hover:border-[#007A61]/40 transition-all">
         <div className="space-y-1">
           <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 block">
             CSR Capital Pool
           </span>
           <div className="text-2xl font-black text-slate-900">₹ 2.4 Cr</div>
-          <span className="text-[11px] text-emerald-700 font-semibold block">
-            R&amp;D Grant Fund
+          <span className="text-[11px] text-[#007A61] font-semibold flex items-center space-x-1">
+            <span>R&D Grant Fund</span>
           </span>
         </div>
-        <div className="w-11 h-11 rounded-xl bg-slate-50 border border-slate-200/80 text-[#007A61] flex items-center justify-center shrink-0 shadow-2xs">
-          <TrendingUp className="w-5 h-5" />
+        <div className="text-[#007A61] flex items-center justify-center shrink-0">
+          <TrendingUp className="w-6 h-6" />
         </div>
       </div>
     </div>

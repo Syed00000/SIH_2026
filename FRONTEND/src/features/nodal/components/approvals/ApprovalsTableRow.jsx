@@ -5,13 +5,13 @@ export const ApprovalsTableRow = ({ item, onViewItem, onApproveItem }) => {
   const renderSubmitterIcon = (type) => {
     switch (type) {
       case 'citizen':
-        return <User className="w-3.5 h-3.5 text-blue-500 mr-1.5 shrink-0" />;
+        return <User className="w-3.5 h-3.5 text-[#007A61] mr-1.5 shrink-0" />;
       case 'industry':
-        return <Building2 className="w-3.5 h-3.5 text-blue-500 mr-1.5 shrink-0" />;
+        return <Building2 className="w-3.5 h-3.5 text-[#007A61] mr-1.5 shrink-0" />;
       case 'university':
-        return <GraduationCap className="w-3.5 h-3.5 text-blue-500 mr-1.5 shrink-0" />;
+        return <GraduationCap className="w-3.5 h-3.5 text-[#007A61] mr-1.5 shrink-0" />;
       default:
-        return <User className="w-3.5 h-3.5 text-blue-500 mr-1.5 shrink-0" />;
+        return <User className="w-3.5 h-3.5 text-[#007A61] mr-1.5 shrink-0" />;
     }
   };
 
@@ -21,7 +21,7 @@ export const ApprovalsTableRow = ({ item, onViewItem, onApproveItem }) => {
         {item.id}
       </td>
       <td className="py-3 px-3.5">
-        <p className="font-bold text-slate-900 text-xs line-clamp-1 group-hover:text-slate-800">
+        <p className="font-bold text-slate-900 text-xs line-clamp-1 group-hover:text-[#007A61] transition-colors">
           {item.title}
         </p>
       </td>
@@ -32,13 +32,13 @@ export const ApprovalsTableRow = ({ item, onViewItem, onApproveItem }) => {
         </div>
       </td>
       <td className="py-3 px-3.5 whitespace-nowrap">
-        <span className={`text-[10.5px] font-bold px-2 py-0.5 rounded-md border ${item.typeBadge || 'bg-slate-100 text-slate-700 border-slate-200'}`}>
+        <span className="text-[10.5px] font-bold text-[#007A61]">
           {item.type}
         </span>
       </td>
       <td className="py-3 px-3.5 whitespace-nowrap">
         {item.priority ? (
-          <span className={`text-[10.5px] font-bold px-2 py-0.5 rounded-md border ${item.priorityBadge || 'bg-amber-50 text-amber-700 border-amber-200'}`}>
+          <span className="text-[10.5px] font-bold text-[#007A61]">
             {item.priority}
           </span>
         ) : (
@@ -53,7 +53,7 @@ export const ApprovalsTableRow = ({ item, onViewItem, onApproveItem }) => {
           {onViewItem && (
             <button
               onClick={() => onViewItem(item)}
-              className="p-1.5 rounded-md hover:bg-slate-100 text-slate-600 hover:text-slate-900 transition-colors cursor-pointer"
+              className="p-1.5 rounded-none hover:bg-slate-100 text-[#007A61] transition-colors cursor-pointer"
               title="View Details"
             >
               <Eye className="w-3.5 h-3.5" />
@@ -62,7 +62,7 @@ export const ApprovalsTableRow = ({ item, onViewItem, onApproveItem }) => {
           {onApproveItem && (
             <button
               onClick={() => onApproveItem(item)}
-              className="p-1.5 rounded-md hover:bg-emerald-50 text-emerald-600 hover:text-emerald-700 transition-colors cursor-pointer"
+              className="p-1.5 rounded-none hover:bg-emerald-50 text-[#007A61] transition-colors cursor-pointer"
               title="Quick Approve"
             >
               <CheckCircle2 className="w-3.5 h-3.5" />

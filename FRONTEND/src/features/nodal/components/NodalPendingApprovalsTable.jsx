@@ -17,10 +17,8 @@ const DEFAULT_ITEMS = [
     submittedBy: 'Citizen',
     submitterType: 'citizen',
     type: 'Challenge',
-    typeBadge: 'bg-blue-50 text-blue-700 border-blue-200',
     submittedOn: '24 May 2026',
-    priority: 'High',
-    priorityBadge: 'bg-red-50 text-red-600 border-red-200'
+    priority: 'High'
   },
   {
     id: 'CHL-1023',
@@ -28,10 +26,8 @@ const DEFAULT_ITEMS = [
     submittedBy: 'Industry Partner',
     submitterType: 'industry',
     type: 'Challenge',
-    typeBadge: 'bg-blue-50 text-blue-700 border-blue-200',
     submittedOn: '24 May 2026',
-    priority: 'Medium',
-    priorityBadge: 'bg-amber-50 text-amber-700 border-amber-200'
+    priority: 'Medium'
   },
   {
     id: 'PRJ-215',
@@ -39,10 +35,8 @@ const DEFAULT_ITEMS = [
     submittedBy: 'Ranchi University',
     submitterType: 'university',
     type: 'Project',
-    typeBadge: 'bg-emerald-50 text-emerald-700 border-emerald-200',
     submittedOn: '23 May 2026',
-    priority: 'High',
-    priorityBadge: 'bg-red-50 text-red-600 border-red-200'
+    priority: 'High'
   }
 ];
 
@@ -59,25 +53,29 @@ export const NodalPendingApprovalsTable = ({
   }
 
   return (
-    <div className="bg-white border border-slate-200 rounded-md overflow-hidden shadow-2xs select-none">
-      <ApprovalsTableHeader
-        tabs={tabs}
-        activeTab={activeTab}
-        setActiveTab={setActiveTab}
-      />
+    <div className="bg-white border border-slate-100 rounded-none overflow-hidden shadow-[0_2px_15px_-3px_rgba(0,0,0,0.03)] select-none">
+      <div className="p-4 bg-white border-b border-slate-100">
+        <ApprovalsTableHeader
+          tabs={tabs}
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
+        />
+      </div>
 
       <div className="overflow-x-auto custom-scrollbar w-full">
         <table className="w-full min-w-[700px] text-left text-xs border-collapse">
-          <thead className="bg-slate-50 border-b border-slate-200 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+          <thead className="bg-white border-b border-slate-100 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
             <tr>
-              <th className="py-3 px-4">Title & Submitter</th>
+              <th className="py-3 px-4 w-24">ID</th>
+              <th className="py-3 px-4">Title</th>
+              <th className="py-3 px-4">Submitter</th>
               <th className="py-3 px-4">Type</th>
-              <th className="py-3 px-4">Submitted On</th>
               <th className="py-3 px-4">Priority</th>
+              <th className="py-3 px-4">Date</th>
               <th className="py-3 px-4 text-right">Actions</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100 bg-white">
+          <tbody className="divide-y divide-slate-50 bg-white">
             {items.map((item) => (
               <ApprovalsTableRow
                 key={item.id}

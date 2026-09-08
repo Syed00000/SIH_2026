@@ -317,7 +317,7 @@ export const LandingPage = ({ onNavigate }) => {
         <div className="flex flex-col md:flex-row gap-2 md:gap-3 w-full">
           
           {/* Report a Problem */}
-          <div onClick={() => handleNav('/citizen')} className="flex-1 bg-white border border-gray-200 shadow-xs rounded-none px-4 py-2.5 md:py-3 flex items-center justify-between cursor-pointer hover:bg-[#0f4b3a] hover:border-[#0f4b3a] transition-all duration-300 group">
+          <div onClick={() => handleNav('/login')} className="flex-1 bg-white border border-gray-200 shadow-xs rounded-none px-4 py-2.5 md:py-3 flex items-center justify-between cursor-pointer hover:bg-[#0f4b3a] hover:border-[#0f4b3a] transition-all duration-300 group">
             <div className="flex items-center gap-3">
               <FileText className="w-5 h-5 md:w-6 md:h-6 text-[#0f4b3a] group-hover:text-white transition-all" />
               <div className="text-left">
@@ -329,7 +329,7 @@ export const LandingPage = ({ onNavigate }) => {
           </div>
 
           {/* For Universities */}
-          <div onClick={() => handleNav('/university')} className="flex-1 bg-white border border-gray-200 shadow-xs rounded-none px-4 py-2.5 md:py-3 flex items-center justify-between cursor-pointer hover:bg-[#0f4b3a] hover:border-[#0f4b3a] transition-all duration-300 group">
+          <div onClick={() => handleNav('/login')} className="flex-1 bg-white border border-gray-200 shadow-xs rounded-none px-4 py-2.5 md:py-3 flex items-center justify-between cursor-pointer hover:bg-[#0f4b3a] hover:border-[#0f4b3a] transition-all duration-300 group">
             <div className="flex items-center gap-3">
               <Building2 className="w-5 h-5 md:w-6 md:h-6 text-[#0f4b3a] group-hover:text-white transition-all" />
               <div className="text-left">

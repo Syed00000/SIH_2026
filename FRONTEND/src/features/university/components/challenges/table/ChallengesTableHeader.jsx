@@ -8,7 +8,6 @@ export const ChallengesTableHeader = () => {
         <th className="py-3 px-3 min-w-[210px]">Challenge / Problem</th>
         <th className="py-3 px-3 w-[150px]">Domain & Location</th>
         <th className="py-3 px-3 w-[160px]">Faculty Mentor</th>
-        <th className="py-3 px-3 w-[140px]">Required Skills</th>
         <th className="py-3 px-3 w-[90px]">Priority</th>
         <th className="py-3 px-3 w-[105px]">Status</th>
         <th className="py-3 px-3 w-[80px] text-right">Actions</th>

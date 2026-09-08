@@ -13,27 +13,29 @@ export class LoginService {
     const rawIdentifier = (email || '').trim();
     logger.info(`🔍 Login attempt for identifier: "${rawIdentifier}"`);
 
-    // 1. Fetch user by email, mobile, AISHE, HEI, Department, or Block code/email
+    // 1. Fetch user by email, mobile, AISHE code, or HEI code
     const user = await this.userService.getUserByIdentifier(rawIdentifier);
 
     if (!user) {
-      logger.warn(`❌ Login failed: User not found for "${rawIdentifier}"`);
+      logger.warn(`❌ Login failed: User not found in database for identifier "${rawIdentifier}"`);
       throw new AuthenticationError('USER_NOT_FOUND');
     }
 
-    logger.info(`👤 User found: ID=${user.id}, Role=${user.role}, Status=${user.accountStatus}`);
+    logger.info(`👤 User found: ID=${user.id}, Role=${user.role}, Status=${user.accountStatus}, Verified=${user.emailVerification?.verified}`);
 
     if (user.accountStatus === 'SUSPENDED') {
+      logger.warn(`❌ Login failed: Account suspended for "${rawIdentifier}"`);
       throw new AuthenticationError('ACCOUNT_SUSPENDED');
     }
 
     if (user.accountStatus === 'BLOCKED') {
+      logger.warn(`❌ Login failed: Account blocked for "${rawIdentifier}"`);
       throw new AuthenticationError('ACCOUNT_BLOCKED');
     }
 
-    // Auto-activate & verify privileged roles if pending
+    // Auto-activate and verify university, faculty & admin roles if pending
     if (!user.emailVerification?.verified || user.accountStatus !== 'ACTIVE') {
-      if (['UNIVERSITY', 'FACULTY', 'GOVERNMENT', 'NODAL', 'DEPARTMENT', 'BLOCK', 'TECHNICIAN'].includes(user.role)) {
+      if (['UNIVERSITY', 'FACULTY', 'GOVERNMENT', 'NODAL'].includes(user.role)) {
         await this.userService.updateResetCredentials(user.id, {
           accountStatus: 'ACTIVE',
           emailVerification: { verified: true, verifiedAt: new Date() }
@@ -41,11 +43,12 @@ export class LoginService {
         user.accountStatus = 'ACTIVE';
         user.emailVerification = { verified: true, verifiedAt: new Date() };
       } else {
+        logger.warn(`❌ Login failed: Email not verified for "${rawIdentifier}"`);
         throw new AuthenticationError('EMAIL_NOT_VERIFIED');
       }
     }
 
-    // 2. Verify password with robust variations
+    // 2. Verify password with robust case & whitespace variations
     let isMatch = false;
     const rawPass = password || '';
     const passCandidates = [
@@ -54,6 +57,7 @@ export class LoginService {
       rawPass.toLowerCase(),
       rawPass.trim().toLowerCase(),
       rawPass.charAt(0).toUpperCase() + rawPass.slice(1),
+      rawPass.charAt(0).toLowerCase() + rawPass.slice(1),
       rawPass.toUpperCase()
     ];
     const uniqueCandidates = [...new Set(passCandidates.filter(Boolean))];
@@ -71,62 +75,25 @@ export class LoginService {
       }
     }
 
-    // 3. Department password verification
-    if (!isMatch && user.role === 'DEPARTMENT') {
-      try {
-        const { verifyDepartmentPassword, findDepartmentById } = await import('./department-auth.helper.js');
-        const deptDoc = user.departmentDoc || (await findDepartmentById(user.deptId || user.id));
-        if (deptDoc) {
-          isMatch = await verifyDepartmentPassword(deptDoc, password);
-        }
-      } catch (deptErr) {
-        logger.warn('Department password check error:', deptErr.message);
-      }
-    }
-
-    // 4. Block password verification
-    if (!isMatch && user.role === 'BLOCK') {
-      try {
-        const { verifyBlockPassword, findBlockById } = await import('./block-auth.helper.js');
-        const blockDoc = user.blockDoc || (await findBlockById(user.blockId || user.id));
-        if (blockDoc) {
-          isMatch = await verifyBlockPassword(blockDoc, password);
-        }
-      } catch (blockErr) {
-        logger.warn('Block password check error:', blockErr.message);
-      }
-    }
-
-    // 4b. Technician password verification
-    if (!isMatch && user.role === 'TECHNICIAN') {
-      try {
-        const { findTechnicianById } = await import('./technician-auth.helper.js');
-        const techDoc = await findTechnicianById(user.technicianId || user.id);
-        if (techDoc) {
-          const validPass = techDoc.credentials?.password || 'Tech@JH2026!';
-          if (password === validPass || password?.trim() === validPass?.trim()) {
-            isMatch = true;
-          }
-        }
-      } catch (techErr) {
-        logger.warn('Technician password check error:', techErr.message);
-      }
-    }
-
-    // 5. Admin & Nodal plain password fallback reconciliation
+    // 3. Admin & Nodal plain password fallback reconciliation
     if (!isMatch && ['NODAL', 'GOVERNMENT', 'ADMIN'].includes(user.role)) {
       try {
         let plainCandidate = null;
-        if (config.GOVT_ADMIN_EMAIL && user.email.toLowerCase() === config.GOVT_ADMIN_EMAIL.toLowerCase()) {
+        const userEmailStr = user.email || '';
+        
+        if (
+          config.GOVT_ADMIN_EMAIL &&
+          userEmailStr.toLowerCase() === config.GOVT_ADMIN_EMAIL.toLowerCase()
+        ) {
           plainCandidate = config.GOVT_ADMIN_PASSWORD || 'Admin@123456';
         }
 
-        if (!plainCandidate) {
+        if (!plainCandidate && userEmailStr) {
           const MongooseAdmin = (await import('../../../government/admins/infrastructure/model.js')).default;
           const adminDoc = await MongooseAdmin.findOne({
             $or: [
-              { email: user.email.toLowerCase() },
-              { username: user.email.split('@')[0].toLowerCase() }
+              { email: userEmailStr.toLowerCase() },
+              { username: userEmailStr.split('@')[0].toLowerCase() }
             ]
           });
           if (adminDoc?.password) plainCandidate = adminDoc.password.trim();
@@ -137,13 +104,16 @@ export class LoginService {
           const storedCandidates = [
             storedPlain,
             storedPlain.toLowerCase(),
-            storedPlain.charAt(0).toUpperCase() + storedPlain.slice(1)
+            storedPlain.charAt(0).toUpperCase() + storedPlain.slice(1),
+            storedPlain.charAt(0).toLowerCase() + storedPlain.slice(1)
           ];
-          if (uniqueCandidates.some((c) => storedCandidates.includes(c))) {
+          const matchesStored = uniqueCandidates.some((c) => storedCandidates.includes(c));
+          if (matchesStored) {
             isMatch = true;
             const newHash = await bcrypt.hash(storedPlain, 12);
             await this.userService.updateResetCredentials(user.id, { passwordHash: newHash });
             user.passwordHash = newHash;
+            logger.info(`Synced password hash for admin user ${user.email}`);
           }
         }
       } catch (adminFallbackErr) {
@@ -152,23 +122,19 @@ export class LoginService {
     }
 
     if (!isMatch) {
-      logger.warn(`❌ Login failed: Password mismatch for "${rawIdentifier}"`);
+      logger.warn(`❌ Login failed: Password mismatch for identifier "${rawIdentifier}"`);
       throw new AuthenticationError('INVALID_CREDENTIALS');
     }
 
-    await this.userService.updateResetCredentials(user.id, { lastLoginAt: new Date() });
+    await this.userService.updateResetCredentials(user.id, {
+      lastLoginAt: new Date()
+    });
 
     const accessToken = this.tokenService.generateAccessToken(user);
     const refreshToken = await this.tokenService.generateAndSaveRefreshToken(user.id);
 
-    const safeUser = typeof user.toSafeObject === 'function' ? user.toSafeObject() : user;
-    if (user.deptId && !safeUser.deptId) safeUser.deptId = user.deptId;
-    if (user.department && !safeUser.department) safeUser.department = user.department;
-    if (user.blockId && !safeUser.blockId) safeUser.blockId = user.blockId;
-    if (user.blockName && !safeUser.blockName) safeUser.blockName = user.blockName;
-
     return {
-      user: safeUser,
+      user: user.toSafeObject(),
       accessToken,
       refreshToken: refreshToken.token
     };

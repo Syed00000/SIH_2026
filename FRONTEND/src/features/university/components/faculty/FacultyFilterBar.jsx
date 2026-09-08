@@ -114,7 +114,7 @@ export const FacultyFilterBar = ({
         <div className="flex items-center space-x-2">
           <button
             onClick={onOpenAddModal}
-            className="px-3.5 py-1.5 bg-slate-900 hover:bg-black text-white rounded-none text-xs font-bold transition-colors cursor-pointer flex items-center space-x-1.5"
+            className="px-3.5 py-1.5 bg-[#007A61] hover:bg-[#00604c] text-white rounded-none text-xs font-bold transition-colors cursor-pointer flex items-center space-x-1.5"
           >
             <UserPlus className="w-3.5 h-3.5" />
             <span>+ Onboard New Faculty</span>

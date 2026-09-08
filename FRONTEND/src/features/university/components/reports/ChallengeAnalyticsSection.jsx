@@ -17,11 +17,11 @@ const renderLabel = ({ cx, cy, midAngle, outerRadius, percent, name }) => {
 const CustomTooltip = ({ active, payload, label }) => {
   if (active && payload && payload.length) {
     return (
-      <div className="bg-white border border-zinc-200 p-3 rounded-lg shadow-md">
+      <div className="bg-white border border-zinc-200 p-3 rounded-none shadow-none">
         <p className="text-xs font-semibold text-zinc-500 mb-2">{label}</p>
         {payload.map((p, idx) => (
           <div key={idx} className="flex items-center space-x-2 text-sm mb-1">
-            <div className="w-2 h-2 rounded-full" style={{ backgroundColor: p.color || p.payload.fill }} />
+            <div className="w-2 h-2 rounded-none" style={{ backgroundColor: p.color || p.payload.fill }} />
             <span className="font-medium text-zinc-700">{p.name}:</span>
             <span className="font-bold text-zinc-950">{p.value}</span>
           </div>
@@ -36,7 +36,7 @@ export const ChallengeAnalyticsSection = ({ pipeline = [], byDomain = [], trend 
   const total = byDomain.reduce((s, d) => s + d.value, 0);
 
   return (
-    <div className="rounded-xl border bg-card text-card-foreground shadow-sm bg-white overflow-hidden w-full">
+    <div className="rounded-none border bg-card text-card-foreground shadow-none bg-white overflow-hidden w-full">
       <div className="flex flex-col space-y-1.5 p-6 border-b border-zinc-100">
         <h3 className="text-lg font-semibold leading-none tracking-tight text-zinc-950">Challenge Analytics</h3>
         <p className="text-sm text-muted-foreground text-zinc-500">Pipeline distribution and submission trends.</p>
@@ -54,8 +54,8 @@ export const ChallengeAnalyticsSection = ({ pipeline = [], byDomain = [], trend 
                 <div key={s.label} className="flex items-center">
                   <span className="text-sm font-medium text-zinc-600 w-28">{s.label}</span>
                   <div className="flex-1 flex items-center space-x-3">
-                    <div className="h-4 rounded-full bg-zinc-100 w-full overflow-hidden">
-                      <div className="h-full rounded-full transition-all duration-500"
+                    <div className="h-4 rounded-none bg-zinc-100 w-full overflow-hidden">
+                      <div className="h-full rounded-none transition-all duration-500"
                            style={{ backgroundColor: s.color, width: `${Math.max(5, (s.value / (pipeline[0]?.value || 1)) * 100)}%` }} />
                     </div>
                     <span className="text-sm font-bold text-zinc-900 w-8 text-right">{s.value}</span>

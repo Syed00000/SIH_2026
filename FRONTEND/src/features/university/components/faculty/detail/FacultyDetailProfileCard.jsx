@@ -6,7 +6,7 @@ export const FacultyDetailProfileCard = ({ faculty, initials, isAvailable, isAss
     <div className="bg-white border border-slate-200/90 rounded-xl shadow-2xs p-4.5 space-y-4 text-left">
       <div className="flex items-start justify-between">
         <div className="flex items-center space-x-4">
-          <div className="w-14 h-14 rounded-xl bg-slate-900 text-white flex items-center justify-center font-bold text-lg shrink-0 shadow-xs">
+          <div className="text-[32px] font-black text-[#007A61] flex items-center justify-center shrink-0">
             {initials}
           </div>
           <div>
@@ -22,12 +22,12 @@ export const FacultyDetailProfileCard = ({ faculty, initials, isAvailable, isAss
         </div>
 
         <span
-          className={`px-2.5 py-1 rounded-full text-xs font-bold ${
+          className={`text-xs font-bold ${
             faculty.availabilityStatus === 'In Project'
-              ? 'bg-amber-50 text-amber-800 border border-amber-200'
+              ? 'text-amber-700'
               : faculty.availabilityStatus === 'On Leave'
-              ? 'bg-purple-50 text-purple-800 border border-purple-200'
-              : 'bg-emerald-50 text-emerald-800 border border-emerald-200'
+              ? 'text-purple-700'
+              : 'text-[#007A61]'
           }`}
         >
           {faculty.availabilityStatus === 'In Project'
@@ -59,10 +59,10 @@ export const FacultyDetailProfileCard = ({ faculty, initials, isAvailable, isAss
 
       <div className="pt-3 border-t border-slate-100 space-y-1.5">
         <span className="text-[10.5px] font-bold text-slate-400 uppercase tracking-wider block">Technical Specializations</span>
-        <div className="flex flex-wrap gap-1.5">
+        <div className="flex flex-wrap gap-2">
           {specs.map((s, idx) => (
-            <span key={idx} className="px-2.5 py-1 bg-emerald-50 border border-emerald-200 text-emerald-900 rounded-lg text-xs font-bold">
-              {s}
+            <span key={idx} className="text-slate-700 text-xs font-bold">
+              {s}{idx !== specs.length - 1 ? ',' : ''}
             </span>
           ))}
         </div>

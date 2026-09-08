@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Factory, ChevronLeft, ChevronRight, FlaskConical } from 'lucide-react';
+import { Factory, ChevronLeft, ChevronRight, ChevronDown, FlaskConical } from 'lucide-react';
 import { PartnerPrototypeRow } from './PartnerPrototypeRow.jsx';
 
 export const PartnersTable = ({
@@ -37,7 +37,7 @@ export const PartnersTable = ({
   const paginatedItems = items.slice(startIndex, startIndex + pageSize);
 
   return (
-    <div className="bg-white border border-slate-200/90 rounded-2xl shadow-2xs select-none overflow-hidden flex flex-col justify-between">
+    <div className="bg-white border border-slate-200/90 rounded-none shadow-2xs select-none overflow-hidden flex flex-col justify-between">
       <div>
         {/* Table Header */}
         <div className="p-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/70">
@@ -53,16 +53,16 @@ export const PartnersTable = ({
         </div>
 
         {/* Table Body */}
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs text-slate-700 min-w-[980px]">
-            <thead className="bg-slate-50 border-b border-slate-200/80 text-slate-500 font-extrabold uppercase tracking-wider text-[10px]">
+        <div className="overflow-x-auto w-full">
+          <table className="w-full text-left text-xs text-slate-700 border-collapse min-w-[850px]">
+            <thead className="bg-slate-50/50 border-b border-slate-100 text-slate-400 font-extrabold uppercase tracking-wider text-[10px]">
               <tr>
-                <th className="py-3.5 px-4 w-[24%]">Partner Entity</th>
-                <th className="py-3.5 px-4 w-[24%]">Ground Problem Statement</th>
-                <th className="py-3.5 px-4 w-[22%]">Solution Prototype</th>
-                <th className="py-3.5 px-4 w-[11%]">Technical Blueprint</th>
-                <th className="py-3.5 px-4 w-[9%]">Status</th>
-                <th className="py-3.5 px-4 w-[10%] text-right">Actions</th>
+                <th className="py-3 px-4">Partner Entity</th>
+                <th className="py-3 px-4">Ground Problem Statement</th>
+                <th className="py-3 px-4">Solution Prototype</th>
+                <th className="py-3 px-4">Technical Blueprint (PDF)</th>
+                <th className="py-3 px-4">Status</th>
+                <th className="py-3 px-4 text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 font-medium">
@@ -78,8 +78,8 @@ export const PartnersTable = ({
                 <tr>
                   <td colSpan={6} className="py-12 px-4 text-center">
                     <div className="flex flex-col items-center justify-center space-y-2 max-w-md mx-auto">
-                      <div className="w-10 h-10 rounded-2xl bg-emerald-50 text-[#007A61] flex items-center justify-center shadow-inner">
-                        <FlaskConical className="w-5 h-5" />
+                      <div className="text-[#007A61] flex items-center justify-center">
+                        <FlaskConical className="w-8 h-8" />
                       </div>
                       <p className="text-xs font-bold text-slate-800">
                         No Student Prototypes Submitted Yet
@@ -109,29 +109,58 @@ export const PartnersTable = ({
       </div>
 
       {/* Pagination Footer */}
-      {totalPages > 1 && (
-        <div className="p-3 border-t border-slate-100 bg-slate-50/50 flex items-center justify-between">
-          <span className="text-[11px] font-bold text-slate-400">
-            Page {activePage} of {totalPages}
-          </span>
-          <div className="flex items-center space-x-1.5">
+      <div className="p-3.5 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500 bg-slate-50/30">
+        <div>
+          Showing <span className="font-bold text-slate-800">{items.length > 0 ? startIndex + 1 : 0}</span> to{' '}
+          <span className="font-bold text-slate-800">{Math.min(startIndex + pageSize, items.length)}</span> of{' '}
+          <span className="font-bold text-slate-800">{items.length}</span> partners
+        </div>
+
+        <div className="flex items-center space-x-2.5">
+          <div className="relative">
+            <select
+              value={pageSize}
+              disabled
+              className="bg-white border border-slate-200 rounded-lg px-2 py-1 pr-6 text-xs font-medium text-slate-700 cursor-not-allowed appearance-none shadow-2xs opacity-70"
+            >
+              <option value={6}>6 per page</option>
+            </select>
+            <ChevronDown className="w-3.5 h-3.5 text-slate-400 absolute right-1.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+          </div>
+
+          <div className="flex items-center space-x-1">
             <button
+              disabled={activePage <= 1}
               onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-              disabled={activePage === 1}
-              className="p-1.5 bg-white border border-slate-200 rounded-lg text-slate-600 hover:bg-slate-50 disabled:opacity-40 cursor-pointer shadow-2xs"
+              className="w-7 h-7 rounded-lg border border-slate-200 flex items-center justify-center text-slate-600 hover:bg-slate-50 disabled:opacity-40 cursor-pointer shadow-2xs"
             >
               <ChevronLeft className="w-3.5 h-3.5" />
             </button>
+
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => (
+              <button
+                key={pageNum}
+                onClick={() => setCurrentPage(pageNum)}
+                className={`w-7 h-7 rounded-lg text-xs font-bold transition-colors cursor-pointer ${
+                  activePage === pageNum
+                    ? 'bg-slate-900 text-white shadow-xs'
+                    : 'border border-slate-200 text-slate-700 hover:bg-slate-50'
+                }`}
+              >
+                {pageNum}
+              </button>
+            ))}
+
             <button
+              disabled={activePage >= totalPages}
               onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-              disabled={activePage === totalPages}
-              className="p-1.5 bg-white border border-slate-200 rounded-lg text-slate-600 hover:bg-slate-50 disabled:opacity-40 cursor-pointer shadow-2xs"
+              className="w-7 h-7 rounded-lg border border-slate-200 flex items-center justify-center text-slate-600 hover:bg-slate-50 disabled:opacity-40 cursor-pointer shadow-2xs"
             >
               <ChevronRight className="w-3.5 h-3.5" />
             </button>
           </div>
         </div>
-      )}
+      </div>
     </div>
   );
 };

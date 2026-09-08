@@ -43,9 +43,9 @@ export const FacultyDetailProjectsCard = ({
                 </div>
 
                 {isProjDeployed ? (
-                  <span className="px-2.5 py-1 text-xs font-bold text-teal-800 bg-teal-100/70 border border-teal-300 rounded-lg shrink-0 flex items-center space-x-1">
-                    <Lock className="w-3.5 h-3.5 text-teal-700" />
-                    <span>🔒 Deployed · Locked</span>
+                  <span className="text-xs font-bold text-[#007A61] shrink-0 flex items-center space-x-1">
+                    <Lock className="w-3.5 h-3.5" />
+                    <span>Deployed &bull; Locked</span>
                   </span>
                 ) : onUnassignProject ? (
                   <button

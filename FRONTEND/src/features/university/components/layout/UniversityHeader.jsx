@@ -42,11 +42,7 @@ export const UniversityHeader = ({
         </div>
       </div>
       <div className="hidden lg:flex flex-col items-center">
-        <div className="flex items-center space-x-1.5">
-          <span className="w-2 h-2 rounded-full bg-[#007A61] animate-pulse" />
-          <span className="font-extrabold text-[#007A61] text-base tracking-wider uppercase">JOHARSETU HEI</span>
-        </div>
-        <span className="text-[10px] font-semibold text-slate-500 tracking-normal">University Innovation & R&D Portal</span>
+        {/* Empty middle section */}
       </div>
       <div className="flex items-center space-x-3 relative" ref={dropdownRef}>
         {/* Notification Bell with Dynamic Badge */}

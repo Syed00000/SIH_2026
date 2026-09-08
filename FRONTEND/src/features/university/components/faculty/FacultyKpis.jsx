@@ -42,29 +42,21 @@ export const FacultyKpis = ({
         return (
           <div
             key={i}
-            className={`border rounded-none p-3.5 flex items-center justify-between shadow-2xs transition-colors ${
-              c.isSuccess
-                ? 'bg-emerald-50/50 border-emerald-300 hover:border-emerald-400'
-                : 'bg-white border-slate-200 hover:border-slate-300'
-            }`}
+            className={`border rounded-none p-3.5 flex items-center justify-between shadow-2xs transition-colors bg-white border-slate-200 hover:border-slate-300`}
           >
             <div>
               <div className={`text-[11px] font-bold uppercase tracking-wider ${c.isSuccess ? 'text-[#007A61] font-extrabold' : 'text-slate-500'}`}>
                 {c.label}
               </div>
-              <div className={`text-2xl font-extrabold mt-1 font-mono ${c.isSuccess ? 'text-emerald-950' : 'text-slate-900'}`}>
+              <div className={`text-2xl font-extrabold mt-1 font-mono ${c.isSuccess ? 'text-[#007A61]' : 'text-slate-900'}`}>
                 {c.value}
               </div>
               <div className={`text-[10.5px] mt-0.5 font-medium ${c.isSuccess ? 'text-[#007A61]' : 'text-slate-500'}`}>
                 {c.sub}
               </div>
             </div>
-            <div className={`w-10 h-10 border rounded-none flex items-center justify-center ${
-              c.isSuccess
-                ? 'bg-emerald-100 border-emerald-300 text-[#007A61]'
-                : 'bg-slate-100 border-slate-200 text-slate-800'
-            }`}>
-              <Icon className="w-5 h-5" />
+            <div className="text-[#007A61] flex items-center justify-center shrink-0">
+              <Icon className="w-6 h-6" />
             </div>
           </div>
         );
