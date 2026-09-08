@@ -1,5 +1,5 @@
 import React from 'react';
-import { Menu, Shield } from 'lucide-react';
+import { Menu } from 'lucide-react';
 import { NodalNotificationPopover } from './notifications/NodalNotificationPopover.jsx';
 
 export const NodalHeader = ({
@@ -57,8 +57,8 @@ export const NodalHeader = ({
           onSelectNotification={onSelectNotification}
         />
 
-        {/* Nodal Officer Avatar Pill */}
-        <div className="flex items-center space-x-2 pl-2 border-l border-slate-200">
+        {/* Nodal Officer Avatar Pill (Static - Non-clickable) */}
+        <div className="flex items-center space-x-2 pl-2 border-l border-slate-200 cursor-default">
           <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-[#047857] text-white flex items-center justify-center text-[10px] font-black shrink-0 shadow-2xs">
             {avatarInitials}
           </div>

@@ -5,6 +5,8 @@ import { NodalHeader } from './components/NodalHeader.jsx';
 import { NodalOverview } from './components/NodalOverview.jsx';
 import { NodalChallenges } from './components/NodalChallenges.jsx';
 import { NodalUniversitiesPanel } from './components/NodalUniversitiesPanel.jsx';
+import { NodalProfilePanel } from './components/profile/NodalProfilePanel.jsx';
+import { DistrictIssuesDirectory } from './components/district-issues/index.js';
 import { GovernmentFooter } from '../government/components/layout/GovernmentFooter.jsx';
 
 export const NodalPortal = ({ user: propUser, onLogout }) => {
@@ -50,6 +52,17 @@ export const NodalPortal = ({ user: propUser, onLogout }) => {
       case 'assigned':
       case 'approvals':
         return <NodalChallenges initialStatusFilter={challengeFilter} nodalDistrict={nodalDistrict} />;
+      case 'district-issues':
+        return <DistrictIssuesDirectory nodalDistrict={nodalDistrict} user={user} />;
+      case 'profile':
+        return (
+          <NodalProfilePanel
+            user={user}
+            onLogout={onLogout}
+            onNavigateChallenges={handleNavigateChallenges}
+            onNavigateUniversities={() => setActiveTab('universities')}
+          />
+        );
       default:
         return (
           <NodalOverview

@@ -1,8 +1,8 @@
 export const JHARKHAND_DISTRICTS_LIST = [
-  'Ranchi', 'Dhanbad', 'Jamshedpur', 'Bokaro', 'Deoghar', 'Hazaribagh', 'Giridih',
-  'Ramgarh', 'Dumka', 'Palamu', 'East Singhbhum', 'West Singhbhum', 'Koderma',
-  'Gumla', 'Chatra', 'Godda', 'Sahebganj', 'Pakur', 'Latehar', 'Garhwa',
-  'Simdega', 'Khunti', 'Jamtara', 'Lohardaga'
+  'Bokaro', 'Chatra', 'Deoghar', 'Dhanbad', 'Dumka', 'East Singhbhum',
+  'Garhwa', 'Giridih', 'Godda', 'Gumla', 'Hazaribagh', 'Jamtara',
+  'Khunti', 'Koderma', 'Latehar', 'Lohardaga', 'Pakur', 'Palamu',
+  'Ramgarh', 'Ranchi', 'Sahibganj', 'Seraikela Kharsawan', 'Simdega', 'West Singhbhum'
 ];
 
 export const SECTORS_LIST = [

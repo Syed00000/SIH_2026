@@ -1,7 +1,16 @@
-export { AdminManagement } from './AdminManagement.jsx';
+export { AdminManagement, default } from './AdminManagement.jsx';
+export { AdminDetailPanel } from './AdminDetailPanel.jsx';
+export { AdminEditPanel } from './AdminEditPanel.jsx';
 export { AdminSummaryCards } from './AdminSummaryCards.jsx';
 export { AdminDirectoryTable } from './AdminDirectoryTable.jsx';
 export { AdminFormModal } from './AdminFormModal.jsx';
 export { AdminViewModal } from './AdminViewModal.jsx';
-
-export default AdminManagement;
+export { DepartmentsManagementPanel } from './DepartmentsManagementPanel.jsx';
+export { DepartmentCard } from './DepartmentCard.jsx';
+export { DepartmentTable } from './DepartmentTable.jsx';
+export { DepartmentDetailPanel } from './DepartmentDetailPanel.jsx';
+export { DepartmentEditPanel } from './DepartmentEditPanel.jsx';
+export { DepartmentCredentialsCard } from './DepartmentCredentialsCard.jsx';
+export { DepartmentDetailModal } from './DepartmentDetailModal.jsx';
+export { DepartmentFormModal } from './DepartmentFormModal.jsx';
+export { DeleteDepartmentConfirmModal } from './DeleteDepartmentConfirmModal.jsx';

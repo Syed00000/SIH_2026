@@ -17,7 +17,7 @@ import {
   ProjectsSolutionsDashboard
 } from '../projects/index.js';
 import { GovernmentGisDashboard } from '../gis/GovernmentGisDashboard.jsx';
-import { AdminManagement } from '../governance/AdminManagement.jsx';
+import { AdminManagement, DepartmentsManagementPanel } from '../governance/index.js';
 import { CSRGrantsLifecycleDashboard } from '../csr/CSRGrantsLifecycleDashboard.jsx';
 import { OfficialPrintableDossier } from '../common/OfficialPrintableDossier.jsx';
 import { governmentDataService } from '../../services/governmentDataService.js';
@@ -196,6 +196,8 @@ export const GovernmentLayout = ({ onLogout }) => {
       case 'manage_industries':
       case 'industries': return 'Industry & Partner Directory';
       case 'users_admin': return 'User Admin & Departmental Governance';
+      case 'governance_departments':
+      case 'departments': return 'State Departments & Nodal Governance';
       case 'users_audit': return 'System & Compliance Audit Trail';
       case 'reports':
       case 'reports_overview': return 'Report Overview';
@@ -283,6 +285,8 @@ export const GovernmentLayout = ({ onLogout }) => {
               <ManageUniversitiesDashboard initialMode="list" />
             ) : activeTab === 'governance_industries' || activeTab === 'manage_industries' || activeTab === 'industries' ? (
               <ManageIndustriesDashboard />
+            ) : activeTab === 'governance_departments' || activeTab === 'departments' ? (
+              <DepartmentsManagementPanel />
             ) : activeTab === 'gis' ? (
               <GovernmentGisDashboard />
             ) : activeTab === 'users_admin' || activeTab === 'user_governance' ? (

@@ -9,6 +9,7 @@ export const FacultyTable = ({
   selectedFacultyId,
   onSelectFaculty,
   onEditFaculty,
+  onDeleteFaculty,
   loading = false
 }) => {
   const [currentPage, setCurrentPage] = useState(1);
@@ -48,6 +49,7 @@ export const FacultyTable = ({
                   isSelected={selectedFacultyId === (f._id || f.id || f.name)}
                   onSelectFaculty={onSelectFaculty}
                   onEditFaculty={onEditFaculty}
+                  onDeleteFaculty={onDeleteFaculty}
                 />
               ))
             )}

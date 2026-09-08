@@ -3,7 +3,6 @@ import {
   ClipboardList,
   FolderGit2,
   FileText,
-  ChevronRight,
   CheckCircle2
 } from 'lucide-react';
 
@@ -11,15 +10,11 @@ export const FacultyKpiGrid = ({
   challengesCount = 0,
   proposalsPendingCount = 0,
   activeProjectsCount = 0,
-  resolvedProjectsCount = 0,
-  onNavigateTab
+  resolvedProjectsCount = 0
 }) => {
   return (
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
-      <div
-        onClick={() => onNavigateTab('challenges')}
-        className="p-4 bg-white border border-slate-200/90 rounded-2xl shadow-2xs hover:border-slate-300 transition-all cursor-pointer group"
-      >
+      <div className="p-4 bg-white border border-slate-200/90 rounded-2xl shadow-2xs">
         <div className="flex items-center justify-between">
           <span className="text-[10.5px] font-bold uppercase tracking-wider text-slate-500">
             Assigned Problems
@@ -29,16 +24,12 @@ export const FacultyKpiGrid = ({
           </div>
         </div>
         <div className="text-2xl font-black text-slate-900 mt-1">{challengesCount}</div>
-        <span className="text-[11px] font-semibold text-slate-500 mt-0.5 flex items-center space-x-1">
-          <span>Official Allocations</span>
-          <ChevronRight className="w-3 h-3 text-slate-400" />
+        <span className="text-[11px] font-semibold text-slate-500 mt-0.5 block">
+          Official Allocations
         </span>
       </div>
 
-      <div
-        onClick={() => onNavigateTab('projects')}
-        className="p-4 bg-white border border-slate-200/90 rounded-2xl shadow-2xs hover:border-slate-300 transition-all cursor-pointer group"
-      >
+      <div className="p-4 bg-white border border-slate-200/90 rounded-2xl shadow-2xs">
         <div className="flex items-center justify-between">
           <span className="text-[10.5px] font-bold uppercase tracking-wider text-slate-500">
             Proposals Pending
@@ -48,16 +39,12 @@ export const FacultyKpiGrid = ({
           </div>
         </div>
         <div className="text-2xl font-black text-slate-900 mt-1">{proposalsPendingCount}</div>
-        <span className="text-[11px] font-semibold text-amber-800 mt-0.5 flex items-center space-x-1">
-          <span>Action Required</span>
-          <ChevronRight className="w-3 h-3 text-amber-600" />
+        <span className="text-[11px] font-semibold text-amber-800 mt-0.5 block">
+          Action Required
         </span>
       </div>
 
-      <div
-        onClick={() => onNavigateTab('projects')}
-        className="p-4 bg-white border border-slate-200/90 rounded-2xl shadow-2xs hover:border-slate-300 transition-all cursor-pointer group"
-      >
+      <div className="p-4 bg-white border border-slate-200/90 rounded-2xl shadow-2xs">
         <div className="flex items-center justify-between">
           <span className="text-[10.5px] font-bold uppercase tracking-wider text-slate-500">
             Active R&amp;D Projects
@@ -67,16 +54,12 @@ export const FacultyKpiGrid = ({
           </div>
         </div>
         <div className="text-2xl font-black text-slate-900 mt-1">{activeProjectsCount}</div>
-        <span className="text-[11px] font-semibold text-slate-500 mt-0.5 flex items-center space-x-1">
-          <span>Under Mentorship</span>
-          <ChevronRight className="w-3 h-3 text-slate-400" />
+        <span className="text-[11px] font-semibold text-slate-500 mt-0.5 block">
+          Under Mentorship
         </span>
       </div>
 
-      <div
-        onClick={() => onNavigateTab('projects')}
-        className="p-4 bg-white border border-slate-200/90 rounded-2xl shadow-2xs hover:border-slate-300 transition-all cursor-pointer group"
-      >
+      <div className="p-4 bg-white border border-slate-200/90 rounded-2xl shadow-2xs">
         <div className="flex items-center justify-between">
           <span className="text-[10.5px] font-bold uppercase tracking-wider text-slate-500">
             Resolved / Tackled
@@ -86,9 +69,8 @@ export const FacultyKpiGrid = ({
           </div>
         </div>
         <div className="text-2xl font-black text-slate-900 mt-1">{resolvedProjectsCount}</div>
-        <span className="text-[11px] font-semibold text-slate-500 mt-0.5 flex items-center space-x-1">
-          <span>Field Verified</span>
-          <ChevronRight className="w-3 h-3 text-slate-400" />
+        <span className="text-[11px] font-semibold text-slate-500 mt-0.5 block">
+          Field Verified
         </span>
       </div>
     </div>

@@ -13,6 +13,7 @@ import {
   Users,
   Compass
 } from 'lucide-react';
+import { getMapTileConfig } from '../../utils/mapTileConfig.js';
 import { JHARKHAND_DISTRICTS_META as JHARKHAND_24_DISTRICTS } from '../../data/jharkhandDistrictsMeta.js';
 
 export const ProjectLeafletMap = ({
@@ -48,10 +49,12 @@ export const ProjectLeafletMap = ({
         attributionControl: false
       });
 
-      // CartoDB Positron clean light tile layer
-      L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-        subdomains: 'abcd',
-        maxZoom: 19
+      // Map tile layer via getMapTileConfig
+      const tileCfg = getMapTileConfig({ mode: 'light' });
+      L.tileLayer(tileCfg.url, {
+        subdomains: tileCfg.subdomains || 'abc',
+        maxZoom: tileCfg.maxZoom || 19,
+        attribution: tileCfg.attribution
       }).addTo(map);
 
       // Custom Zoom Control top-right

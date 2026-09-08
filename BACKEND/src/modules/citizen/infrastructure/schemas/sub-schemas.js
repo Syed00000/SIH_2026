@@ -1,5 +1,13 @@
 import mongoose from 'mongoose';
 
+const pointSchema = new mongoose.Schema(
+  {
+    type: { type: String, enum: ['Point'], required: true },
+    coordinates: { type: [Number], required: true }
+  },
+  { _id: false }
+);
+
 export const locationSchema = new mongoose.Schema(
   {
     district: { type: String, required: true, default: '', index: true },
@@ -8,7 +16,11 @@ export const locationSchema = new mongoose.Schema(
     landmark: { type: String, default: '' },
     pincode: { type: String, default: '' },
     fullAddress: { type: String, default: '' },
-    coordinates: { type: String, default: '' }
+    coordinates: { type: String, default: '' },
+    geoJSON: {
+      type: pointSchema,
+      default: undefined
+    }
   },
   { _id: false }
 );

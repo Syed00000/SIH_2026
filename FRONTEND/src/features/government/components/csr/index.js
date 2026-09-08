@@ -1,4 +1,4 @@
-export { CSRGrantsLifecycleDashboard } from './CSRGrantsLifecycleDashboard.jsx';
+export { CSRGrantsLifecycleDashboard, default } from './CSRGrantsLifecycleDashboard.jsx';
 export { CSRPhaseTabs } from './CSRPhaseTabs.jsx';
 export { CSRFundingSources } from './CSRFundingSources.jsx';
 export { CSRStatutoryParameters } from './CSRStatutoryParameters.jsx';
@@ -21,5 +21,3 @@ export { CaAuditReportModal } from './CaAuditReportModal.jsx';
 export { GatewayConfigModal } from './GatewayConfigModal.jsx';
 export { UnspentSweepModal } from './UnspentSweepModal.jsx';
 export { SourceDetailsModal } from './SourceDetailsModal.jsx';
-
-export default CSRGrantsLifecycleDashboard;
