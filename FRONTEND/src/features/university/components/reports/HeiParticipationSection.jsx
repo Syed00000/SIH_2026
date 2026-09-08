@@ -2,7 +2,7 @@ import React from 'react';
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts';
 
 const Stat = ({ label, value }) => (
-  <div className="p-5 rounded-lg border border-zinc-200 bg-zinc-50 flex flex-col justify-between hover:shadow-sm transition-shadow">
+  <div className="p-5 rounded-none border border-zinc-200 bg-zinc-50 flex flex-col justify-between hover:shadow-none transition-shadow">
     <div className="text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-3">{label}</div>
     <div className="text-3xl font-bold tracking-tight text-zinc-950">{value}</div>
   </div>
@@ -11,11 +11,11 @@ const Stat = ({ label, value }) => (
 const CustomTooltip = ({ active, payload, label }) => {
   if (active && payload && payload.length) {
     return (
-      <div className="bg-white border border-zinc-200 p-3 rounded-lg shadow-md">
+      <div className="bg-white border border-zinc-200 p-3 rounded-none shadow-none">
         <p className="text-xs font-semibold text-zinc-500 mb-2">{label}</p>
         {payload.map((p, idx) => (
           <div key={idx} className="flex items-center space-x-2 text-sm mb-1">
-            <div className="w-2 h-2 rounded-full" style={{ backgroundColor: p.color || p.payload.fill }} />
+            <div className="w-2 h-2 rounded-none" style={{ backgroundColor: p.color || p.payload.fill }} />
             <span className="font-medium text-zinc-700">{p.name}:</span>
             <span className="font-bold text-zinc-950">{p.value}</span>
           </div>
@@ -30,7 +30,7 @@ export const HeiParticipationSection = ({ hei = {}, topUniversities = [], suppor
   const total = supportBreakdown.reduce((s, d) => s + d.value, 0);
 
   return (
-    <div className="rounded-xl border bg-card text-card-foreground shadow-sm bg-white overflow-hidden w-full mt-6">
+    <div className="rounded-none border bg-card text-card-foreground shadow-none bg-white overflow-hidden w-full mt-6">
       <div className="flex flex-col space-y-1.5 p-6 border-b border-zinc-100">
         <h3 className="text-lg font-semibold leading-none tracking-tight text-zinc-950">HEI Participation</h3>
         <p className="text-sm text-muted-foreground text-zinc-500">University engagement, student metrics, and support modes.</p>
@@ -60,8 +60,8 @@ export const HeiParticipationSection = ({ hei = {}, topUniversities = [], suppor
                     <span className="text-zinc-700 font-medium truncate max-w-[250px]">{u.name}</span>
                     <span className="font-bold text-zinc-950">{u.projects}</span>
                   </div>
-                  <div className="w-full h-2.5 bg-zinc-100 rounded-full overflow-hidden">
-                    <div className="h-full bg-zinc-900 rounded-full group-hover:opacity-80 transition-opacity" style={{ width: `${widthPct}%` }} />
+                  <div className="w-full h-2.5 bg-zinc-100 rounded-none overflow-hidden">
+                    <div className="h-full bg-zinc-900 rounded-none group-hover:opacity-80 transition-opacity" style={{ width: `${widthPct}%` }} />
                   </div>
                 </div>
                );

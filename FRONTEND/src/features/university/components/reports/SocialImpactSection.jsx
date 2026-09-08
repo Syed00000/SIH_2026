@@ -3,8 +3,8 @@ import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { Users, Home, Lightbulb, CheckCircle2 } from 'lucide-react';
 
 const ImpactStat = ({ icon: Icon, value, label }) => (
-  <div className="flex items-center space-x-3 p-4 bg-zinc-50 border border-zinc-200 rounded-lg">
-    <div className="w-10 h-10 flex items-center justify-center rounded-md bg-white border border-zinc-200 shadow-sm text-zinc-900">
+  <div className="flex items-center space-x-3 p-4 bg-zinc-50 border border-zinc-200 rounded-none">
+    <div className="w-10 h-10 flex items-center justify-center rounded-none bg-white border border-zinc-200 shadow-none text-zinc-900">
       <Icon className="w-5 h-5" />
     </div>
     <div>
@@ -17,10 +17,10 @@ const ImpactStat = ({ icon: Icon, value, label }) => (
 const CustomTooltip = ({ active, payload, label }) => {
   if (active && payload && payload.length) {
     return (
-      <div className="bg-white border border-zinc-200 p-3 rounded-lg shadow-md">
+      <div className="bg-white border border-zinc-200 p-3 rounded-none shadow-none">
         <p className="text-xs font-semibold text-zinc-500 mb-2">{label}</p>
         <div className="flex items-center space-x-2 text-sm">
-          <div className="w-2 h-2 rounded-full bg-zinc-900" />
+          <div className="w-2 h-2 rounded-none bg-zinc-900" />
           <span className="font-medium text-zinc-700">Beneficiaries:</span>
           <span className="font-bold text-zinc-950">{payload[0].value.toLocaleString()}</span>
         </div>
@@ -32,7 +32,7 @@ const CustomTooltip = ({ active, payload, label }) => {
 
 export const SocialImpactSection = ({ kpis = {}, impactTrend = [], impactStats = {} }) => {
   return (
-    <div className="rounded-xl border bg-card text-card-foreground shadow-sm bg-white overflow-hidden w-full">
+    <div className="rounded-none border bg-card text-card-foreground shadow-none bg-white overflow-hidden w-full">
       <div className="flex flex-col space-y-1.5 p-6 border-b border-zinc-100">
         <h3 className="text-lg font-semibold leading-none tracking-tight text-zinc-950">Social Impact & Reach</h3>
         <p className="text-sm text-muted-foreground text-zinc-500">Real-time metrics on beneficiaries and deployed solutions.</p>

@@ -2,7 +2,7 @@ import React from 'react';
 import { CheckCircle2, Clock, Hourglass, AlertCircle, CalendarClock } from 'lucide-react';
 
 const StatBox = ({ label, value, sub, icon: Icon }) => (
-  <div className="flex flex-col items-center justify-center p-6 rounded-lg border border-zinc-200 bg-white hover:shadow-sm transition-shadow">
+  <div className="flex flex-col items-center justify-center p-6 rounded-none border border-zinc-200 bg-white hover:shadow-none transition-shadow">
     <div className="flex items-center space-x-2 mb-3">
       <Icon className="w-4 h-4 text-zinc-500" />
       <span className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">{label}</span>
@@ -17,7 +17,7 @@ export const MilestoneOverviewSection = ({
   milestoneByStage = []
 }) => {
   return (
-    <div className="rounded-xl border bg-card text-card-foreground shadow-sm bg-white overflow-hidden w-full">
+    <div className="rounded-none border bg-card text-card-foreground shadow-none bg-white overflow-hidden w-full">
       <div className="flex flex-col space-y-1.5 p-6 border-b border-zinc-100">
         <h3 className="text-lg font-semibold leading-none tracking-tight text-zinc-950">Milestone Tracking</h3>
         <p className="text-sm text-muted-foreground text-zinc-500">Detailed breakdown of milestone completion across project stages.</p>
@@ -36,7 +36,7 @@ export const MilestoneOverviewSection = ({
         <div className="w-full h-[1px] bg-zinc-100" />
 
         {/* Detailed Table */}
-        <div className="flex-1 flex flex-col border border-slate-200 rounded-xl overflow-hidden">
+        <div className="flex-1 flex flex-col border border-slate-200 rounded-none overflow-hidden">
           <div className="bg-slate-50 border-b border-slate-200 px-5 py-3.5 grid grid-cols-12 gap-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider">
             <div className="col-span-4">Research & Implementation Stage</div>
             <div className="col-span-2 text-center">Timeline</div>
@@ -60,7 +60,7 @@ export const MilestoneOverviewSection = ({
                   </span>
                 </div>
                 <div className="col-span-2 text-right">
-                  <span className={`px-2 py-0.5 text-[10.5px] font-bold rounded-md ${
+                  <span className={`px-2 py-0.5 text-[10.5px] font-bold rounded-none ${
                     s.completionPct === 100
                       ? 'bg-slate-900 text-white'
                       : 'bg-slate-100 text-slate-700 border border-slate-200'
@@ -69,8 +69,8 @@ export const MilestoneOverviewSection = ({
                   </span>
                 </div>
                 <div className="col-span-4 pl-4 flex items-center justify-end space-x-2.5">
-                  <div className="flex-1 h-2 bg-slate-100 rounded-full overflow-hidden">
-                    <div className="h-full bg-slate-900 rounded-full" style={{ width: `${s.completionPct}%` }} />
+                  <div className="flex-1 h-2 bg-slate-100 rounded-none overflow-hidden">
+                    <div className="h-full bg-slate-900 rounded-none" style={{ width: `${s.completionPct}%` }} />
                   </div>
                   <span className="font-bold text-slate-900 font-mono w-10 text-right">{s.completionPct}%</span>
                 </div>
