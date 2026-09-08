@@ -224,7 +224,7 @@ export const IndustryLandingPage = ({ onNavigate }) => {
                 </div>
               </div>
               <button 
-                onClick={() => onNavigate && onNavigate('/register')}
+                onClick={() => onNavigate && onNavigate('/apply-industry')}
                 className="w-full bg-[#0f4b3a] text-white py-2.5 rounded-none font-bold text-[12px] mb-2 flex justify-center items-center relative z-10 hover:bg-[#0c382b] transition-colors shadow-sm"
               >
                 Register as Industry Partner <ArrowRight className="w-3 h-3 ml-1" />

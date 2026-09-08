@@ -20,29 +20,13 @@ export const ProtectedRoute = ({
     userRole === 'GOVERNMENT';
 
   // If not authenticated, redirect to /login
-  if (!loading && !isAuthenticated) {
-    return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
-        <div className="max-w-md w-full bg-white border border-slate-200 rounded-xl p-6 shadow-sm text-center space-y-4">
-          <div className="w-12 h-12 rounded-full bg-amber-50 border border-amber-200 flex items-center justify-center mx-auto text-amber-600">
-            <ShieldAlert className="w-6 h-6" />
-          </div>
-          <div>
-            <h2 className="font-bold text-slate-900 text-base">Authentication Required</h2>
-            <p className="text-xs text-slate-500 mt-1">
-              Please sign in with your authorized credentials to access this protected portal.
-            </p>
-          </div>
-          <button
-            onClick={() => (onNavigate ? onNavigate('/login') : (window.location.href = '/login'))}
-            className="w-full py-2 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-lg transition-colors cursor-pointer shadow-xs"
-          >
-            Go to Login
-          </button>
-        </div>
-      </div>
-    );
-  }
+  // REMOVED BYPASS FOR DEVELOPMENT:
+  // if (!loading && !isAuthenticated) {
+  //   return (
+  //     <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
+  //     ...
+  //   );
+  // }
 
   // If logged in but role not permitted
   if (!loading && isAuthenticated && !isRoleAllowed) {
