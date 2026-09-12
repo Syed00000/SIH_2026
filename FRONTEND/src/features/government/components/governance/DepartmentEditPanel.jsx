@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { 
   Building2, Map, Users, Shield, FileText, Upload, Settings, 
-  ArrowLeft, CheckCircle2, ChevronRight, DownloadCloud, Lock, FileBadge2, Save
+  ArrowLeft, CheckCircle2, ChevronRight, DownloadCloud, Lock, FileBadge2, Save,
+  AlertCircle, KeyRound, Sparkles, Send
 } from 'lucide-react';
 import { JHARKHAND_DISTRICTS_LIST } from '../../data/governmentConstants.js';
 
@@ -9,46 +10,117 @@ export const DepartmentEditPanel = ({ department, onBack, onSave }) => {
   const isEditing = Boolean(department);
 
   const [formData, setFormData] = useState({
-    name: '', code: '', category: 'State Ministry', departmentType: 'State Government Department',
-    parentAuthority: 'Government of Jharkhand', officialWebsite: '', headEmail: '', officeAddress: '',
-    applicableJurisdiction: 'Entire State of Jharkhand', headquartersLocation: 'Ranchi',
-    operationalDistrictsType: 'All 24 Districts (State Wide)', district: '',
-    involvedLowerLevels: ['State Department (Mandatory)', 'District Department', 'Block / Sub-Division / Local Office', 'Gram Panchayat / Urban Local Body'],
-    headName: '', headRole: 'Principal Secretary', headPhone: '', officeSecretariatLocation: '',
-    nodalOfficerName: '', nodalOfficerDesignation: 'Under Secretary', nodalOfficerEmail: '', nodalOfficerPhone: '',
-    description: '', keyFunctions: [''], powersApprovalAuthority: '', schemesManaged: '', departmentsCoordinated: '', problemCategoriesHandled: '',
-    goNumber: '', goDate: '', verificationStatus: 'Pending Verification',
-    status: 'Active', effectiveFrom: new Date().toISOString().split('T')[0], approvalRequired: true, remarks: '',
+    name: '',
+    code: '',
+    category: 'State Ministry',
+    departmentType: 'State Government Department',
+    parentAuthority: 'Government of Jharkhand',
+    officialWebsite: '',
+    headEmail: '',
+    officeAddress: '',
+    applicableJurisdiction: 'Entire State of Jharkhand',
+    headquartersLocation: 'Ranchi',
+    operationalDistrictsType: 'All 24 Districts (State Wide)',
+    district: '',
+    involvedLowerLevels: [
+      'State Department (Mandatory)',
+      'District Department',
+      'Block / Sub-Division / Local Office',
+      'Gram Panchayat / Urban Local Body'
+    ],
+    headName: '',
+    headRole: 'Principal Secretary',
+    headPhone: '',
+    officeSecretariatLocation: '',
+    nodalOfficerName: '',
+    nodalOfficerDesignation: 'Under Secretary',
+    nodalOfficerEmail: '',
+    nodalOfficerPhone: '',
+    description: '',
+    keyFunctions: [''],
+    powersApprovalAuthority: '',
+    schemesManaged: '',
+    departmentsCoordinated: '',
+    problemCategoriesHandled: '',
+    goNumber: '',
+    goDate: '',
+    verificationStatus: 'Pending Verification',
+    status: 'Active',
+    effectiveFrom: new Date().toISOString().split('T')[0],
+    approvalRequired: true,
+    remarks: '',
     credentials: {
-      loginId: '', loginEmail: '', password: '', mfaRequired: false, firstLoginPasswordChange: true,
-      credentialCreatedBy: 'Super Admin (Government)', credentialStatus: 'Pending Activation'
+      loginId: '',
+      loginEmail: '',
+      password: '',
+      mfaRequired: false,
+      firstLoginPasswordChange: true,
+      credentialCreatedBy: 'Super Admin (Government)',
+      credentialStatus: 'Pending Activation'
     }
   });
 
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [toastMessage, setToastMessage] = useState(null);
+
+  const showToast = (msg) => {
+    setToastMessage(msg);
+    setTimeout(() => setToastMessage(null), 3000);
+  };
 
   useEffect(() => {
     if (department) {
       setFormData({
-        name: department.name || '', code: department.code || department.deptId || '',
-        category: department.category || 'State Ministry', departmentType: department.departmentType || 'State Government Department',
-        parentAuthority: department.parentAuthority || 'Government of Jharkhand', officialWebsite: department.officialWebsite || '', 
-        headEmail: department.headEmail || '', officeAddress: department.officeAddress || '',
-        applicableJurisdiction: department.applicableJurisdiction || 'Entire State of Jharkhand', headquartersLocation: department.headquartersLocation || 'Ranchi',
-        operationalDistrictsType: department.operationalDistrictsType || 'All 24 Districts (State Wide)', district: department.district || '',
-        involvedLowerLevels: department.involvedLowerLevels?.length ? department.involvedLowerLevels : ['State Department (Mandatory)', 'District Department', 'Block / Sub-Division / Local Office', 'Gram Panchayat / Urban Local Body'],
-        headName: department.headName || '', headRole: department.headRole || 'Principal Secretary', headPhone: department.headPhone || '', officeSecretariatLocation: department.officeSecretariatLocation || '',
-        nodalOfficerName: department.nodalOfficerName || '', nodalOfficerDesignation: department.nodalOfficerDesignation || 'Under Secretary',
-        nodalOfficerEmail: department.nodalOfficerEmail || '', nodalOfficerPhone: department.nodalOfficerPhone || '',
-        description: department.description || '', keyFunctions: department.keyFunctions?.length ? department.keyFunctions : [''], 
-        powersApprovalAuthority: department.powersApprovalAuthority || '', schemesManaged: department.schemesManaged || '', departmentsCoordinated: department.departmentsCoordinated || '', problemCategoriesHandled: department.problemCategoriesHandled || '',
-        goNumber: department.goNumber || '', goDate: department.goDate || '', verificationStatus: department.verificationStatus || 'Pending Verification',
-        status: department.status || 'Active', effectiveFrom: department.effectiveFrom || new Date().toISOString().split('T')[0], approvalRequired: department.approvalRequired ?? true, remarks: department.remarks || '',
+        name: department.name || '',
+        code: department.code || department.deptId || '',
+        category: department.category || 'State Ministry',
+        departmentType: department.departmentType || 'State Government Department',
+        parentAuthority: department.parentAuthority || 'Government of Jharkhand',
+        officialWebsite: department.officialWebsite || '', 
+        headEmail: department.headEmail || '',
+        officeAddress: department.officeAddress || '',
+        applicableJurisdiction: department.applicableJurisdiction || 'Entire State of Jharkhand',
+        headquartersLocation: department.headquartersLocation || 'Ranchi',
+        operationalDistrictsType: department.operationalDistrictsType || 'All 24 Districts (State Wide)',
+        district: department.district || '',
+        involvedLowerLevels: department.involvedLowerLevels?.length
+          ? department.involvedLowerLevels
+          : [
+              'State Department (Mandatory)',
+              'District Department',
+              'Block / Sub-Division / Local Office',
+              'Gram Panchayat / Urban Local Body'
+            ],
+        headName: department.headName || '',
+        headRole: department.headRole || 'Principal Secretary',
+        headPhone: department.headPhone || '',
+        officeSecretariatLocation: department.officeSecretariatLocation || '',
+        nodalOfficerName: department.nodalOfficerName || '',
+        nodalOfficerDesignation: department.nodalOfficerDesignation || 'Under Secretary',
+        nodalOfficerEmail: department.nodalOfficerEmail || '',
+        nodalOfficerPhone: department.nodalOfficerPhone || '',
+        description: department.description || '',
+        keyFunctions: department.keyFunctions?.length ? department.keyFunctions : [''], 
+        powersApprovalAuthority: department.powersApprovalAuthority || '',
+        schemesManaged: department.schemesManaged || '',
+        departmentsCoordinated: department.departmentsCoordinated || '',
+        problemCategoriesHandled: department.problemCategoriesHandled || '',
+        goNumber: department.goNumber || '',
+        goDate: department.goDate || '',
+        verificationStatus: department.verificationStatus || 'Pending Verification',
+        status: department.status || 'Active',
+        effectiveFrom: department.effectiveFrom || new Date().toISOString().split('T')[0],
+        approvalRequired: department.approvalRequired ?? true,
+        remarks: department.remarks || '',
         credentials: {
-          loginId: department.credentials?.loginId || '', loginEmail: department.credentials?.loginEmail || '', password: department.credentials?.password || '', 
-          mfaRequired: department.credentials?.mfaRequired || false, firstLoginPasswordChange: department.credentials?.firstLoginPasswordChange ?? true,
-          credentialCreatedBy: department.credentials?.credentialCreatedBy || 'Super Admin (Government)', credentialStatus: department.credentials?.credentialStatus || 'Pending Activation'
+          loginId: department.credentials?.loginId || '',
+          loginEmail: department.credentials?.loginEmail || '',
+          password: department.credentials?.password || '', 
+          mfaRequired: department.credentials?.mfaRequired || false,
+          firstLoginPasswordChange: department.credentials?.firstLoginPasswordChange ?? true,
+          credentialCreatedBy: department.credentials?.credentialCreatedBy || 'Super Admin (Government)',
+          credentialStatus: department.credentials?.credentialStatus || 'Pending Activation'
         }
       });
     }
@@ -58,15 +130,18 @@ export const DepartmentEditPanel = ({ department, onBack, onSave }) => {
     const { name, value, type, checked } = e.target;
     if (name.startsWith('credentials.')) {
       const field = name.split('.')[1];
-      setFormData(prev => ({ ...prev, credentials: { ...prev.credentials, [field]: type === 'checkbox' ? checked : value } }));
+      setFormData(prev => ({
+        ...prev,
+        credentials: { ...prev.credentials, [field]: type === 'checkbox' ? checked : value }
+      }));
     } else {
-      setFormData((prev) => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
+      setFormData(prev => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
     }
-    if (errors[name]) setErrors((prev) => ({ ...prev, [name]: '' }));
+    if (errors[name]) setErrors(prev => ({ ...prev, [name]: '' }));
   };
 
   const handleCheckboxChange = (level) => {
-    setFormData((prev) => {
+    setFormData(prev => {
       if (level === 'State Department (Mandatory)') return prev;
       const isChecked = prev.involvedLowerLevels.includes(level);
       const newLevels = isChecked 
@@ -86,11 +161,28 @@ export const DepartmentEditPanel = ({ department, onBack, onSave }) => {
     setFormData(prev => ({ ...prev, keyFunctions: [...prev.keyFunctions, ''] }));
   };
 
+  const removeKeyFunction = (index) => {
+    if (formData.keyFunctions.length <= 1) return;
+    setFormData(prev => ({
+      ...prev,
+      keyFunctions: prev.keyFunctions.filter((_, i) => i !== index)
+    }));
+  };
+
+  const handleGeneratePassword = () => {
+    const generated = 'Jharkhand@' + Math.floor(1000 + Math.random() * 9000);
+    setFormData(prev => ({
+      ...prev,
+      credentials: { ...prev.credentials, password: generated }
+    }));
+    showToast('Secure password generated!');
+  };
+
   const validate = () => {
     const errs = {};
     if (!formData.name.trim()) errs.name = 'Department Name is Required';
     if (!formData.headEmail.trim() && !formData.credentials.loginEmail.trim()) {
-      errs.headEmail = 'Login Email is Required';
+      errs.headEmail = 'Official Department / Login Email is Required';
     }
     setErrors(errs);
     
@@ -106,10 +198,12 @@ export const DepartmentEditPanel = ({ department, onBack, onSave }) => {
     if (!validate()) return;
     setIsSubmitting(true);
     try {
-      // Ensure credentials loginEmail is synced if missing
       const payload = { ...formData };
       if (!payload.credentials.loginEmail) {
         payload.credentials.loginEmail = payload.headEmail;
+      }
+      if (!payload.credentials.loginId) {
+        payload.credentials.loginId = payload.code || payload.name.split(' ').map(w => w[0] || '').join('').toUpperCase();
       }
       await onSave(payload);
     } catch (err) {
@@ -120,432 +214,693 @@ export const DepartmentEditPanel = ({ department, onBack, onSave }) => {
   };
 
   return (
-    <div className="select-none bg-slate-50 min-h-screen pb-12">
-      {/* Top Header */}
-      <div className="bg-white border-b border-slate-200 px-6 py-4 sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <button type="button" onClick={onBack} className="p-2 hover:bg-slate-100 rounded-lg text-slate-500 transition-colors">
-              <ArrowLeft className="w-5 h-5" />
-            </button>
-            <div>
-              <div className="flex items-center gap-2 text-xs font-medium text-slate-500 mb-1">
-                <span>Departments</span> <ChevronRight className="w-3 h-3" />
-                <span>State Ministries</span> <ChevronRight className="w-3 h-3" />
-                <span className="text-[#007A61] font-bold">Register State Department</span>
-              </div>
-              <h1 className="text-xl font-black text-slate-900 tracking-tight flex items-center gap-3">
-                <Building2 className="w-5 h-5 text-[#007A61]" />
-                {isEditing ? `Edit: ${department?.name}` : 'Register State Department'}
-              </h1>
-              <p className="text-xs text-slate-500">Create state-level department, define administrative hierarchy, and create secure department access</p>
+    <div className="space-y-4 select-none max-w-[1400px] mx-auto pb-12 animate-fadeIn">
+      {/* Toast Notification */}
+      {toastMessage && (
+        <div className="fixed bottom-6 right-6 z-50 px-4 py-3 rounded-xl shadow-xl border text-xs font-bold flex items-center space-x-2 bg-slate-900 text-white border-slate-800 animate-slideUp">
+          <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+          <span>{toastMessage}</span>
+        </div>
+      )}
+
+      {/* Top Header Card - Consistent with User Admin Theme */}
+      <div className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/90 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={onBack}
+            className="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors cursor-pointer"
+            title="Back to Departments"
+          >
+            <ArrowLeft className="w-4 h-4" />
+          </button>
+          <div>
+            <div className="flex items-center gap-1.5 text-xs text-slate-500 font-medium mb-0.5">
+              <span>Departments</span>
+              <span>/</span>
+              <span>State Ministries</span>
+              <span>/</span>
+              <span className="text-slate-900 font-bold">{isEditing ? 'Edit Department' : 'Register State Department'}</span>
             </div>
+            <h1 className="text-base sm:text-lg font-black text-slate-900 tracking-tight flex items-center gap-2">
+              <Building2 className="w-4 h-4 text-slate-700" />
+              <span>{isEditing ? `Edit: ${department?.name || 'Department'}` : 'Register State Department'}</span>
+            </h1>
+            <p className="text-xs text-slate-500 font-medium">
+              Create state-level department, define administrative hierarchy, and configure secure department access
+            </p>
           </div>
-          <div className="flex items-center gap-3">
-            <button type="button" onClick={onBack} className="px-5 py-2 bg-white border border-slate-200 text-slate-700 rounded-lg text-sm font-bold hover:bg-slate-50 transition-colors">Cancel</button>
-            <button type="button" onClick={handleSubmit} disabled={isSubmitting} className="px-6 py-2 bg-[#007A61] text-white rounded-lg text-sm font-bold shadow-md hover:bg-[#00624e] disabled:opacity-50 transition-colors flex items-center gap-2">
-              <Save className="w-4 h-4" /> {isSubmitting ? 'Saving...' : 'Create State Department'}
-            </button>
-          </div>
+        </div>
+
+        <div className="flex items-center gap-2 self-end sm:self-auto">
+          <button
+            type="button"
+            onClick={onBack}
+            className="px-3.5 py-1.5 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-bold transition-all cursor-pointer shadow-2xs"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            form="department-edit-form"
+            disabled={isSubmitting}
+            className="flex items-center gap-1.5 px-4 py-1.5 bg-slate-900 hover:bg-black text-white rounded-xl text-xs font-bold transition-all cursor-pointer shadow-xs disabled:opacity-50"
+          >
+            <Save className="w-3.5 h-3.5 text-slate-300" />
+            <span>{isSubmitting ? 'Saving...' : (isEditing ? 'Save Changes' : 'Create State Department')}</span>
+          </button>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-6 py-6 flex flex-col lg:flex-row gap-6 items-start">
-        {/* Main Content Area */}
-        <div className="flex-1 space-y-6">
+      {Object.keys(errors).length > 0 && (
+        <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-xs text-red-700 font-semibold flex items-center gap-2">
+          <AlertCircle className="w-4 h-4 shrink-0" />
+          <span>Please complete all required fields marked with *</span>
+        </div>
+      )}
+
+      {/* Main Grid: Form Sections + Sticky Access Summary */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+        
+        {/* Main Form (8 Columns) */}
+        <form id="department-edit-form" onSubmit={handleSubmit} className="lg:col-span-8 space-y-5 text-xs">
           
           {/* Section 1: Department Identity */}
-          <div className="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden">
-            <div className="px-5 py-3.5 border-b border-slate-100 bg-slate-50 flex items-center gap-3">
-              <Building2 className="w-4 h-4 text-[#007A61]" />
-              <div>
-                <h2 className="text-sm font-bold text-[#007A61]">Department Identity</h2>
-                <p className="text-[11px] text-slate-500">Provide basic information about the state department</p>
+          <div className="bg-white rounded-2xl border border-slate-200/90 shadow-2xs overflow-hidden">
+            <div className="px-5 py-3.5 border-b border-slate-100 bg-slate-50/70 flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <Building2 className="w-4 h-4 text-slate-700" />
+                <h3 className="text-xs font-bold text-slate-900 tracking-tight">1. Department Identity</h3>
               </div>
+              <span className="text-[10px] text-slate-500 font-medium">Basic information & office location</span>
             </div>
-            <div className="p-5 grid grid-cols-1 md:grid-cols-3 gap-5 text-xs">
-              <div>
-                <label className="font-bold text-slate-700 block mb-1.5">Department / Ministry Name *</label>
-                <input type="text" name="name" placeholder="e.g. Department of Rural Development" value={formData.name} onChange={handleChange} className="w-full p-2.5 bg-slate-50 rounded-lg border border-slate-200 focus:outline-none focus:border-[#007A61]" />
+
+            <div className="p-5 grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="md:col-span-2">
+                <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+                  Department / Ministry Name <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  name="name"
+                  placeholder="e.g. Department of Higher & Technical Education"
+                  value={formData.name}
+                  onChange={handleChange}
+                  required
+                  className="w-full px-3 py-2 bg-slate-50/60 border border-slate-200 rounded-xl focus:bg-white focus:ring-1 focus:ring-slate-900 focus:border-slate-900 outline-none text-xs text-slate-900 font-medium"
+                />
               </div>
+
               <div>
-                <label className="font-bold text-slate-700 block mb-1.5">Department Code / Unique ID *</label>
-                <input type="text" name="code" placeholder="e.g. RD-001" value={formData.code} onChange={handleChange} className="w-full p-2.5 bg-slate-50 rounded-lg border border-slate-200 focus:outline-none focus:border-[#007A61]" />
+                <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+                  Department Code / Unique ID <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  name="code"
+                  placeholder="e.g. DHTE-001"
+                  value={formData.code}
+                  onChange={handleChange}
+                  required
+                  className="w-full px-3 py-2 bg-slate-50/60 border border-slate-200 rounded-xl focus:bg-white focus:ring-1 focus:ring-slate-900 focus:border-slate-900 outline-none text-xs text-slate-900 uppercase font-mono font-medium"
+                />
               </div>
+
               <div>
-                <label className="font-bold text-slate-700 block mb-1.5">Department Category *</label>
-                <select name="category" value={formData.category} onChange={handleChange} className="w-full p-2.5 bg-slate-50 rounded-lg border border-slate-200 focus:outline-none focus:border-[#007A61]">
-                  <option value="State Ministry">Select Category</option>
+                <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+                  Department Category <span className="text-red-500">*</span>
+                </label>
+                <select
+                  name="category"
+                  value={formData.category}
+                  onChange={handleChange}
+                  className="w-full px-3 py-2 bg-slate-50/60 border border-slate-200 rounded-xl focus:bg-white focus:ring-1 focus:ring-slate-900 focus:border-slate-900 outline-none text-xs text-slate-900 font-medium"
+                >
                   <option value="State Ministry">State Ministry</option>
+                  <option value="District Department">District Department</option>
+                  <option value="Block / Tehsil Office">Block / Tehsil Office</option>
+                  <option value="Gram Panchayat">Gram Panchayat</option>
                 </select>
               </div>
 
               <div>
-                <label className="font-bold text-slate-700 block mb-1.5">Department Type *</label>
-                <input type="text" disabled value={formData.departmentType} className="w-full p-2.5 bg-slate-100 text-slate-500 rounded-lg border border-slate-200 focus:outline-none" />
+                <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+                  Department Type
+                </label>
+                <input
+                  type="text"
+                  disabled
+                  value={formData.departmentType}
+                  className="w-full px-3 py-2 bg-slate-100 border border-slate-200 rounded-xl text-slate-500 text-xs font-medium cursor-not-allowed"
+                />
               </div>
+
+              <div>
+                <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+                  Parent Administrative Authority
+                </label>
+                <input
+                  type="text"
+                  disabled
+                  value={formData.parentAuthority}
+                  className="w-full px-3 py-2 bg-slate-100 border border-slate-200 rounded-xl text-slate-500 text-xs font-medium cursor-not-allowed"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+                  Official Website
+                </label>
+                <input
+                  type="text"
+                  name="officialWebsite"
+                  placeholder="https://dhte.jharkhand.gov.in"
+                  value={formData.officialWebsite}
+                  onChange={handleChange}
+                  className="w-full px-3 py-2 bg-slate-50/60 border border-slate-200 rounded-xl focus:bg-white focus:ring-1 focus:ring-slate-900 focus:border-slate-900 outline-none text-xs text-slate-900 font-medium"
+                />
+              </div>
+
               <div className="md:col-span-2">
-                <label className="font-bold text-slate-700 block mb-1.5">Parent Government / Administrative Authority</label>
-                <input type="text" disabled value={formData.parentAuthority} className="w-full p-2.5 bg-slate-100 text-slate-500 rounded-lg border border-slate-200 focus:outline-none" />
+                <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+                  Official Department Email <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="email"
+                  name="headEmail"
+                  placeholder="dept@jharkhand.gov.in"
+                  value={formData.headEmail}
+                  onChange={handleChange}
+                  required
+                  className="w-full px-3 py-2 bg-slate-50/60 border border-slate-200 rounded-xl focus:bg-white focus:ring-1 focus:ring-slate-900 focus:border-slate-900 outline-none text-xs text-slate-900 font-medium"
+                />
+              </div>
+
+              <div className="md:col-span-2">
+                <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+                  Office Secretariat Address <span className="text-red-500">*</span>
+                </label>
+                <textarea
+                  name="officeAddress"
+                  rows={3}
+                  placeholder="e.g. Project Bhawan, Dhurwa, Ranchi, Jharkhand - 834004"
+                  value={formData.officeAddress}
+                  onChange={handleChange}
+                  className="w-full px-3 py-2 bg-slate-50/60 border border-slate-200 rounded-xl focus:bg-white focus:ring-1 focus:ring-slate-900 focus:border-slate-900 outline-none text-xs text-slate-900 font-medium"
+                />
               </div>
 
               <div className="md:col-span-1">
-                <label className="font-bold text-slate-700 block mb-1.5">Official Website</label>
-                <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">🔗</span>
-                  <input type="text" name="officialWebsite" placeholder="https://example.jharkhand.gov.in" value={formData.officialWebsite} onChange={handleChange} className="w-full pl-8 p-2.5 bg-slate-50 rounded-lg border border-slate-200 focus:outline-none focus:border-[#007A61]" />
-                </div>
-              </div>
-              <div className="md:col-span-2">
-                <label className="font-bold text-slate-700 block mb-1.5">Official Department Email *</label>
-                <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">✉️</span>
-                  <input type="email" name="headEmail" placeholder="dept@jharkhand.gov.in" value={formData.headEmail} onChange={handleChange} className="w-full pl-8 p-2.5 bg-slate-50 rounded-lg border border-slate-200 focus:outline-none focus:border-[#007A61]" />
-                </div>
-              </div>
-
-              <div className="md:col-span-2">
-                <label className="font-bold text-slate-700 block mb-1.5">Office Address *</label>
-                <div className="relative">
-                  <span className="absolute left-3 top-3 text-slate-400">📍</span>
-                  <textarea name="officeAddress" rows={3} placeholder="e.g. Project Bhawan, Dhurwa, Ranchi - 834004" value={formData.officeAddress} onChange={handleChange} className="w-full pl-8 p-2.5 bg-slate-50 rounded-lg border border-slate-200 focus:outline-none focus:border-[#007A61]" />
-                </div>
-              </div>
-              <div className="md:col-span-1 flex flex-col justify-end">
-                <label className="font-bold text-slate-700 block mb-1.5">Department Logo</label>
-                <div className="border-2 border-dashed border-slate-200 rounded-lg bg-slate-50 p-4 text-center cursor-pointer hover:bg-slate-100 hover:border-[#007A61] transition-colors">
-                  <DownloadCloud className="w-6 h-6 text-[#007A61] mx-auto mb-2" />
-                  <p className="text-[10px] text-slate-500">Click to upload or drag & drop<br/>PNG, JPG (Max 2 MB)</p>
+                <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+                  Department Seal / Logo
+                </label>
+                <div className="border-2 border-dashed border-slate-200 hover:border-slate-400 rounded-xl bg-slate-50/60 hover:bg-slate-100/60 p-3.5 text-center cursor-pointer transition-colors flex flex-col items-center justify-center h-[76px]">
+                  <DownloadCloud className="w-5 h-5 text-slate-500 mb-1" />
+                  <p className="text-[10px] text-slate-600 font-bold">Upload Logo (PNG, JPG)</p>
                 </div>
               </div>
             </div>
           </div>
 
           {/* Section 2: Administrative Scope & Hierarchy */}
-          <div className="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden">
-            <div className="px-5 py-3.5 border-b border-slate-100 bg-slate-50 flex items-center gap-3">
-              <Map className="w-4 h-4 text-[#007A61]" />
-              <div>
-                <h2 className="text-sm font-bold text-[#007A61]">Administrative Scope & Hierarchy</h2>
-                <p className="text-[11px] text-slate-500">Define jurisdiction and applicable administrative levels</p>
+          <div className="bg-white rounded-2xl border border-slate-200/90 shadow-2xs overflow-hidden">
+            <div className="px-5 py-3.5 border-b border-slate-100 bg-slate-50/70 flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <Map className="w-4 h-4 text-slate-700" />
+                <h3 className="text-xs font-bold text-slate-900 tracking-tight">2. Administrative Scope & Hierarchy</h3>
               </div>
+              <span className="text-[10px] text-slate-500 font-medium">Jurisdictional coverage & sub-tiers</span>
             </div>
-            <div className="p-5 grid grid-cols-1 md:grid-cols-2 gap-6 text-xs">
-              <div className="space-y-5">
+
+            <div className="p-5 grid grid-cols-1 md:grid-cols-2 gap-5">
+              <div className="space-y-4">
                 <div>
-                  <label className="font-bold text-slate-700 block mb-1.5">Jurisdiction *</label>
-                  <select name="applicableJurisdiction" value={formData.applicableJurisdiction} onChange={handleChange} className="w-full p-2.5 bg-slate-50 rounded-lg border border-slate-200 focus:outline-none focus:border-[#007A61]">
+                  <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+                    Jurisdiction <span className="text-red-500">*</span>
+                  </label>
+                  <select
+                    name="applicableJurisdiction"
+                    value={formData.applicableJurisdiction}
+                    onChange={handleChange}
+                    className="w-full px-3 py-2 bg-slate-50/60 border border-slate-200 rounded-xl focus:bg-white focus:ring-1 focus:ring-slate-900 focus:border-slate-900 outline-none text-xs text-slate-900 font-medium"
+                  >
                     <option value="Entire State of Jharkhand">Entire State of Jharkhand</option>
+                    <option value="District Level Jurisdiction">District Level Jurisdiction</option>
+                    <option value="Block Level Jurisdiction">Block Level Jurisdiction</option>
                   </select>
                 </div>
+
                 <div>
-                  <label className="font-bold text-slate-700 block mb-2">District Coverage *</label>
-                  <label className="flex items-center gap-2 mb-2 cursor-pointer">
-                    <input type="radio" name="operationalDistrictsType" value="All 24 Districts (State Wide)" checked={formData.operationalDistrictsType === 'All 24 Districts (State Wide)'} onChange={handleChange} className="accent-[#007A61]" />
-                    <span className="font-bold text-slate-800">All 24 Districts (State Wide)</span>
+                  <label className="block text-[11px] font-semibold text-slate-700 mb-1.5">
+                    District Coverage <span className="text-red-500">*</span>
                   </label>
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input type="radio" name="operationalDistrictsType" value="Select Specific Districts" checked={formData.operationalDistrictsType === 'Select Specific Districts'} onChange={handleChange} className="accent-[#007A61]" />
-                    <span className="text-slate-600">Select Specific Districts</span>
-                  </label>
-                </div>
-              </div>
-              <div>
-                <label className="font-bold text-slate-700 block mb-2">Administrative Levels Enabled</label>
-                <div className="space-y-2.5">
-                  {['State Department (Mandatory)', 'District Department', 'Block / Sub-Division / Local Office', 'Gram Panchayat / Urban Local Body', 'Ward / Field Office'].map((level) => (
-                    <label key={level} className="flex items-center gap-2 cursor-pointer">
-                      <div className={`w-4 h-4 rounded border flex items-center justify-center ${formData.involvedLowerLevels.includes(level) ? 'bg-[#007A61] border-[#007A61]' : 'border-slate-300'}`}>
-                        {formData.involvedLowerLevels.includes(level) && <span className="text-white text-[10px]">✓</span>}
-                      </div>
-                      <input type="checkbox" className="hidden" checked={formData.involvedLowerLevels.includes(level)} onChange={() => handleCheckboxChange(level)} />
-                      <span className={`text-slate-700 ${level === 'State Department (Mandatory)' ? 'font-semibold' : ''}`}>{level}</span>
+                  <div className="space-y-2">
+                    <label className="flex items-center space-x-2 cursor-pointer p-2 rounded-xl bg-slate-50 hover:bg-slate-100/70 border border-slate-200/80 transition-colors">
+                      <input
+                        type="radio"
+                        name="operationalDistrictsType"
+                        value="All 24 Districts (State Wide)"
+                        checked={formData.operationalDistrictsType === 'All 24 Districts (State Wide)'}
+                        onChange={handleChange}
+                        className="accent-slate-900"
+                      />
+                      <span className="font-bold text-slate-900 text-xs">All 24 Districts (State Wide)</span>
                     </label>
-                  ))}
+                    <label className="flex items-center space-x-2 cursor-pointer p-2 rounded-xl bg-slate-50 hover:bg-slate-100/70 border border-slate-200/80 transition-colors">
+                      <input
+                        type="radio"
+                        name="operationalDistrictsType"
+                        value="Select Specific Districts"
+                        checked={formData.operationalDistrictsType === 'Select Specific Districts'}
+                        onChange={handleChange}
+                        className="accent-slate-900"
+                      />
+                      <span className="text-slate-700 font-medium text-xs">Select Specific Districts</span>
+                    </label>
+                  </div>
                 </div>
               </div>
-              <div className="md:col-span-2 bg-blue-50/50 rounded-lg p-3 border border-blue-100 flex items-start gap-3">
-                <span className="text-blue-500 font-bold mt-0.5">ⓘ</span>
-                <p className="text-blue-800 leading-relaxed">Note: Lower administrative levels are configurable as per department requirements and are NOT mandatory for every department.</p>
+
+              <div>
+                <label className="block text-[11px] font-semibold text-slate-700 mb-1.5">
+                  Administrative Levels Enabled
+                </label>
+                <div className="space-y-2">
+                  {[
+                    'State Department (Mandatory)',
+                    'District Department',
+                    'Block / Sub-Division / Local Office',
+                    'Gram Panchayat / Urban Local Body',
+                    'Ward / Field Office'
+                  ].map((level) => {
+                    const isChecked = formData.involvedLowerLevels.includes(level);
+                    return (
+                      <label
+                        key={level}
+                        className={`flex items-center space-x-2.5 p-2 rounded-xl border transition-all cursor-pointer ${
+                          isChecked
+                            ? 'bg-slate-900 text-white border-slate-900'
+                            : 'bg-slate-50 text-slate-700 border-slate-200/80 hover:bg-slate-100/70'
+                        }`}
+                      >
+                        <input
+                          type="checkbox"
+                          className="sr-only"
+                          checked={isChecked}
+                          onChange={() => handleCheckboxChange(level)}
+                        />
+                        <div
+                          className={`w-4 h-4 rounded-md border flex items-center justify-center shrink-0 ${
+                            isChecked ? 'bg-white border-white' : 'border-slate-300 bg-white'
+                          }`}
+                        >
+                          {isChecked && <CheckCircle2 className="w-3.5 h-3.5 text-slate-900" />}
+                        </div>
+                        <span className="text-xs font-semibold">{level}</span>
+                      </label>
+                    );
+                  })}
+                </div>
               </div>
-              <div className="md:col-span-2 flex justify-end">
-                <button type="button" className="px-4 py-2 border border-[#007A61] text-[#007A61] rounded-lg font-bold hover:bg-[#007A61]/5 transition-colors flex items-center gap-2">
-                  <Settings className="w-3.5 h-3.5" /> Configure Hierarchy
-                </button>
+
+              <div className="md:col-span-2 p-3 bg-slate-50 rounded-xl border border-slate-200/80 flex items-start gap-2.5 text-xs text-slate-600">
+                <span className="text-slate-500 font-bold mt-0.5">ⓘ</span>
+                <p className="leading-relaxed">
+                  Note: Lower administrative levels are configurable per department requirements and propagate telemetry up the hierarchy automatically.
+                </p>
               </div>
             </div>
           </div>
 
           {/* Section 3: State Department Leadership */}
-          <div className="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden">
-            <div className="px-5 py-3.5 border-b border-slate-100 bg-slate-50 flex items-center gap-3">
-              <Users className="w-4 h-4 text-[#007A61]" />
-              <div>
-                <h2 className="text-sm font-bold text-[#007A61]">State Department Leadership</h2>
-                <p className="text-[11px] text-slate-500">Add head of department and nodal officer details</p>
+          <div className="bg-white rounded-2xl border border-slate-200/90 shadow-2xs overflow-hidden">
+            <div className="px-5 py-3.5 border-b border-slate-100 bg-slate-50/70 flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <Users className="w-4 h-4 text-slate-700" />
+                <h3 className="text-xs font-bold text-slate-900 tracking-tight">3. State Department Leadership</h3>
               </div>
+              <span className="text-[10px] text-slate-500 font-medium">HOD & Nodal Officer Information</span>
             </div>
-            <div className="p-5 grid grid-cols-1 md:grid-cols-4 gap-5 text-xs">
+
+            <div className="p-5 grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="font-bold text-slate-700 block mb-1.5">Head of Department (HOD) Name *</label>
-                <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">👤</span>
-                  <input type="text" name="headName" placeholder="e.g. Shri Ramesh Kumar" value={formData.headName} onChange={handleChange} className="w-full pl-8 p-2.5 bg-slate-50 rounded-lg border border-slate-200 focus:outline-none focus:border-[#007A61]" />
-                </div>
-              </div>
-              <div>
-                <label className="font-bold text-slate-700 block mb-1.5">Designation *</label>
-                <input type="text" name="headRole" placeholder="e.g. Principal Secretary" value={formData.headRole} onChange={handleChange} className="w-full p-2.5 bg-slate-50 rounded-lg border border-slate-200 focus:outline-none focus:border-[#007A61]" />
-              </div>
-              <div>
-                <label className="font-bold text-slate-700 block mb-1.5">Official Email *</label>
-                <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">✉️</span>
-                  <input type="email" name="headEmail" placeholder="hod@jharkhand.gov.in" value={formData.headEmail} onChange={handleChange} className="w-full pl-8 p-2.5 bg-slate-50 rounded-lg border border-slate-200 focus:outline-none focus:border-[#007A61]" />
-                </div>
-              </div>
-              <div>
-                <label className="font-bold text-slate-700 block mb-1.5">Official Phone *</label>
-                <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">📞</span>
-                  <input type="text" name="headPhone" placeholder="+91 9876543210" value={formData.headPhone} onChange={handleChange} className="w-full pl-8 p-2.5 bg-slate-50 rounded-lg border border-slate-200 focus:outline-none focus:border-[#007A61]" />
-                </div>
+                <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+                  Head of Department (HOD) Name <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  name="headName"
+                  placeholder="e.g. Shri Ramesh Kumar, IAS"
+                  value={formData.headName}
+                  onChange={handleChange}
+                  className="w-full px-3 py-2 bg-slate-50/60 border border-slate-200 rounded-xl focus:bg-white focus:ring-1 focus:ring-slate-900 focus:border-slate-900 outline-none text-xs text-slate-900 font-medium"
+                />
               </div>
 
               <div>
-                <label className="font-bold text-slate-700 block mb-1.5">Office / Secretariat Location *</label>
-                <input type="text" name="officeSecretariatLocation" placeholder="e.g. Project Bhawan, Ranchi" value={formData.officeSecretariatLocation} onChange={handleChange} className="w-full p-2.5 bg-slate-50 rounded-lg border border-slate-200 focus:outline-none focus:border-[#007A61]" />
+                <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+                  Designation <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  name="headRole"
+                  placeholder="e.g. Principal Secretary"
+                  value={formData.headRole}
+                  onChange={handleChange}
+                  className="w-full px-3 py-2 bg-slate-50/60 border border-slate-200 rounded-xl focus:bg-white focus:ring-1 focus:ring-slate-900 focus:border-slate-900 outline-none text-xs text-slate-900 font-medium"
+                />
               </div>
+
               <div>
-                <label className="font-bold text-slate-700 block mb-1.5">Nodal Officer Name *</label>
-                <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">👤</span>
-                  <input type="text" name="nodalOfficerName" placeholder="e.g. Smt. Anita Verma" value={formData.nodalOfficerName} onChange={handleChange} className="w-full pl-8 p-2.5 bg-slate-50 rounded-lg border border-slate-200 focus:outline-none focus:border-[#007A61]" />
-                </div>
+                <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+                  Official HOD Email <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="email"
+                  name="headEmail"
+                  placeholder="hod@jharkhand.gov.in"
+                  value={formData.headEmail}
+                  onChange={handleChange}
+                  className="w-full px-3 py-2 bg-slate-50/60 border border-slate-200 rounded-xl focus:bg-white focus:ring-1 focus:ring-slate-900 focus:border-slate-900 outline-none text-xs text-slate-900 font-medium"
+                />
               </div>
+
               <div>
-                <label className="font-bold text-slate-700 block mb-1.5">Nodal Officer Email *</label>
-                <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">✉️</span>
-                  <input type="email" name="nodalOfficerEmail" placeholder="nodal@jharkhand.gov.in" value={formData.nodalOfficerEmail} onChange={handleChange} className="w-full pl-8 p-2.5 bg-slate-50 rounded-lg border border-slate-200 focus:outline-none focus:border-[#007A61]" />
-                </div>
+                <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+                  Official HOD Contact Number
+                </label>
+                <input
+                  type="text"
+                  name="headPhone"
+                  placeholder="+91 9876543210"
+                  value={formData.headPhone}
+                  onChange={handleChange}
+                  className="w-full px-3 py-2 bg-slate-50/60 border border-slate-200 rounded-xl focus:bg-white focus:ring-1 focus:ring-slate-900 focus:border-slate-900 outline-none text-xs text-slate-900 font-medium"
+                />
               </div>
-              <div>
-                <label className="font-bold text-slate-700 block mb-1.5">Nodal Officer Phone *</label>
-                <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">📞</span>
-                  <input type="text" name="nodalOfficerPhone" placeholder="+91 9876543210" value={formData.nodalOfficerPhone} onChange={handleChange} className="w-full pl-8 p-2.5 bg-slate-50 rounded-lg border border-slate-200 focus:outline-none focus:border-[#007A61]" />
+
+              <div className="md:col-span-2 pt-2 border-t border-slate-100">
+                <span className="text-[11px] font-bold text-slate-900 uppercase tracking-wider block mb-3">
+                  Designated Nodal Officer Contact
+                </span>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div>
+                    <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+                      Nodal Officer Name
+                    </label>
+                    <input
+                      type="text"
+                      name="nodalOfficerName"
+                      placeholder="e.g. Smt. Anita Verma"
+                      value={formData.nodalOfficerName}
+                      onChange={handleChange}
+                      className="w-full px-3 py-2 bg-slate-50/60 border border-slate-200 rounded-xl focus:bg-white focus:ring-1 focus:ring-slate-900 focus:border-slate-900 outline-none text-xs text-slate-900 font-medium"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+                      Nodal Officer Email
+                    </label>
+                    <input
+                      type="email"
+                      name="nodalOfficerEmail"
+                      placeholder="nodal@jharkhand.gov.in"
+                      value={formData.nodalOfficerEmail}
+                      onChange={handleChange}
+                      className="w-full px-3 py-2 bg-slate-50/60 border border-slate-200 rounded-xl focus:bg-white focus:ring-1 focus:ring-slate-900 focus:border-slate-900 outline-none text-xs text-slate-900 font-medium"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+                      Nodal Officer Phone
+                    </label>
+                    <input
+                      type="text"
+                      name="nodalOfficerPhone"
+                      placeholder="+91 9876543210"
+                      value={formData.nodalOfficerPhone}
+                      onChange={handleChange}
+                      className="w-full px-3 py-2 bg-slate-50/60 border border-slate-200 rounded-xl focus:bg-white focus:ring-1 focus:ring-slate-900 focus:border-slate-900 outline-none text-xs text-slate-900 font-medium"
+                    />
+                  </div>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Section 4: State Department Login & Access */}
-          <div className="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden">
-            <div className="px-5 py-3.5 border-b border-slate-100 bg-slate-50 flex items-center gap-3">
-              <Shield className="w-4 h-4 text-[#007A61]" />
-              <div>
-                <h2 className="text-sm font-bold text-[#007A61]">State Department Login & Access</h2>
-                <p className="text-[11px] text-slate-500">Create principal login account for the department</p>
+          {/* Section 4: Department Login & Portal Access */}
+          <div className="bg-white rounded-2xl border border-slate-200/90 shadow-2xs overflow-hidden">
+            <div className="px-5 py-3.5 border-b border-slate-100 bg-slate-50/70 flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <KeyRound className="w-4 h-4 text-slate-700" />
+                <h3 className="text-xs font-bold text-slate-900 tracking-tight">4. Department Login & Portal Access</h3>
               </div>
+              <span className="text-[10px] text-slate-500 font-medium">Principal portal credentials</span>
             </div>
-            <div className="p-5 grid grid-cols-1 md:grid-cols-4 gap-5 text-xs">
-              <div>
-                <label className="font-bold text-slate-700 block mb-1.5">Login ID / Official Email *</label>
-                <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">✉️</span>
-                  <input type="text" name="credentials.loginEmail" placeholder="dept@jharkhand.gov.in" value={formData.credentials.loginEmail} onChange={handleChange} className="w-full pl-8 p-2.5 bg-slate-50 rounded-lg border border-slate-200 focus:outline-none focus:border-[#007A61]" />
-                </div>
-              </div>
-              <div>
-                <label className="font-bold text-slate-700 block mb-1.5">Username / Department ID *</label>
-                <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">👤</span>
-                  <input type="text" name="credentials.loginId" placeholder="e.g. RD-001" value={formData.credentials.loginId} onChange={handleChange} className="w-full pl-8 p-2.5 bg-slate-50 rounded-lg border border-slate-200 focus:outline-none focus:border-[#007A61]" />
-                </div>
-              </div>
-              <div>
-                <label className="font-bold text-slate-700 block mb-1.5">Initial Password *</label>
-                <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"><Lock className="w-3.5 h-3.5" /></span>
-                  <input type="password" name="credentials.password" placeholder="•••••••••" value={formData.credentials.password} onChange={handleChange} className="w-full pl-8 p-2.5 bg-slate-50 rounded-lg border border-slate-200 focus:outline-none focus:border-[#007A61]" />
-                </div>
-              </div>
-              <div>
-                <label className="font-bold text-slate-700 block mb-1.5">Confirm Password *</label>
-                <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"><Lock className="w-3.5 h-3.5" /></span>
-                  <input type="password" placeholder="•••••••••" className="w-full pl-8 p-2.5 bg-slate-50 rounded-lg border border-slate-200 focus:outline-none focus:border-[#007A61]" />
-                </div>
-              </div>
 
-              <div className="flex items-center justify-between bg-slate-50 p-2.5 rounded-lg border border-slate-200">
-                <span className="font-bold text-slate-700">MFA Required ⓘ</span>
-                <label className="relative inline-flex items-center cursor-pointer">
-                  <input type="checkbox" name="credentials.mfaRequired" checked={formData.credentials.mfaRequired} onChange={handleChange} className="sr-only peer" />
-                  <div className="w-9 h-5 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[#007A61]"></div>
-                </label>
-              </div>
-              <div className="flex items-center justify-between bg-slate-50 p-2.5 rounded-lg border border-slate-200">
-                <span className="font-bold text-slate-700">First Login Password Change</span>
-                <label className="relative inline-flex items-center cursor-pointer">
-                  <input type="checkbox" name="credentials.firstLoginPasswordChange" checked={formData.credentials.firstLoginPasswordChange} onChange={handleChange} className="sr-only peer" />
-                  <div className="w-9 h-5 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[#007A61]"></div>
-                </label>
-              </div>
+            <div className="p-5 grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="font-bold text-slate-700 block mb-1.5">Role</label>
-                <select className="w-full p-2.5 bg-slate-50 rounded-lg border border-slate-200 focus:outline-none focus:border-[#007A61]">
-                  <option>State Department Principal</option>
-                </select>
-              </div>
-              <div>
-                <label className="font-bold text-slate-700 block mb-1.5">Access Scope</label>
-                <select className="w-full p-2.5 bg-slate-50 rounded-lg border border-slate-200 focus:outline-none focus:border-[#007A61]">
-                  <option>State Department only</option>
-                </select>
+                <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+                  Login ID / Official Email <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  name="credentials.loginEmail"
+                  placeholder="dept@jharkhand.gov.in"
+                  value={formData.credentials.loginEmail}
+                  onChange={handleChange}
+                  className="w-full px-3 py-2 bg-slate-50/60 border border-slate-200 rounded-xl focus:bg-white focus:ring-1 focus:ring-slate-900 focus:border-slate-900 outline-none text-xs text-slate-900 font-medium"
+                />
               </div>
 
               <div>
-                <label className="font-bold text-slate-700 block mb-1.5">Credential Created By</label>
-                <input type="text" disabled value={formData.credentials.credentialCreatedBy} className="w-full p-2.5 bg-slate-100 text-slate-500 rounded-lg border border-slate-200 focus:outline-none" />
+                <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+                  Username / Department UID <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  name="credentials.loginId"
+                  placeholder="e.g. DHTE-001"
+                  value={formData.credentials.loginId}
+                  onChange={handleChange}
+                  className="w-full px-3 py-2 bg-slate-50/60 border border-slate-200 rounded-xl focus:bg-white focus:ring-1 focus:ring-slate-900 focus:border-slate-900 outline-none text-xs text-slate-900 font-medium"
+                />
               </div>
+
               <div>
-                <label className="font-bold text-slate-700 block mb-1.5">Credential Status</label>
-                <input type="text" disabled value={formData.credentials.credentialStatus} className="w-full p-2.5 bg-slate-100 text-slate-500 rounded-lg border border-slate-200 focus:outline-none" />
+                <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+                  Initial Password <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  name="credentials.password"
+                  placeholder="Enter or generate password"
+                  value={formData.credentials.password}
+                  onChange={handleChange}
+                  className="w-full px-3 py-2 bg-slate-50/60 border border-slate-200 rounded-xl focus:bg-white focus:ring-1 focus:ring-slate-900 focus:border-slate-900 outline-none text-xs text-slate-900 font-mono"
+                />
               </div>
-              <div className="md:col-span-2 flex items-end gap-3 justify-end">
-                <button type="button" className="px-4 py-2 border border-[#007A61] text-[#007A61] rounded-lg font-bold hover:bg-[#007A61]/5 transition-colors flex items-center gap-2">
-                  <Shield className="w-3.5 h-3.5" /> Generate Secure Password
+
+              <div className="flex items-end">
+                <button
+                  type="button"
+                  onClick={handleGeneratePassword}
+                  className="w-full py-2 px-3 border border-slate-200 hover:bg-slate-50 text-slate-700 font-bold rounded-xl text-xs flex items-center justify-center space-x-2 transition-colors cursor-pointer shadow-2xs"
+                >
+                  <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+                  <span>Generate Secure Password</span>
                 </button>
-                <button type="button" className="px-4 py-2 bg-[#007A61] text-white rounded-lg font-bold shadow-xs hover:bg-[#00624e] transition-colors flex items-center gap-2">
-                  <Lock className="w-3.5 h-3.5" /> Send Activation Link
-                </button>
+              </div>
+
+              <div className="p-3 bg-slate-50 rounded-xl border border-slate-200/80 flex items-center justify-between">
+                <div>
+                  <span className="font-bold text-slate-900 block text-xs">MFA Authentication</span>
+                  <span className="text-[10px] text-slate-500">Require multi-factor OTP on login</span>
+                </div>
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    name="credentials.mfaRequired"
+                    checked={formData.credentials.mfaRequired}
+                    onChange={handleChange}
+                    className="sr-only peer"
+                  />
+                  <div className="w-9 h-5 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-slate-900"></div>
+                </label>
+              </div>
+
+              <div className="p-3 bg-slate-50 rounded-xl border border-slate-200/80 flex items-center justify-between">
+                <div>
+                  <span className="font-bold text-slate-900 block text-xs">Password Reset on 1st Login</span>
+                  <span className="text-[10px] text-slate-500">Force password change initially</span>
+                </div>
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    name="credentials.firstLoginPasswordChange"
+                    checked={formData.credentials.firstLoginPasswordChange}
+                    onChange={handleChange}
+                    className="sr-only peer"
+                  />
+                  <div className="w-9 h-5 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-slate-900"></div>
+                </label>
               </div>
             </div>
           </div>
 
           {/* Section 5: Mandate, Functions & Authority */}
-          <div className="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden">
-            <div className="px-5 py-3.5 border-b border-slate-100 bg-slate-50 flex items-center gap-3">
-              <FileText className="w-4 h-4 text-[#007A61]" />
-              <div>
-                <h2 className="text-sm font-bold text-[#007A61]">Mandate, Functions & Authority</h2>
-                <p className="text-[11px] text-slate-500">Define mandate, key functions and operational scope</p>
+          <div className="bg-white rounded-2xl border border-slate-200/90 shadow-2xs overflow-hidden">
+            <div className="px-5 py-3.5 border-b border-slate-100 bg-slate-50/70 flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <FileText className="w-4 h-4 text-slate-700" />
+                <h3 className="text-xs font-bold text-slate-900 tracking-tight">5. Mandate, Functions & Authority</h3>
               </div>
+              <span className="text-[10px] text-slate-500 font-medium">Civic duties and scope</span>
             </div>
-            <div className="p-5 grid grid-cols-1 md:grid-cols-2 gap-6 text-xs">
-              <div>
-                <label className="font-bold text-slate-700 block mb-1.5">Mandate / Objective *</label>
-                <textarea name="description" rows={5} placeholder="Describe the main mandate and objective of this department..." value={formData.description} onChange={handleChange} className="w-full p-2.5 bg-slate-50 rounded-lg border border-slate-200 focus:outline-none focus:border-[#007A61]" />
-                <div className="text-right text-[10px] text-slate-400 mt-1">0/1000</div>
+
+            <div className="p-5 grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="md:col-span-2">
+                <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+                  Mandate / Department Objective <span className="text-red-500">*</span>
+                </label>
+                <textarea
+                  name="description"
+                  rows={3}
+                  placeholder="Describe the main mandate, scope, and key objectives of this department..."
+                  value={formData.description}
+                  onChange={handleChange}
+                  className="w-full px-3 py-2 bg-slate-50/60 border border-slate-200 rounded-xl focus:bg-white focus:ring-1 focus:ring-slate-900 focus:border-slate-900 outline-none text-xs text-slate-900 font-medium"
+                />
               </div>
-              <div>
-                <label className="font-bold text-slate-700 block mb-1.5">Key Functions</label>
+
+              <div className="md:col-span-2">
+                <label className="block text-[11px] font-semibold text-slate-700 mb-1.5">
+                  Key Functions & Responsibilities
+                </label>
                 <div className="space-y-2">
                   {formData.keyFunctions.map((kf, i) => (
                     <div key={i} className="flex items-center gap-2">
-                      <span className="font-bold text-slate-400">{i+1}.</span>
-                      <input type="text" value={kf} onChange={(e) => handleKeyFunctionChange(i, e.target.value)} placeholder={`e.g. ${['Policy formulation', 'Program implementation', 'Monitoring and evaluation'][i] || 'New function'}`} className="w-full p-2 bg-slate-50 rounded-lg border border-slate-200 focus:outline-none focus:border-[#007A61]" />
+                      <span className="font-mono font-bold text-slate-400 text-xs w-4">{i + 1}.</span>
+                      <input
+                        type="text"
+                        value={kf}
+                        onChange={(e) => handleKeyFunctionChange(i, e.target.value)}
+                        placeholder="e.g. Policy formulation, Higher education infrastructure development..."
+                        className="flex-1 px-3 py-1.5 bg-slate-50/60 border border-slate-200 rounded-xl focus:bg-white focus:ring-1 focus:ring-slate-900 focus:border-slate-900 outline-none text-xs text-slate-900 font-medium"
+                      />
+                      {formData.keyFunctions.length > 1 && (
+                        <button
+                          type="button"
+                          onClick={() => removeKeyFunction(i)}
+                          className="text-slate-400 hover:text-red-600 px-2 py-1 text-xs font-bold"
+                        >
+                          ✕
+                        </button>
+                      )}
                     </div>
                   ))}
-                  <button type="button" onClick={addKeyFunction} className="text-[#007A61] font-bold mt-2 flex items-center gap-1 hover:underline">
-                    + Add Another Function
+                  <button
+                    type="button"
+                    onClick={addKeyFunction}
+                    className="text-slate-900 hover:text-black font-bold text-xs mt-1 inline-flex items-center space-x-1 cursor-pointer"
+                  >
+                    <span>+ Add Another Function</span>
                   </button>
                 </div>
               </div>
 
               <div>
-                <label className="font-bold text-slate-700 block mb-1.5">Powers / Approval Authority</label>
-                <input type="text" name="powersApprovalAuthority" placeholder="e.g. Policy decisions, fund allocation..." value={formData.powersApprovalAuthority} onChange={handleChange} className="w-full p-2.5 bg-slate-50 rounded-lg border border-slate-200 focus:outline-none focus:border-[#007A61]" />
+                <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+                  Powers & Approval Authority
+                </label>
+                <input
+                  type="text"
+                  name="powersApprovalAuthority"
+                  placeholder="e.g. Policy approval, university funding..."
+                  value={formData.powersApprovalAuthority}
+                  onChange={handleChange}
+                  className="w-full px-3 py-2 bg-slate-50/60 border border-slate-200 rounded-xl focus:bg-white focus:ring-1 focus:ring-slate-900 focus:border-slate-900 outline-none text-xs text-slate-900 font-medium"
+                />
               </div>
+
               <div>
-                <label className="font-bold text-slate-700 block mb-1.5">Schemes / Programmes Managed</label>
-                <input type="text" name="schemesManaged" placeholder="e.g. List major schemes..." value={formData.schemesManaged} onChange={handleChange} className="w-full p-2.5 bg-slate-50 rounded-lg border border-slate-200 focus:outline-none focus:border-[#007A61]" />
-              </div>
-              <div>
-                <label className="font-bold text-slate-700 block mb-1.5">Departments / Offices Coordinated With</label>
-                <input type="text" name="departmentsCoordinated" placeholder="e.g. Finance, Planning, etc..." value={formData.departmentsCoordinated} onChange={handleChange} className="w-full p-2.5 bg-slate-50 rounded-lg border border-slate-200 focus:outline-none focus:border-[#007A61]" />
-              </div>
-              <div>
-                <label className="font-bold text-slate-700 block mb-1.5">Problem Categories Handled</label>
-                <input type="text" name="problemCategoriesHandled" placeholder="e.g. Infrastructure, Education, Health..." value={formData.problemCategoriesHandled} onChange={handleChange} className="w-full p-2.5 bg-slate-50 rounded-lg border border-slate-200 focus:outline-none focus:border-[#007A61]" />
+                <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+                  Major Schemes Managed
+                </label>
+                <input
+                  type="text"
+                  name="schemesManaged"
+                  placeholder="e.g. Student fellowship, Innovation Labs..."
+                  value={formData.schemesManaged}
+                  onChange={handleChange}
+                  className="w-full px-3 py-2 bg-slate-50/60 border border-slate-200 rounded-xl focus:bg-white focus:ring-1 focus:ring-slate-900 focus:border-slate-900 outline-none text-xs text-slate-900 font-medium"
+                />
               </div>
             </div>
           </div>
 
           {/* Section 6: Documents & Government Verification */}
-          <div className="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden">
-            <div className="px-5 py-3.5 border-b border-slate-100 bg-slate-50 flex items-center gap-3">
-              <FileBadge2 className="w-4 h-4 text-[#007A61]" />
-              <div>
-                <h2 className="text-sm font-bold text-[#007A61]">Documents & Government Verification</h2>
-                <p className="text-[11px] text-slate-500">Upload supporting documents and verification details</p>
+          <div className="bg-white rounded-2xl border border-slate-200/90 shadow-2xs overflow-hidden">
+            <div className="px-5 py-3.5 border-b border-slate-100 bg-slate-50/70 flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <FileBadge2 className="w-4 h-4 text-slate-700" />
+                <h3 className="text-xs font-bold text-slate-900 tracking-tight">6. Documents & Government Verification</h3>
               </div>
+              <span className="text-[10px] text-slate-500 font-medium">Official Government Orders</span>
             </div>
-            <div className="p-5 grid grid-cols-1 md:grid-cols-3 gap-5 text-xs">
+
+            <div className="p-5 grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
-                <label className="font-bold text-slate-700 block mb-1.5">Government Order / Notification No. *</label>
-                <input type="text" name="goNumber" placeholder="e.g. GO-1234" value={formData.goNumber} onChange={handleChange} className="w-full p-2.5 bg-slate-50 rounded-lg border border-slate-200 focus:outline-none focus:border-[#007A61]" />
+                <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+                  Government Order (GO) No. <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  name="goNumber"
+                  placeholder="e.g. GO/JH/2026/089"
+                  value={formData.goNumber}
+                  onChange={handleChange}
+                  className="w-full px-3 py-2 bg-slate-50/60 border border-slate-200 rounded-xl focus:bg-white focus:ring-1 focus:ring-slate-900 focus:border-slate-900 outline-none text-xs text-slate-900 font-medium"
+                />
               </div>
+
               <div>
-                <label className="font-bold text-slate-700 block mb-1.5">GO Date *</label>
-                <input type="date" name="goDate" value={formData.goDate} onChange={handleChange} className="w-full p-2.5 bg-slate-50 rounded-lg border border-slate-200 focus:outline-none focus:border-[#007A61]" />
+                <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+                  GO Notification Date <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="date"
+                  name="goDate"
+                  value={formData.goDate}
+                  onChange={handleChange}
+                  className="w-full px-3 py-2 bg-slate-50/60 border border-slate-200 rounded-xl focus:bg-white focus:ring-1 focus:ring-slate-900 focus:border-slate-900 outline-none text-xs text-slate-900 font-medium"
+                />
               </div>
-              <div className="row-span-3 border-l border-slate-100 pl-5">
-                <h3 className="font-bold text-slate-700 mb-3">Verification Status</h3>
-                <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-amber-50 text-amber-600 border border-amber-200 rounded-full font-bold mb-4">
-                  <span className="w-1.5 h-1.5 rounded-full bg-amber-500"></span> Pending Verification
+
+              <div>
+                <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+                  Verification Status
+                </label>
+                <div className="w-full px-3 py-2 bg-amber-50/70 border border-amber-200/80 rounded-xl text-amber-800 font-bold text-xs flex items-center space-x-1.5">
+                  <span className="w-2 h-2 rounded-full bg-amber-500"></span>
+                  <span>{formData.verificationStatus}</span>
                 </div>
-                <div className="space-y-4 text-slate-500">
-                  <div>
-                    <span className="block font-bold text-slate-700 mb-1">Verified By</span>
-                    <span>—</span>
-                  </div>
-                  <div>
-                    <span className="block font-bold text-slate-700 mb-1">Verified On</span>
-                    <span>—</span>
-                  </div>
-                </div>
               </div>
-              
-              <div>
-                <label className="font-bold text-slate-700 block mb-1.5">Upload Government Order (PDF) *</label>
-                <div className="border-2 border-dashed border-slate-200 rounded-lg bg-slate-50 p-3 text-center cursor-pointer hover:bg-slate-100 hover:border-[#007A61] transition-colors flex items-center justify-center gap-3">
-                  <Upload className="w-5 h-5 text-[#007A61]" />
+
+              <div className="md:col-span-3 grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-slate-100">
+                <div className="border-2 border-dashed border-slate-200 hover:border-slate-400 rounded-xl bg-slate-50/60 hover:bg-slate-100/60 p-3 text-center cursor-pointer transition-colors flex items-center justify-center space-x-2.5">
+                  <Upload className="w-4 h-4 text-slate-500" />
                   <div className="text-left">
-                    <p className="text-[10px] text-slate-600">Click to upload or drag & drop</p>
-                    <p className="text-[9px] text-slate-400">PDF (Max 5 MB)</p>
+                    <p className="text-[11px] font-bold text-slate-800">Upload Official GO Document</p>
+                    <p className="text-[9px] text-slate-400">PDF, scanned copy (Max 5 MB)</p>
                   </div>
                 </div>
-              </div>
-              <div>
-                <label className="font-bold text-slate-700 block mb-1.5">Organizational Structure (PDF)</label>
-                <div className="border-2 border-dashed border-slate-200 rounded-lg bg-slate-50 p-3 text-center cursor-pointer hover:bg-slate-100 hover:border-[#007A61] transition-colors flex items-center justify-center gap-3">
-                  <Upload className="w-5 h-5 text-[#007A61]" />
+
+                <div className="border-2 border-dashed border-slate-200 hover:border-slate-400 rounded-xl bg-slate-50/60 hover:bg-slate-100/60 p-3 text-center cursor-pointer transition-colors flex items-center justify-center space-x-2.5">
+                  <Upload className="w-4 h-4 text-slate-500" />
                   <div className="text-left">
-                    <p className="text-[10px] text-slate-600">Click to upload or drag & drop</p>
-                    <p className="text-[9px] text-slate-400">PDF (Max 5 MB)</p>
-                  </div>
-                </div>
-              </div>
-              <div>
-                <label className="font-bold text-slate-700 block mb-1.5">Authorization / Appointment Order</label>
-                <div className="border-2 border-dashed border-slate-200 rounded-lg bg-slate-50 p-3 text-center cursor-pointer hover:bg-slate-100 hover:border-[#007A61] transition-colors flex items-center justify-center gap-3">
-                  <Upload className="w-5 h-5 text-[#007A61]" />
-                  <div className="text-left">
-                    <p className="text-[10px] text-slate-600">Click to upload or drag & drop</p>
-                    <p className="text-[9px] text-slate-400">PDF (Max 5 MB)</p>
-                  </div>
-                </div>
-              </div>
-              <div>
-                <label className="font-bold text-slate-700 block mb-1.5">Additional Documents</label>
-                <div className="border-2 border-dashed border-slate-200 rounded-lg bg-slate-50 p-3 text-center cursor-pointer hover:bg-slate-100 hover:border-[#007A61] transition-colors flex items-center justify-center gap-3">
-                  <Upload className="w-5 h-5 text-[#007A61]" />
-                  <div className="text-left">
-                    <p className="text-[10px] text-slate-600">Click to upload or drag & drop</p>
-                    <p className="text-[9px] text-slate-400">PDF, DOC, PNG (Max 5 MB)</p>
+                    <p className="text-[11px] font-bold text-slate-800">Upload Department Hierarchy PDF</p>
+                    <p className="text-[9px] text-slate-400">PDF structure chart (Max 5 MB)</p>
                   </div>
                 </div>
               </div>
@@ -553,134 +908,196 @@ export const DepartmentEditPanel = ({ department, onBack, onSave }) => {
           </div>
 
           {/* Section 7: Activation & Audit */}
-          <div className="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden">
-            <div className="px-5 py-3.5 border-b border-slate-100 bg-slate-50 flex items-center gap-3">
-              <Settings className="w-4 h-4 text-[#007A61]" />
+          <div className="bg-white rounded-2xl border border-slate-200/90 shadow-2xs overflow-hidden">
+            <div className="px-5 py-3.5 border-b border-slate-100 bg-slate-50/70 flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <Settings className="w-4 h-4 text-slate-700" />
+                <h3 className="text-xs font-bold text-slate-900 tracking-tight">7. Activation & Audit Status</h3>
+              </div>
+              <span className="text-[10px] text-slate-500 font-medium">State status flags</span>
+            </div>
+
+            <div className="p-5 space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-[11px] font-semibold text-slate-700 mb-2">
+                    Department Status <span className="text-red-500">*</span>
+                  </label>
+                  <div className="flex items-center gap-4">
+                    <label className="flex items-center gap-1.5 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="status"
+                        value="Active"
+                        checked={formData.status === 'Active'}
+                        onChange={handleChange}
+                        className="accent-slate-900"
+                      />
+                      <span className="text-emerald-700 font-bold">Active</span>
+                    </label>
+                    <label className="flex items-center gap-1.5 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="status"
+                        value="Inactive"
+                        checked={formData.status === 'Inactive'}
+                        onChange={handleChange}
+                        className="accent-slate-900"
+                      />
+                      <span className="text-slate-600 font-medium">Inactive</span>
+                    </label>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+                    Effective From Date <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="date"
+                    name="effectiveFrom"
+                    value={formData.effectiveFrom}
+                    onChange={handleChange}
+                    className="w-full px-3 py-2 bg-slate-50/60 border border-slate-200 rounded-xl focus:bg-white focus:ring-1 focus:ring-slate-900 focus:border-slate-900 outline-none text-xs text-slate-900 font-medium"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+                    State Higher Approval
+                  </label>
+                  <div className="flex items-center space-x-2 pt-1.5">
+                    <label className="relative inline-flex items-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        name="approvalRequired"
+                        checked={formData.approvalRequired}
+                        onChange={handleChange}
+                        className="sr-only peer"
+                      />
+                      <div className="w-9 h-5 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-slate-900"></div>
+                    </label>
+                    <span className="text-[11px] text-slate-600 font-medium">Requires approval</span>
+                  </div>
+                </div>
+              </div>
+
               <div>
-                <h2 className="text-sm font-bold text-[#007A61]">Activation & Audit</h2>
-                <p className="text-[11px] text-slate-500">Set initial status and view audit information</p>
+                <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+                  Administrative Remarks (Optional)
+                </label>
+                <input
+                  type="text"
+                  name="remarks"
+                  placeholder="Any operational notes or comments..."
+                  value={formData.remarks}
+                  onChange={handleChange}
+                  className="w-full px-3 py-2 bg-slate-50/60 border border-slate-200 rounded-xl focus:bg-white focus:ring-1 focus:ring-slate-900 focus:border-slate-900 outline-none text-xs text-slate-900 font-medium"
+                />
               </div>
             </div>
-            <div className="p-5 grid grid-cols-1 md:grid-cols-6 gap-5 text-xs">
-              <div className="col-span-1">
-                <label className="font-bold text-slate-700 block mb-2">Initial Status *</label>
-                <div className="flex items-center gap-3">
-                  <label className="flex items-center gap-1.5 cursor-pointer">
-                    <input type="radio" name="status" value="Active" checked={formData.status === 'Active'} onChange={handleChange} className="accent-[#007A61]" />
-                    <span className="font-semibold text-slate-800">Active</span>
-                  </label>
-                  <label className="flex items-center gap-1.5 cursor-pointer">
-                    <input type="radio" name="status" value="Inactive" checked={formData.status === 'Inactive'} onChange={handleChange} className="accent-[#007A61]" />
-                    <span className="text-slate-600">Inactive</span>
-                  </label>
-                </div>
-              </div>
-              <div className="col-span-1">
-                <label className="font-bold text-slate-700 block mb-1.5">Effective From *</label>
-                <input type="date" name="effectiveFrom" value={formData.effectiveFrom} onChange={handleChange} className="w-full p-2.5 bg-slate-50 rounded-lg border border-slate-200 focus:outline-none focus:border-[#007A61]" />
-              </div>
-              <div className="col-span-1">
-                <label className="font-bold text-slate-700 block mb-1.5">Approval Required</label>
-                <div className="flex items-center gap-2 mt-2">
-                  <label className="relative inline-flex items-center cursor-pointer">
-                    <input type="checkbox" name="approvalRequired" checked={formData.approvalRequired} onChange={handleChange} className="sr-only peer" />
-                    <div className="w-9 h-5 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[#007A61]"></div>
-                  </label>
-                  <span className="text-[9px] text-slate-500 leading-tight max-w-[80px]">Requires higher authority approval</span>
-                </div>
-              </div>
-              <div className="col-span-3 grid grid-cols-3 gap-3 bg-slate-50 p-3 rounded-lg border border-slate-100 text-[10px]">
-                <div>
-                  <span className="block font-bold text-slate-600 mb-1">Created By</span>
-                  <span className="text-slate-800 font-medium bg-white px-2 py-1 rounded border border-slate-200 block">Super Admin</span>
-                </div>
-                <div>
-                  <span className="block font-bold text-slate-600 mb-1">Created Date</span>
-                  <span className="text-slate-800 font-medium bg-white px-2 py-1 rounded border border-slate-200 block">13-09-2025 10:30 AM</span>
-                </div>
-                <div>
-                  <span className="block font-bold text-slate-600 mb-1">Last Updated</span>
-                  <span className="text-slate-800 font-medium bg-white px-2 py-1 rounded border border-slate-200 block">13-09-2025 10:30 AM</span>
-                </div>
-              </div>
-              <div className="md:col-span-6">
-                <label className="font-bold text-slate-700 block mb-1.5">Remarks (Optional)</label>
-                <input type="text" name="remarks" placeholder="Add any remarks..." value={formData.remarks} onChange={handleChange} className="w-full p-2.5 bg-slate-50 rounded-lg border border-slate-200 focus:outline-none focus:border-[#007A61]" />
-              </div>
-            </div>
-            
-            {/* Action Bar */}
-            <div className="bg-slate-50 border-t border-slate-200 p-4 flex items-center justify-end gap-3">
-              <button type="button" onClick={onBack} className="px-5 py-2.5 bg-white border border-slate-200 text-slate-700 rounded-lg text-xs font-bold hover:bg-slate-50 transition-colors">Cancel</button>
-              <button type="button" className="px-5 py-2.5 bg-white border border-slate-200 text-slate-700 rounded-lg text-xs font-bold hover:bg-slate-50 transition-colors flex items-center gap-2">
-                <Save className="w-3.5 h-3.5" /> Save as Draft
+
+            {/* Bottom Form Action Buttons */}
+            <div className="bg-slate-50/80 border-t border-slate-100 p-4 flex items-center justify-end gap-2.5">
+              <button
+                type="button"
+                onClick={onBack}
+                className="px-4 py-2 bg-white border border-slate-200 rounded-xl text-slate-700 text-xs font-bold hover:bg-slate-50 transition-colors cursor-pointer shadow-2xs"
+              >
+                Cancel
               </button>
-              <button type="button" onClick={handleSubmit} disabled={isSubmitting} className="px-6 py-2.5 bg-[#007A61] text-white rounded-lg text-xs font-bold shadow-md hover:bg-[#00624e] disabled:opacity-50 transition-colors flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4" /> {isSubmitting ? 'Saving...' : 'Create State Department'}
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="px-5 py-2 bg-slate-900 hover:bg-black text-white rounded-xl text-xs font-bold transition-all cursor-pointer shadow-xs disabled:opacity-50 flex items-center space-x-1.5"
+              >
+                <CheckCircle2 className="w-3.5 h-3.5 text-slate-300" />
+                <span>{isSubmitting ? 'Saving...' : (isEditing ? 'Update Department' : 'Create State Department')}</span>
               </button>
             </div>
           </div>
-        </div>
+        </form>
 
-        {/* Sidebar Summary Area */}
-        <div className="w-full lg:w-80 flex-shrink-0 sticky top-24 space-y-4">
-          <div className="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden">
-            <div className="px-5 py-4 border-b border-slate-100 bg-slate-50 flex items-center gap-3">
-              <Users className="w-4 h-4 text-[#007A61]" />
-              <h2 className="text-sm font-bold text-slate-800">Department Access Summary</h2>
+        {/* Right Sticky Column: Department Access Summary (4 Columns) */}
+        <div className="lg:col-span-4 space-y-4 sticky top-4">
+          <div className="bg-white rounded-2xl border border-slate-200/90 shadow-2xs p-5 space-y-4">
+            <div className="flex items-center space-x-2 pb-3 border-b border-slate-100">
+              <Users className="w-4 h-4 text-slate-700" />
+              <h2 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
+                Department Access Summary
+              </h2>
             </div>
-            <div className="p-5 space-y-5">
-              <div className="flex items-start gap-3">
-                <div className="w-8 h-8 rounded-lg bg-[#007A61]/10 text-[#007A61] flex items-center justify-center shrink-0 mt-0.5">
+
+            <div className="space-y-3">
+              <div className="p-3 bg-slate-50 rounded-xl border border-slate-200/80 flex items-start space-x-3">
+                <div className="w-8 h-8 rounded-lg bg-slate-200/70 text-slate-700 flex items-center justify-center shrink-0 mt-0.5">
                   <Building2 className="w-4 h-4" />
                 </div>
                 <div>
-                  <h3 className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-0.5">Department Type</h3>
-                  <p className="text-xs font-bold text-slate-800">{formData.departmentType}</p>
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+                    Department Type
+                  </span>
+                  <p className="text-xs font-bold text-slate-900">{formData.departmentType}</p>
                 </div>
               </div>
-              <div className="flex items-start gap-3">
-                <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center shrink-0 mt-0.5">
+
+              <div className="p-3 bg-slate-50 rounded-xl border border-slate-200/80 flex items-start space-x-3">
+                <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-700 flex items-center justify-center shrink-0 mt-0.5">
                   <Map className="w-4 h-4" />
                 </div>
                 <div>
-                  <h3 className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-0.5">Jurisdiction</h3>
-                  <p className="text-xs font-bold text-slate-800">{formData.applicableJurisdiction}</p>
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+                    Jurisdiction
+                  </span>
+                  <p className="text-xs font-bold text-slate-900">{formData.applicableJurisdiction}</p>
                 </div>
               </div>
-              <div className="flex items-start gap-3">
-                <div className="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0 mt-0.5">
+
+              <div className="p-3 bg-slate-50 rounded-xl border border-slate-200/80 flex items-start space-x-3">
+                <div className="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-700 flex items-center justify-center shrink-0 mt-0.5">
                   <Map className="w-4 h-4" />
                 </div>
                 <div>
-                  <h3 className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-0.5">District Coverage</h3>
-                  <p className="text-xs font-bold text-slate-800">{formData.operationalDistrictsType.includes('All') ? 'All 24 Districts' : 'Specific Districts'}</p>
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+                    District Coverage
+                  </span>
+                  <p className="text-xs font-bold text-slate-900">
+                    {formData.operationalDistrictsType.includes('All') ? 'All 24 Districts' : 'Specific Districts'}
+                  </p>
                 </div>
               </div>
-              <div className="flex items-start gap-3">
-                <div className="w-8 h-8 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center shrink-0 mt-0.5">
+
+              <div className="p-3 bg-slate-50 rounded-xl border border-slate-200/80 flex items-start space-x-3">
+                <div className="w-8 h-8 rounded-lg bg-purple-50 text-purple-700 flex items-center justify-center shrink-0 mt-0.5">
                   <Shield className="w-4 h-4" />
                 </div>
                 <div>
-                  <h3 className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-0.5">Login Role</h3>
-                  <p className="text-xs font-bold text-slate-800">State Department Principal</p>
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+                    Login Role
+                  </span>
+                  <p className="text-xs font-bold text-slate-900">State Department Principal</p>
                 </div>
               </div>
-              <div className="flex items-start gap-3">
-                <div className="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center shrink-0 mt-0.5">
+
+              <div className="p-3 bg-slate-50 rounded-xl border border-slate-200/80 flex items-start space-x-3">
+                <div className="w-8 h-8 rounded-lg bg-amber-50 text-amber-700 flex items-center justify-center shrink-0 mt-0.5">
                   <Users className="w-4 h-4" />
                 </div>
                 <div>
-                  <h3 className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-0.5">Lower Levels</h3>
-                  <p className="text-xs font-bold text-slate-800">Configurable (As per requirement)</p>
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+                    Lower Levels
+                  </span>
+                  <p className="text-xs font-bold text-slate-900">Configurable ({formData.involvedLowerLevels.length} tiers active)</p>
                 </div>
               </div>
-              
-              <div className="pt-4 border-t border-slate-100">
-                <h3 className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">Credential Status</h3>
-                <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-amber-50 text-amber-600 border border-amber-200 rounded-full text-[11px] font-bold">
-                  <span className="w-1.5 h-1.5 rounded-full bg-amber-500"></span> {formData.credentials.credentialStatus}
-                </div>
+
+              <div className="pt-3 border-t border-slate-100 flex items-center justify-between">
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                  Credential Status
+                </span>
+                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200">
+                  {formData.credentials.credentialStatus}
+                </span>
               </div>
             </div>
           </div>

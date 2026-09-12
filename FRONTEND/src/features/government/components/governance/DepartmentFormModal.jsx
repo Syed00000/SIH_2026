@@ -86,7 +86,7 @@ export const DepartmentFormModal = ({ isOpen, onClose, onSubmit, initialData = n
         {/* Header */}
         <div className="px-5 py-3.5 border-b border-slate-100 flex items-center justify-between shrink-0 bg-slate-50/50">
           <div className="flex items-center space-x-2">
-            <Landmark className="w-4 h-4 text-[#007A61]" />
+            <Landmark className="w-4 h-4 text-slate-700" />
             <h3 className="text-sm font-extrabold text-slate-900">
               {initialData ? `Edit Department (${initialData.deptId || initialData.code})` : 'Add New Line Department / Gram Panchayat'}
             </h3>
@@ -112,7 +112,7 @@ export const DepartmentFormModal = ({ isOpen, onClose, onSubmit, initialData = n
                 placeholder="e.g. Gram Panchayat Ormanjhi Governance Cell"
                 value={form.name}
                 onChange={(e) => setForm({ ...form, name: e.target.value })}
-                className="w-full px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:border-[#007A61] font-medium text-xs"
+                className="w-full px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-1 focus:ring-slate-900 focus:border-slate-900 font-medium text-xs"
               />
             </div>
             <div>
@@ -122,7 +122,7 @@ export const DepartmentFormModal = ({ isOpen, onClose, onSubmit, initialData = n
                 placeholder="e.g. GPO-ORM"
                 value={form.code}
                 onChange={(e) => setForm({ ...form, code: e.target.value })}
-                className="w-full px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:border-[#007A61] font-medium text-xs uppercase"
+                className="w-full px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-1 focus:ring-slate-900 focus:border-slate-900 font-medium text-xs uppercase"
               />
             </div>
           </div>
@@ -246,13 +246,13 @@ export const DepartmentFormModal = ({ isOpen, onClose, onSubmit, initialData = n
             <button
               type="button"
               onClick={onClose}
-              className="px-3.5 py-1.5 border border-slate-200 rounded-xl text-slate-700 hover:bg-slate-50 font-bold cursor-pointer text-xs"
+              className="px-3.5 py-1.5 border border-slate-200 rounded-xl text-slate-700 hover:bg-slate-50 font-bold cursor-pointer text-xs shadow-2xs"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-4 py-1.5 bg-[#007A61] hover:bg-[#00624e] text-white rounded-xl font-bold transition-colors cursor-pointer text-xs shadow-xs"
+              className="px-4 py-1.5 bg-slate-900 hover:bg-black text-white rounded-xl font-bold transition-colors cursor-pointer text-xs shadow-xs"
             >
               {initialData ? 'Update Department' : 'Save Department'}
             </button>
