@@ -1,15 +1,13 @@
 import React from 'react';
-import { Landmark, Building2, MapPin, ArrowLeft, LogOut, ShieldCheck, Menu } from 'lucide-react';
+import { Landmark, Building2, MapPin, ShieldCheck, Menu } from 'lucide-react';
 
 export const DepartmentHeader = ({
   department,
   activeTab,
   onNavigateTab,
-  onBackToNodal,
-  onLogout,
   onToggleSidebar
 }) => {
-  const isGramPanchayat = department?.category === 'Gram Panchayat';
+  const isGramPanchayat = department?.category === 'Gram Panchayat' || department?.category === 'Ward Commissioner';
   const name = department?.name || 'Department Authority';
   const headName = department?.headName || 'Officer in Charge';
   const headRole = department?.headRole || (isGramPanchayat ? 'Mukhiya' : 'Department Head');
@@ -61,33 +59,6 @@ export const DepartmentHeader = ({
               </span>
             </div>
           </div>
-        </div>
-
-        {/* Right: Actions */}
-        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
-          {onBackToNodal && (
-            <button
-              type="button"
-              onClick={onBackToNodal}
-              className="flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-bold text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200/70 transition-all cursor-pointer"
-              title="Return to Nodal Authority Portal"
-            >
-              <ArrowLeft className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Back to Nodal Cell</span>
-            </button>
-          )}
-
-          {onLogout && (
-            <button
-              type="button"
-              onClick={onLogout}
-              className="flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-bold text-rose-600 hover:text-rose-700 bg-rose-50 hover:bg-rose-100/80 border border-rose-200/60 transition-all cursor-pointer"
-              title="Sign Out"
-            >
-              <LogOut className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Sign Out</span>
-            </button>
-          )}
         </div>
       </div>
     </header>

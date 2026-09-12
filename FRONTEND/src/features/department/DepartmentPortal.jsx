@@ -135,7 +135,12 @@ export const DepartmentPortal = ({ user, onLogout }) => {
 
   return (
     <div className="min-h-screen bg-white flex flex-col overflow-hidden h-screen text-slate-800 antialiased select-none">
-      <DepartmentHeader department={department} activeTab={activeTab} onNavigateTab={(t) => { setSelectedProblem(null); setActiveTab(t); setIsMobileMenuOpen(false); }} onBackToNodal={() => { window.location.href = '/nodal'; }} onLogout={onLogout} onToggleSidebar={() => setIsMobileMenuOpen(!isMobileMenuOpen)} />
+      <DepartmentHeader
+        department={department}
+        activeTab={activeTab}
+        onNavigateTab={(t) => { setSelectedProblem(null); setActiveTab(t); setIsMobileMenuOpen(false); }}
+        onToggleSidebar={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+      />
 
       <div className="flex-1 flex flex-row min-w-0 min-h-0 overflow-hidden bg-white">
         <DepartmentSidebar activeTab={activeTab} setActiveTab={(t) => { setSelectedProblem(null); setActiveTab(t); setIsMobileMenuOpen(false); }} isSidebarExpanded={isSidebarExpanded} setIsSidebarExpanded={setIsSidebarExpanded} departmentName={department?.name || 'Department Authority'} departmentCategory={department?.category || 'State Ministry'} onLogout={onLogout} isMobileMenuOpen={isMobileMenuOpen} setIsMobileMenuOpen={setIsMobileMenuOpen} />
