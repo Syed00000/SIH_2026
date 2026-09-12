@@ -51,7 +51,7 @@ export const IndustryTableRow = ({
         <div className="text-[10px] text-slate-400 mt-0.5">{ind.address?.district || ind.address?.city || 'Ranchi'}, JH</div>
       </td>
 
-      {/* 3. Nodal Officer (SPOC) */}
+      {}
       <td className="py-2.5 px-2.5">
         <div className="font-bold text-slate-900 text-xs leading-tight">{ind.spocName}</div>
         <div className="text-[10px] text-slate-400 mt-0.5 truncate max-w-[150px]">{ind.officialEmail}</div>

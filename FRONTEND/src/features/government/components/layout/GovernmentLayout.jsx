@@ -19,6 +19,7 @@ import {
 import { GovernmentGisDashboard } from '../gis/GovernmentGisDashboard.jsx';
 import { AdminManagement, DepartmentsManagementPanel } from '../governance/index.js';
 import { CSRGrantsLifecycleDashboard } from '../csr/CSRGrantsLifecycleDashboard.jsx';
+import { ManageUpdatesDashboard } from '../updates/ManageUpdatesDashboard.jsx';
 import { OfficialPrintableDossier } from '../common/OfficialPrintableDossier.jsx';
 import { governmentDataService } from '../../services/governmentDataService.js';
 import { exportAdminDirectoryPdf, exportIndustryDirectoryPdf, exportUniversityDirectoryPdf, exportGenericReportPdf } from '../../services/exportPdfService.js';
@@ -287,6 +288,8 @@ export const GovernmentLayout = ({ onLogout }) => {
               <ManageIndustriesDashboard />
             ) : activeTab === 'governance_departments' || activeTab === 'departments' ? (
               <DepartmentsManagementPanel />
+            ) : activeTab === 'updates' ? (
+              <ManageUpdatesDashboard />
             ) : activeTab === 'gis' ? (
               <GovernmentGisDashboard />
             ) : activeTab === 'users_admin' || activeTab === 'user_governance' ? (

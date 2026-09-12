@@ -57,9 +57,9 @@ export const LandingHeader = ({ onNavigate, currentPath = '/' }) => {
       <header className="bg-white sticky top-0 z-40 shadow-sm border-b border-gray-200">
         <div className="w-full px-4 md:px-8 lg:px-12 py-1 flex justify-between items-center">
           <div className="flex items-center space-x-3 cursor-pointer" onClick={() => handleNav('/')}>
-             <img src="https://www.jharkhand.gov.in/images/jhlogo55.PNG" alt="Johar Sethu" className="h-[46px] w-[46px] object-contain" />
+             <img src="https://www.jharkhand.gov.in/images/jhlogo55.PNG" alt="Johar Setu" className="h-[46px] w-[46px] object-contain" />
              <div className="ml-2 flex flex-col justify-center">
-               <h1 className="text-[20px] font-black text-gray-800 tracking-tight leading-none mb-1">JOHAR SETHU</h1>
+               <h1 className="text-[20px] font-black text-gray-800 tracking-tight leading-none mb-1">JOHAR SETU</h1>
                <p className="text-[10px] font-bold text-[#0f4b3a] leading-none mb-0.5">People • Ideas • Innovation • A Stronger Jharkhand</p>
                <p className="text-[9px] font-medium text-gray-500 leading-none">A Government of Jharkhand Initiative</p>
              </div>

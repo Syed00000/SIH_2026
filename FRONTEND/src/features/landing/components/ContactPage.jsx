@@ -40,7 +40,7 @@ export const ContactPage = ({ onNavigate }) => {
         <div className="absolute inset-0 z-0">
           <img 
             src={heroBanner} 
-            alt="Johar Sethu Contact Banner" 
+            alt="Johar Setu Contact Banner" 
             className="w-full h-full object-cover object-center opacity-85"
           />
           {/* Subtle gradient overlay from left */}
@@ -58,7 +58,7 @@ export const ContactPage = ({ onNavigate }) => {
             </h2>
 
             <p className="text-gray-100 text-[14px] md:text-[15px] leading-relaxed font-medium max-w-xl drop-shadow-xs">
-              Have questions, suggestions, or partnership opportunities? Get in touch with the Johar Sethu team. Together, we can build a more innovative, inclusive and prosperous Jharkhand.
+              Have questions, suggestions, or partnership opportunities? Get in touch with the Johar Setu team. Together, we can build a more innovative, inclusive and prosperous Jharkhand.
             </p>
           </div>
         </div>
@@ -79,8 +79,8 @@ export const ContactPage = ({ onNavigate }) => {
               <div className="flex-1 min-w-0">
                 <h3 className="font-bold text-sm text-gray-900 leading-tight">Call Us</h3>
                 <p className="text-[11px] text-gray-500 mt-0.5 leading-tight">For general inquiries and support</p>
-                <p className="font-extrabold text-[#0f4b3a] text-[13px] mt-2 leading-tight">+91 651 240 0123</p>
-                <p className="text-[10px] text-gray-400 font-medium mt-0.5">(Mon – Fri, 9:00 AM – 6:00 PM)</p>
+                <p className="font-extrabold text-[#0f4b3a] text-[13px] mt-2 leading-tight">0651-2490070</p>
+                <p className="text-[10px] text-gray-400 font-medium mt-0.5">(Mon – Fri, 10:00 AM – 5:00 PM)</p>
               </div>
             </div>
 
@@ -92,8 +92,8 @@ export const ContactPage = ({ onNavigate }) => {
               <div className="flex-1 min-w-0">
                 <h3 className="font-bold text-sm text-gray-900 leading-tight">Email Us</h3>
                 <p className="text-[11px] text-gray-500 mt-0.5 leading-tight">Drop us an email anytime</p>
-                <a href="mailto:support@joharsethu.in" className="font-bold text-[#0f4b3a] text-[12.5px] mt-2 block leading-tight hover:underline truncate">
-                  support@joharsethu.in
+                <a href="mailto:secretary-dhte@jharkhandmail.gov.in" className="font-bold text-[#0f4b3a] text-[12.5px] mt-2 block leading-tight hover:underline truncate">
+                  secretary-dhte@jharkhandmail.gov.in
                 </a>
                 <p className="text-[10px] text-gray-400 font-medium mt-1 leading-tight">We usually respond within 24–48 hours</p>
               </div>
@@ -122,9 +122,9 @@ export const ContactPage = ({ onNavigate }) => {
               </div>
               <div className="flex-1 min-w-0">
                 <h3 className="font-bold text-sm text-gray-900 leading-tight">Office Address</h3>
-                <p className="text-[11.5px] font-bold text-gray-800 mt-1 leading-tight">Jharkhand State Innovation Cell (JSIC)</p>
-                <p className="text-[11px] text-gray-600 leading-tight mt-0.5">Ranchi, Jharkhand</p>
-                <p className="text-[10px] font-semibold text-gray-500 mt-1 leading-tight">Pin – 834008</p>
+                <p className="text-[11.5px] font-bold text-gray-800 mt-1 leading-tight">Department of Higher, Technical Education & Skill Development</p>
+                <p className="text-[11px] text-gray-600 leading-tight mt-0.5">3rd Floor, Yojana Bhawan, Nepal House, Doranda, Ranchi</p>
+                <p className="text-[10px] font-semibold text-gray-500 mt-1 leading-tight">Jharkhand – 834002</p>
               </div>
             </div>
 
@@ -142,10 +142,10 @@ export const ContactPage = ({ onNavigate }) => {
                 </div>
 
                 <div className="space-y-1 text-xs text-gray-700 mb-4 font-medium leading-relaxed">
-                  <p className="font-extrabold text-[#0f4b3a]">Jharkhand State Innovation Cell (JSIC)</p>
-                  <p className="text-gray-600">Department of Higher & Technical Education</p>
+                  <p className="font-extrabold text-[#0f4b3a]">Department of Higher, Technical Education & Skill Development</p>
                   <p className="text-gray-600">Government of Jharkhand</p>
-                  <p className="text-gray-600">Kanke Road, Ranchi – 834008</p>
+                  <p className="text-gray-600">3rd Floor, Yojana Bhawan</p>
+                  <p className="text-gray-600">Nepal House, Doranda, Ranchi – 834002</p>
                   <p className="text-gray-600 font-bold">Jharkhand, India</p>
                 </div>
 
@@ -160,7 +160,7 @@ export const ContactPage = ({ onNavigate }) => {
               </div>
 
               <a 
-                href="https://maps.google.com/?q=Ranchi+Jharkhand" 
+                href="https://maps.google.com/?q=Yojana+Bhawan+Nepal+House+Doranda+Ranchi+Jharkhand" 
                 target="_blank" 
                 rel="noreferrer"
                 className="w-full py-2 px-3 bg-emerald-50 border border-emerald-200 text-[#0f4b3a] text-xs font-bold rounded-none hover:bg-[#0f4b3a] hover:text-white transition-all flex items-center justify-center gap-1.5 shadow-2xs text-center"
@@ -182,13 +182,13 @@ export const ContactPage = ({ onNavigate }) => {
                 </div>
 
                 <div className="space-y-3.5 text-xs">
-                  {/* General Support */}
+                  {/* Secretary Office */}
                   <div className="flex items-start gap-2.5">
                     <Mail className="w-4 h-4 text-[#0f4b3a] shrink-0 mt-0.5" />
                     <div>
-                      <h4 className="font-bold text-gray-900 leading-tight">General Support</h4>
-                      <a href="mailto:support@joharsethu.in" className="text-[11px] text-gray-600 hover:text-[#0f4b3a] block truncate">support@joharsethu.in</a>
-                      <p className="text-[10.5px] font-semibold text-gray-500 mt-0.5">+91 651 240 0123</p>
+                      <h4 className="font-bold text-gray-900 leading-tight">Secretary, DHTE</h4>
+                      <a href="mailto:secretary-dhte@jharkhandmail.gov.in" className="text-[11px] text-gray-600 hover:text-[#0f4b3a] block truncate">secretary-dhte@jharkhandmail.gov.in</a>
+                      <p className="text-[10.5px] font-semibold text-gray-500 mt-0.5">0651-2490070</p>
                     </div>
                   </div>
 
@@ -197,8 +197,8 @@ export const ContactPage = ({ onNavigate }) => {
                     <Handshake className="w-4 h-4 text-[#0f4b3a] shrink-0 mt-0.5" />
                     <div>
                       <h4 className="font-bold text-gray-900 leading-tight">Partnership & Collaboration</h4>
-                      <a href="mailto:partnership@joharsethu.in" className="text-[11px] text-gray-600 hover:text-[#0f4b3a] block truncate">partnership@joharsethu.in</a>
-                      <p className="text-[10.5px] font-semibold text-gray-500 mt-0.5">+91 651 240 0124</p>
+                      <a href="mailto:secretary-dhte@jharkhandmail.gov.in" className="text-[11px] text-gray-600 hover:text-[#0f4b3a] block truncate">secretary-dhte@jharkhandmail.gov.in</a>
+                      <p className="text-[10.5px] font-semibold text-gray-500 mt-0.5">0651-2490070</p>
                     </div>
                   </div>
 
@@ -207,18 +207,18 @@ export const ContactPage = ({ onNavigate }) => {
                     <Settings className="w-4 h-4 text-[#0f4b3a] shrink-0 mt-0.5" />
                     <div>
                       <h4 className="font-bold text-gray-900 leading-tight">Technical Assistance</h4>
-                      <a href="mailto:techsupport@joharsethu.in" className="text-[11px] text-gray-600 hover:text-[#0f4b3a] block truncate">techsupport@joharsethu.in</a>
-                      <p className="text-[10.5px] font-semibold text-gray-500 mt-0.5">+91 651 240 0125</p>
+                      <a href="mailto:secretary-dhte@jharkhandmail.gov.in" className="text-[11px] text-gray-600 hover:text-[#0f4b3a] block truncate">secretary-dhte@jharkhandmail.gov.in</a>
+                      <p className="text-[10.5px] font-semibold text-gray-500 mt-0.5">0651-2490070</p>
                     </div>
                   </div>
 
-                  {/* Media & Outreach */}
+                  {/* Office Contact */}
                   <div className="flex items-start gap-2.5">
-                    <Megaphone className="w-4 h-4 text-[#0f4b3a] shrink-0 mt-0.5" />
+                    <Building className="w-4 h-4 text-[#0f4b3a] shrink-0 mt-0.5" />
                     <div>
-                      <h4 className="font-bold text-gray-900 leading-tight">Media & Outreach</h4>
-                      <a href="mailto:media@joharsethu.in" className="text-[11px] text-gray-600 hover:text-[#0f4b3a] block truncate">media@joharsethu.in</a>
-                      <p className="text-[10.5px] font-semibold text-gray-500 mt-0.5">+91 651 240 0126</p>
+                      <h4 className="font-bold text-gray-900 leading-tight">Office Address</h4>
+                      <p className="text-[11px] text-gray-600">3rd Floor, Yojana Bhawan, Nepal House</p>
+                      <p className="text-[10.5px] font-semibold text-gray-500 mt-0.5">Doranda, Ranchi – 834002</p>
                     </div>
                   </div>
                 </div>

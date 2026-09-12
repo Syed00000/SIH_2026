@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { LandingLayout } from './layout/LandingLayout';
 import { 
   ArrowRight, Search, ChevronDown, Handshake, CheckCircle2, 
@@ -6,8 +6,78 @@ import {
   CircleDollarSign, Settings, Users, Factory, Rocket
 } from 'lucide-react';
 import bannerImage from '../assets/hero-banner-industry.jpg';
+import { industryService } from '../../government/services/industryService';
+import { citizenService } from '../../citizen/services/citizenService';
+import { governmentDataService } from '../../government/services/governmentDataService';
+
+// Map domain names to icons
+const domainIconMap = {
+  'Water Resources': Droplet,
+  'Energy': Sun,
+  'Healthcare': Heart,
+  'Environment': Recycle,
+  'Agriculture': Sun,
+  'Education': FlaskConical,
+  'Urban Development': Factory,
+  'Rural Livelihoods': Users,
+  'Accessibility': Users,
+  'Public Administration': Settings,
+};
+
+// Map status to badge styles
+const statusBadgeMap = {
+  'Under Review': { label: 'Under Review', color: 'bg-yellow-100 text-yellow-700' },
+  'In Progress': { label: 'In Progress', color: 'bg-blue-100 text-blue-700' },
+  'Resolved': { label: 'Resolved', color: 'bg-green-100 text-green-700' },
+  'Deployed': { label: 'Deployed', color: 'bg-purple-100 text-purple-700' },
+  'Submitted': { label: 'Submitted', color: 'bg-gray-100 text-gray-700' },
+  'Accepted': { label: 'Accepted', color: 'bg-green-100 text-green-700' },
+};
 
 export const IndustryLandingPage = ({ onNavigate }) => {
+  const [challenges, setChallenges] = useState([]);
+  const [impactStats, setImpactStats] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        // Fetch real citizen challenges
+        const challengeRes = await citizenService.fetchChallenges({ limit: 8 });
+        if (challengeRes && challengeRes.challenges && challengeRes.challenges.length > 0) {
+          setChallenges(challengeRes.challenges);
+        }
+
+        // Fetch real overview stats for the impact section
+        const stats = await governmentDataService.fetchLiveDatabaseStats();
+        if (stats) {
+          setImpactStats({
+            partnerOrgs: stats.industries?.active || stats.industries?.total || 0,
+            projectsSupported: stats.financials?.totalProjects || 0,
+            citizensEngaged: stats.citizens?.total || 0,
+            csrFundsCr: stats.financials?.totalCsrFundsCr || 0,
+            labs: stats.financials?.verifiedLabs || 0,
+            problemsSolved: stats.problems?.total || 0
+          });
+        }
+      } catch(err) {
+        console.error('IndustryLandingPage fetch error:', err);
+      }
+    };
+    fetchData();
+  }, []);
+
+  const filteredChallenges = challenges.filter(c => {
+    if (!searchQuery.trim()) return true;
+    const q = searchQuery.toLowerCase();
+    return (c.title || '').toLowerCase().includes(q) ||
+           (c.domain || '').toLowerCase().includes(q) ||
+           (c.district || '').toLowerCase().includes(q) ||
+           (c.description || '').toLowerCase().includes(q);
+  });
+
+  const displayedChallenges = filteredChallenges.slice(0, 4);
+
   return (
     <LandingLayout onNavigate={onNavigate} currentPath="/industry">
       {/* Hero Section */}
@@ -25,9 +95,6 @@ export const IndustryLandingPage = ({ onNavigate }) => {
 
         <div className="relative z-10 w-full max-w-7xl mx-auto px-4 md:px-8 py-10">
           <div className="w-full md:w-[70%] lg:w-[60%]">
-            <div className="text-[13px] font-bold text-gray-500 mb-2">
-              Home <span className="mx-1">&gt;</span> Industry
-            </div>
             
             <h1 className="text-4xl md:text-[42px] lg:text-[46px] font-bold text-[#1c3c78] mb-1.5 leading-[1.1]">
               Partner for a Better Jharkhand
@@ -109,6 +176,8 @@ export const IndustryLandingPage = ({ onNavigate }) => {
                   <input 
                     type="text" 
                     placeholder="Search by keyword (e.g., water, healthcare, agriculture...)"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
                     className="w-full pl-9 pr-4 py-2 border border-gray-200 rounded-none text-[13px] outline-none focus:border-[#0f4b3a]/50 placeholder-gray-400"
                   />
                 </div>
@@ -128,81 +197,63 @@ export const IndustryLandingPage = ({ onNavigate }) => {
                 </div>
               </div>
 
-              {/* Cards Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
-                {[
-                  { 
-                    title: 'Smart Water Monitoring System', 
-                    desc: 'Real-time monitoring of water availability in rural areas of Gumia district.',
-                    stage: 'Prototype Stage', badgeColor: 'bg-blue-100 text-blue-700',
-                    img: 'https://images.unsplash.com/photo-1534447677768-be436bb09401?auto=format&fit=crop&q=80&w=400&h=250',
-                    domainIcon: Droplet, domain: 'Water & Sanitation', location: 'Gumia',
-                    support: ['Technology', 'Testing', 'Deployment']
-                  },
-                  { 
-                    title: 'Solar Cold Storage for Farmers', 
-                    desc: 'Affordable solar-powered cold storage units for small farmers.',
-                    stage: 'Solution Development', badgeColor: 'bg-green-100 text-green-700',
-                    img: 'https://images.unsplash.com/photo-1508514177221-188b1cf16e9d?auto=format&fit=crop&q=80&w=400&h=250',
-                    domainIcon: Sun, domain: 'Agriculture', location: 'Simdega',
-                    support: ['Funding', 'Mentorship', 'Manufacturing']
-                  },
-                  { 
-                    title: 'Telemedicine Access for Remote Areas', 
-                    desc: 'Improving healthcare access in tribal and remote regions.',
-                    stage: 'Idea Stage', badgeColor: 'bg-yellow-100 text-yellow-700',
-                    img: 'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&q=80&w=400&h=250',
-                    domainIcon: Heart, domain: 'Healthcare', location: 'Lohardaga',
-                    support: ['Technology', 'Mentorship', 'Deployment']
-                  },
-                  { 
-                    title: 'Smart Waste Management', 
-                    desc: 'IoT-based waste collection and segregation system for urban local bodies.',
-                    stage: 'Pilot Testing', badgeColor: 'bg-purple-100 text-purple-700',
-                    img: 'https://images.unsplash.com/photo-1532996122724-e3c354a0b15b?auto=format&fit=crop&q=80&w=400&h=250',
-                    domainIcon: Recycle, domain: 'Environment', location: 'Ranchi',
-                    support: ['Testing', 'Manufacturing', 'Deployment']
-                  },
-                ].map((card, idx) => (
-                  <div key={idx} className="bg-white border border-gray-200 rounded-none overflow-hidden shadow-[0_2px_8px_rgb(0,0,0,0.04)] flex flex-col group hover:shadow-sm transition-all relative">
-                    <div className="h-24 bg-gray-200 relative overflow-hidden shrink-0">
-                      <img src={card.img} alt={card.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                      <div className="absolute top-2 right-2">
-                        <span className={`text-[9px] font-bold px-2 py-0.5 rounded-none ${card.badgeColor}`}>{card.stage}</span>
-                      </div>
-                    </div>
+              {/* Cards Grid - Dynamic from API */}
+              {displayedChallenges.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+                  {displayedChallenges.map((challenge, idx) => {
+                    const DomainIcon = domainIconMap[challenge.domain] || FlaskConical;
+                    const badge = statusBadgeMap[challenge.status] || { label: challenge.status, color: 'bg-gray-100 text-gray-700' };
+                    const district = challenge.district || challenge.location?.district || 'Jharkhand';
                     
-                    <div className="p-3.5 flex flex-col flex-grow">
-                      <h3 className="font-bold text-[#1c3c78] text-[12px] leading-snug mb-1.5">{card.title}</h3>
-                      <p className="text-gray-500 text-[10px] leading-[1.3] mb-3 flex-grow">{card.desc}</p>
-                      
-                      <div className="flex items-center gap-3 text-[#1c3c78] font-bold text-[9px] mb-3">
-                        <div className="flex items-center gap-1">
-                          <card.domainIcon className="w-3 h-3 text-[#0f4b3a]" /> {card.domain}
+                    return (
+                      <div key={challenge._id || idx} className="bg-white border border-gray-200 rounded-none overflow-hidden shadow-[0_2px_8px_rgb(0,0,0,0.04)] flex flex-col group hover:shadow-sm transition-all relative">
+                        <div className="h-24 bg-gradient-to-br from-[#0f4b3a]/10 to-[#1c3c78]/10 relative overflow-hidden shrink-0 flex items-center justify-center">
+                          <DomainIcon className="w-10 h-10 text-[#0f4b3a]/30" />
+                          <div className="absolute top-2 right-2">
+                            <span className={`text-[9px] font-bold px-2 py-0.5 rounded-none ${badge.color}`}>{badge.label}</span>
+                          </div>
                         </div>
-                        <div className="flex items-center gap-1">
-                          <MapPin className="w-3 h-3 text-[#0f4b3a]" /> {card.location}
+                        
+                        <div className="p-3.5 flex flex-col flex-grow">
+                          <h3 className="font-bold text-[#1c3c78] text-[12px] leading-snug mb-1.5">{challenge.title}</h3>
+                          <p className="text-gray-500 text-[10px] leading-[1.3] mb-3 flex-grow line-clamp-2">{challenge.description}</p>
+                          
+                          <div className="flex items-center gap-3 text-[#1c3c78] font-bold text-[9px] mb-3">
+                            <div className="flex items-center gap-1">
+                              <DomainIcon className="w-3 h-3 text-[#0f4b3a]" /> {challenge.domain || 'General'}
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <MapPin className="w-3 h-3 text-[#0f4b3a]" /> {district}
+                            </div>
+                          </div>
+                          
+                          {challenge.priority && (
+                            <div className="mb-3">
+                              <div className="text-[9px] font-bold text-[#1c3c78] mb-1.5">Priority:</div>
+                              <span className={`text-[8.5px] font-bold px-1.5 py-0.5 rounded-none border ${
+                                challenge.priority === 'Critical' ? 'bg-red-50 border-red-200 text-red-700' :
+                                challenge.priority === 'High' ? 'bg-orange-50 border-orange-200 text-orange-700' :
+                                challenge.priority === 'Medium' ? 'bg-yellow-50 border-yellow-200 text-yellow-700' :
+                                'bg-gray-50 border-gray-200 text-gray-600'
+                              }`}>
+                                {challenge.priority}
+                              </span>
+                            </div>
+                          )}
+                          
+                          <button className="w-full text-center text-[#1c3c78] text-[10px] font-bold transition-colors flex items-center justify-center gap-1 group-hover:underline mt-auto">
+                            View Details <ArrowRight className="w-3 h-3" />
+                          </button>
                         </div>
                       </div>
-                      
-                      <div className="mb-3">
-                        <div className="text-[9px] font-bold text-[#1c3c78] mb-1.5">Support Needed:</div>
-                        <div className="flex flex-wrap gap-1">
-                          {card.support.map((tag, i) => (
-                            <span key={i} className="bg-gray-50 border border-gray-200 text-gray-600 text-[8.5px] font-bold px-1.5 py-0.5 rounded-none">
-                              {tag}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                      
-                      <button className="w-full text-center text-[#1c3c78] text-[10px] font-bold transition-colors flex items-center justify-center gap-1 group-hover:underline mt-auto">
-                        View Details <ArrowRight className="w-3 h-3" />
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="text-center py-10 bg-white rounded-xl border border-gray-200 shadow-sm">
+                  <p className="text-gray-500 font-medium text-sm">No challenges found.</p>
+                </div>
+              )}
             </div>
 
           </div>
@@ -217,7 +268,7 @@ export const IndustryLandingPage = ({ onNavigate }) => {
                   <Handshake className="w-5 h-5 text-[#0f4b3a]" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-[#1c3c78] text-[15px] leading-tight mb-1">Partner With Johar Sethu</h3>
+                  <h3 className="font-bold text-[#1c3c78] text-[15px] leading-tight mb-1">Partner With Johar Setu</h3>
                   <p className="text-[10px] text-gray-600 font-medium leading-relaxed max-w-[200px]">
                     Be a part of a collaborative ecosystem to solve real-world challenges and create lasting impact in Jharkhand.
                   </p>
@@ -259,7 +310,8 @@ export const IndustryLandingPage = ({ onNavigate }) => {
               </ul>
             </div>
 
-            {/* Impact Stats */}
+            {/* Impact Stats - Dynamic from API */}
+            {impactStats && (
             <div className="bg-white border border-gray-200 p-5 rounded-none shadow-sm">
               <div className="flex items-center gap-2 mb-1">
                 <TrendingUp className="w-5 h-5 text-[#0f4b3a]" />
@@ -271,34 +323,35 @@ export const IndustryLandingPage = ({ onNavigate }) => {
               
               <div className="flex justify-between items-start mt-6 mb-5 border-b border-gray-100 pb-4">
                 <div className="text-center flex-1">
-                  <div className="font-bold text-[#1c3c78] text-[19px] mb-0.5">48</div>
+                  <div className="font-bold text-[#1c3c78] text-[19px] mb-0.5">{impactStats.partnerOrgs}</div>
                   <div className="text-[9px] text-gray-500 font-medium leading-tight">Partner Organizations</div>
                 </div>
                 <div className="text-center flex-1 border-l border-gray-100">
-                  <div className="font-bold text-[#1c3c78] text-[19px] mb-0.5">112</div>
+                  <div className="font-bold text-[#1c3c78] text-[19px] mb-0.5">{impactStats.projectsSupported}</div>
                   <div className="text-[9px] text-gray-500 font-medium leading-tight">Projects Supported</div>
                 </div>
                 <div className="text-center flex-1 border-l border-gray-100">
-                  <div className="font-bold text-[#1c3c78] text-[19px] mb-0.5">350+</div>
-                  <div className="text-[9px] text-gray-500 font-medium leading-tight">Students Mentored</div>
+                  <div className="font-bold text-[#1c3c78] text-[19px] mb-0.5">{impactStats.citizensEngaged}+</div>
+                  <div className="text-[9px] text-gray-500 font-medium leading-tight">Citizens Engaged</div>
                 </div>
               </div>
               
               <div className="flex justify-between items-start mb-2">
                 <div className="text-center flex-1">
-                  <div className="font-bold text-[#0f4b3a] text-[19px] mb-0.5">₹ 12 Cr+</div>
-                  <div className="text-[9px] text-gray-500 font-medium leading-tight">Support Committed</div>
+                  <div className="font-bold text-[#0f4b3a] text-[19px] mb-0.5">₹ {impactStats.csrFundsCr} Cr</div>
+                  <div className="text-[9px] text-gray-500 font-medium leading-tight">CSR Committed</div>
                 </div>
                 <div className="text-center flex-1 border-l border-gray-100">
-                  <div className="font-bold text-[#0f4b3a] text-[19px] mb-0.5">28</div>
-                  <div className="text-[9px] text-gray-500 font-medium leading-tight">Prototypes Developed</div>
+                  <div className="font-bold text-[#0f4b3a] text-[19px] mb-0.5">{impactStats.labs}</div>
+                  <div className="text-[9px] text-gray-500 font-medium leading-tight">Labs Available</div>
                 </div>
                 <div className="text-center flex-1 border-l border-gray-100">
-                  <div className="font-bold text-[#0f4b3a] text-[19px] mb-0.5">14</div>
-                  <div className="text-[9px] text-gray-500 font-medium leading-tight">Solutions Deployed</div>
+                  <div className="font-bold text-[#0f4b3a] text-[19px] mb-0.5">{impactStats.problemsSolved}</div>
+                  <div className="text-[9px] text-gray-500 font-medium leading-tight">Challenges Received</div>
                 </div>
               </div>
             </div>
+            )}
 
           </div>
         </div>

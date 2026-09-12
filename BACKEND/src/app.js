@@ -27,6 +27,8 @@ import gisRoutes from './modules/government/gis/presentation/routes.js';
 import departmentRoutes from './modules/government/departments/presentation/department.routes.js';
 import blockRoutes from './modules/government/blocks/presentation/block.routes.js';
 import technicianRoutes from './modules/government/technicians/presentation/technician.routes.js';
+import noticesRoutes from './modules/notices/presentation/notices.routes.js';
+import { publicUpdatesRouter, adminUpdatesRouter } from './modules/updates/presentation/updates.routes.js';
 
 const app = express();
 
@@ -104,6 +106,9 @@ app.use('/api/v1/citizen', citizenRoutes);
 app.use('/api/v1/media', mediaRoutes);
 app.use('/api/v1/clarification-chat', clarificationRoutes);
 app.use('/api/clarification-chat', clarificationRoutes);
+app.use('/api/v1/public/notices', noticesRoutes);
+app.use('/api/v1/public/updates', publicUpdatesRouter);
+app.use('/api/v1/admin/updates', adminUpdatesRouter);
 
 app.use((req, res, next) => {
   next(new NotFoundError(`Route ${req.method} ${req.path} not found`));
