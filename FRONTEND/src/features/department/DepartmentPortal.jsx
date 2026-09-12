@@ -174,8 +174,6 @@ export const DepartmentPortal = ({ user, onLogout }) => {
         department={department}
         activeTab={activeTab}
         onNavigateTab={(t) => { setSelectedProblem(null); setActiveTab(t); setIsMobileMenuOpen(false); }}
-        onBackToNodal={() => { window.location.href = '/nodal'; }}
-        onLogout={onLogout}
         onToggleSidebar={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
       />
 
