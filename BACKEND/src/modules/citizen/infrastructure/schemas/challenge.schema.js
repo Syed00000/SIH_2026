@@ -101,22 +101,12 @@ export const citizenChallengeSchema = new mongoose.Schema(
       type: [milestoneSchema],
       default: getDefaultMilestones
     },
-    assignedUniversity: {
-      type: assignedUniversitySchema,
-      default: () => ({})
-    },
-    assignedDepartment: {
-      type: mongoose.Schema.Types.Mixed,
-      default: null
-    },
-    assignedTechnician: {
-      type: mongoose.Schema.Types.Mixed,
-      default: null
-    },
-    allocatedBy: {
-      type: allocatedBySchema,
-      default: null
-    },
+    assignedUniversity: { type: assignedUniversitySchema, default: () => ({}) },
+    assignedDepartment: { type: mongoose.Schema.Types.Mixed, default: null },
+    assignedWard: { type: mongoose.Schema.Types.Mixed, default: null },
+    assignedBlock: { type: mongoose.Schema.Types.Mixed, default: null },
+    assignedTechnician: { type: mongoose.Schema.Types.Mixed, default: null },
+    allocatedBy: { type: allocatedBySchema, default: null },
     acceptanceStatus: {
       type: String,
       enum: ['Pending Review', 'Accepted', 'Declined', 'Not Assigned', 'Clarification Requested', 'Clarified'],

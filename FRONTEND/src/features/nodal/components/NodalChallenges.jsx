@@ -6,15 +6,15 @@ import { ClarificationChatModal } from '../../clarification/components/Clarifica
 import { useNodalChallenges } from './challenges/hooks/useNodalChallenges.js';
 import { NodalChallengesHeader } from './challenges/NodalChallengesHeader.jsx';
 import { ProblemScopeTabs } from './challenges/ProblemScopeTabs.jsx';
-import { AssignProblemToBlockModal } from './challenges/AssignProblemToBlockModal.jsx';
+import { AssignProblemToWardModal } from './ward-directory/AssignProblemToWardModal.jsx';
 import { NodalChallengesGrid } from './challenges/NodalChallengesGrid.jsx';
 import { NodalChallengesTable } from './challenges/NodalChallengesTable.jsx';
 
 export const NodalChallenges = ({ initialStatusFilter = 'All Status', nodalDistrict = '' }) => {
   const [viewMode, setViewMode] = useState('table');
   const [problemScopeTab, setProblemScopeTab] = useState('big'); // 'big' | 'small'
-  const [isAssignBlockOpen, setIsAssignBlockOpen] = useState(false);
-  const [blockAssignChallenge, setBlockAssignChallenge] = useState(null);
+  const [isAssignWardOpen, setIsAssignWardOpen] = useState(false);
+  const [wardAssignChallenge, setWardAssignChallenge] = useState(null);
 
   const {
     searchTerm, setSearchTerm, statusFilter, setStatusFilter, domainFilter, setDomainFilter,
@@ -25,16 +25,16 @@ export const NodalChallenges = ({ initialStatusFilter = 'All Status', nodalDistr
     handleTriageSuccess, filteredChallenges
   } = useNodalChallenges({ initialStatusFilter, nodalDistrict });
 
-  const handleOpenAssignBlock = (chl) => {
-    setBlockAssignChallenge(chl);
-    setIsAssignBlockOpen(true);
+  const handleOpenAssignWard = (chl) => {
+    setWardAssignChallenge(chl);
+    setIsAssignWardOpen(true);
   };
 
-  const handleBlockAssignedSuccess = (updated) => {
+  const handleWardAssignedSuccess = (updated) => {
     handleTriageSuccess(updated);
     setSelectedDossierChallenge(null);
-    setIsAssignBlockOpen(false);
-    setBlockAssignChallenge(null);
+    setIsAssignWardOpen(false);
+    setWardAssignChallenge(null);
   };
 
   if (selectedDossierChallenge) {
@@ -48,16 +48,16 @@ export const NodalChallenges = ({ initialStatusFilter = 'All Status', nodalDistr
             setSelectedChallenge(selectedDossierChallenge);
             setIsAssignModalOpen(true);
           } : null}
-          onOpenAssignBlock={problemScopeTab === 'small' ? () => handleOpenAssignBlock(selectedDossierChallenge) : null}
+          onOpenAssignBlock={problemScopeTab === 'small' ? () => handleOpenAssignWard(selectedDossierChallenge) : null}
           onOpenChat={() => setChatChallenge(selectedDossierChallenge)}
         />
 
-        {isAssignBlockOpen && (
-          <AssignProblemToBlockModal
-            isOpen={isAssignBlockOpen}
-            onClose={() => { setIsAssignBlockOpen(false); setBlockAssignChallenge(null); }}
-            challenge={blockAssignChallenge || selectedDossierChallenge}
-            onAssigned={handleBlockAssignedSuccess}
+        {isAssignWardOpen && (
+          <AssignProblemToWardModal
+            isOpen={isAssignWardOpen}
+            onClose={() => { setIsAssignWardOpen(false); setWardAssignChallenge(null); }}
+            challenge={wardAssignChallenge || selectedDossierChallenge}
+            onAssigned={handleWardAssignedSuccess}
           />
         )}
 
@@ -112,17 +112,17 @@ export const NodalChallenges = ({ initialStatusFilter = 'All Status', nodalDistr
           onOpenDossier={setSelectedDossierChallenge} onOpenChat={setChatChallenge}
           onQuickReject={handleQuickReject} onQuickDelete={handleQuickDelete}
           problemScope={problemScopeTab}
-          onOpenTriage={(chl) => (problemScopeTab === 'small' ? handleOpenAssignBlock(chl) : handleOpenTriage(chl))}
+          onOpenTriage={(chl) => (problemScopeTab === 'small' ? handleOpenAssignWard(chl) : handleOpenTriage(chl))}
         />
       )}
 
-      {/* Assign Problem to Block Modal */}
-      {isAssignBlockOpen && (
-        <AssignProblemToBlockModal
-          isOpen={isAssignBlockOpen}
-          onClose={() => { setIsAssignBlockOpen(false); setBlockAssignChallenge(null); }}
-          challenge={blockAssignChallenge}
-          onAssigned={handleBlockAssignedSuccess}
+      {/* Assign Problem to Ward Modal */}
+      {isAssignWardOpen && (
+        <AssignProblemToWardModal
+          isOpen={isAssignWardOpen}
+          onClose={() => { setIsAssignWardOpen(false); setWardAssignChallenge(null); }}
+          challenge={wardAssignChallenge}
+          onAssigned={handleWardAssignedSuccess}
         />
       )}
 

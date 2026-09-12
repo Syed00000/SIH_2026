@@ -5,19 +5,20 @@ import { NodalHeader } from './components/NodalHeader.jsx';
 import { NodalOverview } from './components/NodalOverview.jsx';
 import { NodalChallenges } from './components/NodalChallenges.jsx';
 import { NodalUniversitiesPanel } from './components/NodalUniversitiesPanel.jsx';
+import { StateDirectory } from './components/state-directory/index.js';
+import { DistrictDirectory } from './components/district-directory/index.js';
+import { BlockDirectory } from './components/block-directory/index.js';
+import { WardDirectory } from './components/ward-directory/index.js';
 import { NodalProfilePanel } from './components/profile/NodalProfilePanel.jsx';
-import { DistrictIssuesDirectory } from './components/district-issues/index.js';
 import { GovernmentFooter } from '../government/components/layout/GovernmentFooter.jsx';
 
-export const NodalPortal = ({ user: propUser, onLogout }) => {
+export const NodalPortal = ({ user: propUser, onLogout, onNavigate }) => {
   const { user: authUser } = useAuth();
   const user = propUser || authUser;
 
   const [activeTab, setActiveTab] = useState('dashboard');
   const [isSidebarExpanded, setIsSidebarExpanded] = useState(true);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [selectedDistrict, setSelectedDistrict] = useState('All');
-  const [selectedSector, setSelectedSector] = useState('All');
 
   const nodalDistrict = user?.district || user?.profile?.district || user?.profile?.location?.district || '';
   const institutionName = user?.profile?.institutionName || 'Jharkhand State Innovation Cell';
@@ -52,8 +53,15 @@ export const NodalPortal = ({ user: propUser, onLogout }) => {
       case 'assigned':
       case 'approvals':
         return <NodalChallenges initialStatusFilter={challengeFilter} nodalDistrict={nodalDistrict} />;
-      case 'district-issues':
-        return <DistrictIssuesDirectory nodalDistrict={nodalDistrict} user={user} />;
+      case 'state-directory':
+        return <StateDirectory nodalDistrict={nodalDistrict} user={user} onNavigate={onNavigate} />;
+      case 'district-directory':
+        return <DistrictDirectory nodalDistrict={nodalDistrict} user={user} onNavigate={onNavigate} />;
+      case 'block-directory':
+      case 'local-bodies':
+        return <BlockDirectory nodalDistrict={nodalDistrict} user={user} onNavigate={onNavigate} />;
+      case 'ward-directory':
+        return <WardDirectory nodalDistrict={nodalDistrict} user={user} onNavigate={onNavigate} />;
       case 'profile':
         return (
           <NodalProfilePanel
@@ -76,7 +84,6 @@ export const NodalPortal = ({ user: propUser, onLogout }) => {
 
   return (
     <div className="min-h-screen bg-white flex flex-col overflow-hidden h-screen text-slate-800 antialiased select-none">
-      {/* 1. Top Full-Width Header - Extends 100% edge-to-edge across viewport */}
       <NodalHeader
         institutionName={institutionName}
         nodalName={nodalName}
@@ -87,9 +94,7 @@ export const NodalPortal = ({ user: propUser, onLogout }) => {
         onToggleSidebar={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
       />
 
-      {/* 2. Main Body Container (Left Sidebar below Header + Right Viewport) */}
       <div className="flex-1 flex flex-row min-w-0 min-h-0 overflow-hidden bg-white">
-        {/* Left Nodal Sidebar (Sits directly beneath the Top Header) */}
         <NodalSidebar
           activeTab={activeTab}
           setActiveTab={setActiveTab}
@@ -101,13 +106,10 @@ export const NodalPortal = ({ user: propUser, onLogout }) => {
           institutionName={institutionName}
         />
 
-        {/* Right Main Scrollable Viewport */}
         <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden bg-white">
           <main className="flex-1 p-3 sm:p-4 overflow-y-auto min-h-0 custom-scrollbar">
             <div className="max-w-7xl mx-auto w-full">{renderContent()}</div>
           </main>
-
-          {/* Pinned Bottom Footer */}
           <GovernmentFooter />
         </div>
       </div>

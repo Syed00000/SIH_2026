@@ -22,6 +22,17 @@ const blockSchema = new mongoose.Schema(
       trim: true,
       index: true
     },
+    wardId: {
+      type: String,
+      default: '',
+      trim: true,
+      index: true
+    },
+    wardName: {
+      type: String,
+      default: '',
+      trim: true
+    },
     bdoName: {
       type: String,
       default: '',

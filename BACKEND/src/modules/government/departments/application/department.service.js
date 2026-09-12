@@ -1,6 +1,7 @@
 import { departmentRepository } from '../infrastructure/department.repository.js';
 import { Admin } from '../../admins/infrastructure/model.js';
 import { CitizenChallenge } from '../../../citizen/infrastructure/model.js';
+import { ensureDefaultAdminDepartments } from './helpers/default-admin-departments.helper.js';
 
 export class DepartmentService {
   constructor(repo = departmentRepository) {
@@ -15,50 +16,8 @@ export class DepartmentService {
     return candidate;
   }
 
-  async ensureDefaultBlockDepartments(blockName = 'Kanke Block', district = 'Ranchi') {
-    try {
-      const existing = await this.repo.find({ block: new RegExp(`^${blockName.trim()}$`, 'i') });
-      if (existing.length === 0) {
-        const defaults = [
-          { name: 'Drinking Water & Sanitation', code: 'DWSD', email: 'water.kanke@jharkhand.gov.in', phone: '+91 94311 00101' },
-          { name: 'Electricity & Power', code: 'JBVNL', email: 'electric.kanke@jharkhand.gov.in', phone: '+91 94311 00102' },
-          { name: 'Roads & Rural Works', code: 'RWD', email: 'roads.kanke@jharkhand.gov.in', phone: '+91 94311 00103' },
-          { name: 'Sanitation & Solid Waste', code: 'SWM', email: 'waste.kanke@jharkhand.gov.in', phone: '+91 94311 00104' },
-          { name: 'Public Health & Anganwadi', code: 'HLTH', email: 'health.kanke@jharkhand.gov.in', phone: '+91 94311 00105' }
-        ];
-        for (let i = 0; i < defaults.length; i++) {
-          const d = defaults[i];
-          const deptId = `DEPT-KNK-0${i + 1}`;
-          await this.repo.create({
-            deptId,
-            name: `${d.name} (${blockName})`,
-            code: d.code,
-            category: 'Block / Tehsil Office',
-            district,
-            block: blockName,
-            headName: `Incharge - ${d.name}`,
-            headRole: 'Block Departmental Officer',
-            headEmail: d.email,
-            headPhone: d.phone,
-            credentials: {
-              loginId: deptId,
-              loginEmail: d.email,
-              password: 'Dept@JH2026!',
-              generatedPassword: 'Dept@JH2026!'
-            },
-            status: 'Active'
-          });
-        }
-      }
-    } catch (err) {
-      console.warn('Auto-seed block departments error:', err.message);
-    }
-  }
-
   async listDepartments(filters = {}) {
-    if (filters.block && filters.block !== 'all') {
-      await this.ensureDefaultBlockDepartments(filters.block, filters.district || 'Ranchi');
-    }
+    await ensureDefaultAdminDepartments(this.repo);
 
     const mongoFilter = {};
     if (filters.district && filters.district !== 'all' && filters.district !== 'All Districts') {
@@ -82,7 +41,7 @@ export class DepartmentService {
 
     return departments.map((dept) => {
       const deptNameLower = dept.name.toLowerCase().replace(/department of |dept\. of /i, '').replace(/&/g, 'and').trim();
-      const deptCodeLower = dept.code.toLowerCase();
+      const deptCodeLower = (dept.code || '').toLowerCase();
 
       const matchedOfficers = allAdmins.filter((a) => {
         const adminDept = (a.assignedDepartment || '').toLowerCase().replace(/&/g, 'and').trim();
@@ -126,7 +85,7 @@ export class DepartmentService {
       deptId,
       name: data.name.trim(),
       code,
-      category: data.category || 'Block / Tehsil Office',
+      category: data.category || 'District Department',
       headName: data.headName?.trim() || null,
       headRole: data.headRole?.trim() || 'Department Officer',
       headEmail: data.headEmail?.trim() || null,

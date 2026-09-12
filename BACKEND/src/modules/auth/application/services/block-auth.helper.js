@@ -70,11 +70,14 @@ export function toBlockUserEntity(block) {
   const blockId = block.blockId || 'BLK-JH-RN-01';
   const id = block._id ? block._id.toString() : blockId;
   const email = block.credentials?.loginEmail || block.bdoEmail || `${blockId.toLowerCase()}@jharkhand.gov.in`;
+  const rawPass = block.credentials?.password || 'Block@2026';
+  const passwordHash = rawPass.startsWith('$2') ? rawPass : bcrypt.hashSync(rawPass, 10);
 
   return {
     id,
     fullName: `${block.name} Administration`,
     email,
+    passwordHash,
     mobileNumber: block.bdoPhone || '9431188201',
     role: 'BLOCK',
     blockId,

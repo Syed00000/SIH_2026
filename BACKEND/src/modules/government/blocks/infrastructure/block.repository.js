@@ -2,10 +2,13 @@ import mongoose from 'mongoose';
 import { Block } from './block.schema.js';
 
 export class BlockRepository {
-  async findAll({ district = '', search = '' } = {}) {
+  async findAll({ district = '', wardId = '', search = '' } = {}) {
     const query = { status: { $ne: 'Archived' } };
     if (district && district !== 'All' && district !== 'All Districts') {
       query.district = new RegExp(`^${district.trim()}$`, 'i');
+    }
+    if (wardId) {
+      query.wardId = wardId;
     }
     if (search) {
       const regex = new RegExp(search.trim(), 'i');

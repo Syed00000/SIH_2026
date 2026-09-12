@@ -1,5 +1,5 @@
 import React from 'react';
-import { LayoutDashboard, FileText, Building2, LogOut, ArrowLeft, ShieldCheck, MapPin } from 'lucide-react';
+import { LayoutDashboard, FileText, Building2, Landmark, LogOut } from 'lucide-react';
 
 export const BlockSidebar = ({
   activePanel = 'overview',
@@ -7,6 +7,7 @@ export const BlockSidebar = ({
   block,
   challengesCount = 0,
   departmentsCount = 0,
+  wardsCount = 0,
   onLogout,
   onBackToDistrict
 }) => {
@@ -16,7 +17,8 @@ export const BlockSidebar = ({
   const navItems = [
     { id: 'overview', label: 'Overview', icon: LayoutDashboard, badge: null },
     { id: 'challenges', label: 'Civic Challenges', icon: FileText, badge: challengesCount },
-    { id: 'departments', label: 'Block Departments', icon: Building2, badge: departmentsCount }
+    { id: 'departments', label: 'Block Departments', icon: Building2, badge: departmentsCount },
+    { id: 'wards', label: 'Wards Directory', icon: Landmark, badge: wardsCount }
   ];
 
   return (
