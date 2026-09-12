@@ -4,7 +4,7 @@ import { useNodalAssignForm } from './assign/hooks/useNodalAssignForm.js';
 import { AssignModalHeader } from './assign/AssignModalHeader.jsx';
 import { ChallengeSelectorCard } from './assign/ChallengeSelectorCard.jsx';
 import { TriageVerificationCard } from './assign/TriageVerificationCard.jsx';
-import { InstitutionalTargetingCard } from './assign/InstitutionalTargetingCard.jsx';
+import { DepartmentTargetingCard } from './assign/DepartmentTargetingCard.jsx';
 import { NodalNotesAndClarificationCard } from './assign/NodalNotesAndClarificationCard.jsx';
 import { AssignModalActions } from './assign/AssignModalActions.jsx';
 import { SkeletonModalForm } from './common/NodalSkeletonLoaders.jsx';
@@ -13,11 +13,10 @@ export const NodalAssignModal = ({
   isOpen,
   onClose,
   challenge: initialChallenge,
-  targetUniversity,
   onSuccess
 }) => {
   const {
-    universities,
+    departments,
     allChallenges,
     loadingData,
     submitting,
@@ -29,27 +28,23 @@ export const NodalAssignModal = ({
     setSelectedDomain,
     selectedPriority,
     setSelectedPriority,
-    selectedUniCode,
-    setSelectedUniCode,
-    targetDepartment,
-    setTargetDepartment,
+    departmentLevel,
+    setDepartmentLevel,
+    selectedDeptId,
+    setSelectedDeptId,
     nodalRemarks,
     setNodalRemarks,
     clarificationResponse,
     setClarificationResponse,
-    acceptanceStatus,
-    setAcceptanceStatus,
     errorMsg,
     isConfirmingDelete,
     setIsConfirmingDelete,
     deleting,
-    isUniversityTargetMode,
     handleSelectChallengeChange,
     handleDeleteChallenge,
     handleFormSubmit
   } = useNodalAssignForm({
     initialChallenge,
-    targetUniversity,
     onClose,
     onSuccess
   });
@@ -60,8 +55,7 @@ export const NodalAssignModal = ({
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-150">
       <div className="bg-white rounded-md max-w-xl w-full border border-slate-300 shadow-2xl overflow-hidden flex flex-col max-h-[90vh] animate-in zoom-in-95 duration-150 text-left">
         <AssignModalHeader
-          isUniversityTargetMode={isUniversityTargetMode}
-          targetUniversity={targetUniversity}
+          isUniversityTargetMode={false}
           activeChallenge={activeChallenge}
           onClose={onClose}
         />
@@ -78,7 +72,7 @@ export const NodalAssignModal = ({
                 </div>
               )}
 
-              {isUniversityTargetMode && (
+              {!initialChallenge && (
                 <ChallengeSelectorCard
                   allChallenges={allChallenges}
                   selectedChallengeId={selectedChallengeId}
@@ -94,33 +88,34 @@ export const NodalAssignModal = ({
                 setSelectedPriority={setSelectedPriority}
               />
 
-              <InstitutionalTargetingCard
-                isUniversityTargetMode={isUniversityTargetMode}
-                universities={universities}
-                selectedUniCode={selectedUniCode}
-                setSelectedUniCode={setSelectedUniCode}
-                targetDepartment={targetDepartment}
-                setTargetDepartment={setTargetDepartment}
-                acceptanceStatus={acceptanceStatus}
-                setAcceptanceStatus={setAcceptanceStatus}
-              />
+              {verificationStatus === 'Verified' && (
+                <DepartmentTargetingCard
+                  departments={departments}
+                  departmentLevel={departmentLevel}
+                  setDepartmentLevel={setDepartmentLevel}
+                  selectedDeptId={selectedDeptId}
+                  setSelectedDeptId={setSelectedDeptId}
+                />
+              )}
 
               <NodalNotesAndClarificationCard
-                nodalRemarks={nodalRemarks}
-                setNodalRemarks={setNodalRemarks}
+                verificationStatus={verificationStatus}
+                setVerificationStatus={setVerificationStatus}
                 clarificationResponse={clarificationResponse}
                 setClarificationResponse={setClarificationResponse}
+                nodalRemarks={nodalRemarks}
+                setNodalRemarks={setNodalRemarks}
               />
             </div>
 
             <AssignModalActions
+              onClose={onClose}
               submitting={submitting}
-              deleting={deleting}
+              verificationStatus={verificationStatus}
               isConfirmingDelete={isConfirmingDelete}
               setIsConfirmingDelete={setIsConfirmingDelete}
               handleDeleteChallenge={handleDeleteChallenge}
-              onClose={onClose}
-              activeChallenge={activeChallenge}
+              deleting={deleting}
             />
           </form>
         )}

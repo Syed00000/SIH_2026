@@ -81,12 +81,27 @@ export const NodalChallengesTable = ({
                     </div>
                   </td>
 
-                  {/* Assigned Institution */}
+                  {/* Assigned Institution / Department */}
                   <td className="px-3.5 py-3 whitespace-nowrap">
                     {chl.assignedUniversity?.name ? (
                       <div className="flex items-center space-x-1.5 text-slate-900 font-bold">
                         <Building className="w-3.5 h-3.5 text-[#047857] shrink-0" />
                         <span className="line-clamp-1">{chl.assignedUniversity.name}</span>
+                      </div>
+                    ) : chl.assignedDepartment?.name ? (
+                      <div className="flex items-center space-x-1.5 text-slate-900 font-bold">
+                        <Building className="w-3.5 h-3.5 text-blue-600 shrink-0" />
+                        <span className="line-clamp-1">{chl.assignedDepartment.name}</span>
+                      </div>
+                    ) : chl.assignedBlock?.name ? (
+                      <div className="flex items-center space-x-1.5 text-slate-900 font-bold">
+                        <Building className="w-3.5 h-3.5 text-blue-600 shrink-0" />
+                        <span className="line-clamp-1">{chl.assignedBlock.name}</span>
+                      </div>
+                    ) : chl.assignedWard?.name ? (
+                      <div className="flex items-center space-x-1.5 text-slate-900 font-bold">
+                        <Building className="w-3.5 h-3.5 text-blue-600 shrink-0" />
+                        <span className="line-clamp-1">{chl.assignedWard.name}</span>
                       </div>
                     ) : (
                       <span className="text-[10.5px] font-medium text-slate-400 italic">

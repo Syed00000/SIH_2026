@@ -21,7 +21,7 @@ export const NodalUnassignedQueueCard = ({
             </h3>
           </div>
           <button
-            onClick={() => onNavigateChallenges && onNavigateChallenges('Under Review')}
+            onClick={() => onNavigateChallenges && onNavigateChallenges('All Status')}
             className="text-[11px] font-bold text-[#007A61] hover:text-[#00604c] flex items-center space-x-0.5 cursor-pointer transition-colors"
           >
             <span>View Registry</span>
@@ -90,7 +90,7 @@ export const NodalUnassignedQueueCard = ({
           </span>
         </div>
         <button
-          onClick={() => onNavigateChallenges && onNavigateChallenges('Under Review')}
+          onClick={() => onNavigateChallenges && onNavigateChallenges('All Status')}
           className="text-[#007A61] font-bold hover:text-[#00604c] shrink-0 text-[11px] cursor-pointer transition-colors"
         >
           Review All

@@ -7,6 +7,7 @@ export function applyTriageChanges(challenge, triageData, user = null) {
   if (triageData.domain) challenge.domain = triageData.domain;
   if (triageData.priority) challenge.priority = triageData.priority;
   if (triageData.district && challenge.location) challenge.location.district = triageData.district;
+  if (triageData.mediaUrls) challenge.mediaUrls = triageData.mediaUrls;
 
   const hasAssignment =
     triageData.assignedUniversity?.id ||
@@ -106,6 +107,20 @@ export function applyTriageChanges(challenge, triageData, user = null) {
   if (triageData.assignedTechnician) {
     const tech = triageData.assignedTechnician;
     const ex = challenge.assignedTechnician || {};
+    let workHistory = ex.workHistory || [];
+
+    const isReassigned = tech.status === 'Assigned' && ex.status === 'Completed';
+    if (isReassigned) {
+      workHistory.push({
+        completedAt: ex.completedAt,
+        completionRemarks: ex.completionRemarks,
+        mediaUrl: challenge.mediaUrls && challenge.mediaUrls.length > 0 
+                    ? challenge.mediaUrls[challenge.mediaUrls.length - 1] 
+                    : null,
+        rejectReason: tech.rejectReason || 'Work rejected and reassigned by Ward Commissioner'
+      });
+    }
+
     challenge.assignedTechnician = {
       ...ex,
       id: tech.id || tech.technicianId || ex.id || '',
@@ -116,12 +131,61 @@ export function applyTriageChanges(challenge, triageData, user = null) {
       instructions: tech.instructions || ex.instructions || triageData.instructions || '',
       status: tech.status || ex.status || 'Assigned',
       acceptedAt: tech.acceptedAt || ex.acceptedAt || (tech.status === 'Accepted' ? new Date() : null),
-      completedAt: tech.completedAt || ex.completedAt || (tech.status === 'Completed' ? new Date() : null),
-      completionRemarks: tech.completionRemarks || ex.completionRemarks || ''
+      completedAt: isReassigned ? null : (tech.completedAt || ex.completedAt || (tech.status === 'Completed' ? new Date() : null)),
+      completionRemarks: isReassigned ? '' : (tech.completionRemarks || ex.completionRemarks || ''),
+      workHistory: workHistory
     };
-    if (tech.status === 'Completed') {
-      challenge.status = 'Resolved';
-      challenge.resolvedAt = new Date();
+    // Note: Do not auto-resolve the challenge here. Ward Commissioner must approve first.
+  }
+
+  if (triageData.status === 'Escalated') {
+    if (challenge.assignedWard && challenge.assignedWard.name && challenge.assignedWard.status !== 'Escalated') {
+      challenge.assignedWard.status = 'Escalated';
+      challenge.assignedWard.actionRemarks = 'Escalated to Higher Authority (Block Department).';
+      
+      const bName = challenge.location?.block || challenge.location?.district || 'District';
+      challenge.assignedBlock = {
+        name: `${bName} Block Office`,
+        level: 'Block / Tehsil Office',
+        category: 'Block / Tehsil Office',
+        district: challenge.district || 'Ranchi',
+        assignedAt: new Date(),
+        assignedBy: user?.fullName || 'Ward Commissioner',
+        status: 'Escalated'
+      };
+    } else if (challenge.assignedBlock && challenge.assignedBlock.name && challenge.assignedBlock.status !== 'Escalated') {
+      challenge.assignedBlock.status = 'Escalated';
+      challenge.assignedBlock.actionRemarks = 'Escalated to Higher Authority (District Department).';
+      
+      const bName = challenge.location?.district || 'District';
+      challenge.assignedDepartment = {
+        name: `${bName} District Department`,
+        category: 'District Department',
+        level: 'District Department',
+        district: challenge.district || 'Ranchi',
+        assignedAt: new Date(),
+        assignedBy: user?.fullName || 'Block Office',
+        status: 'Escalated'
+      };
+    } else if (challenge.assignedDepartment && challenge.assignedDepartment.name && challenge.assignedDepartment.status !== 'Escalated') {
+      const isDistrict = challenge.assignedDepartment.category === 'District Department' || challenge.assignedDepartment.level === 'District Department';
+      if (isDistrict) {
+        challenge.status = 'Under Review';
+        challenge.triageRemarks = 'Escalated from District level to State Nodal Cell. Requires immediate State intervention.';
+        challenge.priority = 'High';
+        
+        challenge.assignedDepartment = null;
+        challenge.assignedBlock = null;
+        challenge.assignedWard = null;
+      } else {
+        // State Ministry escalating back to Nodal Cell
+        challenge.status = 'Under Review';
+        challenge.triageRemarks = 'The problem has not resolved yet';
+        
+        challenge.assignedDepartment = null;
+        challenge.assignedBlock = null;
+        challenge.assignedWard = null;
+      }
     }
   }
 

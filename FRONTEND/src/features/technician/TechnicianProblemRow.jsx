@@ -1,19 +1,53 @@
 import React from 'react';
 import { Wrench, Clock, CheckCircle2, ChevronRight as ArrowRight } from 'lucide-react';
 
-export const TechnicianProblemRow = ({ task, rowNumber, onSelect, getPriorityBadge }) => {
+export const TechnicianProblemRow = ({ task, rowNumber, onSelect, getPriorityBadge, isMobile }) => {
   const tech = task.assignedTechnician || {};
-  const isAcc = tech.status === 'Accepted' || tech.status === 'Completed';
-  const isDone = tech.status === 'Completed' || task.status === 'Resolved';
+  const isDone = task.status === 'Resolved';
+  const isPendingApproval = tech.status === 'Completed' && task.status !== 'Resolved';
+  const isActive = tech.status === 'Accepted' && !isDone && !isPendingApproval;
   const loc = task.location || {};
   const locText = [loc.panchayatOrWard || loc.panchayat, loc.district || 'Ranchi'].filter(Boolean).join(', ');
 
+  if (isMobile) {
+    return (
+      <div
+        onClick={() => onSelect(task)}
+        className="p-3.5 active:bg-slate-50 transition cursor-pointer flex items-center justify-between gap-2"
+      >
+        <div className="space-y-1 min-w-0">
+          <div className="flex items-center gap-2">
+            <span className="font-mono text-[10.5px] font-bold text-[#007A61] bg-[#007A61]/10 px-1.5 py-0.2 rounded">
+              {task.challengeId || task.id}
+            </span>
+            <span className={`text-[9.5px] font-extrabold px-1.5 py-0.2 rounded-full border ${getPriorityBadge(task.priority)}`}>
+              {task.priority || 'Medium'}
+            </span>
+          </div>
+          <h4 className="text-xs font-bold text-slate-900 truncate">{task.title}</h4>
+          <p className="text-[11px] text-slate-500 truncate">{locText || 'Block Jurisdiction'}</p>
+        </div>
+
+        <div className="flex items-center gap-2 shrink-0">
+          {isDone ? (
+            <span className="text-[10px] font-bold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-full">Done</span>
+          ) : isPendingApproval ? (
+            <span className="text-[10px] font-bold text-purple-800 bg-purple-100 px-2 py-0.5 rounded-full">Pending Approval</span>
+          ) : isActive ? (
+            <span className="text-[10px] font-bold text-blue-800 bg-blue-100 px-2 py-0.5 rounded-full">Active</span>
+          ) : (
+            <span className="text-[10px] font-bold text-amber-800 bg-amber-100 px-2 py-0.5 rounded-full">Pending</span>
+          )}
+          <ArrowRight className="w-4 h-4 text-slate-400" />
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <>
-      {/* Desktop Table Row */}
       <tr
         onClick={() => onSelect(task)}
-        className="hidden md:table-row hover:bg-emerald-50/40 transition cursor-pointer"
+        className="hover:bg-emerald-50/40 transition cursor-pointer"
       >
         <td className="py-3 px-3.5 text-center text-slate-400 font-bold">{rowNumber}</td>
         <td className="py-3 px-3.5">
@@ -34,7 +68,11 @@ export const TechnicianProblemRow = ({ task, rowNumber, onSelect, getPriorityBad
             <span className="inline-flex items-center gap-1 text-[10.5px] font-bold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-full">
               <CheckCircle2 className="w-3 h-3" /> Done
             </span>
-          ) : isAcc ? (
+          ) : isPendingApproval ? (
+            <span className="inline-flex items-center gap-1 text-[10.5px] font-bold text-purple-800 bg-purple-100 px-2 py-0.5 rounded-full">
+              <Clock className="w-3 h-3" /> Pending Approval
+            </span>
+          ) : isActive ? (
             <span className="inline-flex items-center gap-1 text-[10.5px] font-bold text-blue-800 bg-blue-100 px-2 py-0.5 rounded-full">
               <Wrench className="w-3 h-3" /> Active
             </span>
@@ -54,37 +92,6 @@ export const TechnicianProblemRow = ({ task, rowNumber, onSelect, getPriorityBad
           </button>
         </td>
       </tr>
-
-      {/* Mobile Row Card */}
-      <div
-        onClick={() => onSelect(task)}
-        className="md:hidden p-3.5 active:bg-slate-50 transition cursor-pointer flex items-center justify-between gap-2"
-      >
-        <div className="space-y-1 min-w-0">
-          <div className="flex items-center gap-2">
-            <span className="font-mono text-[10.5px] font-bold text-[#007A61] bg-[#007A61]/10 px-1.5 py-0.2 rounded">
-              {task.challengeId || task.id}
-            </span>
-            <span className={`text-[9.5px] font-extrabold px-1.5 py-0.2 rounded-full border ${getPriorityBadge(task.priority)}`}>
-              {task.priority || 'Medium'}
-            </span>
-          </div>
-          <h4 className="text-xs font-bold text-slate-900 truncate">{task.title}</h4>
-          <p className="text-[11px] text-slate-500 truncate">{locText || 'Block Jurisdiction'}</p>
-        </div>
-
-        <div className="flex items-center gap-2 shrink-0">
-          {isDone ? (
-            <span className="text-[10px] font-bold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-full">Done</span>
-          ) : isAcc ? (
-            <span className="text-[10px] font-bold text-blue-800 bg-blue-100 px-2 py-0.5 rounded-full">Active</span>
-          ) : (
-            <span className="text-[10px] font-bold text-amber-800 bg-amber-100 px-2 py-0.5 rounded-full">Pending</span>
-          )}
-          <ArrowRight className="w-4 h-4 text-slate-400" />
-        </div>
-      </div>
-    </>
   );
 };
 

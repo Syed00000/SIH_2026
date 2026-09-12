@@ -27,25 +27,31 @@ export const technicianService = {
     const blockShort = (block || 'Kanke').split(' ')[0].toLowerCase();
     const loginEmail = `tech.${cleanKey}.${blockShort}@jharkhand.gov.in`;
 
-    await technicianRepository.create({
-      technicianId: `TECH-${cleanKey.toUpperCase()}-01`,
-      name: def.name,
-      departmentId,
-      departmentName: departmentName || 'Department Wing',
-      specialization: def.trade,
-      phone: def.phone,
-      email: loginEmail,
-      district,
-      block,
-      credentials: {
-        loginId: loginEmail,
-        loginEmail,
-        password: 'Tech@JH2026!',
-        generatedPassword: 'Tech@JH2026!'
-      },
-      status: 'Active',
-      notes: 'Designated field technician for gram panchayat inspections'
-    });
+    try {
+      await technicianRepository.create({
+        technicianId: `TECH-${cleanKey.toUpperCase()}-01`,
+        name: def.name,
+        departmentId,
+        departmentName: departmentName || 'Department Wing',
+        specialization: def.trade,
+        phone: def.phone,
+        email: loginEmail,
+        district,
+        block,
+        credentials: {
+          loginId: loginEmail,
+          loginEmail,
+          password: 'Tech@JH2026!',
+          generatedPassword: 'Tech@JH2026!'
+        },
+        status: 'Active',
+        notes: 'Designated field technician for gram panchayat inspections'
+      });
+    } catch (err) {
+      if (err.code !== 11000) {
+        console.error('Failed to create default technician:', err);
+      }
+    }
   },
 
   getTechnicians: async (filters = {}, pagination = {}) => {

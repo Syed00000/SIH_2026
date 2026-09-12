@@ -60,9 +60,9 @@ export const TechnicianPortal = ({ user, onLogout }) => {
         assignedTechnician: { ...challenge.assignedTechnician, status: 'Accepted', acceptedAt: new Date() }
       };
       await apiClient.patch(`citizen/challenges/${targetId}/triage`, payload);
-      setTasks((prev) => prev.map((t) => ((t.challengeId || t.id || t._id) === targetId ? { ...t, assignedTechnician: { ...t.assignedTechnician, status: 'Accepted' } } : t)));
+      setTasks((prev) => prev.map((t) => ((t.challengeId || t.id || t._id) === targetId ? { ...t, assignedTechnician: { ...(t.assignedTechnician || {}), status: 'Accepted' } } : t)));
       if (selectedChallenge && (selectedChallenge.challengeId || selectedChallenge.id) === targetId) {
-        setSelectedChallenge((prev) => ({ ...prev, assignedTechnician: { ...prev.assignedTechnician, status: 'Accepted' } }));
+        setSelectedChallenge((prev) => (prev ? { ...prev, assignedTechnician: { ...(prev.assignedTechnician || {}), status: 'Accepted' } } : null));
       }
       setBannerNotice(`Problem ${targetId} accepted! Citizen coordinates unlocked.`);
       setTimeout(() => setBannerNotice(''), 5000);
@@ -73,12 +73,12 @@ export const TechnicianPortal = ({ user, onLogout }) => {
     }
   };
 
-  const handleCompleteTask = async (challenge, remarks) => {
+  const handleCompleteTask = async (challenge, remarks, attachmentStr) => {
     const targetId = challenge.challengeId || challenge.id || challenge._id;
     try {
       setIsSubmittingComplete(true);
       const payload = {
-        status: 'Resolved',
+        status: 'In Progress',
         assignedTechnician: {
           ...challenge.assignedTechnician,
           status: 'Completed',
@@ -86,10 +86,17 @@ export const TechnicianPortal = ({ user, onLogout }) => {
           completionRemarks: remarks
         }
       };
+
+      let newMedia = challenge.mediaUrls || [];
+      if (attachmentStr) {
+        newMedia = [...newMedia, attachmentStr];
+        payload.mediaUrls = newMedia;
+      }
+
       await apiClient.patch(`citizen/challenges/${targetId}/triage`, payload);
-      setTasks((prev) => prev.map((t) => ((t.challengeId || t.id || t._id) === targetId ? { ...t, status: 'Resolved', assignedTechnician: { ...t.assignedTechnician, status: 'Completed', completionRemarks: remarks } } : t)));
+      setTasks((prev) => prev.map((t) => ((t.challengeId || t.id || t._id) === targetId ? { ...t, status: 'In Progress', mediaUrls: newMedia, assignedTechnician: { ...(t.assignedTechnician || {}), status: 'Completed', completionRemarks: remarks } } : t)));
       if (selectedChallenge && (selectedChallenge.challengeId || selectedChallenge.id) === targetId) {
-        setSelectedChallenge((prev) => ({ ...prev, status: 'Resolved', assignedTechnician: { ...prev.assignedTechnician, status: 'Completed', completionRemarks: remarks } }));
+        setSelectedChallenge((prev) => (prev ? { ...prev, status: 'In Progress', mediaUrls: newMedia, assignedTechnician: { ...(prev.assignedTechnician || {}), status: 'Completed', completionRemarks: remarks } } : null));
       }
       setCompletingTask(null);
       setBannerNotice(`Problem ${targetId} marked as Done & Resolved!`);
@@ -103,9 +110,10 @@ export const TechnicianPortal = ({ user, onLogout }) => {
 
   const counts = useMemo(() => {
     const pending = tasks.filter((t) => t.assignedTechnician?.status !== 'Accepted' && t.assignedTechnician?.status !== 'Completed' && t.status !== 'Resolved').length;
-    const active = tasks.filter((t) => t.assignedTechnician?.status === 'Accepted' && t.status !== 'Resolved').length;
-    const completed = tasks.filter((t) => t.assignedTechnician?.status === 'Completed' || t.status === 'Resolved').length;
-    return { total: tasks.length, pending, active, completed };
+    const active = tasks.filter((t) => t.assignedTechnician?.status === 'Accepted' && t.status !== 'Resolved' && t.assignedTechnician?.status !== 'Completed').length;
+    const pendingApproval = tasks.filter((t) => t.assignedTechnician?.status === 'Completed' && t.status !== 'Resolved').length;
+    const completed = tasks.filter((t) => t.status === 'Resolved').length;
+    return { total: tasks.length, pending, active, pendingApproval, completed };
   }, [tasks]);
 
   return (

@@ -1,11 +1,8 @@
 import React, { useState } from 'react';
-import { ArrowLeft, CheckCircle2, AlertCircle, Send, MapPin, User, Wrench } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, AlertCircle, Send, MapPin, User, Wrench, ShieldAlert } from 'lucide-react';
 import apiClient from '../../../infrastructure/api/client.js';
 
 export const DepartmentProblemActionPanel = ({ problem, onClose, onUpdateProblem, onAssignTechnician }) => {
-  const [status, setStatus] = useState(problem.status || 'In Progress');
-  const [remarks, setRemarks] = useState('');
-  const [officerName, setOfficerName] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [msg, setMsg] = useState({ type: '', text: '' });
 
@@ -15,33 +12,77 @@ export const DepartmentProblemActionPanel = ({ problem, onClose, onUpdateProblem
   const tech = problem.assignedTechnician;
   const directive = problem.assignedDepartment?.instructions || 'Ground field inspection and immediate civic remedial work.';
 
+  const citizenUrls = (problem.media || []).map(m => m.url || m);
+  const techUrls = (problem.mediaUrls || []).filter(url => !citizenUrls.includes(url));
+
   const fullAddress = [
     location.village || problem.village, location.panchayat || problem.panchayat,
     location.block || problem.block, location.district || problem.district || 'Ranchi', 'Jharkhand'
   ].filter(Boolean).join(', ');
 
-  const handleSubmitAction = async (e) => {
-    e.preventDefault();
-    if (!remarks.trim()) return setMsg({ type: 'error', text: 'Please enter action taken remarks.' });
+  const handleApprove = async () => {
     try {
       setSubmitting(true);
       setMsg({ type: '', text: '' });
       const targetId = problem.challengeId || problem.id || problem._id;
       const payload = {
-        status, remarks: remarks.trim(),
+        status: 'Resolved',
         assignedDepartment: {
           ...(problem.assignedDepartment || {}),
-          status, actionRemarks: remarks.trim(),
-          actionOfficer: officerName.trim() || 'Department Engineering Squad',
-          resolvedAt: status === 'Resolved' ? new Date() : null
+          status: 'Resolved',
+          actionRemarks: 'Approved by Ward Commissioner. Problem resolved.',
+          resolvedAt: new Date()
         }
       };
       const res = await apiClient.patch(`citizen/challenges/${targetId}/triage`, payload);
-      const updated = res?.data?.data || res?.data || { ...problem, status, ...payload };
-      setMsg({ type: 'success', text: `Action report submitted! Status: ${status}.` });
+      const updated = res?.data?.data || res?.data || { ...problem, ...payload };
+      setMsg({ type: 'success', text: `Problem approved and marked as resolved.` });
       if (onUpdateProblem) onUpdateProblem(updated);
     } catch (err) {
-      setMsg({ type: 'error', text: err.response?.data?.message || err.message || 'Failed to submit.' });
+      setMsg({ type: 'error', text: err.response?.data?.message || err.message || 'Failed to approve.' });
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleEscalate = async () => {
+    try {
+      setSubmitting(true);
+      setMsg({ type: '', text: '' });
+      const targetId = problem.challengeId || problem.id || problem._id;
+      const payload = {
+        status: 'Escalated'
+      };
+      const res = await apiClient.patch(`citizen/challenges/${targetId}/triage`, payload);
+      const updated = res?.data?.data || res?.data || { ...problem, ...payload };
+      setMsg({ type: 'success', text: `Problem escalated to higher authority.` });
+      if (onUpdateProblem) onUpdateProblem(updated);
+    } catch (err) {
+      setMsg({ type: 'error', text: err.response?.data?.message || err.message || 'Failed to escalate.' });
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleReassign = async () => {
+    try {
+      setSubmitting(true);
+      setMsg({ type: '', text: '' });
+      const targetId = problem.challengeId || problem.id || problem._id;
+      const payload = {
+        status: 'In Progress',
+        assignedTechnician: {
+          ...(problem.assignedTechnician || {}),
+          status: 'Assigned',
+          rejectReason: 'Work rejected and reassigned by Ward Commissioner'
+        }
+      };
+      const res = await apiClient.patch(`citizen/challenges/${targetId}/triage`, payload);
+      const updated = res?.data?.data || res?.data || { ...problem, ...payload };
+      setMsg({ type: 'success', text: `Work rejected and reassigned to technician.` });
+      if (onUpdateProblem) onUpdateProblem(updated);
+    } catch (err) {
+      setMsg({ type: 'error', text: err.response?.data?.message || err.message || 'Failed to reassign.' });
     } finally {
       setSubmitting(false);
     }
@@ -68,6 +109,17 @@ export const DepartmentProblemActionPanel = ({ problem, onClose, onUpdateProblem
 
       <div className="bg-white rounded-2xl border border-slate-200/90 shadow-2xs p-4 space-y-2.5">
         <h2 className="text-base font-black text-slate-900">{problem.title}</h2>
+        
+        {problem.status === 'Escalated' && (
+          <div className="p-3 bg-rose-50/80 border border-rose-200 rounded-xl flex gap-3 text-xs text-rose-800">
+            <ShieldAlert className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
+            <div>
+              <strong className="block mb-0.5 text-rose-900 font-extrabold uppercase tracking-wide text-[10px]">Escalated Civic Issue</strong>
+              This problem was escalated to this higher authority by the <strong>{problem.assignedWard?.name || problem.assignedBlock?.assignedBy || 'subordinate department'}</strong>. Field actions or prior investigations are detailed below.
+            </div>
+          </div>
+        )}
+
         <div className="p-3 bg-slate-50 rounded-xl border border-slate-100 text-xs text-slate-700 leading-relaxed whitespace-pre-wrap">
           {problem.description || 'No detailed problem description.'}
         </div>
@@ -82,6 +134,76 @@ export const DepartmentProblemActionPanel = ({ problem, onClose, onUpdateProblem
             <span>{fullAddress}</span>
           </span>
         </div>
+      </div>
+
+      {/* Split-View Ground Evidence */}
+      <div className="bg-white rounded-2xl border border-slate-200/90 shadow-2xs p-4 space-y-3">
+        <h3 className="text-xs font-black text-slate-900 uppercase tracking-wide border-b border-slate-100 pb-2">
+          Evidence Comparison
+        </h3>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-1">
+          {/* Left: Citizen Evidence */}
+          <div className="space-y-2">
+            <h4 className="text-[11px] font-bold text-slate-600 bg-slate-50 px-2 py-1 rounded">Reported Problem (Citizen)</h4>
+            <div className="grid grid-cols-2 gap-2">
+              {problem.media?.length > 0 ? problem.media.map((m, i) => (
+                <a key={i} href={m.url} target="_blank" rel="noreferrer" className="aspect-video md:aspect-square rounded-lg border border-slate-200 overflow-hidden hover:border-[#007A61] transition-colors block bg-slate-50">
+                  <img src={m.url} alt="Citizen Evidence" className="w-full h-full object-cover" />
+                </a>
+              )) : (
+                <div className="col-span-2 p-4 text-center text-[10px] text-slate-400 border border-dashed border-slate-200 rounded-xl bg-slate-50">
+                  No images uploaded by citizen.
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Right: Technician Proof */}
+          <div className="space-y-2">
+            <h4 className="text-[11px] font-bold text-[#007A61] bg-[#007A61]/10 px-2 py-1 rounded">Field Resolution Proof (Technician)</h4>
+            <div className="grid grid-cols-2 gap-2">
+              {techUrls.length > 0 ? techUrls.map((url, i) => (
+                <a key={i} href={url} target="_blank" rel="noreferrer" className="aspect-video md:aspect-square rounded-lg border border-slate-200 overflow-hidden hover:border-[#007A61] transition-colors block bg-slate-50">
+                  <img src={url} alt="Technician Proof" className="w-full h-full object-cover" />
+                </a>
+              )) : (
+                <div className="col-span-2 p-4 text-center text-[10px] text-amber-600 border border-dashed border-amber-200 rounded-xl bg-amber-50">
+                  Pending resolution proof from field worker.
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Technician Remarks */}
+        {tech?.completionRemarks && (
+          <div className="mt-4 p-3 bg-emerald-50/50 rounded-xl border border-emerald-100">
+            <span className="text-[10px] font-extrabold text-emerald-800 uppercase tracking-wide block mb-1">Technician Work Summary</span>
+            <p className="text-xs text-emerald-950 leading-relaxed font-medium">{tech.completionRemarks}</p>
+          </div>
+        )}
+
+        {/* Previous Rejected Attempts */}
+        {tech?.workHistory?.length > 0 && (
+          <div className="mt-4 space-y-3">
+            <h4 className="text-[11px] font-bold text-slate-500 uppercase tracking-wide border-b border-slate-100 pb-1">Previous Rejected Attempts</h4>
+            {tech.workHistory.map((hw, idx) => (
+              <div key={idx} className="p-3 bg-rose-50/50 rounded-xl border border-rose-100 flex gap-3">
+                {hw.mediaUrl && (
+                  <a href={hw.mediaUrl} target="_blank" rel="noreferrer" className="w-16 h-16 shrink-0 rounded-lg overflow-hidden border border-rose-200 hover:border-rose-300 block bg-white">
+                    <img src={hw.mediaUrl} alt="Old Proof" className="w-full h-full object-cover" />
+                  </a>
+                )}
+                <div>
+                  <span className="text-[10px] font-extrabold text-rose-800 uppercase tracking-wide block mb-0.5">Attempt {idx + 1}</span>
+                  <p className="text-xs text-rose-950 leading-relaxed font-medium mb-1">{hw.completionRemarks || 'No remarks provided.'}</p>
+                  <p className="text-[10px] text-rose-600 font-medium">Rejected: {hw.rejectReason}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Field Technician Info & Assignment */}
@@ -118,21 +240,13 @@ export const DepartmentProblemActionPanel = ({ problem, onClose, onUpdateProblem
         )}
       </div>
 
-      {/* Directive Instructions */}
-      <div className="bg-amber-50/70 rounded-2xl border border-amber-200 p-3.5 space-y-1">
-        <span className="text-[10px] font-extrabold text-amber-800 uppercase tracking-wide">
-          State Nodal Directive & Instructions
-        </span>
-        <p className="text-xs text-amber-900 font-medium">{directive}</p>
-      </div>
-
-      {/* Resolution Submission Form */}
+      {/* Action Buttons */}
       <div className="bg-white rounded-2xl border border-slate-200/90 shadow-2xs p-4 space-y-3.5">
         <div className="border-b border-slate-100 pb-2.5">
           <h3 className="text-xs font-black text-slate-900 uppercase tracking-wide">
-            Department Ground Action & Resolution Report
+            Authority Approval
           </h3>
-          <p className="text-[10.5px] text-slate-400 font-medium">Record field work execution and update public progress status</p>
+          <p className="text-[10.5px] text-slate-400 font-medium">Review field evidence and finalize resolution</p>
         </div>
 
         {msg.text && (
@@ -144,50 +258,37 @@ export const DepartmentProblemActionPanel = ({ problem, onClose, onUpdateProblem
           </div>
         )}
 
-        <form onSubmit={handleSubmitAction} className="space-y-3">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <label className="text-[10.5px] font-bold text-slate-500 uppercase tracking-wider block mb-1">
-                Resolution Status <span className="text-rose-500">*</span>
-              </label>
-              <select
-                value={status} onChange={(e) => setStatus(e.target.value)}
-                className="w-full px-3 py-2 bg-slate-50/80 border border-slate-200 rounded-xl text-xs text-slate-800 font-semibold focus:outline-none focus:border-[#007A61]"
-              >
-                <option value="In Progress">In Progress (Field Work Active)</option>
-                <option value="Resolved">Resolved (Work Completed on Ground)</option>
-              </select>
-            </div>
-            <div>
-              <label className="text-[10.5px] font-bold text-slate-500 uppercase tracking-wider block mb-1">Executing Officer / Mukhiya</label>
-              <input
-                type="text" value={officerName} onChange={(e) => setOfficerName(e.target.value)}
-                placeholder="E.g. Er. Ramesh Sharma, Assistant Engineer"
-                className="w-full px-3 py-2 bg-slate-50/80 border border-slate-200 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-[#007A61]"
-              />
-            </div>
-          </div>
-          <div>
-            <label className="text-[10.5px] font-bold text-slate-500 uppercase tracking-wider block mb-1">
-              Field Action Taken Remarks <span className="text-rose-500">*</span>
-            </label>
-            <textarea
-              rows={3} value={remarks} onChange={(e) => setRemarks(e.target.value)}
-              placeholder="Describe work completed, site inspection report, contractor deployment..."
-              className="w-full p-2.5 bg-slate-50/80 border border-slate-200 rounded-xl text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#007A61]"
-            />
-          </div>
-          <div className="flex justify-end pt-1">
-            <button
-              type="submit"
-              disabled={submitting}
-              className="px-6 py-2 bg-[#007A61] hover:bg-[#006651] disabled:opacity-50 text-white rounded-xl text-xs font-bold transition-all shadow-xs flex items-center justify-center gap-2 cursor-pointer"
-            >
-              <Send className="w-3.5 h-3.5" />
-              <span>{submitting ? 'Submitting...' : 'Submit Action Report'}</span>
-            </button>
-          </div>
-        </form>
+        <div className="flex flex-col sm:flex-row gap-3 pt-1">
+          <button
+            type="button"
+            onClick={handleApprove}
+            disabled={submitting || problem.status === 'Resolved' || tech?.status !== 'Completed'}
+            className="flex-1 py-2.5 bg-[#007A61] hover:bg-[#006651] disabled:opacity-50 text-white rounded-xl text-xs font-bold transition-all shadow-xs flex items-center justify-center gap-2 cursor-pointer"
+          >
+            <CheckCircle2 className="w-4 h-4" />
+            <span>{problem.status === 'Resolved' ? 'Already Approved' : 'Approve (Mark as Resolved)'}</span>
+          </button>
+          
+          <button
+            type="button"
+            onClick={handleReassign}
+            disabled={submitting || problem.status === 'Resolved' || tech?.status !== 'Completed'}
+            className="flex-1 py-2.5 bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-700 disabled:opacity-50 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer"
+          >
+            <Wrench className="w-4 h-4" />
+            <span>Reject & Reassign to Tech</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={handleEscalate}
+            disabled={submitting}
+            className="flex-1 py-2.5 bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-700 disabled:opacity-50 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer"
+          >
+            <ShieldAlert className="w-4 h-4" />
+            <span>Move to Higher Authority</span>
+          </button>
+        </div>
       </div>
     </div>
   );
