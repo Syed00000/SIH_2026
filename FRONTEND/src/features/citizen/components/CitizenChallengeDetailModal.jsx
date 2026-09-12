@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { MapPin, Calendar, Users, Building, X, Download, RotateCcw, Trash2, Rocket, FileText, ExternalLink } from 'lucide-react';
+import { MapPin, Calendar, Users, Building, X, Download, RotateCcw, Trash2, Rocket, FileText, ExternalLink, CheckCircle2 } from 'lucide-react';
 import { exportChallengeDossierPdf } from '../../../shared/utils/pdfExport.js';
 import { citizenService } from '../services/citizenService.js';
 import { CitizenChallengeEvidenceSection } from './detail/CitizenChallengeEvidenceSection.jsx';
@@ -82,6 +82,16 @@ export const CitizenChallengeDetailModal = ({ challenge = null, isOpen, onClose,
             showWithdrawConfirm={showWithdrawConfirm} setShowWithdrawConfirm={setShowWithdrawConfirm} handleWithdraw={handleWithdraw}
             isProcessing={isProcessing} actionError={actionError}
           />
+
+          {isResolved && !protoPdf && (
+            <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-300 flex items-center space-x-3">
+              <CheckCircle2 className="w-6 h-6 text-emerald-600 shrink-0" />
+              <div>
+                <strong className="block text-sm font-black text-emerald-900 tracking-wide uppercase">Your problem has been resolved</strong>
+                <span className="text-xs font-medium text-emerald-800">The assigned department has successfully completed the required field actions. Thank you for making Jharkhand better!</span>
+              </div>
+            </div>
+          )}
 
           <div className="space-y-2">
             <h3 className="text-base sm:text-lg font-black text-slate-900 leading-snug">{challenge.title}</h3>

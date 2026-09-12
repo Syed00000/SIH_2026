@@ -1,11 +1,62 @@
-import React, { useState } from 'react';
-import { X, CheckCircle2, AlertCircle, Wrench, FileText } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import { X, CheckCircle2, AlertCircle, Wrench, FileText, Camera, RefreshCw } from 'lucide-react';
 
 export const CompleteTaskModal = ({ challenge, isOpen, onClose, onConfirm, completing }) => {
   const [remarks, setRemarks] = useState('');
   const [error, setError] = useState('');
+  const [attachment, setAttachment] = useState(null);
+  const [isCameraOpen, setIsCameraOpen] = useState(false);
+  const videoRef = useRef(null);
+  const canvasRef = useRef(null);
+
+  useEffect(() => {
+    if (!isOpen) {
+      stopCamera();
+      setRemarks('');
+      setError('');
+      setAttachment(null);
+    }
+  }, [isOpen]);
+
+  const stopCamera = () => {
+    if (videoRef.current && videoRef.current.srcObject) {
+      const tracks = videoRef.current.srcObject.getTracks();
+      tracks.forEach(t => t.stop());
+      videoRef.current.srcObject = null;
+    }
+    setIsCameraOpen(false);
+  };
 
   if (!isOpen || !challenge) return null;
+
+  const startCamera = async () => {
+    setError('');
+    setIsCameraOpen(true);
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+        videoRef.current.play();
+      }
+    } catch (err) {
+      setError('Could not access the camera. Please check permissions.');
+      setIsCameraOpen(false);
+    }
+  };
+
+  const capturePhoto = () => {
+    if (videoRef.current && canvasRef.current) {
+      const video = videoRef.current;
+      const canvas = canvasRef.current;
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
+      setAttachment(dataUrl);
+      stopCamera();
+    }
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -14,7 +65,7 @@ export const CompleteTaskModal = ({ challenge, isOpen, onClose, onConfirm, compl
       return;
     }
     setError('');
-    onConfirm(challenge, remarks.trim());
+    onConfirm(challenge, remarks.trim(), attachment);
   };
 
   const setQuickRemark = (text) => {
@@ -92,6 +143,58 @@ export const CompleteTaskModal = ({ challenge, isOpen, onClose, onConfirm, compl
             />
             <span className="text-[10px] text-slate-400 block mt-1">
               This summary will be published to the citizen portal and department administration.
+            </span>
+          </div>
+
+          <div>
+            <label className="font-bold text-slate-700 block mb-1 flex items-center justify-between">
+              <span>Capture Valid Proof (Photo)</span>
+              {attachment && <span className="text-[10px] text-emerald-600 font-bold">Proof Captured</span>}
+            </label>
+
+            {attachment ? (
+              <div className="relative rounded-xl overflow-hidden border border-slate-200 bg-slate-100 h-32 flex items-center justify-center">
+                <img src={attachment} alt="Captured proof" className="h-full w-full object-cover" />
+                <button
+                  type="button"
+                  onClick={() => { setAttachment(null); startCamera(); }}
+                  className="absolute bottom-2 right-2 px-3 py-1.5 bg-white/90 text-slate-700 rounded-lg shadow-sm text-[10px] font-bold flex items-center gap-1 hover:bg-white cursor-pointer"
+                >
+                  <RefreshCw className="w-3 h-3" />
+                  Retake
+                </button>
+              </div>
+            ) : isCameraOpen ? (
+              <div className="relative rounded-xl overflow-hidden border border-slate-200 bg-black h-48 flex items-center justify-center flex-col">
+                <video ref={videoRef} className="absolute inset-0 w-full h-full object-cover" playsInline muted />
+                <canvas ref={canvasRef} className="hidden" />
+                <button
+                  type="button"
+                  onClick={capturePhoto}
+                  className="absolute bottom-3 left-1/2 -translate-x-1/2 w-12 h-12 bg-white rounded-full border-4 border-slate-300 hover:border-emerald-500 shadow-md transition-all cursor-pointer z-10"
+                />
+                <button
+                  type="button"
+                  onClick={stopCamera}
+                  className="absolute top-2 right-2 p-1.5 bg-black/50 text-white rounded-full hover:bg-black/70 cursor-pointer z-10"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={startCamera}
+                disabled={completing}
+                className="w-full h-24 rounded-xl border-2 border-dashed border-slate-300 hover:border-[#007A61] bg-slate-50 hover:bg-[#007A61]/5 flex flex-col items-center justify-center gap-1.5 transition-colors cursor-pointer disabled:opacity-50"
+              >
+                <Camera className="w-6 h-6 text-slate-400" />
+                <span className="text-[11px] font-bold text-slate-600">Open Camera</span>
+              </button>
+            )}
+
+            <span className="text-[10px] text-slate-400 block mt-1.5">
+              Capture a live photo verifying the completed work. This evidence is required for the Ward Commissioner's cross-check.
             </span>
           </div>
 
