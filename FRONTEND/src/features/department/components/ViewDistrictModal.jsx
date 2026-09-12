@@ -62,6 +62,23 @@ export const ViewDistrictModal = ({ isOpen, onClose, district }) => {
             </div>
           </div>
 
+          {/* Fund Pool */}
+          <div className="bg-emerald-50 p-3.5 rounded-xl border border-emerald-200 flex items-center justify-between">
+            <div>
+              <span className="text-[10px] font-bold text-emerald-800 uppercase tracking-wider block">Allocated Fund Pool</span>
+              <div className="text-base font-black text-[#007A61]">₹ {(Number(district.allocatedFundPool) || 0).toLocaleString('en-IN')}</div>
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                window.location.href = `/department?deptId=${encodeURIComponent(district.deptId || district.id)}`;
+              }}
+              className="px-3 py-1.5 bg-[#007A61] hover:bg-[#006650] text-white text-xs font-bold rounded-xl shadow-xs cursor-pointer transition"
+            >
+              Open Department Portal
+            </button>
+          </div>
+
           {/* Location */}
           <div className="space-y-4">
             <div>

@@ -25,27 +25,32 @@ export const technicianService = {
     const def = DEFAULT_TRADE_MAP[key] || DEFAULT_TRADE_MAP.water;
     const cleanKey = key;
     const blockShort = (block || 'Kanke').split(' ')[0].toLowerCase();
-    const loginEmail = `tech.${cleanKey}.${blockShort}@jharkhand.gov.in`;
+    const deptSuffix = departmentId.replace(/[^a-zA-Z0-9]/g, '').slice(-6);
+    const loginEmail = `tech.${cleanKey}.${deptSuffix.toLowerCase()}@jharkhand.gov.in`;
 
-    await technicianRepository.create({
-      technicianId: `TECH-${cleanKey.toUpperCase()}-01`,
-      name: def.name,
-      departmentId,
-      departmentName: departmentName || 'Department Wing',
-      specialization: def.trade,
-      phone: def.phone,
-      email: loginEmail,
-      district,
-      block,
-      credentials: {
-        loginId: loginEmail,
-        loginEmail,
-        password: 'Tech@JH2026!',
-        generatedPassword: 'Tech@JH2026!'
-      },
-      status: 'Active',
-      notes: 'Designated field technician for gram panchayat inspections'
-    });
+    try {
+      await technicianRepository.create({
+        technicianId: `TECH-${cleanKey.toUpperCase()}-${deptSuffix}`,
+        name: def.name,
+        departmentId,
+        departmentName: departmentName || 'Department Wing',
+        specialization: def.trade,
+        phone: def.phone,
+        email: loginEmail,
+        district,
+        block,
+        credentials: {
+          loginId: loginEmail,
+          loginEmail,
+          password: 'Tech@JH2026!',
+          generatedPassword: 'Tech@JH2026!'
+        },
+        status: 'Active',
+        notes: 'Designated field technician for inspections'
+      });
+    } catch (err) {
+      // Ignore duplicate key error safely
+    }
   },
 
   getTechnicians: async (filters = {}, pagination = {}) => {

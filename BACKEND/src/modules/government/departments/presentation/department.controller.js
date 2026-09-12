@@ -57,6 +57,19 @@ export class DepartmentController {
     }
   }
 
+  async addFundPool(req, res, next) {
+    try {
+      const dept = await this.service.addFundPool(req.params.id, req.body);
+      return res.status(200).json({
+        success: true,
+        message: 'Fund successfully added to department pool',
+        data: dept
+      });
+    } catch (err) {
+      next(err);
+    }
+  }
+
   async deleteDepartment(req, res, next) {
     try {
       const result = await this.service.deleteDepartment(req.params.id);
@@ -66,6 +79,22 @@ export class DepartmentController {
         data: result
       });
     } catch (err) {
+      next(err);
+    }
+  }
+
+  async allocateFund(req, res, next) {
+    try {
+      const result = await this.service.allocateFundToChild(req.body);
+      return res.status(200).json({
+        success: true,
+        message: result.message,
+        data: result
+      });
+    } catch (err) {
+      if (err.message.includes('Insufficient funds') || err.message.includes('valid allocation amount') || err.message.includes('not found')) {
+        return res.status(400).json({ success: false, message: err.message });
+      }
       next(err);
     }
   }

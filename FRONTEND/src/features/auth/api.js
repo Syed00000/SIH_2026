@@ -31,6 +31,10 @@ export const authApi = {
 
   logout: async () => {
     return apiClient.post('auth/logout');
+  },
+
+  getLatestOtp: async (email) => {
+    return apiClient.get('auth/latest-otp', { params: { email } });
   }
 };
 

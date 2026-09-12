@@ -12,9 +12,11 @@ import {
   getGateways,
   pingGateway
 } from './controller.js';
+import grantRequestRoutes from './grant-request.routes.js';
 
 const router = Router();
 
+router.use('/requests', grantRequestRoutes);
 router.get('/', getFunds);
 router.post('/', createFund);
 router.get('/ledger', getLedger);

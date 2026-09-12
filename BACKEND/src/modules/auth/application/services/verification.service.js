@@ -73,14 +73,20 @@ export class VerificationService {
       emailVerificationExpires: otpExpires
     });
 
-    await this.queue.add('sendEmailVerification', {
-      userId: user.id,
-      email: user.email,
-      name: user.fullName,
-      code: otp
-    });
+    console.log(`\n========================================\n🔑 [VERIFICATION OTP] Email: ${user.email} | OTP: ${otp}\n========================================\n`);
 
-    return { message: 'A new verification OTP has been sent.' };
+    try {
+      await this.queue.add('sendEmailVerification', {
+        userId: user.id,
+        email: user.email,
+        name: user.fullName,
+        code: otp
+      });
+    } catch (e) {
+      console.warn('Could not enqueue email dispatch:', e.message);
+    }
+
+    return { message: 'A new verification OTP has been sent.', devOtp: otp };
   }
 }
 

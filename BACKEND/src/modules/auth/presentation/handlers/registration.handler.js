@@ -51,7 +51,9 @@ export const createRegistrationHandler = (authService) => {
       const result = await authService.resendVerificationOtp({ email });
       res.json({
         success: true,
-        message: result.message
+        message: result.message,
+        devOtp: result.devOtp,
+        data: { devOtp: result.devOtp }
       });
     } catch (error) {
       next(error);

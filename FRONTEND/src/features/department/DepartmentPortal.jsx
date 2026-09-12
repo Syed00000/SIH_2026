@@ -36,7 +36,14 @@ export const DepartmentPortal = ({ user, onLogout }) => {
   const [editingTech, setEditingTech] = useState(null);
   const [assigningProblemTech, setAssigningProblemTech] = useState(null);
 
-  const queryDeptId = typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('deptId') : null;
+  const getDeptIdFromUrl = () => {
+    if (typeof window === 'undefined') return null;
+    const q = new URLSearchParams(window.location.search).get('deptId');
+    if (q) return q;
+    const m = window.location.pathname.match(/\/department\/([^/?#]+)/i);
+    return m ? m[1] : null;
+  };
+  const queryDeptId = getDeptIdFromUrl();
   const isWardDept = department?.category === 'Ward Commissioner' || department?.category === 'Ward' || department?.category === 'Ward Office';
 
   const loadData = async () => {
@@ -46,7 +53,14 @@ export const DepartmentPortal = ({ user, onLogout }) => {
       const depts = resDepts?.data || (Array.isArray(resDepts) ? resDepts : []) || [];
       
       let matched = null;
-      if (queryDeptId) matched = depts.find((d) => d.deptId === queryDeptId || d.id === queryDeptId || d._id?.toString() === queryDeptId);
+      if (queryDeptId) {
+        matched = depts.find((d) => 
+          d.deptId?.toLowerCase() === queryDeptId.toLowerCase() ||
+          d.id === queryDeptId ||
+          d._id?.toString() === queryDeptId ||
+          d.code?.toLowerCase() === queryDeptId.toLowerCase()
+        );
+      }
       if (!matched && (user?.deptId || user?.profile?.deptId)) {
         const uId = user.deptId || user.profile?.deptId;
         matched = depts.find((d) => d.deptId === uId || d.id === uId || d._id?.toString() === uId);
@@ -95,7 +109,12 @@ export const DepartmentPortal = ({ user, onLogout }) => {
     }
   };
 
-  useEffect(() => { loadData(); }, [queryDeptId]);
+  useEffect(() => {
+    loadData();
+    const handlePopState = () => loadData();
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [queryDeptId]);
 
   const handleUpdateProblem = (updated) => {
     const targetId = updated.challengeId || updated.id || updated._id;
@@ -123,7 +142,7 @@ export const DepartmentPortal = ({ user, onLogout }) => {
       case 'field-workers':
         return <DepartmentTechniciansPanel technicians={technicians} department={department} onAddTech={() => setIsAddTechOpen(true)} onViewTech={setViewingTech} onEditTech={setEditingTech} onDeletedTech={handleDeletedTech} />;
       case 'csr-grant':
-        return <DepartmentCsrGrantPanel department={department} />;
+        return <DepartmentCsrGrantPanel department={department} problems={problems} />;
       case 'districts':
         if (isWardDept) return <DepartmentOverview department={department} problems={problems} onSelectProblem={(p) => setSelectedProblem(p)} onNavigateProblems={() => setActiveTab('problems')} />;
         return <DepartmentDistrictsPanel districts={districts} isDistrictDept={department?.category === 'District Department'} isBlockDept={department?.category === 'Block / Tehsil Office'} onAddDistrict={() => setIsAddDistrictOpen(true)} onDeletedDistrict={handleDeletedDistrict} />;
