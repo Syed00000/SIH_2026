@@ -1,6 +1,5 @@
 import React from 'react';
-import { Home, Layers, ChevronLeft, ChevronRight, LogOut, Wrench, X, Building2 } from 'lucide-react';
-
+import { Home, Layers, ChevronLeft, ChevronRight, LogOut, Wrench, Users, HandCoins, X, Building2 } from 'lucide-react';
 
 export const DepartmentSidebar = ({
   activeTab = 'overview',
@@ -15,7 +14,8 @@ export const DepartmentSidebar = ({
 }) => {
   const isDistrictDept = departmentCategory === 'District Department';
   const isBlockDept = departmentCategory === 'Block / Tehsil Office';
-  
+  const isWardDept = departmentCategory === 'Ward Commissioner' || departmentCategory === 'Ward' || departmentCategory === 'Ward Office';
+
   let tabLabel = 'District Departments';
   if (isDistrictDept) tabLabel = 'Block & Tehsil Offices';
   if (isBlockDept) tabLabel = 'Ward Commissioners';
@@ -23,8 +23,9 @@ export const DepartmentSidebar = ({
   const NAV_ITEMS = [
     { id: 'overview', label: 'Department Overview', icon: Home },
     { id: 'problems', label: 'Assigned Civic Problems', icon: Layers },
-    { id: 'technicians', label: 'Technician Directory', icon: Wrench },
-    { id: 'districts', label: tabLabel, icon: Building2 }
+    { id: 'technicians', label: isWardDept || isBlockDept ? 'Field Workers' : 'Technician Directory', icon: isWardDept ? Users : Wrench },
+    ...(!isWardDept ? [{ id: 'districts', label: tabLabel, icon: Building2 }] : []),
+    { id: 'csr-grant', label: 'CSR Grant', icon: HandCoins }
   ];
 
   return (

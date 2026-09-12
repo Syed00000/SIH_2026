@@ -16,17 +16,12 @@ export const DepartmentTechniciansPanel = ({
 
   const filtered = technicians.filter((t) => {
     const q = search.toLowerCase();
-    return (
-      (t.name || '').toLowerCase().includes(q) ||
-      (t.specialization || '').toLowerCase().includes(q) ||
-      (t.technicianId || '').toLowerCase().includes(q) ||
-      (t.phone || '').toLowerCase().includes(q)
-    );
+    return (t.name || '').toLowerCase().includes(q) || (t.specialization || '').toLowerCase().includes(q) || (t.technicianId || '').toLowerCase().includes(q) || (t.phone || '').toLowerCase().includes(q);
   });
 
   const handleDelete = async (tech) => {
     const techId = tech.technicianId || tech.id || tech._id;
-    if (!window.confirm(`Are you sure you want to remove field technician "${tech.name}"?`)) return;
+    if (!window.confirm(`Are you sure you want to remove field worker "${tech.name}"?`)) return;
     try {
       setDeletingId(techId);
       await technicianService.deleteTechnician(techId);
@@ -38,6 +33,8 @@ export const DepartmentTechniciansPanel = ({
     }
   };
 
+  const isWard = department?.category === 'Ward Commissioner' || department?.category === 'Ward' || department?.category === 'Ward Office';
+
   return (
     <div className="space-y-4 text-left select-none animate-in fade-in duration-150">
       {/* Header Bar */}
@@ -48,10 +45,10 @@ export const DepartmentTechniciansPanel = ({
           </div>
           <div>
             <h2 className="text-sm font-black text-slate-900 leading-tight">
-              Technician Directory ({technicians.length})
+              Field Workers Directory ({technicians.length})
             </h2>
             <p className="text-xs text-slate-500">
-              Manage departmental field technicians & portal access credentials
+              {isWard ? 'Manage ward field workers, ground staff & portal access credentials' : 'Manage departmental field workers & portal access credentials'}
             </p>
           </div>
         </div>
@@ -63,7 +60,7 @@ export const DepartmentTechniciansPanel = ({
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search technicians..."
+              placeholder="Search field workers..."
               className="w-full pl-8 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-[#007A61]"
             />
           </div>
@@ -73,7 +70,7 @@ export const DepartmentTechniciansPanel = ({
             className="flex items-center gap-1.5 px-3 py-1.5 bg-[#007A61] hover:bg-[#006651] text-white text-xs font-bold rounded-xl shadow-xs cursor-pointer transition-all shrink-0"
           >
             <Plus className="w-4 h-4" />
-            <span>Add Tech</span>
+            <span>Add Field Worker</span>
           </button>
         </div>
       </div>
@@ -82,7 +79,7 @@ export const DepartmentTechniciansPanel = ({
       <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
         {filtered.length === 0 ? (
           <div className="p-8 text-center text-xs text-slate-400 font-medium">
-            No technicians registered for this department. Click "Add Tech" to create credentials.
+            No field workers registered for this department. Click "Add Field Worker" to create credentials.
           </div>
         ) : (
           <>
@@ -105,7 +102,7 @@ export const DepartmentTechniciansPanel = ({
               <table className="w-full text-left border-collapse text-xs">
                 <thead>
                   <tr className="bg-slate-50/80 border-b border-slate-100 text-[10.5px] font-bold text-slate-400 uppercase tracking-wider">
-                    <th className="py-3 px-4">Technician & ID</th>
+                    <th className="py-3 px-4">Field Worker & ID</th>
                     <th className="py-3 px-4">Trade / Specialization</th>
                     <th className="py-3 px-4">Contact Phone</th>
                     <th className="py-3 px-4">Portal Login ID</th>
