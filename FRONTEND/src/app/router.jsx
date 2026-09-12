@@ -19,6 +19,7 @@ import { BlockPortal } from '../features/block/BlockPortal.jsx';
 import { TechnicianPortal } from '../features/technician/TechnicianPortal.jsx';
 import { LandingPage } from '../features/landing/components/LandingPage.jsx';
 import { AboutPage } from '../features/landing/components/AboutPage.jsx';
+import { AboutJharkhandPage } from '../features/landing/components/AboutJharkhandPage.jsx';
 import { ImpactPage } from '../features/landing/components/ImpactPage.jsx';
 import { IndustryLandingPage } from '../features/landing/components/IndustryLandingPage.jsx';
 import { InstitutionsPage } from '../features/landing/components/InstitutionsPage.jsx';
@@ -66,7 +67,7 @@ export function Router() {
 
   const renderComponent = () => {
     const publicRoutes = [
-      '/', '/landing', '/about', '/impact', '/industry', '/institutions', '/contact',
+      '/', '/landing', '/about', '/about-jharkhand', '/impact', '/industry', '/institutions', '/contact',
       '/login', '/register', '/register/industry', '/apply-industry',
       '/forgot-password', '/reset-password', '/verify-email'
     ];
@@ -77,6 +78,7 @@ export function Router() {
         case '/':
         case '/landing': return <LandingPage onNavigate={navigate} />;
         case '/about': return <AboutPage onNavigate={navigate} />;
+        case '/about-jharkhand': return <AboutJharkhandPage onNavigate={navigate} />;
         case '/impact': return <ImpactPage onNavigate={navigate} />;
         case '/industry': return <IndustryLandingPage onNavigate={navigate} />;
         case '/institutions': return <InstitutionsPage onNavigate={navigate} />;

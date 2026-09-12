@@ -30,7 +30,8 @@ import {
   Cpu,
   Rocket,
   Lightbulb,
-  Landmark
+  Landmark,
+  Megaphone
 } from 'lucide-react';
 
 export const GovernmentSidebar = ({
@@ -60,6 +61,7 @@ export const GovernmentSidebar = ({
     { id: 'triage', label: 'Problem Triage', icon: Layers },
     { id: 'heis', label: 'HEI Hub', icon: GraduationCap },
     { id: 'csr', label: 'CSR Grants', icon: IndianRupee },
+    { id: 'updates', label: 'Updates Management', icon: Megaphone },
     { id: 'gis', label: 'GIS Map', icon: Map },
     {
       id: 'projects_solutions',

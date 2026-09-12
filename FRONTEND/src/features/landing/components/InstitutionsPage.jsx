@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { LandingLayout } from './layout/LandingLayout';
 import {
   Search, ArrowRight, Microscope, Users, GraduationCap, FlaskConical,
@@ -7,6 +7,8 @@ import {
 } from 'lucide-react';
 import bannerImage from '../assets/hero-banner-institutions.jpg';
 import dummyImage from '../assets/mission-image.jpg'; // For success story
+import { universityService } from '../../government/services/universityService';
+import { governmentDataService } from '../../government/services/governmentDataService';
 
 export const InstitutionsPage = ({ onNavigate }) => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -15,14 +17,65 @@ export const InstitutionsPage = ({ onNavigate }) => {
   const [typeFilter, setTypeFilter] = useState('');
   const [expertFilter, setExpertFilter] = useState('');
 
-  const allInstitutions = [
-    { name: 'Birla Institute of Technology Mesra', type: 'Deemed University', location: 'Ranchi', expert: 'Sustainable Technology', active: 24, teams: 12, color: 'text-red-600', bg: 'bg-red-50', logo: 'B' },
-    { name: 'Ranchi University', type: 'State University', location: 'Ranchi', expert: 'Social Sciences, Rural Development, Environment', active: 18, teams: 10, color: 'text-blue-600', bg: 'bg-blue-50', logo: 'R' },
-    { name: 'National Institute of Technology Jamshedpur', type: 'Central University', location: 'Jamshedpur', expert: 'Engineering, Manufacturing, Clean Energy', active: 20, teams: 15, color: 'text-[#0f4b3a]', bg: 'bg-green-50', logo: 'N' },
-    { name: 'Indian Institute of Management Ranchi', type: 'Central Institute', location: 'Ranchi', expert: 'Management, Policy, Social Innovation', active: 10, teams: 8, color: 'text-orange-600', bg: 'bg-orange-50', logo: 'I' },
-    { name: 'Indian Institute of Technology (ISM) Dhanbad', type: 'Central University', location: 'Dhanbad', expert: 'Mining, Earth Sciences, Engineering', active: 30, teams: 25, color: 'text-purple-600', bg: 'bg-purple-50', logo: 'IIT' },
-    { name: 'XLRI - Xavier School of Management', type: 'Private Institute', location: 'Jamshedpur', expert: 'Business Management, HR', active: 12, teams: 6, color: 'text-pink-600', bg: 'bg-pink-50', logo: 'X' },
-  ];
+  const [allInstitutions, setAllInstitutions] = useState([]);
+  const [impactStats, setImpactStats] = useState(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        // Don't filter by status — DB default is 'Approved', not 'Active'
+        const uniRes = await universityService.getUniversities({ limit: 100 });
+        if (uniRes && uniRes.records && uniRes.records.length > 0) {
+           const mappedInsts = uniRes.records.map((r, i) => {
+             const colors = [
+               { color: 'text-red-600', bg: 'bg-red-50' },
+               { color: 'text-blue-600', bg: 'bg-blue-50' },
+               { color: 'text-[#0f4b3a]', bg: 'bg-green-50' },
+               { color: 'text-orange-600', bg: 'bg-orange-50' },
+               { color: 'text-purple-600', bg: 'bg-purple-50' },
+               { color: 'text-pink-600', bg: 'bg-pink-50' }
+             ];
+             const theme = colors[i % colors.length];
+             // Actual schema fields: r.name, r.universityType, r.district, r.focusAreas, r.quickSummary
+             const name = r.name || 'Unnamed Institution';
+             return {
+               name,
+               type: r.universityType || r.institutionCategory || 'Institution',
+               location: r.district || 'Jharkhand',
+               expert: Array.isArray(r.focusAreas) && r.focusAreas.length > 0
+                 ? r.focusAreas.join(', ')
+                 : (Array.isArray(r.researchAreas) && r.researchAreas.length > 0
+                   ? r.researchAreas.join(', ')
+                   : 'Various'),
+               active: r.quickSummary?.activeProjects || 0,
+               teams: r.quickSummary?.activeChallenges || 0,
+               color: theme.color,
+               bg: theme.bg,
+               logo: name.charAt(0).toUpperCase()
+             };
+           });
+           setAllInstitutions(mappedInsts);
+        }
+
+        // Fetch overview stats — actual API response fields: heis.active, heis.total, financials.totalProjects, etc.
+        const stats = await governmentDataService.fetchLiveDatabaseStats();
+        if (stats) {
+           setImpactStats({
+             participating: stats.heis?.active || stats.heis?.total || 0,
+             faculty: stats.admins?.active || 0,
+             students: stats.citizens?.total || 0,
+             projects: stats.financials?.totalProjects || 0,
+             prototypes: stats.financials?.verifiedLabs || 0,
+             solutions: stats.problems?.total || 0
+           });
+        }
+      } catch(err) {
+        console.error('InstitutionsPage fetch error:', err);
+      }
+    };
+    fetchData();
+  }, []);
+
 
   const filteredInstitutions = allInstitutions.filter(inst => {
     const matchesSearch = inst.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
@@ -56,9 +109,6 @@ export const InstitutionsPage = ({ onNavigate }) => {
 
         <div className="relative z-10 w-full max-w-7xl mx-auto px-4 md:px-8 py-10 md:py-16">
           <div className="w-full md:w-[60%] lg:w-[50%]">
-            <div className="text-[13px] font-bold text-[#0f4b3a] tracking-widest flex items-center gap-2 mb-2 uppercase">
-              Home <span className="text-gray-400">&gt;</span> Institutions
-            </div>
             
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-[#1c3c78] mb-2 tracking-tight leading-[1.1]">
               Institutions
@@ -191,6 +241,7 @@ export const InstitutionsPage = ({ onNavigate }) => {
             </div>
 
             {/* Featured Institutions */}
+            {allInstitutions.length > 0 && (
             <div>
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
@@ -252,6 +303,7 @@ export const InstitutionsPage = ({ onNavigate }) => {
               </div>
               )}
             </div>
+            )}
 
           </div>
 
@@ -265,9 +317,9 @@ export const InstitutionsPage = ({ onNavigate }) => {
                   <Landmark className="w-6 h-6 text-[#0f4b3a]" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-[#1c3c78] text-[16px] leading-tight">Are You an Institution?</h3>
-                  <p className="text-[11px] text-gray-600 font-medium leading-relaxed mt-1.5 max-w-[220px]">
-                    Join Johar Sethu to contribute your expertise, engage students and work on meaningful societal challenges.
+                  <h3 className="font-bold text-[#1c3c78] text-[15px] leading-tight mb-1">Partner With Johar Setu</h3>
+                  <p className="text-[10px] text-gray-600 font-medium leading-relaxed max-w-[200px]">
+                    Join Johar Setu to contribute your expertise, engage students and work on meaningful societal challenges.
                   </p>
                 </div>
               </div>
@@ -283,6 +335,7 @@ export const InstitutionsPage = ({ onNavigate }) => {
             </div>
 
             {/* Impact Stats */}
+            {impactStats && (
             <div className="bg-white border border-gray-200 p-5 rounded-xl shadow-sm">
               <div className="flex items-center gap-2 mb-1">
                 <TrendingUp className="w-6 h-6 text-[#0f4b3a]" />
@@ -294,34 +347,35 @@ export const InstitutionsPage = ({ onNavigate }) => {
               
               <div className="flex justify-between items-start mt-6 mb-5 border-b border-gray-100 pb-4">
                 <div className="text-center flex-1">
-                  <div className="font-black text-[#1c3c78] text-2xl mb-1">32</div>
+                  <div className="font-black text-[#1c3c78] text-2xl mb-1">{impactStats.participating}</div>
                   <div className="text-[9px] text-gray-500 font-medium leading-tight">Participating<br/>Institutions</div>
                 </div>
                 <div className="text-center flex-1 border-l border-gray-100">
-                  <div className="font-black text-[#1c3c78] text-2xl mb-1">420+</div>
+                  <div className="font-black text-[#1c3c78] text-2xl mb-1">{impactStats.faculty}+</div>
                   <div className="text-[9px] text-gray-500 font-medium leading-tight">Faculty<br/>Members</div>
                 </div>
                 <div className="text-center flex-1 border-l border-gray-100">
-                  <div className="font-black text-[#1c3c78] text-2xl mb-1">2,500+</div>
+                  <div className="font-black text-[#1c3c78] text-2xl mb-1">{impactStats.students.toLocaleString()}+</div>
                   <div className="text-[9px] text-gray-500 font-medium leading-tight">Students<br/>Engaged</div>
                 </div>
               </div>
               
               <div className="flex justify-between items-start mb-2">
                 <div className="text-center flex-1">
-                  <div className="font-black text-[#0f4b3a] text-[22px] mb-1">120</div>
+                  <div className="font-black text-[#0f4b3a] text-[22px] mb-1">{impactStats.projects}</div>
                   <div className="text-[9px] text-gray-500 font-medium leading-tight">Projects in<br/>Progress</div>
                 </div>
                 <div className="text-center flex-1 border-l border-gray-100">
-                  <div className="font-black text-[#0f4b3a] text-[22px] mb-1">45</div>
+                  <div className="font-black text-[#0f4b3a] text-[22px] mb-1">{impactStats.prototypes}</div>
                   <div className="text-[9px] text-gray-500 font-medium leading-tight">Prototypes<br/>Developed</div>
                 </div>
                 <div className="text-center flex-1 border-l border-gray-100">
-                  <div className="font-black text-[#0f4b3a] text-[22px] mb-1">28</div>
+                  <div className="font-black text-[#0f4b3a] text-[22px] mb-1">{impactStats.solutions}</div>
                   <div className="text-[9px] text-gray-500 font-medium leading-tight">Solutions<br/>Deployed</div>
                 </div>
               </div>
             </div>
+            )}
 
             {/* Success Story */}
             <div className="bg-white border border-blue-50 p-5 rounded-xl shadow-sm">
@@ -346,9 +400,9 @@ export const InstitutionsPage = ({ onNavigate }) => {
               </div>
               
               <div className="bg-gray-50/70 p-3 pb-2 rounded-lg relative border border-gray-100">
-                <div className="text-3xl font-serif text-[#0f4b3a]/30 absolute -top-1 left-1 leading-none">“</div>
-                <p className="text-[10px] font-medium text-gray-600 italic leading-relaxed relative z-10 pl-3">
-                  Our students get real-world exposure while contributing to the development of Jharkhand. Johar Sethu bridges knowledge and impact."
+                <p className="text-[10px] text-gray-600 font-medium leading-relaxed italic relative z-10 mb-3">
+                  "The platform has fundamentally changed how our engineering students approach final year projects. Instead of theoretical problems, they are now building solutions that directly impact communities in Jharkhand.
+                  Our students get real-world exposure while contributing to the development of Jharkhand. Johar Setu bridges knowledge and impact."
                 </p>
                 <div className="text-right text-[9px] font-bold text-[#1c3c78] mt-1">— Vice Chancellor, Ranchi University</div>
               </div>

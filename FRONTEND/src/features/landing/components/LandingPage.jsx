@@ -27,6 +27,7 @@ import digitalIndiaLogo from '../assets/digital_india_logo.png';
 
 import { LandingLayout } from './layout/LandingLayout';
 import { JharkhandDistrictMapModal } from './JharkhandDistrictMapModal';
+import { citizenService } from '../../citizen/services/citizenService.js';
 
 // Update thumbnails
 import updateMeet from '../assets/update_meet.png';
@@ -36,13 +37,13 @@ import updateCollab from '../assets/update_collab.png';
 
 // Sector images
 import sectorEducation from '../assets/sector_education.png';
-import sectorHealthcare from '../assets/sector_healthcare.png';
-import sectorAgriculture from '../assets/sector_agriculture.png';
-import sectorWater from '../assets/sector_water.png';
-import sectorEnvironment from '../assets/sector_environment.png';
-import sectorRuralDev from '../assets/sector_rural_dev.png';
-import sectorUrbanInfra from '../assets/sector_urban_infra.png';
-import sectorRuralLivelihood from '../assets/sector_rural_livelihood.png';
+import sectorHealthcare from '../assets/sector_healthcare.jpg';
+import sectorAgriculture from '../assets/sector_agriculture.jpg';
+import sectorWater from '../assets/sector_water.jpg';
+import sectorEnvironment from '../assets/sector_environment.jpg';
+import sectorRuralDev from '../assets/sector_rural_dev.jpg';
+import sectorUrbanInfra from '../assets/sector_urban_infra.jpg';
+import sectorRuralLivelihood from '../assets/sector_rural_livelihood.jpg';
 
 export const LandingPage = ({ onNavigate }) => {
   const handleNav = (path) => {
@@ -53,6 +54,54 @@ export const LandingPage = ({ onNavigate }) => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
   const [isDistrictMapOpen, setIsDistrictMapOpen] = useState(false);
+
+  const [notices, setNotices] = useState([]);
+  const [noticesLoading, setNoticesLoading] = useState(true);
+  const [noticesError, setNoticesError] = useState(null);
+
+  useEffect(() => {
+    const fetchNotices = async () => {
+      try {
+        setNoticesLoading(true);
+        const res = await fetch('http://localhost:3000/api/v1/public/notices');
+        const data = await res.json();
+        if (data.status === 'success') {
+          setNotices(data.data.notices);
+        } else {
+          setNoticesError('Unable to load latest notices.');
+        }
+      } catch (err) {
+        setNoticesError('Unable to load latest notices.');
+      } finally {
+        setNoticesLoading(false);
+      }
+    };
+    fetchNotices();
+  }, []);
+
+  const [updates, setUpdates] = useState([]);
+  const [updatesLoading, setUpdatesLoading] = useState(true);
+  const [updatesError, setUpdatesError] = useState(null);
+
+  useEffect(() => {
+    const fetchUpdates = async () => {
+      try {
+        setUpdatesLoading(true);
+        const res = await fetch('http://localhost:3000/api/v1/public/updates?limit=6');
+        const data = await res.json();
+        if (data.status === 'success') {
+          setUpdates(data.data.updates);
+        } else {
+          setUpdatesError('Unable to load latest updates.');
+        }
+      } catch (err) {
+        setUpdatesError('Unable to load latest updates.');
+      } finally {
+        setUpdatesLoading(false);
+      }
+    };
+    fetchUpdates();
+  }, []);
 
   const heroSlides = [
     {
@@ -109,131 +158,42 @@ export const LandingPage = ({ onNavigate }) => {
     setCurrentSlide((prev) => (prev - 1 + heroSlides.length) % heroSlides.length);
   };
 
-  const challengesList = [
-    {
-      icon: Droplet,
-      iconBg: "bg-blue-600",
-      title: "Drinking Water Supply Issue",
-      location: "Ranchi District",
-      date: "02 Sep 2026",
-      isNew: true
-    },
-    {
-      icon: Recycle,
-      iconBg: "bg-emerald-600",
-      title: "Improved Waste Management System",
-      location: "Dhanbad District",
-      date: "28 Aug 2026",
-      isNew: false
-    },
-    {
-      icon: Sprout,
-      iconBg: "bg-green-600",
-      title: "Smart Agriculture Solutions",
-      location: "Hazaribagh District",
-      date: "25 Aug 2026",
-      isNew: false
-    },
-    {
-      icon: Bus,
-      iconBg: "bg-amber-500",
-      title: "Accessible Public Transport",
-      location: "Jamshedpur",
-      date: "21 Aug 2026",
-      isNew: false
-    },
-    {
-      icon: GraduationCap,
-      iconBg: "bg-[#1e3a8a]",
-      title: "Quality Education in Rural Areas",
-      location: "Palamu District",
-      date: "18 Aug 2026",
-      isNew: false
-    },
-    {
-      icon: Lightbulb,
-      iconBg: "bg-teal-600",
-      title: "Solar Micro-Grids for Forest Belts",
-      location: "Giridih District",
-      date: "14 Aug 2026",
-      isNew: false
-    }
-  ];
+  const [challengesList, setChallengesList] = useState([]);
 
-  const announcementsList = [
-    {
-      title: "Launch of Johar Sethu Portal",
-      isNew: true,
-      date: "01 Sep 2026"
-    },
-    {
-      title: "Guidelines for University Participation",
-      isNew: false,
-      date: "25 Aug 2026"
-    },
-    {
-      title: "Invitation for Industry Partners",
-      isNew: false,
-      date: "20 Aug 2026"
-    },
-    {
-      title: "District Innovation Workshops",
-      isNew: false,
-      date: "14 Aug 2026"
-    },
-    {
-      title: "Model Problem Statement Formats",
-      isNew: false,
-      date: "10 Aug 2026"
-    },
-    {
-      title: "State Youth Innovation Challenge 2026",
-      isNew: true,
-      date: "04 Sep 2026"
-    }
-  ];
+  useEffect(() => {
+    const fetchChallengesData = async () => {
+      try {
+        const data = await citizenService.fetchChallenges({ limit: 10, sort: '-createdAt' });
+        if (data && data.challenges && data.challenges.length > 0) {
+          const icons = [Lightbulb, Droplet, Recycle, Sprout, Bus, GraduationCap];
+          const colors = ["bg-teal-600", "bg-blue-600", "bg-emerald-600", "bg-green-600", "bg-amber-500", "bg-[#1e3a8a]"];
+          
+          const mapped = data.challenges.map((c, i) => {
+            return {
+              icon: icons[i % icons.length],
+              iconBg: colors[i % colors.length],
+              title: c.title,
+              location: c.location?.district || "Jharkhand",
+              date: new Date(c.createdAt || Date.now()).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
+              isNew: i === 0 // mark the first one as new
+            };
+          });
+          setChallengesList(mapped);
+        } else {
+          setChallengesList([]);
+        }
+      } catch (err) {
+        console.error("Error fetching latest challenges:", err);
+      }
+    };
+    fetchChallengesData();
+  }, []);
 
-  const documentsList = [
-    { title: "Johar Sethu - Concept Note", size: "(PDF, 1.2 MB)", isNew: true },
-    { title: "Citizen User Manual", size: "(PDF, 1.8 MB)", isNew: false },
-    { title: "University Participation Guidelines", size: "(PDF, 2.1 MB)", isNew: false },
-    { title: "Industry Partnership Framework", size: "(PDF, 1.5 MB)", isNew: false },
-    { title: "Frequently Asked Questions (FAQ)", size: "(PDF, 1.0 MB)", isNew: false },
-    { title: "Higher Education Policy Framework 2026", size: "(PDF, 3.1 MB)", isNew: false }
-  ];
 
-  const updatesList = [
-    {
-      img: updateMeet,
-      title: "State Innovation Meet 2026",
-      sub: "Bringing stakeholders together",
-      isNew: true
-    },
-    {
-      img: updateStories,
-      title: "Success Stories from Jharkhand",
-      sub: "Ideas creating real impact",
-      isNew: false
-    },
-    {
-      img: updateYouth,
-      title: "Youth Innovations for Viksit Jharkhand",
-      sub: "Students driving change",
-      isNew: false
-    },
-    {
-      img: updateCollab,
-      title: "Collaboration with Industries",
-      sub: "Stronger partnerships",
-      isNew: false
-    },
-    {
-      img: updateMeet,
-      title: "Annual Tech Expo Ranchi 2026",
-      sub: "Grassroot solutions showcase",
-      isNew: false
-    }
-  ];
+
+
+
+
 
   return (
     <LandingLayout onNavigate={onNavigate} currentPath="/">
@@ -252,8 +212,8 @@ export const LandingPage = ({ onNavigate }) => {
           >
             <img 
               src={slide.image} 
-              alt={`Johar Sethu Hero Banner ${slide.id}`} 
-              className="w-full h-full object-cover object-center" 
+              alt={`Johar Setu Hero Banner ${slide.id}`} 
+              className="w-full h-full object-cover object-[center_35%]" 
             />
 
             {/* Text Overlay for all slides */}
@@ -383,8 +343,8 @@ export const LandingPage = ({ onNavigate }) => {
               {/* Action Button */}
               <div className="mt-4 pt-1">
                 <button 
-                  onClick={() => handleNav('/about')}
-                  className="px-4 py-1.5 rounded-none border border-[#0f4b3a] text-[#0f4b3a] text-[11px] sm:text-xs font-bold hover:bg-[#0f4b3a] hover:text-white transition-colors inline-flex items-center gap-1.5 shadow-2xs"
+                  onClick={() => handleNav('/about-jharkhand')}
+                  className="px-4 py-1.5 rounded-none border border-[#0f4b3a] text-[#0f4b3a] text-[11px] sm:text-xs font-bold hover:bg-[#0f4b3a] hover:text-white transition-colors inline-flex items-center gap-1.5 shadow-2xs cursor-pointer"
                 >
                   Know More About Jharkhand <ArrowRight className="w-3.5 h-3.5" />
                 </button>
@@ -410,30 +370,28 @@ export const LandingPage = ({ onNavigate }) => {
                 {/* Leader 1 */}
                 <div className="flex flex-col items-center text-center h-full">
                   <div className="w-full bg-[#f1f3f5] rounded-none overflow-hidden flex items-center justify-center p-1 h-20 md:h-24">
-                    <img src={leaderRajesh} alt="Shri Rajesh Kumar" className="w-full h-full object-cover object-top" />
+                    <img src={leaderRajesh} alt="Shri Santosh Kumar Gangwar" className="w-full h-full object-cover object-top" />
                   </div>
-                  <h4 className="font-bold text-[11px] sm:text-xs text-gray-900 mt-2 leading-tight">Shri Rajesh Kumar</h4>
-                  <p className="text-[9px] sm:text-[10px] text-gray-500 leading-tight mt-0.5">Hon'ble Minister</p>
-                  <p className="text-[9px] sm:text-[10px] text-gray-500 leading-tight">Ministry of Education</p>
+                  <h4 className="font-bold text-[11px] sm:text-xs text-gray-900 mt-2 leading-tight">Shri Santosh Kumar Gangwar</h4>
+                  <p className="text-[9px] sm:text-[10px] text-gray-500 leading-tight mt-0.5">Governor of Jharkhand</p>
                 </div>
 
                 {/* Leader 2 */}
                 <div className="flex flex-col items-center text-center h-full">
                   <div className="w-full bg-[#f1f3f5] rounded-none overflow-hidden flex items-center justify-center p-1 h-20 md:h-24">
-                    <img src={leaderAnil} alt="Dr. Anil Verma" className="w-full h-full object-cover object-top" />
+                    <img src={leaderAnil} alt="Shri Hemant Soren" className="w-full h-full object-cover object-top" />
                   </div>
-                  <h4 className="font-bold text-[11px] sm:text-xs text-gray-900 mt-2 leading-tight">Dr. Anil Verma</h4>
-                  <p className="text-[9px] sm:text-[10px] text-gray-500 leading-tight mt-0.5">Minister of State</p>
+                  <h4 className="font-bold text-[11px] sm:text-xs text-gray-900 mt-2 leading-tight">Shri Hemant Soren</h4>
+                  <p className="text-[9px] sm:text-[10px] text-gray-500 leading-tight mt-0.5">Chief Minister</p>
                 </div>
 
                 {/* Leader 3 */}
                 <div className="flex flex-col items-center text-center h-full">
                   <div className="w-full bg-[#f1f3f5] rounded-none overflow-hidden flex items-center justify-center p-1 h-20 md:h-24">
-                    <img src={leaderKavita} alt="Smt. Kavita Sharma" className="w-full h-full object-cover object-top" />
+                    <img src={leaderKavita} alt="Shri Avinash Kumar" className="w-full h-full object-cover object-top" />
                   </div>
-                  <h4 className="font-bold text-[11px] sm:text-xs text-gray-900 mt-2 leading-tight">Smt. Kavita Sharma</h4>
-                  <p className="text-[9px] sm:text-[10px] text-gray-500 leading-tight mt-0.5">Secretary</p>
-                  <p className="text-[9px] sm:text-[10px] text-gray-500 leading-tight">Ministry of Education</p>
+                  <h4 className="font-bold text-[11px] sm:text-xs text-gray-900 mt-2 leading-tight">Shri Avinash Kumar</h4>
+                  <p className="text-[9px] sm:text-[10px] text-gray-500 leading-tight mt-0.5">Chief Secretary</p>
                 </div>
               </div>
             </div>
@@ -499,7 +457,7 @@ export const LandingPage = ({ onNavigate }) => {
           </div>
 
           {/* 3-COLUMN CARDS SECTION (Auto-Scrolling with Hover Pause) */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 md:gap-4 items-stretch mb-4 md:mb-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 md:gap-4 items-stretch mb-4 md:mb-5">
             
             {/* Col 1: Latest Challenges */}
             <div className="bg-white rounded-none border border-gray-200/90 shadow-xs flex flex-col overflow-hidden">
@@ -511,70 +469,35 @@ export const LandingPage = ({ onNavigate }) => {
               {/* Auto-scrolling Ticker */}
               <div className="h-[195px] overflow-hidden relative marquee-container cursor-pointer px-2.5 py-1 bg-white">
                 <div className="animate-marquee-vertical flex flex-col divide-y divide-gray-100/90">
-                  {[...challengesList, ...challengesList].map((item, idx) => (
-                    <div key={idx} className="py-2 flex items-center gap-2.5 group cursor-pointer hover:bg-slate-50/90 px-1 rounded-none transition-colors">
-                      <div className={`w-7 h-7 ${item.iconBg} rounded-full flex items-center justify-center text-white shrink-0 shadow-2xs`}>
-                        <item.icon className="w-3.5 h-3.5 stroke-[2.5]" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-1.5 flex-wrap">
-                          <h4 className="text-[11.5px] font-bold text-gray-900 leading-tight group-hover:text-[#0f4b3a] transition-colors truncate">
-                            {item.title}
-                          </h4>
-                          {item.isNew && (
-                            <span className="bg-red-600 text-white text-[8px] font-extrabold px-1.5 py-0.2 rounded-none uppercase tracking-wide leading-tight shadow-2xs">
-                              New
-                            </span>
-                          )}
+                  {challengesList.length > 0 ? (
+                    [...challengesList, ...challengesList].map((item, idx) => (
+                      <div key={idx} className="py-2 flex items-center gap-2.5 group cursor-pointer hover:bg-slate-50/90 px-1 rounded-none transition-colors">
+                        <div className={`w-7 h-7 ${item.iconBg} rounded-full flex items-center justify-center text-white shrink-0 shadow-2xs`}>
+                          <item.icon className="w-3.5 h-3.5 stroke-[2.5]" />
                         </div>
-                        <p className="text-[9.5px] text-gray-500 mt-0.5 leading-tight truncate">
-                          {item.location} <span className="mx-1 text-gray-300">|</span> {item.date}
-                        </p>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <h4 className="text-[11.5px] font-bold text-gray-900 leading-tight group-hover:text-[#0f4b3a] transition-colors truncate">
+                              {item.title}
+                            </h4>
+                            {item.isNew && (
+                              <span className="bg-red-600 text-white text-[8px] font-extrabold px-1.5 py-0.2 rounded-none uppercase tracking-wide leading-tight shadow-2xs">
+                                New
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-[9.5px] text-gray-500 mt-0.5 leading-tight truncate">
+                            {item.location} <span className="mx-1 text-gray-300">|</span> {item.date}
+                          </p>
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    ))
+                  ) : (
+                    <div className="p-4 text-center text-xs text-gray-500 font-medium">No latest challenges available.</div>
+                  )}
                 </div>
               </div>
             </div>
-
-
-
-            {/* Col 3: Key Documents */}
-            <div className="bg-white rounded-none border border-gray-200/90 shadow-xs flex flex-col overflow-hidden">
-              {/* Card Header */}
-              <div className="bg-[#0f4b3a] text-white px-3.5 py-2 flex items-center justify-between shrink-0">
-                <h3 className="text-[13px] font-bold tracking-tight">Key Documents</h3>
-              </div>
-
-              {/* Auto-scrolling Ticker */}
-              <div className="h-[195px] overflow-hidden relative marquee-container cursor-pointer px-2.5 py-1 bg-white">
-                <div className="animate-marquee-vertical flex flex-col divide-y divide-gray-100/90">
-                  {[...documentsList, ...documentsList].map((item, idx) => (
-                    <div key={idx} className="py-2 flex items-start gap-2.5 group cursor-pointer hover:bg-slate-50/90 px-1 rounded-none transition-colors">
-                      <div className="w-5 h-5 bg-red-600 rounded-none flex items-center justify-center text-white shrink-0 font-bold text-[8px] tracking-tight shadow-2xs mt-0.5">
-                        PDF
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-1.5 flex-wrap">
-                          <h4 className="text-[11.5px] font-bold text-gray-900 leading-tight group-hover:text-[#0f4b3a] transition-colors truncate">
-                            {item.title}
-                          </h4>
-                          {item.isNew && (
-                            <span className="bg-red-600 text-white text-[8px] font-extrabold px-1.5 py-0.2 rounded-none uppercase tracking-wide leading-tight shadow-2xs">
-                              New
-                            </span>
-                          )}
-                        </div>
-                        <p className="text-[9.5px] text-gray-500 mt-0.5 leading-tight">
-                          {item.size}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-
             {/* Col 4: Important Updates */}
             <div className="bg-white rounded-none border border-gray-200/90 shadow-xs flex flex-col overflow-hidden">
               {/* Card Header */}
@@ -585,30 +508,54 @@ export const LandingPage = ({ onNavigate }) => {
               {/* Auto-scrolling Ticker */}
               <div className="h-[195px] overflow-hidden relative marquee-container cursor-pointer px-2.5 py-1 bg-white">
                 <div className="animate-marquee-vertical flex flex-col divide-y divide-gray-100/90">
-                  {[...updatesList, ...updatesList].map((item, idx) => (
-                    <div key={idx} className="py-2 flex items-center gap-2.5 group cursor-pointer hover:bg-slate-50/90 px-1 rounded-none transition-colors">
-                      <img 
-                        src={item.img} 
-                        alt={item.title} 
-                        className="w-13 h-8 sm:w-14 sm:h-9 object-cover rounded-none shrink-0 border border-gray-200 shadow-2xs" 
-                      />
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-1.5 flex-wrap">
-                          <h4 className="text-[11.5px] font-bold text-gray-900 leading-tight group-hover:text-[#0f4b3a] transition-colors truncate">
-                            {item.title}
-                          </h4>
-                          {item.isNew && (
-                            <span className="bg-red-600 text-white text-[8px] font-extrabold px-1.5 py-0.2 rounded-none uppercase tracking-wide leading-tight shadow-2xs">
-                              New
-                            </span>
-                          )}
+                  {updatesLoading ? (
+                    <div className="flex flex-col gap-2 p-2">
+                      {[1, 2, 3, 4].map(n => (
+                        <div key={n} className="flex gap-2.5 animate-pulse items-center">
+                          <div className="w-13 h-8 sm:w-14 sm:h-9 bg-gray-200 shrink-0"></div>
+                          <div className="flex-1">
+                            <div className="h-3 bg-gray-200 w-3/4 mb-1"></div>
+                            <div className="h-2 bg-gray-200 w-1/2"></div>
+                          </div>
                         </div>
-                        <p className="text-[9.5px] text-gray-500 mt-0.5 leading-tight truncate">
-                          {item.sub}
-                        </p>
-                      </div>
+                      ))}
                     </div>
-                  ))}
+                  ) : updatesError ? (
+                    <div className="p-4 text-center text-[11px] text-red-500 font-medium">{updatesError}</div>
+                  ) : updates.length === 0 ? (
+                    <div className="p-4 text-center text-[11px] text-gray-500 font-medium">No latest updates available.</div>
+                  ) : (
+                    [...updates, ...updates].map((item, idx) => (
+                      <a 
+                        key={idx} 
+                        href={item.sourceUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="py-2 flex items-center gap-2.5 group cursor-pointer hover:bg-slate-50/90 px-1 rounded-none transition-colors"
+                      >
+                        <img 
+                          src={item.thumbnailUrl || item.imageUrl || updateMeet} 
+                          alt={item.title} 
+                          className="w-13 h-8 sm:w-14 sm:h-9 object-cover rounded-none shrink-0 border border-gray-200 shadow-2xs" 
+                        />
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <h4 className="text-[11.5px] font-bold text-gray-900 leading-tight group-hover:text-[#0f4b3a] transition-colors truncate">
+                              {item.title}
+                            </h4>
+                            {item.isNew && (
+                              <span className="bg-red-600 text-white text-[8px] font-extrabold px-1.5 py-0.2 rounded-none uppercase tracking-wide leading-tight shadow-2xs">
+                                New
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-[9.5px] text-gray-500 mt-0.5 leading-tight truncate">
+                            {item.description}
+                          </p>
+                        </div>
+                      </a>
+                    ))
+                  )}
                 </div>
               </div>
             </div>
@@ -623,40 +570,50 @@ export const LandingPage = ({ onNavigate }) => {
               {/* Auto-scrolling Ticker */}
               <div className="h-[195px] overflow-hidden relative marquee-container cursor-pointer px-2.5 py-1 bg-white">
                 <div className="animate-marquee-vertical flex flex-col divide-y divide-gray-100/90">
-                  {[...[  
-                    { title: "Model Problem Statement Formats", date: "10 Aug 2026", isNew: false },
-                    { title: "State Youth Innovation Challenge 2026", date: "04 Sep 2026", isNew: false },
-                    { title: "Launch of Johar Sethu Portal", date: "01 Sep 2026", isNew: true },
-                    { title: "Guidelines for University Participation", date: "25 Aug 2026", isNew: false },
-                    { title: "Faculty Mentor Nomination Deadline Extended", date: "20 Aug 2026", isNew: false },
-                    { title: "Hackathon Results – Ranchi Zone Declared", date: "18 Aug 2026", isNew: false },
-                  ], ...[  
-                    { title: "Model Problem Statement Formats", date: "10 Aug 2026", isNew: false },
-                    { title: "State Youth Innovation Challenge 2026", date: "04 Sep 2026", isNew: false },
-                    { title: "Launch of Johar Sethu Portal", date: "01 Sep 2026", isNew: true },
-                    { title: "Guidelines for University Participation", date: "25 Aug 2026", isNew: false },
-                    { title: "Faculty Mentor Nomination Deadline Extended", date: "20 Aug 2026", isNew: false },
-                    { title: "Hackathon Results – Ranchi Zone Declared", date: "18 Aug 2026", isNew: false },
-                  ]].map((item, idx) => (
-                    <div key={idx} className="py-2 flex items-start gap-2 group cursor-pointer hover:bg-slate-50/90 px-1 rounded-none transition-colors">
-                      <span className="text-[#0f4b3a] font-black text-sm leading-none mt-0.5 shrink-0">•</span>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-1.5 flex-wrap">
-                          <h4 className="text-[11.5px] font-bold text-gray-900 leading-tight group-hover:text-[#0f4b3a] transition-colors">
-                            {item.title}
-                          </h4>
-                          {item.isNew && (
-                            <span className="bg-red-600 text-white text-[8px] font-extrabold px-1.5 py-0.2 rounded-none uppercase tracking-wide leading-tight shadow-2xs">
-                              New
-                            </span>
-                          )}
+                  {noticesLoading ? (
+                    <div className="flex flex-col gap-2 p-2">
+                      {[1, 2, 3, 4].map(n => (
+                        <div key={n} className="flex gap-2 animate-pulse">
+                          <div className="w-1.5 h-1.5 bg-gray-200 mt-1 shrink-0"></div>
+                          <div className="flex-1">
+                            <div className="h-3 bg-gray-200 w-3/4 mb-1"></div>
+                            <div className="h-2 bg-gray-200 w-1/4"></div>
+                          </div>
                         </div>
-                        <p className="text-[9.5px] text-gray-500 mt-0.5 leading-tight truncate">
-                          {item.date}
-                        </p>
-                      </div>
+                      ))}
                     </div>
-                  ))}
+                  ) : noticesError ? (
+                    <div className="p-4 text-center text-[11px] text-red-500 font-medium">{noticesError}</div>
+                  ) : notices.length === 0 ? (
+                    <div className="p-4 text-center text-[11px] text-gray-500 font-medium">No notices available at the moment.</div>
+                  ) : (
+                    [...notices, ...notices].map((item, idx) => (
+                      <a 
+                        key={idx} 
+                        href={item.documentUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="py-2 flex items-start gap-2 group cursor-pointer hover:bg-slate-50/90 px-1 rounded-none transition-colors"
+                      >
+                        <span className="text-[#0f4b3a] font-black text-sm leading-none mt-0.5 shrink-0">•</span>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <h4 className="text-[11.5px] font-bold text-gray-900 leading-tight group-hover:text-[#0f4b3a] transition-colors">
+                              {item.title}
+                            </h4>
+                            {item.isNew && (
+                              <span className="bg-red-600 text-white text-[8px] font-extrabold px-1.5 py-0.2 rounded-none uppercase tracking-wide leading-tight shadow-2xs">
+                                New
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-[9.5px] text-gray-500 mt-0.5 leading-tight truncate">
+                            {item.date}
+                          </p>
+                        </div>
+                      </a>
+                    ))
+                  )}
                 </div>
               </div>
             </div>

@@ -1,10 +1,49 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { LandingLayout } from './layout/LandingLayout';
 import { ArrowRight, TrendingUp, Heart, Cpu, Briefcase, MapPin, Plus, Minus, FileText, Leaf, Trophy } from 'lucide-react';
 import heroBanner from '../../../assets/impact-banner.png';
 import mapImage from '../../../assets/impact-map.png';
+import { governmentDataService } from '../../government/services/governmentDataService';
 
 export const ImpactPage = ({ onNavigate }) => {
+  const [kpis, setKpis] = useState(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const stats = await governmentDataService.fetchLiveDatabaseStats();
+        if (stats) {
+          // Total challenges = problems.total
+          const totalChallenges = stats.problems?.total || 0;
+          // Citizens registered
+          const citizensTotal = stats.citizens?.total || 0;
+          // Labs / technologies
+          const techDeployed = stats.financials?.verifiedLabs || 0;
+          // Industries = jobs proxy
+          const industriesActive = stats.industries?.active || 0;
+          // Districts covered from heisByDistrict array
+          const districtsCovered = Array.isArray(stats.heisByDistrict)
+            ? stats.heisByDistrict.length
+            : 0;
+
+          setKpis({
+            totalChallenges,
+            citizensTotal,
+            techDeployed,
+            industriesActive,
+            districtsCovered,
+            csrFundsCr: stats.financials?.totalCsrFundsCr || 0,
+            totalProjects: stats.financials?.totalProjects || 0,
+            heisActive: stats.heis?.active || 0
+          });
+        }
+      } catch(err) {
+        console.error('ImpactPage fetch error:', err);
+      }
+    };
+    fetchData();
+  }, []);
+
   return (
     <LandingLayout onNavigate={onNavigate} currentPath="/impact">
       {/* Hero Section */}
@@ -49,10 +88,10 @@ export const ImpactPage = ({ onNavigate }) => {
         <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 mb-6">
           <div className="bg-white p-3.5 rounded-none shadow-sm border border-gray-200 flex flex-col relative overflow-hidden">
              <div className="flex justify-between items-start mb-2">
-               <span className="text-[11.5px] font-bold text-gray-700 leading-tight">Total Challenges Resolved</span>
+               <span className="text-[11.5px] font-bold text-gray-700 leading-tight">Total Challenges Received</span>
                <TrendingUp className="w-4 h-4 text-green-700" />
              </div>
-             <div className="text-[28px] font-bold text-[#0f4b3a] mb-0.5">620+</div>
+             <div className="text-[28px] font-bold text-[#0f4b3a] mb-0.5">{kpis ? kpis.totalChallenges : '—'}</div>
              <div className="text-[10px] text-gray-500 font-medium leading-tight">Challenges<br/>to date</div>
              <div className="absolute bottom-2 right-2 w-12 h-6">
                 <svg viewBox="0 0 100 30" className="w-full h-full stroke-green-500 stroke-[3] fill-none"><path d="M0 30 L20 15 L40 25 L60 10 L80 15 L100 0"/></svg>
@@ -61,38 +100,38 @@ export const ImpactPage = ({ onNavigate }) => {
           
           <div className="bg-white p-3.5 rounded-none shadow-sm border border-gray-200 flex flex-col relative">
              <div className="flex justify-between items-start mb-2">
-               <span className="text-[11.5px] font-bold text-gray-700 leading-tight">Lives Impacted</span>
+               <span className="text-[11.5px] font-bold text-gray-700 leading-tight">Citizens Registered</span>
                <Heart className="w-4 h-4 text-green-700" />
              </div>
-             <div className="text-[28px] font-bold text-[#0f4b3a] mb-0.5">1.8L+</div>
-             <div className="text-[10px] text-gray-500 font-medium leading-tight">Citizens with improved<br/>services</div>
+             <div className="text-[28px] font-bold text-[#0f4b3a] mb-0.5">{kpis ? kpis.citizensTotal.toLocaleString('en-IN') : '—'}</div>
+             <div className="text-[10px] text-gray-500 font-medium leading-tight">Registered<br/>Citizens</div>
           </div>
 
           <div className="bg-white p-3.5 rounded-none shadow-sm border border-gray-200 flex flex-col relative">
              <div className="flex justify-between items-start mb-2">
-               <span className="text-[11.5px] font-bold text-gray-700 leading-tight">New Technologies Deployed</span>
+               <span className="text-[11.5px] font-bold text-gray-700 leading-tight">Industry Partners</span>
                <Cpu className="w-4 h-4 text-green-700" />
              </div>
-             <div className="text-[28px] font-bold text-[#0f4b3a] mb-0.5">85+</div>
-             <div className="text-[10px] text-gray-500 font-medium leading-tight">Patent-pending<br/>Solutions</div>
+             <div className="text-[28px] font-bold text-[#0f4b3a] mb-0.5">{kpis ? kpis.industriesActive : '—'}</div>
+             <div className="text-[10px] text-gray-500 font-medium leading-tight">Active Industry<br/>Partners</div>
           </div>
 
           <div className="bg-white p-3.5 rounded-none shadow-sm border border-gray-200 flex flex-col relative">
              <div className="flex justify-between items-start mb-2">
-               <span className="text-[11.5px] font-bold text-gray-700 leading-tight">Job Creation (through Startups)</span>
+               <span className="text-[11.5px] font-bold text-gray-700 leading-tight">Institutions Onboarded</span>
                <Briefcase className="w-4 h-4 text-green-700" />
              </div>
-             <div className="text-[28px] font-bold text-[#0f4b3a] mb-0.5">4,500+</div>
-             <div className="text-[10px] text-gray-500 font-medium leading-tight">Jobs created via innovation<br/>ecosystem</div>
+             <div className="text-[28px] font-bold text-[#0f4b3a] mb-0.5">{kpis ? kpis.heisActive : '—'}</div>
+             <div className="text-[10px] text-gray-500 font-medium leading-tight">Active<br/>Institutions</div>
           </div>
 
           <div className="bg-white p-3.5 rounded-none shadow-sm border border-gray-200 flex flex-col relative">
              <div className="flex justify-between items-start mb-2">
-               <span className="text-[11.5px] font-bold text-gray-700 leading-tight">District Coverage</span>
+               <span className="text-[11.5px] font-bold text-gray-700 leading-tight">CSR Funds Committed</span>
                <MapPin className="w-4 h-4 text-green-700" />
              </div>
-             <div className="text-[28px] font-bold text-[#0f4b3a] mb-0.5">24</div>
-             <div className="text-[10px] text-gray-500 font-medium leading-tight">Districts with<br/>ongoing projects</div>
+             <div className="text-[28px] font-bold text-[#0f4b3a] mb-0.5">₹ {kpis ? kpis.csrFundsCr : '—'} Cr</div>
+             <div className="text-[10px] text-gray-500 font-medium leading-tight">Innovation<br/>Corpus</div>
           </div>
         </div>
 

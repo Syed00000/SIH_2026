@@ -100,4 +100,6 @@ export const NodalUnassignedQueueCard = ({
   );
 };
 
-export default NodalUnassignedQueueCard;
+export default NodalUnassignedQueueCard; 
+
+

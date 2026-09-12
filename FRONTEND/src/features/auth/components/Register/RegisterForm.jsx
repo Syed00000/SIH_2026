@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../AuthContext.jsx';
+import { LandingLayout } from '../../../landing/components/layout/LandingLayout.jsx';
+import registerBg from '../../../landing/assets/register_bg.jpg';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../../../../shared/components/ui/card.jsx';
 import { Alert } from '../../../../shared/components/ui/alert.jsx';
 import { RegisterStepper } from './RegisterStepper.jsx';
@@ -140,8 +142,13 @@ export const RegisterForm = ({ onNavigate }) => {
   };
 
   return (
-    <div className="min-h-screen flex items-start justify-center pt-4 pb-8 px-3 sm:px-4 bg-slate-50">
-      <Card className="w-full max-w-xl bg-white border border-slate-200 shadow-md rounded-2xl">
+    <LandingLayout onNavigate={onNavigate} currentPath="/register">
+      <div 
+        className="min-h-screen flex items-center justify-center py-10 px-4 sm:px-6 relative bg-cover bg-center bg-no-repeat"
+        style={{ backgroundImage: `url(${registerBg})` }}
+      >
+        <div className="absolute inset-0 bg-white/40 backdrop-blur-sm z-0"></div>
+        <Card className="w-full max-w-xl bg-white/95 border border-white/50 shadow-2xl rounded-2xl relative z-10 my-8">
         {/* Compact Header with Smaller Logo */}
         <CardHeader className="text-center pb-2.5 pt-4 px-4 border-b border-slate-100 bg-slate-50/50">
           <div className="flex justify-center mb-1">
@@ -230,7 +237,8 @@ export const RegisterForm = ({ onNavigate }) => {
           </div>
         </CardContent>
       </Card>
-    </div>
+      </div>
+    </LandingLayout>
   );
 };
 

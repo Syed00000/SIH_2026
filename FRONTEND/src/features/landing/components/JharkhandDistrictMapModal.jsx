@@ -86,7 +86,7 @@ export const JharkhandDistrictMapModal = ({ isOpen, onClose }) => {
                 </span>
               </div>
               <p className="text-[11px] text-emerald-100/90 font-medium hidden sm:block">
-                Official Johar Sethu Regional Innovation & Civic Problem Mapping System
+                Official Johar Setu Regional Innovation &amp; Civic Problem Mapping System
               </p>
             </div>
           </div>

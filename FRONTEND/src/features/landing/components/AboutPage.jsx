@@ -24,7 +24,7 @@ export const AboutPage = ({ onNavigate }) => {
         <div className="absolute top-0 right-0 w-full md:w-[75%] h-full z-0">
           <img 
             src={aboutBanner || "https://images.unsplash.com/photo-1596422846543-75c6fc197f07?auto=format&fit=crop&q=80&w=1600"} 
-            alt="About Johar Sethu Banner" 
+            alt="About Johar Setu Banner" 
             className="w-full h-full object-cover object-right"
           />
           {/* Fallback gradient in case the image's white fade isn't wide enough on very large screens */}
@@ -36,7 +36,7 @@ export const AboutPage = ({ onNavigate }) => {
           <div className="w-full md:w-[55%] lg:w-[45%] bg-white/90 md:bg-transparent backdrop-blur-sm md:backdrop-blur-none p-4 md:p-0 rounded-none md:rounded-none">
             
             <div className="text-[13px] font-black text-[#0f4b3a] tracking-widest uppercase mb-2">
-              ABOUT JOHAR SETHU
+              ABOUT JOHAR SETU
             </div>
             
             <h1 className="text-4xl md:text-5xl lg:text-[56px] font-black text-[#0c382b] mb-3 tracking-tight">
@@ -53,9 +53,9 @@ export const AboutPage = ({ onNavigate }) => {
             </h2>
             
             <p className="text-gray-600 text-[15px] md:text-[16px] leading-relaxed font-medium">
-              {activeTab === 'What We Do' ? 'JoharSethu provides a structured pathway through which real-life societal challenges are collected, validated, connected with the right academic expertise and industry support, and taken forward for solution development and real-world impact.' : 
-               activeTab === 'Who We Serve' ? 'JoharSethu brings together citizens, government, academic institutions and industry partners, enabling them to collaborate on real-world challenges and create innovative, practical solutions for a more inclusive and developed Jharkhand.' : 
-               'JoharSethu is a digital innovation platform by the Government of Jharkhand that connects citizens, government, universities and industry to turn real-world challenges into practical solutions for a stronger, more inclusive Jharkhand.'}
+              {activeTab === 'What We Do' ? 'JoharSetu provides a structured pathway through which real-life societal challenges are collected, validated, connected with the right academic expertise and industry support, and taken forward for solution development and real-world impact.' : 
+               activeTab === 'Who We Serve' ? 'JoharSetu brings together citizens, government, academic institutions and industry partners, enabling them to collaborate on real-world challenges and create innovative, practical solutions for a more inclusive and developed Jharkhand.' : 
+               'JoharSetu is a digital innovation platform by the Government of Jharkhand that connects citizens, government, universities and industry to turn real-world challenges into practical solutions for a stronger, more inclusive Jharkhand.'}
             </p>
           </div>
         </div>
@@ -219,7 +219,7 @@ export const AboutPage = ({ onNavigate }) => {
                     "Together, we can transform local challenges into opportunities for a brighter and more prosperous Jharkhand."
                   </p>
                   <div className="text-right mt-6">
-                    <span className="text-[12px] font-black text-[#0f4b3a] tracking-widest uppercase">— JoharSethu</span>
+                    <span className="text-[12px] font-black text-[#0f4b3a] tracking-widest uppercase">— JoharSetu</span>
                     <div className="w-16 h-[3px] bg-[#0f4b3a] rounded-full ml-auto mt-1.5"></div>
                   </div>
                 </CardContent>
@@ -264,7 +264,7 @@ export const AboutPage = ({ onNavigate }) => {
                     "We work to ensure that every genuine problem finds the right people, knowledge and resources — and becomes a solution that creates meaningful impact for Jharkhand."
                   </p>
                   <div className="text-right mt-6">
-                    <span className="text-[12px] font-black text-[#0f4b3a] tracking-widest uppercase">— JoharSethu</span>
+                    <span className="text-[12px] font-black text-[#0f4b3a] tracking-widest uppercase">— JoharSetu</span>
                     <div className="w-16 h-[3px] bg-[#0f4b3a] rounded-full ml-auto mt-1.5"></div>
                   </div>
                 </CardContent>
@@ -275,7 +275,7 @@ export const AboutPage = ({ onNavigate }) => {
               <Card className="rounded-none overflow-hidden shadow-xl relative bg-[#f8fbf9] border-0">
                 <img 
                   src={missionImage} 
-                  alt="Johar Sethu Mission" 
+                  alt="Johar Setu Mission" 
                   className="w-full h-auto object-cover"
                 />
               </Card>
@@ -299,7 +299,7 @@ export const AboutPage = ({ onNavigate }) => {
                   Stronger Together<br />for a Better Jharkhand
                 </h2>
                 <p className="text-slate-600 text-[15px] leading-relaxed font-medium">
-                  JoharSethu serves a diverse ecosystem of people and organizations, working together to identify real challenges, leverage knowledge and resources, and create practical solutions for the development of Jharkhand.
+                  JoharSetu serves a diverse ecosystem of people and organizations, working together to identify real challenges, leverage knowledge and resources, and create practical solutions for the development of Jharkhand.
                 </p>
               </div>
 
@@ -536,7 +536,7 @@ export const AboutPage = ({ onNavigate }) => {
 
                 <div className="shrink-0 text-right">
                   <div className="inline-block">
-                    <span className="text-[13px] font-black text-[#0f4b3a] tracking-widest uppercase">— JoharSethu</span>
+                    <span className="text-[13px] font-black text-[#0f4b3a] tracking-widest uppercase">— JoharSetu</span>
                     <div className="w-full h-[3px] bg-[#0f4b3a] mt-1.5 rounded-full"></div>
                   </div>
                 </div>
@@ -560,7 +560,7 @@ export const AboutPage = ({ onNavigate }) => {
                   Responsible<br />Innovation for<br />Lasting Change
                 </h2>
                 <p className="text-slate-600 text-[15px] leading-relaxed font-medium">
-                  We are committed to upholding the highest standards of transparency, inclusion, privacy and impact, ensuring that JoharSethu remains a trusted platform for everyone working towards a better Jharkhand.
+                  We are committed to upholding the highest standards of transparency, inclusion, privacy and impact, ensuring that JoharSetu remains a trusted platform for everyone working towards a better Jharkhand.
                 </p>
               </div>
 
@@ -611,7 +611,7 @@ export const AboutPage = ({ onNavigate }) => {
                     </CardHeader>
                     <CardContent className="p-5 pt-4">
                       <p className="text-slate-600 text-[13px] font-medium leading-relaxed text-center">
-                        We strive to make JoharSethu easy to access and use for people across Jharkhand, including citizens from rural and remote areas, with simple language and inclusive design.
+                        We strive to make JoharSetu easy to access and use for people across Jharkhand, including citizens from rural and remote areas, with simple language and inclusive design.
                       </p>
                     </CardContent>
                   </Card>
@@ -687,7 +687,7 @@ export const AboutPage = ({ onNavigate }) => {
 
                 <div className="shrink-0 text-right">
                   <div className="inline-block">
-                    <span className="text-[13px] font-black text-[#0f4b3a] tracking-widest uppercase">— JoharSethu</span>
+                    <span className="text-[13px] font-black text-[#0f4b3a] tracking-widest uppercase">— JoharSetu</span>
                     <div className="w-full h-[3px] bg-[#0f4b3a] mt-1.5 rounded-full"></div>
                   </div>
                 </div>
