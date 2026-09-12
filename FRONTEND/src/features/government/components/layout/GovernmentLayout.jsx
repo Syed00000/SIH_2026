@@ -198,7 +198,11 @@ export const GovernmentLayout = ({ onLogout }) => {
       case 'industries': return 'Industry & Partner Directory';
       case 'users_admin': return 'User Admin & Departmental Governance';
       case 'governance_departments':
-      case 'departments': return 'State Departments & Nodal Governance';
+      case 'departments':
+      case 'dept_state': return 'State Ministries Governance';
+      case 'dept_district': return 'District Departments Governance';
+      case 'dept_panchayat': return 'Gram Panchayats / Wards Governance';
+      case 'dept_block': return 'Block Offices Governance';
       case 'users_audit': return 'System & Compliance Audit Trail';
       case 'reports':
       case 'reports_overview': return 'Report Overview';
@@ -286,8 +290,12 @@ export const GovernmentLayout = ({ onLogout }) => {
               <ManageUniversitiesDashboard initialMode="list" />
             ) : activeTab === 'governance_industries' || activeTab === 'manage_industries' || activeTab === 'industries' ? (
               <ManageIndustriesDashboard />
-            ) : activeTab === 'governance_departments' || activeTab === 'departments' ? (
-              <DepartmentsManagementPanel />
+            ) : activeTab === 'governance_departments' || activeTab === 'departments' || activeTab === 'dept_state' || activeTab === 'dept_district' || activeTab === 'dept_panchayat' || activeTab === 'dept_block' ? (
+              <DepartmentsManagementPanel category={
+                activeTab === 'dept_district' ? 'District Department' :
+                activeTab === 'dept_panchayat' ? 'Gram Panchayat' :
+                activeTab === 'dept_block' ? 'Block / Tehsil Office' : 'State Ministry'
+              } />
             ) : activeTab === 'updates' ? (
               <ManageUpdatesDashboard />
             ) : activeTab === 'gis' ? (

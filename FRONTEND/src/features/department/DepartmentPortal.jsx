@@ -5,7 +5,9 @@ import { DepartmentOverview } from './components/DepartmentOverview.jsx';
 import { DepartmentProblemsPanel } from './components/DepartmentProblemsPanel.jsx';
 import { DepartmentProblemActionPanel } from './components/DepartmentProblemActionPanel.jsx';
 import { DepartmentTechniciansPanel } from './components/DepartmentTechniciansPanel.jsx';
+import { DepartmentDistrictsPanel } from './components/DepartmentDistrictsPanel.jsx';
 import { AddTechnicianModal } from './components/AddTechnicianModal.jsx';
+import { AddDistrictModal } from './components/AddDistrictModal.jsx';
 import { ViewTechnicianModal } from './components/ViewTechnicianModal.jsx';
 import { EditTechnicianModal } from './components/EditTechnicianModal.jsx';
 import { AssignToTechnicianModal } from './components/AssignToTechnicianModal.jsx';
@@ -21,12 +23,14 @@ export const DepartmentPortal = ({ user, onLogout }) => {
   const [department, setDepartment] = useState(null);
   const [problems, setProblems] = useState([]);
   const [technicians, setTechnicians] = useState([]);
+  const [districts, setDistricts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedProblem, setSelectedProblem] = useState(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  // Technician Modals State
+  // Technician & District Modals State
   const [isAddTechOpen, setIsAddTechOpen] = useState(false);
+  const [isAddDistrictOpen, setIsAddDistrictOpen] = useState(false);
   const [viewingTech, setViewingTech] = useState(null);
   const [editingTech, setEditingTech] = useState(null);
   const [assigningProblemTech, setAssigningProblemTech] = useState(null);
@@ -51,6 +55,21 @@ export const DepartmentPortal = ({ user, onLogout }) => {
       }
       if (!matched && depts.length > 0) matched = depts[0];
       setDepartment(matched);
+
+      const isDistrictDept = matched?.category === 'District Department';
+      const isBlockDept = matched?.category === 'Block / Tehsil Office';
+      const subDepts = depts.filter((d) => {
+        if (isBlockDept) {
+          return d.category === 'Ward Commissioner' || d.category === 'Ward';
+        }
+        if (isDistrictDept) {
+          // A district department manages blocks, tehsils and gram panchayats
+          return d.category === 'Block / Tehsil Office' || d.category === 'Gram Panchayat';
+        }
+        // A state ministry manages district departments
+        return d.category === 'District Department';
+      });
+      setDistricts(subDepts);
 
       const resChallenges = await citizenService.fetchChallenges({ limit: 200 });
       const allChls = resChallenges?.challenges || (Array.isArray(resChallenges) ? resChallenges : []) || [];
@@ -97,6 +116,8 @@ export const DepartmentPortal = ({ user, onLogout }) => {
     setTechnicians((prev) => prev.map((t) => ((t.technicianId || t.id || t._id) === id ? updated : t)));
   };
   const handleDeletedTech = (techId) => setTechnicians((prev) => prev.filter((t) => (t.technicianId || t.id || t._id) !== techId));
+  const handleCreatedDistrict = (dist) => setDistricts((prev) => [dist, ...prev]);
+  const handleDeletedDistrict = (distId) => setDistricts((prev) => prev.filter((d) => (d.id || d._id) !== distId));
 
   const renderContent = () => {
     if (selectedProblem) {
@@ -122,6 +143,16 @@ export const DepartmentPortal = ({ user, onLogout }) => {
             onViewTech={setViewingTech}
             onEditTech={setEditingTech}
             onDeletedTech={handleDeletedTech}
+          />
+        );
+      case 'districts':
+        return (
+          <DepartmentDistrictsPanel
+            districts={districts}
+            isDistrictDept={department?.category === 'District Department'}
+            isBlockDept={department?.category === 'Block / Tehsil Office'}
+            onAddDistrict={() => setIsAddDistrictOpen(true)}
+            onDeletedDistrict={handleDeletedDistrict}
           />
         );
       case 'overview':
@@ -155,6 +186,7 @@ export const DepartmentPortal = ({ user, onLogout }) => {
           isSidebarExpanded={isSidebarExpanded}
           setIsSidebarExpanded={setIsSidebarExpanded}
           departmentName={department?.name || 'Department Authority'}
+          departmentCategory={department?.category || 'State Ministry'}
           onLogout={onLogout}
           isMobileMenuOpen={isMobileMenuOpen}
           setIsMobileMenuOpen={setIsMobileMenuOpen}
@@ -181,10 +213,18 @@ export const DepartmentPortal = ({ user, onLogout }) => {
         onSelectTab={(t) => { setSelectedProblem(null); setActiveTab(t); setIsMobileMenuOpen(false); }}
         problemCount={problems.length}
         techCount={technicians.length}
+        districtCount={districts.length}
       />
 
-      {/* Technician & Action Modals */}
+      {/* Technician, District & Action Modals */}
       <AddTechnicianModal department={department} isOpen={isAddTechOpen} onClose={() => setIsAddTechOpen(false)} onCreated={handleCreatedTech} />
+      <AddDistrictModal 
+        isOpen={isAddDistrictOpen} 
+        onClose={() => setIsAddDistrictOpen(false)} 
+        onCreated={handleCreatedDistrict} 
+        isDistrictDept={department?.category === 'District Department'} 
+        isBlockDept={department?.category === 'Block / Tehsil Office'}
+      />
       <ViewTechnicianModal technician={viewingTech} isOpen={Boolean(viewingTech)} onClose={() => setViewingTech(null)} />
       <EditTechnicianModal technician={editingTech} isOpen={Boolean(editingTech)} onClose={() => setEditingTech(null)} onUpdated={handleUpdatedTech} />
       <AssignToTechnicianModal challenge={assigningProblemTech} technicians={technicians} isOpen={Boolean(assigningProblemTech)} onClose={() => setAssigningProblemTech(null)} onAssigned={handleUpdateProblem} />

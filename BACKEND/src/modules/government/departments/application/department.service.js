@@ -78,8 +78,11 @@ export class DepartmentService {
     const deptId = data.deptId?.trim() || (await this.generateDeptId());
     const code = data.code?.trim() || data.name.split(' ').map((w) => w[0] || '').join('').toUpperCase();
     const digits = deptId.replace(/\D/g, '') || '2026';
-    const password = data.password?.trim() || `Dept@JH${digits}!`;
-    const loginEmail = data.headEmail?.trim() || `${deptId.toLowerCase()}@jharkhand.gov.in`;
+    
+    // Use credentials object from frontend if provided, fallback to root level or defaults
+    const password = data.credentials?.password?.trim() || data.password?.trim() || `Dept@JH${digits}!`;
+    const loginEmail = data.credentials?.loginEmail?.trim() || data.headEmail?.trim() || `${deptId.toLowerCase()}@jharkhand.gov.in`;
+    const loginId = data.credentials?.loginId?.trim() || data.loginId?.trim() || deptId;
 
     const payload = {
       deptId,
@@ -95,7 +98,7 @@ export class DepartmentService {
       panchayat: data.panchayat?.trim() || '',
       description: data.description?.trim() || '',
       credentials: {
-        loginId: data.loginId?.trim() || deptId,
+        loginId,
         loginEmail,
         password,
         generatedPassword: password
@@ -116,13 +119,13 @@ export class DepartmentService {
   }
 
   async updateDepartment(id, updates) {
-    if (updates.password || updates.headEmail || updates.loginId) {
+    if (updates.password || updates.headEmail || updates.loginId || updates.credentials) {
       const existing = await this.repo.findById(id);
       const prevCreds = existing?.credentials || {};
-      const newPass = updates.password?.trim() || prevCreds.password || prevCreds.generatedPassword || 'Dept@JH2026!';
+      const newPass = updates.credentials?.password?.trim() || updates.password?.trim() || prevCreds.password || prevCreds.generatedPassword || 'Dept@JH2026!';
       updates.credentials = {
-        loginId: updates.loginId?.trim() || prevCreds.loginId || existing?.deptId || id,
-        loginEmail: updates.headEmail?.trim() || prevCreds.loginEmail,
+        loginId: updates.credentials?.loginId?.trim() || updates.loginId?.trim() || prevCreds.loginId || existing?.deptId || id,
+        loginEmail: updates.credentials?.loginEmail?.trim() || updates.headEmail?.trim() || prevCreds.loginEmail,
         password: newPass,
         generatedPassword: newPass
       };

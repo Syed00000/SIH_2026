@@ -23,8 +23,8 @@ const departmentSchema = new mongoose.Schema(
     },
     category: {
       type: String,
-      enum: ['State Ministry', 'District Department', 'Block / Tehsil Office', 'Gram Panchayat'],
-      default: 'District Department',
+      enum: ['State Ministry', 'District Department', 'Block / Tehsil Office', 'Gram Panchayat', 'Ward Commissioner'],
+      default: 'State Ministry',
       index: true
     },
     headName: {
@@ -69,11 +69,41 @@ const departmentSchema = new mongoose.Schema(
       default: '',
       trim: true
     },
+    parentMinistry: { type: String, default: null, trim: true },
+    departmentType: { type: String, default: 'State Government Department', trim: true },
+    parentAuthority: { type: String, default: 'Government of Jharkhand', trim: true },
+    officialWebsite: { type: String, default: null, trim: true },
+    helplineNumber: { type: String, default: null, trim: true },
+    officeAddress: { type: String, default: null, trim: true },
+    applicableJurisdiction: { type: String, default: 'State Wide', trim: true },
+    headquartersLocation: { type: String, default: 'Ranchi', trim: true },
+    operationalDistrictsType: { type: String, default: 'All Districts (State Wide)', trim: true },
+    involvedLowerLevels: { type: [String], default: [] },
+    nodalOfficerName: { type: String, default: null, trim: true },
+    nodalOfficerDesignation: { type: String, default: null, trim: true },
+    nodalOfficerEmail: { type: String, default: null, trim: true },
+    nodalOfficerPhone: { type: String, default: null, trim: true },
+    officeSecretariatLocation: { type: String, default: null, trim: true },
+    effectiveFrom: { type: String, default: null, trim: true },
+    remarks: { type: String, default: null, trim: true },
+    keyFunctions: { type: [String], default: [] },
+    powersApprovalAuthority: { type: String, default: null, trim: true },
+    schemesManaged: { type: String, default: null, trim: true },
+    departmentsCoordinated: { type: String, default: null, trim: true },
+    problemCategoriesHandled: { type: String, default: null, trim: true },
+    goNumber: { type: String, default: null, trim: true },
+    goDate: { type: String, default: null, trim: true },
+    verificationStatus: { type: String, default: 'Pending Verification', trim: true },
+    approvalRequired: { type: Boolean, default: true },
     credentials: {
       loginId: { type: String, trim: true },
       loginEmail: { type: String, lowercase: true, trim: true },
       password: { type: String, default: null },
-      generatedPassword: { type: String, default: null }
+      generatedPassword: { type: String, default: null },
+      mfaRequired: { type: Boolean, default: false },
+      firstLoginPasswordChange: { type: Boolean, default: true },
+      credentialCreatedBy: { type: String, default: 'Super Admin', trim: true },
+      credentialStatus: { type: String, default: 'Pending Activation', trim: true }
     },
     status: {
       type: String,

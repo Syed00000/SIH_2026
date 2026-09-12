@@ -75,6 +75,21 @@ export class LoginService {
       }
     }
 
+    // Role-Specific Password Verification for entities without passwordHash
+    if (!isMatch) {
+      if (user.role === 'DEPARTMENT' && user.departmentDoc) {
+        const { verifyDepartmentPassword } = await import('./department-auth.helper.js');
+        isMatch = await verifyDepartmentPassword(user.departmentDoc, rawPass);
+      } else if (user.role === 'BLOCK' && user.blockDoc) {
+        const { verifyBlockPassword } = await import('./block-auth.helper.js');
+        isMatch = await verifyBlockPassword(user.blockDoc, rawPass);
+      } else if (user.role === 'TECHNICIAN' && user.password) {
+        if (uniqueCandidates.includes(user.password) || uniqueCandidates.includes(user.password.trim())) {
+          isMatch = true;
+        }
+      }
+    }
+
     // 3. Admin & Nodal plain password fallback reconciliation
     if (!isMatch && ['NODAL', 'GOVERNMENT', 'ADMIN'].includes(user.role)) {
       try {
