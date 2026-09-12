@@ -46,6 +46,7 @@ export const GovernmentSidebar = ({
   const [openDropdowns, setOpenDropdowns] = useState({
     projects_solutions: true,
     user_governance: true,
+    departments_governance: true,
     reports: false
   });
 
@@ -81,8 +82,18 @@ export const GovernmentSidebar = ({
       subItems: [
         { id: 'governance_universities', label: 'Manage Universities', icon: Building2 },
         { id: 'governance_industries', label: 'Manage Industries', icon: Briefcase },
-        { id: 'users_admin', label: 'User Admin', icon: ShieldCheck },
-        { id: 'governance_departments', label: 'Departments', icon: Landmark }
+        { id: 'users_admin', label: 'User Admin', icon: ShieldCheck }
+      ]
+    },
+    {
+      id: 'departments_governance',
+      label: 'Departments',
+      icon: Landmark,
+      subItems: [
+        { id: 'dept_state', label: 'State Ministries', icon: Landmark },
+        { id: 'dept_district', label: 'District Departments', icon: Building2 },
+        { id: 'dept_block', label: 'Block / Tehsil Offices', icon: Layers },
+        { id: 'dept_panchayat', label: 'Gram Panchayats / Wards', icon: Map }
       ]
     },
     {
@@ -152,6 +163,8 @@ export const GovernmentSidebar = ({
                         setActiveTab && setActiveTab('projects_active');
                       } else if (item.id === 'user_governance') {
                         setActiveTab && setActiveTab('governance_universities');
+                      } else if (item.id === 'departments_governance') {
+                        setActiveTab && setActiveTab('dept_state');
                       }
                     } else {
                       setActiveTab && setActiveTab(item.id);

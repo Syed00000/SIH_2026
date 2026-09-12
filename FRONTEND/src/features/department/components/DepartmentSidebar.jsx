@@ -1,11 +1,6 @@
 import React from 'react';
-import { Home, Layers, ChevronLeft, ChevronRight, LogOut, Wrench, X } from 'lucide-react';
+import { Home, Layers, ChevronLeft, ChevronRight, LogOut, Wrench, X, Building2 } from 'lucide-react';
 
-const NAV_ITEMS = [
-  { id: 'overview', label: 'Department Overview', icon: Home },
-  { id: 'problems', label: 'Assigned Civic Problems', icon: Layers },
-  { id: 'technicians', label: 'Technician Directory', icon: Wrench }
-];
 
 export const DepartmentSidebar = ({
   activeTab = 'overview',
@@ -13,10 +8,25 @@ export const DepartmentSidebar = ({
   isSidebarExpanded = true,
   setIsSidebarExpanded,
   departmentName = 'Department Authority',
+  departmentCategory = 'State Ministry',
   onLogout,
   isMobileMenuOpen = false,
   setIsMobileMenuOpen
 }) => {
+  const isDistrictDept = departmentCategory === 'District Department';
+  const isBlockDept = departmentCategory === 'Block / Tehsil Office';
+  
+  let tabLabel = 'District Departments';
+  if (isDistrictDept) tabLabel = 'Block & Tehsil Offices';
+  if (isBlockDept) tabLabel = 'Ward Commissioners';
+
+  const NAV_ITEMS = [
+    { id: 'overview', label: 'Department Overview', icon: Home },
+    { id: 'problems', label: 'Assigned Civic Problems', icon: Layers },
+    { id: 'technicians', label: 'Technician Directory', icon: Wrench },
+    { id: 'districts', label: tabLabel, icon: Building2 }
+  ];
+
   return (
     <>
       {/* Mobile Backdrop */}

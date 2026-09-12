@@ -9,12 +9,11 @@ import { DeleteDepartmentConfirmModal } from './DeleteDepartmentConfirmModal.jsx
 import { departmentService } from '../../services/departmentService.js';
 import { adminService } from '../../services/adminService.js';
 
-export const DepartmentsManagementPanel = () => {
+export const DepartmentsManagementPanel = ({ category = 'State Ministry' }) => {
   const [departments, setDepartments] = useState([]);
   const [admins, setAdmins] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [filterCategory, setFilterCategory] = useState('All');
   const [viewMode, setViewMode] = useState('list');
 
   // Dedicated Panel state: 'list' | 'detail' | 'edit'
@@ -30,7 +29,7 @@ export const DepartmentsManagementPanel = () => {
         departmentService.getDepartments().catch(() => ({ data: [] })),
         adminService.getAdmins({ limit: 100 }).catch(() => ({ records: [] }))
       ]);
-      setDepartments(Array.isArray(deptRes?.data) ? deptRes.data : []);
+      setDepartments(Array.isArray(deptRes) ? deptRes : (Array.isArray(deptRes?.data) ? deptRes.data : []));
       setAdmins(adminsRes?.records || []);
     } finally {
       setIsLoading(false);
@@ -81,12 +80,16 @@ export const DepartmentsManagementPanel = () => {
 
   const filteredDepartments = useMemo(() => {
     return departments.filter((d) => {
-      if (filterCategory !== 'All' && d.category !== filterCategory) return false;
+      if (category === 'Gram Panchayat') {
+        if (d.category !== 'Gram Panchayat' && d.category !== 'Ward Commissioner') return false;
+      } else {
+        if (d.category !== category) return false;
+      }
       if (!searchTerm.trim()) return true;
       const q = searchTerm.toLowerCase().trim();
       return (d.name?.toLowerCase().includes(q) || d.code?.toLowerCase().includes(q) || d.headName?.toLowerCase().includes(q) || d.district?.toLowerCase().includes(q));
     });
-  }, [departments, searchTerm, filterCategory]);
+  }, [departments, searchTerm, category]);
 
   if (activeView === 'detail' && selectedDepartment) {
     return (
@@ -110,14 +113,24 @@ export const DepartmentsManagementPanel = () => {
     );
   }
 
+  const title = category === 'State Ministry' ? 'State Ministries' :
+                category === 'District Department' ? 'District Departments' :
+                category === 'Gram Panchayat' ? 'Gram Panchayats / Wards' :
+                category === 'Block / Tehsil Office' ? 'Block / Tehsil Offices' : 'Departments';
+
+  const subtitle = category === 'State Ministry' ? 'Manage central state line ministries and secretariats' :
+                   category === 'District Department' ? 'Manage district-level departments and nodal authorities' :
+                   category === 'Gram Panchayat' ? 'Manage Gram Panchayat and Ward Commissioner governance desks' :
+                   'Manage block and tehsil level offices';
+
   return (
     <div className="space-y-4 select-none">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-white p-4 rounded-2xl border border-slate-200/90 shadow-2xs">
         <div className="flex items-center gap-2.5">
           <div className="w-10 h-10 rounded-xl bg-[#007A61]/10 text-[#007A61] flex items-center justify-center shrink-0"><Landmark className="w-5 h-5" /></div>
           <div>
-            <h1 className="text-base font-black text-slate-900 tracking-tight">State Departments & Local Governance</h1>
-            <p className="text-xs text-slate-500 font-medium">Manage line ministries, district departments, and Gram Panchayat governance desks</p>
+            <h1 className="text-base font-black text-slate-900 tracking-tight">{title}</h1>
+            <p className="text-xs text-slate-500 font-medium">{subtitle}</p>
           </div>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
@@ -130,17 +143,13 @@ export const DepartmentsManagementPanel = () => {
             <button type="button" onClick={() => setViewMode('grid')} className={`p-1.5 rounded-lg transition-all cursor-pointer ${viewMode === 'grid' ? 'bg-white text-[#007A61] shadow-2xs font-bold' : 'text-slate-500'}`} title="Grid View"><LayoutGrid className="w-3.5 h-3.5" /></button>
           </div>
           <button type="button" onClick={loadData} disabled={isLoading} className="p-2 bg-slate-50 hover:bg-slate-100 text-slate-600 rounded-xl border border-slate-200 transition-colors cursor-pointer"><RefreshCw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin text-[#007A61]' : ''}`} /></button>
-          <button type="button" onClick={() => { setEditingDepartment(null); setActiveView('edit'); }} className="flex items-center gap-1.5 px-3.5 py-1.5 bg-[#007A61] hover:bg-[#00624e] text-white rounded-xl text-xs font-bold transition-all cursor-pointer shadow-xs"><Plus className="w-3.5 h-3.5" /><span>Add Department</span></button>
+          {category === 'State Ministry' && (
+            <button type="button" onClick={() => { setEditingDepartment(null); setActiveView('edit'); }} className="flex items-center gap-1.5 px-3.5 py-1.5 bg-[#007A61] hover:bg-[#00624e] text-white rounded-xl text-xs font-bold transition-all cursor-pointer shadow-xs"><Plus className="w-3.5 h-3.5" /><span>Add Department</span></button>
+          )}
         </div>
       </div>
 
-      <DepartmentSummaryCards totalDepartments={departments.length} totalOfficers={departments.reduce((acc, d) => acc + (d.officersCount || 0), 0) || admins.length} totalChallenges={departments.reduce((acc, d) => acc + (d.problemsCount || 0), 0)} activeProjects={departments.reduce((acc, d) => acc + (d.activeProjectsCount || 0), 0)} />
-
-      <div className="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs">
-        {['All', 'State Ministry', 'District Department', 'Gram Panchayat'].map((cat) => (
-          <button key={cat} type="button" onClick={() => setFilterCategory(cat)} className={`px-3 py-1 rounded-xl font-bold cursor-pointer transition-all ${filterCategory === cat ? 'bg-[#007A61] text-white shadow-2xs' : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'}`}>{cat}</button>
-        ))}
-      </div>
+      <DepartmentSummaryCards totalDepartments={filteredDepartments.length} totalOfficers={filteredDepartments.reduce((acc, d) => acc + (d.officersCount || 0), 0) || admins.length} totalChallenges={filteredDepartments.reduce((acc, d) => acc + (d.problemsCount || 0), 0)} activeProjects={filteredDepartments.reduce((acc, d) => acc + (d.activeProjectsCount || 0), 0)} />
 
       {viewMode === 'list' ? (
         <DepartmentTable departments={filteredDepartments} onViewDetails={(d) => { setSelectedDepartment(d); setActiveView('detail'); }} onEdit={(d) => { setEditingDepartment(d); setActiveView('edit'); }} onToggleStatus={handleToggleStatus} onDelete={(d) => setDeletingDepartment(d)} />
