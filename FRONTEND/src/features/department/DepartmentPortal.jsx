@@ -71,10 +71,19 @@ export const DepartmentPortal = ({ user, onLogout }) => {
         const targetId = (matched.deptId || matched.id || '').toUpperCase();
         const targetName = (matched.name || '').toLowerCase();
         const deptChls = allChls.filter((c) => {
-          const aId = (c.assignedDepartment?.deptId || c.assignedDepartment?.id || '').toUpperCase();
-          if (aId && (aId === targetId || aId === matched._id?.toString().toUpperCase())) return true;
-          const aName = (c.assignedDepartment?.name || '').toLowerCase();
-          if (aName && (aName === targetName || targetName.includes(aName) || aName.includes(targetName))) return true;
+          const checkAssignment = (assignmentObj) => {
+            if (!assignmentObj) return false;
+            const aId = (assignmentObj.deptId || assignmentObj.id || assignmentObj.wardId || assignmentObj.blockId || '').toUpperCase();
+            if (aId && (aId === targetId || aId === matched._id?.toString().toUpperCase())) return true;
+            const aName = (assignmentObj.name || '').toLowerCase();
+            if (aName && (aName === targetName || targetName.includes(aName) || aName.includes(targetName))) return true;
+            return false;
+          };
+          
+          if (checkAssignment(c.assignedDepartment)) return true;
+          if (checkAssignment(c.assignedWard)) return true;
+          if (checkAssignment(c.assignedBlock)) return true;
+          
           const resDept = (c.resolutionDossier?.department || '').toLowerCase();
           return resDept && (resDept === targetName || targetName.includes(resDept) || resDept.includes(targetName));
         });

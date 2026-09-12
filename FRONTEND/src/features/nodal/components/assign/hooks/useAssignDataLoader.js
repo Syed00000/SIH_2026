@@ -2,8 +2,8 @@ import { useState, useEffect } from 'react';
 import { citizenService } from '../../../../citizen/services/citizenService.js';
 import { fetchNodalAssignData } from '../assignPayload.helper.js';
 
-export const useAssignDataLoader = ({ initialChallenge, targetUniversity, onSuccess, onClose }) => {
-  const [universities, setUniversities] = useState([]);
+export const useAssignDataLoader = ({ initialChallenge, onSuccess, onClose }) => {
+  const [departments, setDepartments] = useState([]);
   const [allChallenges, setAllChallenges] = useState([]);
   const [loadingData, setLoadingData] = useState(false);
   const [activeChallenge, setActiveChallenge] = useState(initialChallenge || null);
@@ -12,22 +12,14 @@ export const useAssignDataLoader = ({ initialChallenge, targetUniversity, onSucc
   const [deleting, setDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState('');
 
-  const isUniversityTargetMode = Boolean(targetUniversity);
-
   const loadData = async () => {
     setLoadingData(true);
     try {
-      const { unis, chls } = await fetchNodalAssignData();
-      setUniversities(unis);
+      const { depts, chls } = await fetchNodalAssignData();
+      setDepartments(depts);
       setAllChallenges(chls);
 
-      if (isUniversityTargetMode) {
-        const firstChl = initialChallenge || chls.find((c) => !c.assignedUniversity?.id && c.status !== 'Resolved') || chls[0];
-        if (firstChl) {
-          setActiveChallenge(firstChl);
-          setSelectedChallengeId(firstChl.challengeId || firstChl.id);
-        }
-      } else if (initialChallenge) {
+      if (initialChallenge) {
         setActiveChallenge(initialChallenge);
         setSelectedChallengeId(initialChallenge.challengeId || initialChallenge.id);
       }
@@ -40,7 +32,7 @@ export const useAssignDataLoader = ({ initialChallenge, targetUniversity, onSucc
 
   useEffect(() => {
     loadData();
-  }, [initialChallenge, targetUniversity]);
+  }, [initialChallenge]);
 
   const handleSelectChallengeChange = (e) => {
     const id = e.target.value;
@@ -65,7 +57,7 @@ export const useAssignDataLoader = ({ initialChallenge, targetUniversity, onSucc
   };
 
   return {
-    universities,
+    departments,
     allChallenges,
     loadingData,
     activeChallenge,
@@ -74,7 +66,6 @@ export const useAssignDataLoader = ({ initialChallenge, targetUniversity, onSucc
     setIsConfirmingDelete,
     deleting,
     deleteError,
-    isUniversityTargetMode,
     handleSelectChallengeChange,
     handleDeleteChallenge
   };

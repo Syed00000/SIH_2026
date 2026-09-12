@@ -84,6 +84,28 @@ export const DepartmentProblemActionPanel = ({ problem, onClose, onUpdateProblem
         </div>
       </div>
 
+      {/* Ground Evidence */}
+      {(problem.mediaUrls?.length > 0 || problem.media?.length > 0) && (
+        <div className="bg-white rounded-2xl border border-slate-200/90 shadow-2xs p-4 space-y-2.5">
+          <h3 className="text-xs font-black text-slate-900 uppercase tracking-wide border-b border-slate-100 pb-2">
+            Ground Evidence & Media
+          </h3>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2 pt-1">
+            {(problem.mediaUrls || problem.media?.map(m => m.url)).filter(Boolean).map((url, i) => (
+              <a 
+                key={i} 
+                href={url} 
+                target="_blank" 
+                rel="noreferrer"
+                className="aspect-square rounded-lg border border-slate-200 overflow-hidden hover:border-[#007A61] transition-colors block bg-slate-50"
+              >
+                <img src={url} alt="Evidence" className="w-full h-full object-cover" />
+              </a>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Field Technician Info & Assignment */}
       <div className="bg-white rounded-2xl border border-slate-200/90 shadow-2xs p-3.5 flex items-center justify-between">
         <div className="flex items-center gap-3">

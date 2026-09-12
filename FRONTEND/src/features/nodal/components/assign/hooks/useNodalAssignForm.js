@@ -4,12 +4,11 @@ import { getInitialAssignState, buildTriagePayload, submitTriageUpdate } from '.
 
 export const useNodalAssignForm = ({
   initialChallenge,
-  targetUniversity,
   onClose,
   onSuccess
 }) => {
   const {
-    universities,
+    departments,
     allChallenges,
     loadingData,
     activeChallenge,
@@ -18,43 +17,34 @@ export const useNodalAssignForm = ({
     setIsConfirmingDelete,
     deleting,
     deleteError,
-    isUniversityTargetMode,
     handleSelectChallengeChange,
     handleDeleteChallenge
-  } = useAssignDataLoader({ initialChallenge, targetUniversity, onSuccess, onClose });
+  } = useAssignDataLoader({ initialChallenge, onSuccess, onClose });
 
   const [submitting, setSubmitting] = useState(false);
   const [verificationStatus, setVerificationStatus] = useState('Verified');
   const [selectedDomain, setSelectedDomain] = useState('');
   const [selectedPriority, setSelectedPriority] = useState('Medium');
-  const [selectedUniCode, setSelectedUniCode] = useState('');
-  const [targetDepartment, setTargetDepartment] = useState('');
+  
+  const [departmentLevel, setDepartmentLevel] = useState('State Ministry');
+  const [selectedDeptId, setSelectedDeptId] = useState('');
+  
   const [nodalRemarks, setNodalRemarks] = useState('');
   const [clarificationResponse, setClarificationResponse] = useState('');
-  const [acceptanceStatus, setAcceptanceStatus] = useState('Pending Review');
   const [errorMsg, setErrorMsg] = useState('');
 
   useEffect(() => {
-    if (isUniversityTargetMode && targetUniversity) {
-      setSelectedUniCode(targetUniversity.code || targetUniversity.aisheCode);
-    }
-  }, [isUniversityTargetMode, targetUniversity]);
-
-  useEffect(() => {
     if (activeChallenge) {
-      const state = getInitialAssignState(activeChallenge, isUniversityTargetMode);
+      const state = getInitialAssignState(activeChallenge);
       setSelectedDomain(state.domain);
       setSelectedPriority(state.priority);
       setNodalRemarks(state.remarks);
       setClarificationResponse(state.clarification);
-      if (!isUniversityTargetMode) {
-        setSelectedUniCode(state.uniCode);
-        setTargetDepartment(state.department);
-        setAcceptanceStatus(state.acceptance);
-      }
+      setDepartmentLevel(state.departmentLevel);
+      setSelectedDeptId(state.deptId);
       setVerificationStatus(state.verification);
     }
-  }, [activeChallenge, isUniversityTargetMode]);
+  }, [activeChallenge]);
 
   const handleFormSubmit = async (e) => {
     e.preventDefault();
@@ -68,38 +58,47 @@ export const useNodalAssignForm = ({
       return;
     }
 
-    const chlId = activeChallenge.challengeId || activeChallenge.id;
-    const targetUni = universities.find((u) => u.code === selectedUniCode || u.aisheCode === selectedUniCode);
+    if (verificationStatus === 'Verified' && !selectedDeptId) {
+      setErrorMsg('Please select a target department for verified problems.');
+      return;
+    }
 
-    setSubmitting(true);
-    setErrorMsg('');
+    if (verificationStatus === 'Needs Clarification' && !clarificationResponse.trim()) {
+      setErrorMsg('Please provide clarification details for the citizen.');
+      return;
+    }
+
+    const targetDept = departments.find(d => (d.deptId || d.id || d._id) === selectedDeptId);
+
+    const payload = buildTriagePayload({
+      verificationStatus,
+      selectedDomain,
+      selectedPriority,
+      selectedDeptId,
+      targetDept,
+      departmentLevel,
+      nodalRemarks,
+      clarificationResponse
+    });
 
     try {
-      const payload = buildTriagePayload({
-        verificationStatus,
-        selectedDomain,
-        selectedPriority,
-        selectedUniCode,
-        targetUni,
-        targetDepartment,
-        acceptanceStatus,
-        nodalRemarks,
-        clarificationResponse
-      });
-
-      const updated = await submitTriageUpdate(chlId, payload);
+      setSubmitting(true);
+      setErrorMsg('');
+      const challengeId = activeChallenge.challengeId || activeChallenge.id;
+      
+      const updated = await submitTriageUpdate(challengeId, payload);
+      
       if (onSuccess) onSuccess(updated);
       onClose();
     } catch (err) {
-      console.error('Failed to submit triage assignment:', err);
-      setErrorMsg(err.response?.data?.message || err.message || 'Failed to update challenge triage.');
+      setErrorMsg(err.response?.data?.message || err.message || 'Failed to submit triage assignment.');
     } finally {
       setSubmitting(false);
     }
   };
 
   return {
-    universities,
+    departments,
     allChallenges,
     loadingData,
     submitting,
@@ -111,21 +110,18 @@ export const useNodalAssignForm = ({
     setSelectedDomain,
     selectedPriority,
     setSelectedPriority,
-    selectedUniCode,
-    setSelectedUniCode,
-    targetDepartment,
-    setTargetDepartment,
+    departmentLevel,
+    setDepartmentLevel,
+    selectedDeptId,
+    setSelectedDeptId,
     nodalRemarks,
     setNodalRemarks,
     clarificationResponse,
     setClarificationResponse,
-    acceptanceStatus,
-    setAcceptanceStatus,
-    errorMsg: errorMsg || deleteError,
+    errorMsg,
     isConfirmingDelete,
     setIsConfirmingDelete,
     deleting,
-    isUniversityTargetMode,
     handleSelectChallengeChange,
     handleDeleteChallenge,
     handleFormSubmit

@@ -72,12 +72,12 @@ export const NodalChallengeCard = ({
           </div>
         </div>
 
-        {/* Assigned HEI Info */}
-        {chl.assignedUniversity?.name && (
-          <div className="p-2.5 bg-slate-50 rounded-md border border-slate-200/80 flex items-center space-x-2 text-xs">
-            <Building className="w-3.5 h-3.5 text-[#047857] shrink-0" />
+        {/* Assigned HEI / Dept Info */}
+        {(chl.assignedUniversity?.name || chl.assignedDepartment?.name || chl.assignedBlock?.name || chl.assignedWard?.name) && (
+          <div className="p-2.5 bg-slate-50 rounded-md border border-slate-200/80 flex items-center space-x-2 text-xs mt-2">
+            <Building className={`w-3.5 h-3.5 shrink-0 ${chl.assignedUniversity ? 'text-[#047857]' : 'text-blue-600'}`} />
             <span className="font-bold text-slate-900 line-clamp-1">
-              {chl.assignedUniversity.name}
+              {chl.assignedUniversity?.name || chl.assignedDepartment?.name || chl.assignedBlock?.name || chl.assignedWard?.name}
             </span>
           </div>
         )}
