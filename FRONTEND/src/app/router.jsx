@@ -135,7 +135,7 @@ export function Router() {
       );
     }
 
-    if (currentPath === '/department' || currentPath === '/department-portal') {
+    if (currentPath === '/department' || currentPath === '/department-portal' || currentPath.startsWith('/department/')) {
       return (
         <ProtectedRoute allowedRoles={['DEPARTMENT', 'GOVERNMENT', 'ADMIN', 'NODAL', 'CITIZEN']} onNavigate={navigate}>
           <DepartmentPortal user={user} onLogout={handleLogout} />

@@ -77,6 +77,16 @@ const technicianSchema = new mongoose.Schema(
       type: String,
       default: '',
       trim: true
+    },
+    allocatedSalaryPool: {
+      type: Number,
+      default: 0,
+      min: 0
+    },
+    totalEarnings: {
+      type: Number,
+      default: 0,
+      min: 0
     }
   },
   {

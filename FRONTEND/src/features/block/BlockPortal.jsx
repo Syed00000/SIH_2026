@@ -16,6 +16,7 @@ import { ViewBlockDepartmentModal } from './components/ViewBlockDepartmentModal.
 import { EditBlockDepartmentModal } from './components/EditBlockDepartmentModal.jsx';
 import { BlockAddWardModal } from './components/BlockAddWardModal.jsx';
 import { WardCredentialsSuccessModal } from './components/WardCredentialsSuccessModal.jsx';
+import { DepartmentCsrGrantPanel } from '../department/components/DepartmentCsrGrantPanel.jsx';
 import { GovernmentFooter } from '../government/components/layout/GovernmentFooter.jsx';
 
 export const BlockPortal = ({ user, onLogout }) => {
@@ -138,6 +139,9 @@ export const BlockPortal = ({ user, onLogout }) => {
             )}
             {activePanel === 'wards' && (
               <BlockWardsPanel wards={wards} challenges={challenges} block={block} onAddWard={() => setIsAddWardOpen(true)} onDeleteWard={handleDeleteWard} />
+            )}
+            {activePanel === 'csr-grant' && (
+              <DepartmentCsrGrantPanel department={{ ...block, category: 'Block / Tehsil Office', deptId: block?.blockId || block?.id, name: block?.name }} />
             )}
           </main>
         </div>

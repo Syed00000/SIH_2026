@@ -2,6 +2,9 @@ import { departmentRepository } from '../infrastructure/department.repository.js
 import { Admin } from '../../admins/infrastructure/model.js';
 import { CitizenChallenge } from '../../../citizen/infrastructure/model.js';
 import { ensureDefaultAdminDepartments } from './helpers/default-admin-departments.helper.js';
+import { GovernmentGrantFund } from '../../grants/model.js';
+import { executeFundAllocation } from './helpers/fund-allocation.helper.js';
+import { manageFundPool } from './helpers/fund-pool-management.helper.js';
 
 export class DepartmentService {
   constructor(repo = departmentRepository) {
@@ -133,6 +136,15 @@ export class DepartmentService {
     const dept = await this.repo.update(id, updates);
     if (!dept) throw new Error('Department not found for update');
     return dept;
+  }
+
+  async addFundPool(id, fundData = {}) {
+    const dept = await this.getDepartment(id);
+    return manageFundPool(this.repo, dept, fundData);
+  }
+
+  async allocateFundToChild(params) {
+    return executeFundAllocation(this.repo, params);
   }
 
   async deleteDepartment(id) {

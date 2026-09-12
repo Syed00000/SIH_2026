@@ -1,6 +1,14 @@
 import { Department } from './department.schema.js';
 
 export class DepartmentRepository {
+  _query(id) {
+    if (!id) return null;
+    const str = String(id).trim();
+    const conds = [{ deptId: str }, { code: str.toUpperCase() }, { wardId: str }, { block: str }];
+    if (/^[0-9a-fA-F]{24}$/.test(str)) conds.push({ _id: str });
+    return { $or: conds };
+  }
+
   async create(data) {
     return Department.create(data);
   }
@@ -17,24 +25,22 @@ export class DepartmentRepository {
   }
 
   async findById(id) {
-    if (id.startsWith('DEPT-')) {
-      return Department.findOne({ deptId: id }).lean();
-    }
-    return Department.findById(id).lean();
+    const q = this._query(id);
+    return q ? Department.findOne(q).lean() : null;
   }
 
   async findByCode(code) {
-    return Department.findOne({ code: code.toUpperCase() }).lean();
+    return Department.findOne({ code: String(code).toUpperCase() }).lean();
   }
 
   async update(id, updates) {
-    const query = id.startsWith('DEPT-') ? { deptId: id } : { _id: id };
-    return Department.findOneAndUpdate(query, { $set: updates }, { new: true, runValidators: true }).lean();
+    const q = this._query(id);
+    return q ? Department.findOneAndUpdate(q, { $set: updates }, { new: true }).lean() : null;
   }
 
   async delete(id) {
-    const query = id.startsWith('DEPT-') ? { deptId: id } : { _id: id };
-    return Department.findOneAndDelete(query).lean();
+    const q = this._query(id);
+    return q ? Department.findOneAndDelete(q).lean() : null;
   }
 }
 

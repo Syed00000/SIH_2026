@@ -110,6 +110,11 @@ const departmentSchema = new mongoose.Schema(
       enum: ['Active', 'Inactive', 'Archived'],
       default: 'Active',
       index: true
+    },
+    allocatedFundPool: {
+      type: Number,
+      default: 0,
+      min: 0
     }
   },
   {

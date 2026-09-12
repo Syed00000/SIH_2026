@@ -78,19 +78,25 @@ export class RegistrationService {
       });
     }
 
-    // 9. Enqueue background SMTP email dispatch
-    await this.queue.add('sendEmailVerification', {
-      userId: user.id,
-      email: user.email,
-      name: user.fullName,
-      code: otp
-    });
+    console.log(`\n========================================\n🔑 [REGISTRATION OTP] Email: ${user.email} | OTP: ${otp}\n========================================\n`);
+
+    try {
+      await this.queue.add('sendEmailVerification', {
+        userId: user.id,
+        email: user.email,
+        name: user.fullName,
+        code: otp
+      });
+    } catch (e) {
+      console.warn('Could not enqueue email dispatch:', e.message);
+    }
 
     return {
       userId: user.id,
       email: user.email,
       role: user.role,
       emailVerificationRequired: true,
+      devOtp: otp,
       message: 'Registration successful. Please verify your email.'
     };
   }

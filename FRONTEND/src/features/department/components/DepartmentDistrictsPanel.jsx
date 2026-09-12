@@ -101,6 +101,7 @@ export const DepartmentDistrictsPanel = ({
                 <tr className="bg-slate-50/80 border-b border-slate-100 text-[10.5px] font-bold text-slate-400 uppercase tracking-wider">
                   <th className="py-3 px-4">Department & Code</th>
                   <th className="py-3 px-4">{isBlockDept ? 'Ward' : (isDistrictDept ? 'Block / Jurisdiction' : 'District')}</th>
+                  <th className="py-3 px-4">Fund Pool</th>
                   <th className="py-3 px-4">Portal Login ID</th>
                   <th className="py-3 px-4">Password</th>
                   <th className="py-3 px-4">Status</th>
@@ -110,65 +111,51 @@ export const DepartmentDistrictsPanel = ({
               <tbody className="divide-y divide-slate-100">
                 {filtered.map((dist) => {
                   const targetId = dist.id || dist._id;
-                  // Use only database values, no fallback generated mock data
                   const loginEmail = dist.headEmail || dist.credentials?.loginEmail || '-';
                   const password = dist.credentials?.password || '-';
                   const isPasswordVisible = visiblePasswords[targetId] || false;
 
                   return (
-                    <tr 
-                      key={targetId} 
-                      onClick={() => setViewingDistrict(dist)}
-                      className="hover:bg-slate-50/70 transition-colors cursor-pointer group"
-                    >
+                    <tr key={targetId} onClick={() => setViewingDistrict(dist)} className="hover:bg-slate-50/70 transition-colors cursor-pointer group">
                       <td className="py-3.5 px-4">
                         <div className="font-extrabold text-slate-900 group-hover:text-[#0f4b3a] transition-colors">{dist.name}</div>
-                        <span className="text-[10px] font-mono font-bold text-[#0f4b3a] bg-[#0f4b3a]/10 px-1.5 py-0.2 rounded inline-block mt-0.5">
-                          {dist.code}
-                        </span>
+                        <span className="text-[10px] font-mono font-bold text-[#0f4b3a] bg-[#0f4b3a]/10 px-1.5 py-0.2 rounded inline-block mt-0.5">{dist.code}</span>
                       </td>
                       <td className="py-3.5 px-4 font-bold text-slate-800">{isBlockDept ? (dist.ward || dist.applicableJurisdiction || dist.district) : (isDistrictDept ? (dist.block || dist.applicableJurisdiction || dist.district) : dist.district)}</td>
+                      <td className="py-3.5 px-4 font-mono font-black text-emerald-700">₹ {(Number(dist.allocatedFundPool) || 0).toLocaleString('en-IN')}</td>
                       <td className="py-3.5 px-4 font-mono text-[11px] text-slate-700">{loginEmail}</td>
                       <td className="py-3.5 px-4 font-mono text-[11px]">
                         <div className="flex items-center gap-2">
-                          <span className="px-2 py-0.5 rounded bg-slate-100 border border-slate-200 text-slate-700 font-bold w-24 truncate text-center">
-                            {password === '-' ? '-' : (isPasswordVisible ? password : '••••••••')}
-                          </span>
+                          <span className="px-2 py-0.5 rounded bg-slate-100 border border-slate-200 text-slate-700 font-bold w-24 truncate text-center">{password === '-' ? '-' : (isPasswordVisible ? password : '••••••••')}</span>
                           {password !== '-' && (
-                            <button
-                              type="button"
-                              onClick={(e) => togglePasswordVisibility(e, targetId)}
-                              className="p-1 text-slate-400 hover:text-slate-600 hover:bg-slate-200 rounded transition-colors"
-                              title={isPasswordVisible ? "Hide Password" : "Show Password"}
-                            >
+                            <button type="button" onClick={(e) => togglePasswordVisibility(e, targetId)} className="p-1 text-slate-400 hover:text-slate-600 hover:bg-slate-200 rounded transition-colors" title={isPasswordVisible ? "Hide Password" : "Show Password"}>
                               {isPasswordVisible ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
                             </button>
                           )}
                         </div>
                       </td>
                       <td className="py-3.5 px-4">
-                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                          dist.status === 'Active' ? 'bg-emerald-100 text-emerald-800' :
-                          'bg-slate-100 text-slate-600'
-                        }`}>
-                          {dist.status || 'Active'}
-                        </span>
+                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${dist.status === 'Active' ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-600'}`}>{dist.status || 'Active'}</span>
                       </td>
                       <td className="py-3.5 px-4 text-right">
-                        <div className="flex items-center justify-end gap-1">
+                        <div className="flex items-center justify-end gap-1.5">
                           <button
                             type="button"
-                            title="Delete Department"
-                            disabled={deletingId === targetId}
-                            onClick={(e) => handleDelete(e, dist)}
-                            className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg cursor-pointer transition-colors"
+                            title="Open Department Portal"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              window.location.href = `/department?deptId=${encodeURIComponent(dist.deptId || dist.id)}`;
+                            }}
+                            className="px-2 py-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-bold text-[10.5px] rounded-lg border border-emerald-200 transition cursor-pointer"
                           >
+                            Open Portal
+                          </button>
+                          <button type="button" title="Delete Department" disabled={deletingId === targetId} onClick={(e) => handleDelete(e, dist)} className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg cursor-pointer transition-colors">
                             <Trash2 className="w-3.5 h-3.5" />
                           </button>
                         </div>
                       </td>
                     </tr>
-                  );
                 })}
               </tbody>
             </table>

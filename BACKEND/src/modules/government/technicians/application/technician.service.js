@@ -25,7 +25,8 @@ export const technicianService = {
     const def = DEFAULT_TRADE_MAP[key] || DEFAULT_TRADE_MAP.water;
     const cleanKey = key;
     const blockShort = (block || 'Kanke').split(' ')[0].toLowerCase();
-    const loginEmail = `tech.${cleanKey}.${blockShort}@jharkhand.gov.in`;
+    const deptSuffix = departmentId.replace(/[^a-zA-Z0-9]/g, '').slice(-6);
+    const loginEmail = `tech.${cleanKey}.${deptSuffix.toLowerCase()}@jharkhand.gov.in`;
 
     try {
       await technicianRepository.create({

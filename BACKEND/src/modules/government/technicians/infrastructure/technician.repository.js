@@ -27,15 +27,19 @@ export const technicianRepository = {
   },
 
   update: async (id, data) => {
+    const isOid = typeof id === 'string' && /^[0-9a-fA-F]{24}$/.test(id);
+    const query = isOid ? { $or: [{ _id: id }, { technicianId: id }] } : { technicianId: id };
     return Technician.findOneAndUpdate(
-      { $or: [{ _id: id }, { technicianId: id }] },
+      query,
       { $set: data },
-      { new: true, runValidators: true }
+      { new: true }
     );
   },
 
   delete: async (id) => {
-    return Technician.findOneAndDelete({ $or: [{ _id: id }, { technicianId: id }] });
+    const isOid = typeof id === 'string' && /^[0-9a-fA-F]{24}$/.test(id);
+    const query = isOid ? { $or: [{ _id: id }, { technicianId: id }] } : { technicianId: id };
+    return Technician.findOneAndDelete(query);
   }
 };
 
