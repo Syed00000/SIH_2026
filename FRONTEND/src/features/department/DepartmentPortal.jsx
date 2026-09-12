@@ -6,6 +6,7 @@ import { DepartmentProblemsPanel } from './components/DepartmentProblemsPanel.js
 import { DepartmentProblemActionPanel } from './components/DepartmentProblemActionPanel.jsx';
 import { DepartmentTechniciansPanel } from './components/DepartmentTechniciansPanel.jsx';
 import { DepartmentDistrictsPanel } from './components/DepartmentDistrictsPanel.jsx';
+import { DepartmentCsrGrantPanel } from './components/DepartmentCsrGrantPanel.jsx';
 import { AddTechnicianModal } from './components/AddTechnicianModal.jsx';
 import { AddDistrictModal } from './components/AddDistrictModal.jsx';
 import { ViewTechnicianModal } from './components/ViewTechnicianModal.jsx';
@@ -28,7 +29,7 @@ export const DepartmentPortal = ({ user, onLogout }) => {
   const [selectedProblem, setSelectedProblem] = useState(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  // Technician & District Modals State
+  // Modals State
   const [isAddTechOpen, setIsAddTechOpen] = useState(false);
   const [isAddDistrictOpen, setIsAddDistrictOpen] = useState(false);
   const [viewingTech, setViewingTech] = useState(null);
@@ -36,6 +37,7 @@ export const DepartmentPortal = ({ user, onLogout }) => {
   const [assigningProblemTech, setAssigningProblemTech] = useState(null);
 
   const queryDeptId = typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('deptId') : null;
+  const isWardDept = department?.category === 'Ward Commissioner' || department?.category === 'Ward' || department?.category === 'Ward Office';
 
   const loadData = async () => {
     try {
@@ -56,19 +58,10 @@ export const DepartmentPortal = ({ user, onLogout }) => {
       if (!matched && depts.length > 0) matched = depts[0];
       setDepartment(matched);
 
-      const isDistrictDept = matched?.category === 'District Department';
-      const isBlockDept = matched?.category === 'Block / Tehsil Office';
-      const subDepts = depts.filter((d) => {
-        if (isBlockDept) {
-          return d.category === 'Ward Commissioner' || d.category === 'Ward';
-        }
-        if (isDistrictDept) {
-          // A district department manages blocks, tehsils and gram panchayats
-          return d.category === 'Block / Tehsil Office' || d.category === 'Gram Panchayat';
-        }
-        // A state ministry manages district departments
-        return d.category === 'District Department';
-      });
+      const isDistrict = matched?.category === 'District Department';
+      const isBlock = matched?.category === 'Block / Tehsil Office';
+      const isWard = matched?.category === 'Ward Commissioner' || matched?.category === 'Ward' || matched?.category === 'Ward Office';
+      const subDepts = isWard ? [] : depts.filter((d) => isBlock ? (d.category === 'Ward Commissioner' || d.category === 'Ward') : (isDistrict ? (d.category === 'Block / Tehsil Office' || d.category === 'Gram Panchayat') : d.category === 'District Department'));
       setDistricts(subDepts);
 
       const resChallenges = await citizenService.fetchChallenges({ limit: 200 });
@@ -93,8 +86,7 @@ export const DepartmentPortal = ({ user, onLogout }) => {
           block: matched.block,
           district: matched.district
         });
-        const techList = techRes?.data?.data || techRes?.data || [];
-        setTechnicians(Array.isArray(techList) ? techList : []);
+        setTechnicians(techRes?.data?.data || techRes?.data || []);
       }
     } catch (err) {
       console.warn('Error loading department portal data:', err);
@@ -121,110 +113,48 @@ export const DepartmentPortal = ({ user, onLogout }) => {
 
   const renderContent = () => {
     if (selectedProblem) {
-      return (
-        <DepartmentProblemActionPanel
-          problem={selectedProblem}
-          onClose={() => setSelectedProblem(null)}
-          onUpdateProblem={handleUpdateProblem}
-          onAssignTechnician={setAssigningProblemTech}
-        />
-      );
+      return <DepartmentProblemActionPanel problem={selectedProblem} onClose={() => setSelectedProblem(null)} onUpdateProblem={handleUpdateProblem} onAssignTechnician={setAssigningProblemTech} />;
     }
 
     switch (activeTab) {
       case 'problems':
         return <DepartmentProblemsPanel problems={problems} onSelectProblem={(p) => setSelectedProblem(p)} onAssignToTech={setAssigningProblemTech} />;
       case 'technicians':
-        return (
-          <DepartmentTechniciansPanel
-            technicians={technicians}
-            department={department}
-            onAddTech={() => setIsAddTechOpen(false) || setIsAddTechOpen(true)}
-            onViewTech={setViewingTech}
-            onEditTech={setEditingTech}
-            onDeletedTech={handleDeletedTech}
-          />
-        );
+      case 'field-workers':
+        return <DepartmentTechniciansPanel technicians={technicians} department={department} onAddTech={() => setIsAddTechOpen(true)} onViewTech={setViewingTech} onEditTech={setEditingTech} onDeletedTech={handleDeletedTech} />;
+      case 'csr-grant':
+        return <DepartmentCsrGrantPanel department={department} />;
       case 'districts':
-        return (
-          <DepartmentDistrictsPanel
-            districts={districts}
-            isDistrictDept={department?.category === 'District Department'}
-            isBlockDept={department?.category === 'Block / Tehsil Office'}
-            onAddDistrict={() => setIsAddDistrictOpen(true)}
-            onDeletedDistrict={handleDeletedDistrict}
-          />
-        );
+        if (isWardDept) return <DepartmentOverview department={department} problems={problems} onSelectProblem={(p) => setSelectedProblem(p)} onNavigateProblems={() => setActiveTab('problems')} />;
+        return <DepartmentDistrictsPanel districts={districts} isDistrictDept={department?.category === 'District Department'} isBlockDept={department?.category === 'Block / Tehsil Office'} onAddDistrict={() => setIsAddDistrictOpen(true)} onDeletedDistrict={handleDeletedDistrict} />;
       case 'overview':
       default:
-        return (
-          <DepartmentOverview
-            department={department}
-            problems={problems}
-            onSelectProblem={(p) => setSelectedProblem(p)}
-            onNavigateProblems={() => setActiveTab('problems')}
-          />
-        );
+        return <DepartmentOverview department={department} problems={problems} onSelectProblem={(p) => setSelectedProblem(p)} onNavigateProblems={() => setActiveTab('problems')} />;
     }
   };
 
   return (
     <div className="min-h-screen bg-white flex flex-col overflow-hidden h-screen text-slate-800 antialiased select-none">
-      <DepartmentHeader
-        department={department}
-        activeTab={activeTab}
-        onNavigateTab={(t) => { setSelectedProblem(null); setActiveTab(t); setIsMobileMenuOpen(false); }}
-        onBackToNodal={() => { window.location.href = '/nodal'; }}
-        onLogout={onLogout}
-        onToggleSidebar={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-      />
+      <DepartmentHeader department={department} activeTab={activeTab} onNavigateTab={(t) => { setSelectedProblem(null); setActiveTab(t); setIsMobileMenuOpen(false); }} onBackToNodal={() => { window.location.href = '/nodal'; }} onLogout={onLogout} onToggleSidebar={() => setIsMobileMenuOpen(!isMobileMenuOpen)} />
 
       <div className="flex-1 flex flex-row min-w-0 min-h-0 overflow-hidden bg-white">
-        <DepartmentSidebar
-          activeTab={activeTab}
-          setActiveTab={(t) => { setSelectedProblem(null); setActiveTab(t); setIsMobileMenuOpen(false); }}
-          isSidebarExpanded={isSidebarExpanded}
-          setIsSidebarExpanded={setIsSidebarExpanded}
-          departmentName={department?.name || 'Department Authority'}
-          departmentCategory={department?.category || 'State Ministry'}
-          onLogout={onLogout}
-          isMobileMenuOpen={isMobileMenuOpen}
-          setIsMobileMenuOpen={setIsMobileMenuOpen}
-        />
+        <DepartmentSidebar activeTab={activeTab} setActiveTab={(t) => { setSelectedProblem(null); setActiveTab(t); setIsMobileMenuOpen(false); }} isSidebarExpanded={isSidebarExpanded} setIsSidebarExpanded={setIsSidebarExpanded} departmentName={department?.name || 'Department Authority'} departmentCategory={department?.category || 'State Ministry'} onLogout={onLogout} isMobileMenuOpen={isMobileMenuOpen} setIsMobileMenuOpen={setIsMobileMenuOpen} />
 
         <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden bg-white">
           <main className="flex-1 p-3 sm:p-4 overflow-y-auto min-h-0 custom-scrollbar pb-20 md:pb-4">
             <div className="max-w-7xl mx-auto w-full">
-              {loading ? (
-                <div className="py-20 text-center text-slate-400 font-bold text-xs">
-                  Loading Department Dashboard...
-                </div>
-              ) : (
-                renderContent()
-              )}
+              {loading ? <div className="py-20 text-center text-slate-400 font-bold text-xs">Loading Department Dashboard...</div> : renderContent()}
             </div>
           </main>
           <GovernmentFooter />
         </div>
       </div>
 
-      <DepartmentMobileNav
-        activeTab={activeTab}
-        onSelectTab={(t) => { setSelectedProblem(null); setActiveTab(t); setIsMobileMenuOpen(false); }}
-        problemCount={problems.length}
-        techCount={technicians.length}
-        districtCount={districts.length}
-      />
+      <DepartmentMobileNav activeTab={activeTab} onSelectTab={(t) => { setSelectedProblem(null); setActiveTab(t); setIsMobileMenuOpen(false); }} problemCount={problems.length} techCount={technicians.length} districtCount={districts.length} isWard={isWardDept} />
 
-      {/* Technician, District & Action Modals */}
+      {/* Modals */}
       <AddTechnicianModal department={department} isOpen={isAddTechOpen} onClose={() => setIsAddTechOpen(false)} onCreated={handleCreatedTech} />
-      <AddDistrictModal 
-        isOpen={isAddDistrictOpen} 
-        onClose={() => setIsAddDistrictOpen(false)} 
-        onCreated={handleCreatedDistrict} 
-        isDistrictDept={department?.category === 'District Department'} 
-        isBlockDept={department?.category === 'Block / Tehsil Office'}
-      />
+      {!isWardDept && <AddDistrictModal isOpen={isAddDistrictOpen} onClose={() => setIsAddDistrictOpen(false)} onCreated={handleCreatedDistrict} isDistrictDept={department?.category === 'District Department'} isBlockDept={department?.category === 'Block / Tehsil Office'} />}
       <ViewTechnicianModal technician={viewingTech} isOpen={Boolean(viewingTech)} onClose={() => setViewingTech(null)} />
       <EditTechnicianModal technician={editingTech} isOpen={Boolean(editingTech)} onClose={() => setEditingTech(null)} onUpdated={handleUpdatedTech} />
       <AssignToTechnicianModal challenge={assigningProblemTech} technicians={technicians} isOpen={Boolean(assigningProblemTech)} onClose={() => setAssigningProblemTech(null)} onAssigned={handleUpdateProblem} />

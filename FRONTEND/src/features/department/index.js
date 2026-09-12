@@ -5,3 +5,4 @@ export { DepartmentOverview } from './components/DepartmentOverview.jsx';
 export { DepartmentProblemsPanel } from './components/DepartmentProblemsPanel.jsx';
 export { DepartmentProblemActionPanel } from './components/DepartmentProblemActionPanel.jsx';
 export { DepartmentTechniciansPanel } from './components/DepartmentTechniciansPanel.jsx';
+export { DepartmentCsrGrantPanel } from './components/DepartmentCsrGrantPanel.jsx';
