@@ -125,7 +125,9 @@ export const DepartmentProblemsPanel = ({ problems = [], onSelectProblem, onAssi
                         </td>
                         <td className="py-3 px-3 text-center whitespace-nowrap">
                           <span className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold border ${
-                            p.status === 'Resolved' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-blue-50 text-blue-700 border-blue-200'
+                            p.status === 'Resolved' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 
+                            p.status === 'Escalated' ? 'bg-rose-50 text-rose-700 border-rose-200' :
+                            'bg-blue-50 text-blue-700 border-blue-200'
                           }`}>{p.status || 'Assigned'}</span>
                         </td>
                         <td className="py-3 px-3 text-right whitespace-nowrap">

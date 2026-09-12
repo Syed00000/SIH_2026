@@ -51,11 +51,12 @@ export const TechnicianOverview = ({
       </div>
 
       {/* KPI Metric Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
         {[
           { label: 'Assigned Problems', val: counts.total, icon: Wrench, color: 'text-slate-900', bg: 'bg-white', border: 'border-slate-200' },
           { label: 'Pending Acceptance', val: counts.pending, icon: Clock, color: 'text-amber-700', bg: 'bg-amber-50/40', border: 'border-amber-200' },
           { label: 'Active on Field', val: counts.active, icon: Wrench, color: 'text-blue-700', bg: 'bg-blue-50/40', border: 'border-blue-200' },
+          { label: 'Pending Approval', val: counts.pendingApproval, icon: Clock, color: 'text-purple-700', bg: 'bg-purple-50/40', border: 'border-purple-200' },
           { label: 'Completed / Done', val: counts.completed, icon: CheckCircle2, color: 'text-emerald-700', bg: 'bg-emerald-50/40', border: 'border-emerald-200' },
         ].map((m) => (
           <div key={m.label} className={`p-4 rounded-2xl border ${m.border} ${m.bg} shadow-2xs`}>
@@ -136,6 +137,7 @@ export const TechnicianOverview = ({
                     rowNumber={idx + 1}
                     onSelect={onSelectChallenge}
                     getPriorityBadge={getPriorityBadge}
+                    isMobile
                   />
                 ))}
               </div>

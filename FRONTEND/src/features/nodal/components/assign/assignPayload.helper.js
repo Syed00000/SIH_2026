@@ -1,27 +1,26 @@
 import apiClient from '../../../../infrastructure/api/client.js';
-import { universityService } from '../../../government/services/universityService.js';
+import { departmentService } from '../../../government/services/departmentService.js';
 import { citizenService } from '../../../citizen/services/citizenService.js';
 
 export const fetchNodalAssignData = async () => {
-  const [uniRes, chlRes] = await Promise.all([
-    universityService.getUniversities({ limit: 100 }),
+  const [deptRes, chlRes] = await Promise.all([
+    departmentService.getDepartments(),
     citizenService.fetchChallenges({ limit: 150 })
   ]);
-  const unis = uniRes?.records || [];
+  const depts = Array.isArray(deptRes) ? deptRes : (Array.isArray(deptRes?.data) ? deptRes.data : []);
   const chls = chlRes?.challenges || (Array.isArray(chlRes) ? chlRes : []) || [];
-  return { unis, chls };
+  return { depts, chls };
 };
 
-export const getInitialAssignState = (activeChallenge, isUniversityTargetMode) => {
+export const getInitialAssignState = (activeChallenge) => {
   if (!activeChallenge) {
     return {
       domain: 'Water Resources',
       priority: 'Medium',
       remarks: '',
       clarification: '',
-      uniCode: '',
-      department: '',
-      acceptance: 'Pending Review',
+      deptId: '',
+      departmentLevel: 'State Ministry',
       verification: 'Verified'
     };
   }
@@ -29,16 +28,29 @@ export const getInitialAssignState = (activeChallenge, isUniversityTargetMode) =
   let verification = 'Verified';
   if (activeChallenge.status === 'Clarification Requested') verification = 'Needs Clarification';
   else if (activeChallenge.status === 'Rejected') verification = 'Rejected';
-  else if (activeChallenge.status === 'Under Review' && !activeChallenge.assignedUniversity?.id) verification = 'Under Review';
+  else if (activeChallenge.status === 'Under Review' && !activeChallenge.assignedDepartment?.id) verification = 'Under Review';
+
+  let assignedLevel = 'State Ministry';
+  let assignedId = '';
+  
+  if (activeChallenge.assignedDepartment?.id) {
+    assignedId = activeChallenge.assignedDepartment.id;
+    assignedLevel = activeChallenge.assignedDepartment.level || 'State Ministry';
+  } else if (activeChallenge.assignedWard?.id) {
+    assignedId = activeChallenge.assignedWard.id;
+    assignedLevel = 'Ward Commissioner';
+  } else if (activeChallenge.assignedBlock?.id) {
+    assignedId = activeChallenge.assignedBlock.id;
+    assignedLevel = 'Block / Tehsil Office';
+  }
 
   return {
     domain: activeChallenge.domain || 'Water Resources',
     priority: activeChallenge.priority || 'Medium',
     remarks: activeChallenge.triageRemarks || '',
     clarification: activeChallenge.clarificationQuery || '',
-    uniCode: !isUniversityTargetMode ? (activeChallenge.assignedUniversity?.id || '') : '',
-    department: !isUniversityTargetMode ? (activeChallenge.assignedUniversity?.department || '') : '',
-    acceptance: !isUniversityTargetMode ? (activeChallenge.assignedUniversity?.acceptanceStatus || 'Pending Review') : 'Pending Review',
+    deptId: assignedId,
+    departmentLevel: assignedLevel,
     verification
   };
 };
@@ -47,10 +59,9 @@ export const buildTriagePayload = ({
   verificationStatus,
   selectedDomain,
   selectedPriority,
-  selectedUniCode,
-  targetUni,
-  targetDepartment,
-  acceptanceStatus,
+  selectedDeptId,
+  targetDept,
+  departmentLevel,
   nodalRemarks,
   clarificationResponse
 }) => {
@@ -63,25 +74,42 @@ export const buildTriagePayload = ({
       ? 'Rejected'
       : 'Under Review';
 
-  const assignedUniversity = selectedUniCode
+  const assignmentDetails = selectedDeptId
     ? {
-        id: selectedUniCode,
-        name: targetUni?.name || selectedUniCode,
-        department: targetDepartment,
+        id: selectedDeptId,
+        deptId: targetDept?.deptId || selectedDeptId,
+        name: targetDept?.name || selectedDeptId,
+        level: departmentLevel,
+        category: departmentLevel,
         assignedAt: new Date().toISOString(),
-        assignedBy: 'State Nodal Operations Center',
-        acceptanceStatus: acceptanceStatus
+        assignedBy: 'State Nodal Operations Center'
       }
     : null;
 
-  return {
+  const payload = {
     domain: selectedDomain,
     priority: selectedPriority,
     status,
-    assignedUniversity,
     triageRemarks: nodalRemarks,
     clarificationQuery: verificationStatus === 'Needs Clarification' ? clarificationResponse : undefined
   };
+
+  // Assign to the correct field based on department level
+  if (departmentLevel === 'Ward Commissioner' || departmentLevel === 'Gram Panchayat') {
+    payload.assignedWard = assignmentDetails;
+    payload.assignedDepartment = null;
+    payload.assignedBlock = null;
+  } else if (departmentLevel === 'Block / Tehsil Office') {
+    payload.assignedBlock = assignmentDetails;
+    payload.assignedDepartment = null;
+    payload.assignedWard = null;
+  } else {
+    payload.assignedDepartment = assignmentDetails;
+    payload.assignedBlock = null;
+    payload.assignedWard = null;
+  }
+
+  return payload;
 };
 
 export const submitTriageUpdate = async (challengeId, payload) => {

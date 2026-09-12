@@ -61,7 +61,11 @@ export const BlockPortal = ({ user, onLogout }) => {
           const aId = (c.assignedDepartment?.deptId || c.assignedDepartment?.id || '').toUpperCase();
           const aBlock = (c.assignedDepartment?.block || c.location?.block || '').toLowerCase();
           const aName = (c.assignedDepartment?.name || '').toLowerCase();
-          return aId === bId || aBlock.includes(bName) || aName.includes(bName);
+          
+          const assignedBlockName = (c.assignedBlock?.name || '').toLowerCase();
+          const locationBlock = (c.location?.block || '').toLowerCase();
+          
+          return aId === bId || aBlock.includes(bName) || aName.includes(bName) || assignedBlockName.includes(bName) || locationBlock.includes(bName);
         }));
         const deptsList = deptsRes?.data?.data || deptsRes?.data || deptsRes || [];
         setDepartments(Array.isArray(deptsList) ? deptsList : []);

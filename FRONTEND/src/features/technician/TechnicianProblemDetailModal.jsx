@@ -110,6 +110,32 @@ export const TechnicianProblemDetailModal = ({
             </div>
           )}
 
+          {/* Previous Rejected Attempts */}
+          {tech?.workHistory?.length > 0 && (
+            <div className="space-y-3 mt-4 pt-4 border-t border-slate-100">
+              <h3 className="font-bold text-slate-700">Previous Rejected Attempts</h3>
+              {tech.workHistory.map((hw, idx) => (
+                <div key={idx} className="p-3 bg-rose-50/50 rounded-xl border border-rose-100/70 flex gap-3 text-xs">
+                  {hw.mediaUrl && (
+                    <img src={hw.mediaUrl} alt="Old Proof" className="w-16 h-16 shrink-0 object-cover rounded border border-rose-200" />
+                  )}
+                  <div>
+                    <span className="font-extrabold text-rose-800">Attempt {idx + 1}</span>
+                    <p className="text-rose-900 font-medium mb-0.5">{hw.completionRemarks || 'No remarks provided.'}</p>
+                    <p className="text-[10px] text-rose-600 font-semibold mb-0.5">Rejected: {hw.rejectReason}</p>
+                    {hw.completedAt && <p className="text-[9.5px] text-rose-500">Submitted on: {new Date(hw.completedAt).toLocaleString('en-IN')}</p>}
+                  </div>
+                </div>
+              ))}
+              {!isCompleted && (
+                <div className="p-2.5 rounded-lg bg-amber-50 border border-amber-200 text-amber-800 text-[11px] font-bold flex items-center gap-1.5">
+                  <AlertCircle className="w-4 h-4 shrink-0" />
+                  <span>Your previous work was rejected. Please redo the work and submit new proof.</span>
+                </div>
+              )}
+            </div>
+          )}
+
           {/* Status Banners */}
           {!isAccepted && (
             <div className="p-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 flex items-center gap-2 font-medium">

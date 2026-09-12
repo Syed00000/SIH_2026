@@ -30,7 +30,7 @@ export const technicianService = {
 
     try {
       await technicianRepository.create({
-        technicianId: `TECH-${cleanKey.toUpperCase()}-${deptSuffix}`,
+        technicianId: `TECH-${cleanKey.toUpperCase()}-01`,
         name: def.name,
         departmentId,
         departmentName: departmentName || 'Department Wing',
@@ -46,10 +46,12 @@ export const technicianService = {
           generatedPassword: 'Tech@JH2026!'
         },
         status: 'Active',
-        notes: 'Designated field technician for inspections'
+        notes: 'Designated field technician for gram panchayat inspections'
       });
     } catch (err) {
-      // Ignore duplicate key error safely
+      if (err.code !== 11000) {
+        console.error('Failed to create default technician:', err);
+      }
     }
   },
 

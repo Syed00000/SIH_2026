@@ -12,15 +12,21 @@ export const TechnicianProblemsList = ({ tasks, loading, onSelectChallenge }) =>
     { key: 'All', label: 'All Problems' },
     { key: 'Pending', label: 'Pending Acceptance' },
     { key: 'Active', label: 'Active on Field' },
+    { key: 'PendingApproval', label: 'Pending Approval' },
     { key: 'Completed', label: 'Completed & Done' }
   ];
 
   const filteredTasks = useMemo(() => {
     return tasks.filter((t) => {
       const isAcc = t.assignedTechnician?.status === 'Accepted';
-      const isDone = t.assignedTechnician?.status === 'Completed' || t.status === 'Resolved';
-      if (activeStatus === 'Pending' && (isAcc || isDone)) return false;
-      if (activeStatus === 'Active' && (!isAcc || isDone)) return false;
+      const isDone = t.status === 'Resolved';
+      const isPendingApproval = t.assignedTechnician?.status === 'Completed' && !isDone;
+      const isActive = isAcc && !isPendingApproval && !isDone;
+      const isPending = !isActive && !isPendingApproval && !isDone;
+
+      if (activeStatus === 'Pending' && !isPending) return false;
+      if (activeStatus === 'Active' && !isActive) return false;
+      if (activeStatus === 'PendingApproval' && !isPendingApproval) return false;
       if (activeStatus === 'Completed' && !isDone) return false;
 
       if (searchQuery.trim()) {
@@ -130,6 +136,7 @@ export const TechnicianProblemsList = ({ tasks, loading, onSelectChallenge }) =>
                   rowNumber={(currentPage - 1) * itemsPerPage + idx + 1}
                   onSelect={onSelectChallenge}
                   getPriorityBadge={getPriorityBadge}
+                  isMobile
                 />
               ))}
             </div>
