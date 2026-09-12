@@ -1,18 +1,21 @@
 import React from 'react';
-import { Home, Layers, Wrench, Building2 } from 'lucide-react';
+import { Home, Layers, Wrench, Building2, HandCoins, Users } from 'lucide-react';
 
 export const DepartmentMobileNav = ({
   activeTab = 'overview',
   onSelectTab,
   problemCount = 0,
   techCount = 0,
-  districtCount = 0
+  districtCount = 0,
+  isWard = false
 }) => {
   const tabs = [
     { id: 'overview', label: 'Overview', icon: Home },
     { id: 'problems', label: 'Problems', icon: Layers, badge: problemCount > 0 ? problemCount : null },
-    { id: 'technicians', label: 'Technicians', icon: Wrench, badge: techCount > 0 ? techCount : null },
-    { id: 'districts', label: 'Districts', icon: Building2, badge: districtCount > 0 ? districtCount : null }
+    { id: 'technicians', label: isWard ? 'Workers' : 'Techs', icon: isWard ? Users : Wrench, badge: techCount > 0 ? techCount : null },
+    ...(isWard
+      ? [{ id: 'csr-grant', label: 'CSR Grant', icon: HandCoins }]
+      : [{ id: 'districts', label: 'Districts', icon: Building2, badge: districtCount > 0 ? districtCount : null }])
   ];
 
   return (
