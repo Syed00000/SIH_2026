@@ -16,6 +16,7 @@ import { FacultyLayout } from '../features/faculty/components/layout/FacultyLayo
 import { GovernmentLayout } from '../features/government/components/layout/GovernmentLayout.jsx';
 import { DepartmentPortal } from '../features/department/DepartmentPortal.jsx';
 import { BlockPortal } from '../features/block/BlockPortal.jsx';
+import { WardPortal } from '../features/ward/WardPortal.jsx';
 import { TechnicianPortal } from '../features/technician/TechnicianPortal.jsx';
 import { LandingPage } from '../features/landing/components/LandingPage.jsx';
 import { AboutPage } from '../features/landing/components/AboutPage.jsx';
@@ -105,7 +106,7 @@ export function Router() {
     if (currentPath === '/nodal' || currentPath === '/nodal-portal') {
       return (
         <ProtectedRoute allowedRoles={['NODAL', 'GOVERNMENT', 'ADMIN']} onNavigate={navigate}>
-          <NodalPortal user={user} onLogout={handleLogout} />
+          <NodalPortal user={user} onLogout={handleLogout} onNavigate={navigate} />
         </ProtectedRoute>
       );
     }
@@ -142,9 +143,17 @@ export function Router() {
       );
     }
 
+    if (currentPath === '/ward' || currentPath === '/ward-portal') {
+      return (
+        <ProtectedRoute allowedRoles={['GOVERNMENT', 'ADMIN', 'NODAL', 'DEPARTMENT', 'CITIZEN', 'WARD', 'BLOCK']} onNavigate={navigate}>
+          <WardPortal user={user} onLogout={handleLogout} onNavigate={navigate} />
+        </ProtectedRoute>
+      );
+    }
+
     if (currentPath === '/block' || currentPath === '/block-portal') {
       return (
-        <ProtectedRoute allowedRoles={['GOVERNMENT', 'ADMIN', 'NODAL', 'DEPARTMENT', 'CITIZEN', 'BLOCK']} onNavigate={navigate}>
+        <ProtectedRoute allowedRoles={['GOVERNMENT', 'ADMIN', 'NODAL', 'DEPARTMENT', 'CITIZEN', 'BLOCK', 'WARD']} onNavigate={navigate}>
           <BlockPortal user={user} onLogout={handleLogout} />
         </ProtectedRoute>
       );

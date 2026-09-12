@@ -68,6 +68,16 @@ export const LoginForm = ({ onNavigate }) => {
         }
         return;
       }
+      if (loggedUser?.role === 'WARD' || loggedUser?.wardId) {
+        const targetId = loggedUser.wardId || loggedUser.id;
+        const dest = `/ward?wardId=${encodeURIComponent(targetId)}`;
+        if (onNavigate) {
+          onNavigate(dest);
+        } else {
+          window.location.href = dest;
+        }
+        return;
+      }
       if (loggedUser?.role === 'BLOCK' || loggedUser?.blockId) {
         const targetId = loggedUser.blockId || loggedUser.id;
         const dest = `/block?blockId=${encodeURIComponent(targetId)}`;

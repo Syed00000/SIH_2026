@@ -15,6 +15,11 @@ import {
   findTechnicianByIdentifier,
   toTechnicianUserEntity
 } from '../../auth/application/services/technician-auth.helper.js';
+import {
+  findWardById,
+  findWardByIdentifier,
+  toWardUserEntity
+} from '../../auth/application/services/ward-auth.helper.js';
 
 export class UserService {
   constructor(userRepository) {
@@ -36,6 +41,9 @@ export class UserService {
       const block = await findBlockById(id);
       if (block) return toBlockUserEntity(block);
 
+      const ward = await findWardById(id);
+      if (ward) return toWardUserEntity(ward);
+
       const tech = await findTechnicianById(id);
       if (tech) return toTechnicianUserEntity(tech);
 
@@ -52,6 +60,9 @@ export class UserService {
 
       const block = await findBlockByIdentifier(email);
       if (block) return toBlockUserEntity(block);
+
+      const ward = await findWardByIdentifier(email);
+      if (ward) return toWardUserEntity(ward);
 
       const tech = await findTechnicianByIdentifier(email);
       if (tech) return toTechnicianUserEntity(tech);
@@ -73,6 +84,9 @@ export class UserService {
 
       const block = await findBlockByIdentifier(identifier);
       if (block) return toBlockUserEntity(block);
+
+      const ward = await findWardByIdentifier(identifier);
+      if (ward) return toWardUserEntity(ward);
 
       const tech = await findTechnicianByIdentifier(identifier);
       if (tech) return toTechnicianUserEntity(tech);

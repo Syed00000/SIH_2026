@@ -4,7 +4,7 @@ export const createQueryHandler = (service) => {
   const getChallenges = async (req, res, next) => {
     try {
       const user = req.user || null;
-      let { domain, status, district, search, page = 1, limit = 20 } = req.query;
+      let { domain, status, district, wardId, search, page = 1, limit = 20 } = req.query;
 
       let nodalDistrict = user?.district || user?.profile?.district;
       if (user?.role === 'NODAL' && !nodalDistrict && user?.email) {
@@ -25,6 +25,7 @@ export const createQueryHandler = (service) => {
         domain,
         status,
         district,
+        wardId,
         search,
         page,
         limit

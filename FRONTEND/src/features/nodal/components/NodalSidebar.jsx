@@ -5,19 +5,22 @@ import {
   GraduationCap,
   Landmark,
   LogOut,
-  X,
-  Menu,
   ChevronLeft,
   ChevronRight,
   User,
-  Building2
+  Building,
+  Building2,
+  Briefcase
 } from 'lucide-react';
 
 const NAV_ITEMS = [
   { id: 'dashboard', label: 'Triage Overview', icon: Home },
-  { id: 'universities', label: 'HEI Directory', icon: Landmark },
+  { id: 'universities', label: 'HEI Directory', icon: GraduationCap },
   { id: 'challenges', label: 'Citizen Challenges', icon: Layers },
-  { id: 'district-issues', label: 'Block Directory', icon: Building2 },
+  { id: 'state-directory', label: 'State Department', icon: Landmark },
+  { id: 'district-directory', label: 'District Department', icon: Briefcase },
+  { id: 'block-directory', label: 'Block Department', icon: Building },
+  { id: 'ward-directory', label: 'Ward Department', icon: Building2 },
   { id: 'profile', label: 'Profile', icon: User }
 ];
 
@@ -39,7 +42,6 @@ export const NodalSidebar = ({
           : 'hidden md:flex'
       } ${isSidebarExpanded ? 'w-52' : 'w-16'}`}
     >
-      {/* Outer Collapse/Expand Toggle Button - Attached directly to the right border edge of the Sidebar */}
       <button
         onClick={() => {
           if (isMobileMenuOpen && setIsMobileMenuOpen) {
@@ -55,7 +57,6 @@ export const NodalSidebar = ({
       </button>
 
       <div className="space-y-3 overflow-y-auto pr-0.5 custom-scrollbar">
-        {/* Top Header */}
         <div className="flex items-center justify-between pb-2.5 px-1 border-b border-slate-100">
           {isSidebarExpanded ? (
             <div className="min-w-0 pr-1.5">
@@ -73,11 +74,13 @@ export const NodalSidebar = ({
           )}
         </div>
 
-        {/* Menu Navigation Items */}
         <nav className="space-y-1">
           {NAV_ITEMS.map((item) => {
             const Icon = item.icon;
-            const isActive = activeTab === item.id || (item.id === 'challenges' && activeTab === 'assigned');
+            const isActive =
+              activeTab === item.id ||
+              (item.id === 'challenges' && activeTab === 'assigned') ||
+              (item.id === 'block-directory' && activeTab === 'local-bodies');
 
             return (
               <button
@@ -103,7 +106,6 @@ export const NodalSidebar = ({
         </nav>
       </div>
 
-      {/* Bottom Logout Item */}
       <div className="pt-2 border-t border-slate-100 bg-white">
         <button
           onClick={onLogout}

@@ -3,11 +3,17 @@ export class ChallengeQueryService {
     this.repository = repository;
   }
 
-  async getChallenges({ domain, status, district, search, page = 1, limit = 20, isPublic = true }) {
+  async getChallenges({ domain, status, district, wardId, search, page = 1, limit = 20, isPublic = true }) {
     const filter = {};
     if (isPublic) filter.isPublic = true;
     if (domain && domain !== 'All' && domain !== 'All Domains') filter.domain = domain;
     if (status && status !== 'All' && status !== 'All Status') filter.status = status;
+    if (wardId) {
+      filter.$or = [
+        { 'assignedWard.wardId': wardId.toUpperCase() },
+        { 'assignedWard.id': wardId }
+      ];
+    }
     if (district && district !== 'All' && district !== 'All Districts') {
       const distRegex = new RegExp(`^${district.trim()}$`, 'i');
       filter.$or = [

@@ -18,7 +18,7 @@ process.on('uncaughtException', (error) => {
   logger.error({ error: error.message, stack: error.stack }, '🚨 Uncaught Exception');
 });
 
-const listenWithRetry = (httpServer, port, host = '0.0.0.0', maxRetries = 5, retryDelay = 600) => {
+const listenWithRetry = (httpServer, port, host = null, maxRetries = 5, retryDelay = 600) => {
   return new Promise((resolve, reject) => {
     let attempts = 0;
 
@@ -54,7 +54,11 @@ const listenWithRetry = (httpServer, port, host = '0.0.0.0', maxRetries = 5, ret
       httpServer.once('error', onError);
       httpServer.once('listening', onListening);
 
-      httpServer.listen(port, host);
+      if (host) {
+        httpServer.listen(port, host);
+      } else {
+        httpServer.listen(port);
+      }
     };
 
     tryListen();
@@ -76,8 +80,8 @@ const start = async () => {
     server = http.createServer(app);
     initializeSocketServer(server);
 
-    // 3. Listen on port with auto-retry if port was lingering from previous reload
-    await listenWithRetry(server, config.PORT, '0.0.0.0', 5, 600);
+    // 3. Listen on port with auto-retry if port was lingering from previous reload (dual-stack IPv4 & IPv6)
+    await listenWithRetry(server, config.PORT, undefined, 5, 600);
 
     // 4. Initialize Background Workers
     initializeWorkers();

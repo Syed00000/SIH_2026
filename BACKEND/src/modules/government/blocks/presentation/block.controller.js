@@ -7,8 +7,8 @@ export class BlockController {
 
   async getBlocks(req, res, next) {
     try {
-      const { district, search } = req.query;
-      const blocks = await this.service.getAllBlocks({ district, search });
+      const { district, wardId, search } = req.query;
+      const blocks = await this.service.getAllBlocks({ district, wardId, search });
       res.json({ success: true, count: blocks.length, data: blocks });
     } catch (err) {
       next(err);

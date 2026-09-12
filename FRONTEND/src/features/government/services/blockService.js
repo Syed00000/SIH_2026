@@ -30,6 +30,25 @@ export const blockService = {
   deleteBlock: async (id) => {
     const res = await apiClient.delete(`government/blocks/${id}`);
     return res?.data || res;
+  },
+
+  assignProblemToBlock: async (challengeId, block, instructions = '') => {
+    const blockPayload = {
+      id: block.id || block._id,
+      blockId: block.blockId,
+      name: block.name,
+      bdoName: block.bdoName || '',
+      bdoEmail: block.bdoEmail || '',
+      bdoPhone: block.bdoPhone || '',
+      district: block.district || 'Ranchi',
+      instructions: instructions.trim() || 'Assigned by State Nodal Officer for block administrative resolution.',
+      status: 'Assigned'
+    };
+    const res = await apiClient.patch(`citizen/challenges/${challengeId}/triage`, {
+      assignedBlock: blockPayload,
+      status: 'In Progress'
+    });
+    return res?.data?.data || res?.data;
   }
 };
 
