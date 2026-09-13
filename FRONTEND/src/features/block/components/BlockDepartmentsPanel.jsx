@@ -97,9 +97,13 @@ export const BlockDepartmentsPanel = ({
                   const loginEmail = dept.credentials?.loginEmail || dept.headEmail || 'dept@jharkhand.gov.in';
                   const password = dept.credentials?.password || dept.credentials?.generatedPassword || '••••••••';
                   return (
-                    <tr key={targetId} className="hover:bg-slate-50/70 transition-colors">
+                    <tr
+                      key={targetId}
+                      onClick={() => onViewDept && onViewDept(dept)}
+                      className="hover:bg-slate-50/70 transition-colors cursor-pointer group"
+                    >
                       <td className="py-3.5 px-4">
-                        <div className="font-extrabold text-slate-900">{dept.name}</div>
+                        <div className="font-extrabold text-slate-900 group-hover:text-[#007A61] transition-colors">{dept.name}</div>
                         <div className="flex items-center gap-1.5 mt-0.5">
                           <span className="text-[10px] font-mono font-bold text-[#007A61] bg-[#007A61]/10 px-1.5 py-0.2 rounded">
                             {dept.code || dept.deptId}
@@ -123,26 +127,23 @@ export const BlockDepartmentsPanel = ({
                         <div className="flex items-center justify-end gap-1.5">
                           <button
                             type="button"
-                            title="Open Department Portal"
-                            onClick={() => {
-                              window.location.href = `/department?deptId=${encodeURIComponent(dept.deptId || dept.id)}`;
-                            }}
-                            className="px-2 py-1 bg-emerald-50 hover:bg-emerald-100 text-[#007A61] font-bold text-[10.5px] rounded-lg border border-emerald-200 transition cursor-pointer"
-                          >
-                            Open Portal
-                          </button>
-                          <button
-                            type="button"
                             title="View Department Details"
-                            onClick={() => onViewDept && onViewDept(dept)}
-                            className="p-1.5 text-slate-500 hover:text-[#007A61] hover:bg-slate-100 rounded-lg cursor-pointer transition-colors"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onViewDept && onViewDept(dept);
+                            }}
+                            className="flex items-center gap-1 px-2.5 py-1 bg-[#007A61]/10 hover:bg-[#007A61] text-[#007A61] hover:text-white font-bold text-[11px] rounded-lg border border-[#007A61]/20 transition cursor-pointer shadow-2xs"
                           >
                             <Eye className="w-3.5 h-3.5" />
+                            <span>View</span>
                           </button>
                           <button
                             type="button"
                             title="Edit Department"
-                            onClick={() => onEditDept && onEditDept(dept)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onEditDept && onEditDept(dept);
+                            }}
                             className="p-1.5 text-slate-500 hover:text-blue-600 hover:bg-slate-100 rounded-lg cursor-pointer transition-colors"
                           >
                             <Edit2 className="w-3.5 h-3.5" />
@@ -151,7 +152,10 @@ export const BlockDepartmentsPanel = ({
                             type="button"
                             title="Delete Department"
                             disabled={deletingId === targetId}
-                            onClick={() => handleDelete(dept)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDelete(dept);
+                            }}
                             className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg cursor-pointer transition-colors"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
