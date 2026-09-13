@@ -14,3 +14,5 @@ export { DepartmentCredentialsCard } from './DepartmentCredentialsCard.jsx';
 export { DepartmentDetailModal } from './DepartmentDetailModal.jsx';
 export { DepartmentFormModal } from './DepartmentFormModal.jsx';
 export { DeleteDepartmentConfirmModal } from './DeleteDepartmentConfirmModal.jsx';
+export { DepartmentBanner } from './DepartmentBanner.jsx';
+export { DepartmentToolbar } from './DepartmentToolbar.jsx';

@@ -141,8 +141,8 @@ export const AddIndustryFundModal = ({ isOpen, onClose, onSuccess, user }) => {
             <input
               type="number"
               required
-              min="10000"
-              step="10000"
+              min="1"
+              step="any"
               placeholder="e.g. 2500000"
               value={formData.amount}
               onChange={(e) => setFormData(prev => ({ ...prev, amount: e.target.value }))}

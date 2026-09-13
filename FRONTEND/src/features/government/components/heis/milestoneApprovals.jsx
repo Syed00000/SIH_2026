@@ -96,7 +96,7 @@ export const MilestoneApprovals = ({
         <div className="lg:col-span-8 bg-white border border-slate-100 rounded-2xl p-4.5 shadow-2xs space-y-4">
           <div className="flex justify-between items-center border-b border-slate-100 pb-3">
             <div>
-              <h3 className="font-bold text-slate-900 text-sm">3. Milestone Verification Queue</h3>
+              <h3 className="font-bold text-slate-900 text-sm">2. Milestone Approvals & Verification Queue</h3>
               <p className="text-[10.5px] text-slate-400 font-medium">Verify university deliverables and award academic credits.</p>
             </div>
             <div className="flex items-center space-x-2">

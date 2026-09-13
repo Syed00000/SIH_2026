@@ -6,6 +6,15 @@ const governmentGrantFundSchema = new mongoose.Schema(
     title: { type: String, required: true },
     scheme: { type: String, default: 'Jharkhand State Innovation Council R&D Allocation' },
     department: { type: String, default: 'Department of Higher & Technical Education' },
+    departmentId: { type: String, default: '', index: true },
+    departmentCategory: { type: String, default: '' },
+    targetDeptCode: { type: String, default: '' },
+    fundType: {
+      type: String,
+      enum: ['CORPUS_INFLOW', 'DEPARTMENT_ALLOCATION'],
+      default: 'DEPARTMENT_ALLOCATION',
+      index: true
+    },
     amount: { type: Number, required: true },
     sanctionOrderNo: { type: String, default: '' },
     financialYear: { type: String, default: '2026-2027' },

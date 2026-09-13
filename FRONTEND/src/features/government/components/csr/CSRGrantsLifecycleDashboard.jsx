@@ -3,10 +3,8 @@ import { CSRPhaseTabs } from './CSRPhaseTabs.jsx';
 import { CSRFundingSources } from './CSRFundingSources.jsx';
 import { CSRStatutoryParameters } from './CSRStatutoryParameters.jsx';
 import { CSRProposalPipelineTable } from './CSRProposalPipelineTable.jsx';
-import { CSREscrowMatrix } from './CSREscrowMatrix.jsx';
-import { CSRPaymentLedgerTable } from './CSRPaymentLedgerTable.jsx';
-import { CSRFundUtilization } from './CSRFundUtilization.jsx';
-import { CSRComplianceChecklist } from './CSRComplianceChecklist.jsx';
+import { DepartmentAllocationTransferPanel } from './DepartmentAllocationTransferPanel.jsx';
+import { DepartmentFundRequestsPanel } from './DepartmentFundRequestsPanel.jsx';
 import { CSRLifecycleHeader } from './CSRLifecycleHeader.jsx';
 import { InitiateDisbursalModal } from './InitiateDisbursalModal.jsx';
 import { ProposalDetailModal } from './ProposalDetailModal.jsx';
@@ -134,31 +132,11 @@ export const CSRGrantsLifecycleDashboard = () => {
       )}
 
       {activePhase === 'phase_3_4' && (
-        <div className="space-y-4">
-          <CSREscrowMatrix
-            onFilterLedgerByStatus={(status) => setLedgerStatusFilter(status)}
-          />
-
-          <CSRPaymentLedgerTable
-            ledger={ledger}
-            proposals={proposals}
-            statusFilter={ledgerStatusFilter}
-            onClearStatusFilter={() => setLedgerStatusFilter(null)}
-            onAddNewDisbursal={handleAddNewDisbursal}
-            onAuthorizePayment={handleAuthorizePayment}
-          />
-        </div>
+        <DepartmentAllocationTransferPanel />
       )}
 
       {activePhase === 'phase_5_6' && (
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
-          <div className="lg:col-span-8">
-            <CSRFundUtilization />
-          </div>
-          <div className="lg:col-span-4">
-            <CSRComplianceChecklist />
-          </div>
-        </div>
+        <DepartmentFundRequestsPanel />
       )}
 
       {/* 4. Global Modals */}

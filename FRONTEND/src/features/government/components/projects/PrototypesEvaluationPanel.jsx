@@ -66,7 +66,7 @@ export const PrototypesEvaluationPanel = () => {
 
   if (selectedProjectForModal) {
     return (
-      <div className="space-y-6 max-w-7xl mx-auto pb-12 select-none animate-fadeIn">
+      <div className="space-y-4 max-w-7xl mx-auto pb-12 select-none animate-fadeIn">
         <InspectPrototypeDetailPanel
           project={selectedProjectForModal}
           onClose={() => setSelectedProjectForModal(null)}
@@ -90,30 +90,35 @@ export const PrototypesEvaluationPanel = () => {
   }
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto pb-12 select-none animate-fadeIn">
+    <div className="space-y-4 max-w-7xl mx-auto pb-12 select-none animate-fadeIn">
       {notification && (
-        <div className="fixed bottom-6 right-6 z-50 px-4 py-3 rounded-xl shadow-xl border text-xs font-bold flex items-center space-x-2 bg-slate-900 text-white border-slate-800 animate-slideUp">
+        <div className="fixed bottom-6 right-6 z-50 px-4 py-3 rounded-xs shadow-xl border text-xs font-bold flex items-center space-x-2 bg-slate-900 text-white border-slate-800 animate-slideUp">
           <Sparkles className="w-4 h-4 text-emerald-400" /><span>{notification.msg}</span>
         </div>
       )}
 
       {/* Header */}
-      <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 rounded-3xl p-6 text-white shadow-xl relative overflow-hidden">
-        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="space-y-1.5 max-w-2xl">
-            <div className="flex items-center space-x-2">
-              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">Live State Prototype Registry</span>
-              <span className="text-xs text-slate-400">· Department of Higher & Technical Education</span>
-            </div>
-            <h1 className="text-2xl font-black tracking-tight text-white flex items-center space-x-2">
-              <Cpu className="w-6 h-6 text-emerald-400" /><span>PROTOTYPES & LAB-TO-FIELD TESTING (TRL)</span>
-            </h1>
-            <p className="text-xs text-slate-300 leading-relaxed font-normal">State-level engineering verification tracking prototypes through 4 TRL phases: College Lab ➔ Ground Field ➔ State Certified ➔ Public Deployment.</p>
+      <div className="bg-white border border-slate-200 rounded-xs p-5 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <div className="flex items-center space-x-2 text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">
+            <span className="flex items-center space-x-1">
+              <Cpu className="w-3.5 h-3.5 text-[#007A61]" />
+              <span>Projects &amp; Solutions</span>
+            </span>
+            <span>•</span>
+            <span className="text-slate-700">Department of Higher &amp; Technical Education</span>
           </div>
-          <div className="bg-white/10 backdrop-blur-md px-4 py-2.5 rounded-2xl border border-white/20 text-center shrink-0">
-            <span className="text-2xl font-black text-emerald-400 font-mono block">{prototypeProjects.length}</span>
-            <span className="text-[10px] font-bold text-slate-300 uppercase tracking-wider">Active Prototypes</span>
-          </div>
+          <h1 className="text-xl md:text-2xl font-black text-slate-900 tracking-tight">
+            PROTOTYPES &amp; LAB-TO-FIELD TESTING (TRL)
+          </h1>
+          <p className="text-xs md:text-sm text-slate-500 font-medium mt-0.5">
+            State-level engineering verification tracking institutional innovations through 4 TRL phases: Lab Concept ➔ Ground Field ➔ State Certified ➔ Public Deployment.
+          </p>
+        </div>
+
+        <div className="bg-slate-50 px-4 py-2.5 rounded-xs border border-slate-200 text-center shrink-0">
+          <span className="text-2xl font-black text-[#007A61] font-mono block">{prototypeProjects.length}</span>
+          <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Active Prototypes</span>
         </div>
       </div>
 
@@ -121,10 +126,10 @@ export const PrototypesEvaluationPanel = () => {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         {stages.map((st) => (
           <div key={st.key} onClick={() => setSelectedTrlFilter(selectedTrlFilter === st.key ? 'All Stages' : st.key)}
-            className={`bg-white border rounded-xl p-3.5 shadow-2xs space-y-1.5 transition-all cursor-pointer hover:shadow-xs ${selectedTrlFilter === st.key ? 'ring-2 ring-slate-900 border-transparent bg-slate-50' : 'border-slate-200'}`}>
+            className={`bg-white border rounded-xs p-3.5 shadow-xs space-y-1.5 transition-all cursor-pointer hover:border-slate-300 ${selectedTrlFilter === st.key ? 'ring-2 ring-[#007A61] border-transparent bg-slate-50' : 'border-slate-200'}`}>
             <div className="flex items-center justify-between">
-              <span className="text-[10px] font-black uppercase text-slate-600">{st.range}</span>
-              <span className="text-xs font-black font-mono text-slate-900">{st.count} Units</span>
+              <span className="text-[10px] font-bold uppercase text-slate-600">{st.range}</span>
+              <span className="text-xs font-bold font-mono text-slate-900">{st.count} Units</span>
             </div>
             <h4 className="text-xs font-bold text-slate-900">{st.label}</h4>
           </div>
@@ -132,34 +137,34 @@ export const PrototypesEvaluationPanel = () => {
       </div>
 
       {/* Filter & View Bar */}
-      <div className="bg-white p-3.5 rounded-2xl border border-slate-200 shadow-2xs flex flex-col sm:flex-row items-center justify-between gap-3">
+      <div className="bg-white p-3.5 rounded-xs border border-slate-200 shadow-xs flex flex-col sm:flex-row items-center justify-between gap-3">
         <div className="relative flex-1 w-full">
           <Search className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
           <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search prototype by name, university, or district..."
-            className="w-full pl-9 pr-4 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-slate-900 transition-all" />
+            className="w-full pl-9 pr-4 py-1.5 bg-slate-50 border border-slate-200 rounded-xs text-xs font-medium text-slate-900 focus:bg-white focus:outline-none focus:border-[#007A61] transition-all" />
         </div>
         <div className="flex items-center space-x-2 shrink-0">
           {['All Stages', 'Stage 1: Lab Concept', 'Stage 2: Field Tested', 'Stage 3: Deployment Ready', 'Stage 4: Public Deployed'].map((s) => (
             <button key={s} type="button" onClick={() => setSelectedTrlFilter(s)}
-              className={`px-3 py-1.5 rounded-xl text-[11px] font-bold cursor-pointer transition-all ${selectedTrlFilter === s ? 'bg-slate-900 text-white shadow-2xs' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>
+              className={`px-3 py-1.5 rounded-xs text-[11px] font-bold cursor-pointer transition-all border ${selectedTrlFilter === s ? 'bg-[#007A61] text-white border-[#007A61] shadow-xs' : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'}`}>
               {s.replace('Stage ', 'S').replace(': ', ' - ')}
             </button>
           ))}
-          <div className="flex items-center border border-slate-200 rounded-xl p-0.5 bg-slate-100 ml-1">
-            <button type="button" onClick={() => setViewMode('list')} title="Table Listing View" className={`p-1.5 rounded-lg transition-all cursor-pointer ${viewMode === 'list' ? 'bg-white shadow-2xs text-slate-900' : 'text-slate-500 hover:text-slate-800'}`}><LayoutList className="w-4 h-4" /></button>
-            <button type="button" onClick={() => setViewMode('grid')} title="Card Grid View" className={`p-1.5 rounded-lg transition-all cursor-pointer ${viewMode === 'grid' ? 'bg-white shadow-2xs text-slate-900' : 'text-slate-500 hover:text-slate-800'}`}><LayoutGrid className="w-4 h-4" /></button>
+          <div className="flex items-center border border-slate-200 rounded-xs p-0.5 bg-slate-100 ml-1">
+            <button type="button" onClick={() => setViewMode('list')} title="Table View" className={`p-1.5 rounded-xs transition-all cursor-pointer ${viewMode === 'list' ? 'bg-white shadow-xs text-slate-900' : 'text-slate-500 hover:text-slate-800'}`}><LayoutList className="w-4 h-4" /></button>
+            <button type="button" onClick={() => setViewMode('grid')} title="Card View" className={`p-1.5 rounded-xs transition-all cursor-pointer ${viewMode === 'grid' ? 'bg-white shadow-xs text-slate-900' : 'text-slate-500 hover:text-slate-800'}`}><LayoutGrid className="w-4 h-4" /></button>
           </div>
         </div>
       </div>
 
-      {/* Main Content: Listing Table or Card Grid */}
+      {/* Main Content */}
       {viewMode === 'list' ? (
         <PrototypeListingTable projects={filteredProjects} onInspect={(p) => setSelectedProjectForModal(p)} onAdvanceTrl={handleAdvanceTrl} />
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
           {filteredProjects.length === 0 ? (
-            <div className="col-span-2 bg-white rounded-2xl p-12 text-center border border-slate-200 text-slate-400">No prototypes match the selected filter.</div>
+            <div className="col-span-2 bg-white rounded-xs p-12 text-center border border-slate-200 text-slate-400 shadow-xs">No prototypes match the selected filter.</div>
           ) : (
             filteredProjects.map((prj) => (
               <PrototypeInteractiveCard key={prj.id} project={prj} onInspect={(p) => setSelectedProjectForModal(p)} onAdvanceTrl={handleAdvanceTrl} />

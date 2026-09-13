@@ -17,49 +17,48 @@ export const ProjectsInProgressTable = ({ projects = [], onManageProject }) => {
       case 'Active ✓':
       case 'Validated':
       case 'Active':
-        return 'bg-emerald-50 text-emerald-700 border-emerald-200';
+        return 'bg-emerald-50 text-emerald-800 border-emerald-300';
       case 'In Progress':
-        return 'bg-amber-50 text-amber-700 border-amber-200';
+        return 'bg-amber-50 text-amber-800 border-amber-300';
       case 'Pending Review':
-        return 'bg-blue-50 text-blue-700 border-blue-200';
+        return 'bg-[#007A61]/10 text-[#007A61] border-[#007A61]/30';
       case 'Initial Stage':
-        return 'bg-slate-100 text-slate-700 border-slate-200';
       default:
-        return 'bg-slate-100 text-slate-700 border-slate-200';
+        return 'bg-slate-100 text-slate-700 border-slate-300';
     }
   };
 
-  const getTrlBadge = (trlLevel, prototypeType) => {
-    return 'bg-slate-100 text-slate-800 border-slate-200';
+  const getTrlBadge = () => {
+    return 'bg-slate-100 text-slate-800 border-slate-300';
   };
 
   if (!projects || projects.length === 0) {
     return (
-      <div className="bg-white border border-slate-200 rounded-2xl p-12 text-center shadow-2xs">
+      <div className="bg-white border border-slate-200 rounded-xs p-12 text-center shadow-xs">
         <PlayCircle className="w-8 h-8 text-slate-400 mx-auto mb-3" />
         <h3 className="text-sm font-bold text-slate-800">No Projects Found</h3>
-        <p className="text-xs text-slate-500 mt-1">No in-progress innovation projects match your filter criteria.</p>
+        <p className="text-xs text-slate-500 mt-1">No active institutional projects match your filter criteria.</p>
       </div>
     );
   }
 
   return (
-    <div className="space-y-4 select-none">
+    <div className="space-y-3 select-none">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-xs font-black text-slate-900 uppercase tracking-widest">
-            Projects in Progress - Extensive Tracking Table
+          <h2 className="text-xs font-bold text-slate-900 uppercase tracking-widest">
+            Institutional Projects in Execution
           </h2>
           <p className="text-[11px] text-slate-500 mt-0.5">
-            Real-time stage gates, milestone compliance, and TRL verification across funded projects
+            Milestone compliance, stage verification, and technical deliverables across funded projects
           </p>
         </div>
-        <span className="text-[11px] font-bold text-slate-500 bg-slate-100 px-2.5 py-1 rounded-full border border-slate-200">
-          {projects.length} Active Tracked Projects
+        <span className="text-[11px] font-bold text-slate-700 bg-slate-100 px-2.5 py-0.5 rounded-xs border border-slate-200">
+          {projects.length} Active Projects
         </span>
       </div>
 
-      <div className="bg-white border border-slate-200 rounded-2xl shadow-2xs overflow-hidden">
+      <div className="bg-white border border-slate-200 rounded-xs shadow-xs overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>

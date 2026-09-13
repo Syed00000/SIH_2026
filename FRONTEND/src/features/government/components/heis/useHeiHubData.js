@@ -4,14 +4,12 @@ import { universityService } from '../../services/universityService.js';
 
 export const useHeiHubData = () => {
   const [heisList, setHeisList] = useState([]);
-  const [overrideData, setOverrideData] = useState([]);
   const [milestones, setMilestones] = useState([]);
   const [stats, setStats] = useState({
     totalHeis: 0,
     activeTeams: 0,
     problemsAssigned: 0,
-    solutionsSubmitted: 0,
-    creditsEarned: 0
+    solutionsSubmitted: 0
   });
   const [leaderboardData, setLeaderboardData] = useState([]);
   const [toast, setToast] = useState(null);
@@ -24,7 +22,7 @@ export const useHeiHubData = () => {
   const loadData = useCallback(async () => {
     try {
       const [heisRes, citizenRes, projectsRes] = await Promise.allSettled([
-        universityService.fetchHeis({ page: 1, limit: 100 }),
+        universityService.getUniversities({ page: 1, limit: 100 }),
         apiClient.get('citizen/challenges?limit=100'),
         apiClient.get('university/projects')
       ]);
@@ -35,31 +33,12 @@ export const useHeiHubData = () => {
 
       setHeisList(heis);
 
-      // 1. Build Allocation Override list from real challenges
-      const overrides = (Array.isArray(challenges) ? challenges : []).map((c) => {
-        const hasUni = c.assignedUniversity?.name || c.assignedUniversity?.id;
-        const isDeclined = c.acceptanceStatus === 'Declined';
-        return {
-          id: c.challengeId || String(c._id),
-          rawId: c._id,
-          title: c.title || 'Untitled Problem',
-          currentHei: c.assignedUniversity?.name || 'Unassigned',
-          currentHeiId: c.assignedUniversity?.id || '',
-          suggestedHei: c.suggestedHei || '—',
-          sector: c.domain || 'General',
-          district: c.district || c.location?.district || 'Ranchi',
-          priority: c.priority || 'Medium',
-          status: isDeclined ? 'Reassignment Requested' : hasUni ? 'Reassigned' : 'Pending'
-        };
-      });
-      setOverrideData(overrides);
-
-      // 2. Build Milestone verification list from real projects
+      // 1. Build Milestone verification list from real projects
       const milestonesList = [];
       let totalCompletedMilestones = 0;
       (Array.isArray(projects) ? projects : []).forEach((p) => {
         (p.milestones || []).forEach((m, idx) => {
-          if (m.status === 'Completed') totalCompletedMilestones += 1;
+          if (m.status === 'Completed' || m.status === 'Approved') totalCompletedMilestones += 1;
           milestonesList.push({
             id: `${p.projectId || p._id}-M${idx + 1}`,
             projectId: p._id,
@@ -75,28 +54,34 @@ export const useHeiHubData = () => {
       });
       setMilestones(milestonesList);
 
-      // 3. Compute Stats
-      const assignedCount = overrides.filter((o) => o.currentHei !== 'Unassigned').length;
-      const solvedCount = (Array.isArray(challenges) ? challenges : []).filter(
-        (c) => c.status === 'Resolved' || c.status === 'Deployed'
-      ).length;
+      // 2. Compute Stats
+      const assignedCount = (Array.isArray(challenges) ? challenges : []).filter((c) => c.assignedUniversity?.name || c.assignedUniversity?.id).length;
+      const solvedCount = (Array.isArray(challenges) ? challenges : []).filter((c) => c.status === 'Resolved' || c.status === 'Deployed').length;
       setStats({
         totalHeis: heis.length,
         activeTeams: (Array.isArray(projects) ? projects : []).length,
         problemsAssigned: assignedCount,
-        solutionsSubmitted: solvedCount,
-        creditsEarned: totalCompletedMilestones * 4
+        solutionsSubmitted: solvedCount
       });
 
-      // 4. Institutional Leaderboard
+      // 3. Institutional Performance Leaderboard
       const leaderboard = heis.map((h, idx) => {
-        const assigned = overrides.filter((o) => o.currentHeiId === String(h._id) || o.currentHei === h.name).length;
         const uniProjects = (Array.isArray(projects) ? projects : []).filter(
-          (p) => p.universityId === String(h._id) || p.universityCode === h.code
+          (p) =>
+            p.universityId === String(h._id) ||
+            p.universityCode === h.code ||
+            (p.universityName && h.name && p.universityName.trim().toLowerCase() === h.name.trim().toLowerCase()) ||
+            (p.universityCode && h.shortName && p.universityCode.trim().toLowerCase() === h.shortName.trim().toLowerCase())
         );
+        const assigned = (Array.isArray(challenges) ? challenges : []).filter(
+          (c) =>
+            c.assignedUniversity?.id === String(h._id) ||
+            c.assignedUniversity?.code === h.code ||
+            (c.assignedUniversity?.name && h.name && c.assignedUniversity.name.trim().toLowerCase() === h.name.trim().toLowerCase())
+        ).length;
         const submitted = uniProjects.filter((p) => p.status === 'Completed' || p.status === 'Resolved').length;
         const completedMilestones = uniProjects.reduce(
-          (acc, p) => acc + (p.milestones || []).filter((m) => m.status === 'Completed').length,
+          (acc, p) => acc + (p.milestones || []).filter((m) => m.status === 'Completed' || m.status === 'Approved').length,
           0
         );
         return {
@@ -105,9 +90,10 @@ export const useHeiHubData = () => {
           assigned,
           submitted,
           active: uniProjects.length,
+          completedMilestones,
           credits: completedMilestones * 4
         };
-      }).sort((a, b) => b.credits - a.credits || b.assigned - a.assigned);
+      }).sort((a, b) => b.completedMilestones - a.completedMilestones || b.submitted - a.submitted || b.assigned - a.assigned);
 
       setLeaderboardData(leaderboard);
     } catch (err) {
@@ -116,34 +102,6 @@ export const useHeiHubData = () => {
   }, []);
 
   useEffect(() => { loadData(); }, [loadData]);
-
-  const submitOverrideAction = async (selectedRecord, approved, selectedHeiName, remarks) => {
-    if (!remarks?.trim()) {
-      showToast('Remarks are required.', 'error');
-      return false;
-    }
-    try {
-      const targetUni = heisList.find((h) => h.name === selectedHeiName);
-      if (approved) {
-        await apiClient.patch(`citizen/challenges/${selectedRecord.id}/assign`, {
-          assignedUniversity: targetUni ? { id: String(targetUni._id), name: targetUni.name, code: targetUni.code } : { name: selectedHeiName },
-          adminRemarks: remarks
-        });
-      } else {
-        await apiClient.patch(`citizen/challenges/${selectedRecord.id}/triage`, {
-          status: 'Under Review',
-          acceptanceStatus: 'Accepted',
-          adminRemarks: remarks
-        });
-      }
-      showToast(`Reassignment request ${approved ? 'approved' : 'declined'} successfully`);
-      loadData();
-      return true;
-    } catch (err) {
-      showToast(err.message || 'Failed to update assignment', 'error');
-      return false;
-    }
-  };
 
   const submitMilestoneAction = async (selectedRecord, action, remarks) => {
     if (!remarks?.trim()) {
@@ -157,7 +115,7 @@ export const useHeiHubData = () => {
         remarks
       });
       showToast(`Milestone status updated to: ${action}`);
-      loadData();
+      await loadData();
       return true;
     } catch (err) {
       showToast(err.message || 'Failed to update milestone status', 'error');
@@ -167,13 +125,13 @@ export const useHeiHubData = () => {
 
   return {
     heisList,
-    overrideData,
     milestones,
     stats,
     leaderboardData,
     toast,
-    submitOverrideAction,
-    submitMilestoneAction
+    recentApprovals: milestones.filter((m) => m.status === 'Approved' || m.status === 'Completed'),
+    submitMilestoneAction,
+    loadData
   };
 };
 

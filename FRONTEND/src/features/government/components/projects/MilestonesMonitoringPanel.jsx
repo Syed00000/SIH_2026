@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { CheckCircle2, ShieldCheck, Search, Info, PlayCircle } from 'lucide-react';
+import { CheckCircle2, ShieldCheck, Search, Info } from 'lucide-react';
 import { ProjectManageModal } from './ProjectManageModal.jsx';
 import { MilestoneDeliveryTracker } from './MilestoneDeliveryTracker.jsx';
 import { ProjectDeploymentTermsModal } from './ProjectDeploymentTermsModal.jsx';
@@ -98,28 +98,28 @@ export const MilestonesMonitoringPanel = () => {
   });
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto pb-12 select-none animate-fadeIn">
+    <div className="space-y-4 max-w-7xl mx-auto pb-12 select-none animate-fadeIn">
       {notification && (
-        <div className="fixed bottom-6 right-6 z-50 px-4 py-3 rounded-2xl shadow-xl border text-xs font-bold flex items-center space-x-2 bg-slate-900 text-white border-slate-800">
+        <div className="fixed bottom-6 right-6 z-50 px-4 py-3 rounded-xs shadow-xl border text-xs font-bold flex items-center space-x-2 bg-slate-900 text-white border-slate-800">
           <CheckCircle2 className="w-4 h-4 text-emerald-400" />
           <span>{notification}</span>
         </div>
       )}
 
       {/* Header Banner */}
-      <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="bg-white border border-slate-200 rounded-xs p-5 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <div className="flex items-center space-x-2 text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">
             <ShieldCheck className="w-4 h-4 text-[#007A61]" />
             <span>State Innovation Governance • Compliance Audit</span>
           </div>
-          <h2 className="text-xl font-black text-slate-900">Milestones &amp; Stage Gate Compliance</h2>
-          <p className="text-xs text-slate-500 mt-0.5">Real-time milestone tracking, validation gates, and state deployment authorization</p>
+          <h2 className="text-xl font-black text-slate-900">Milestones &amp; Stage Verification</h2>
+          <p className="text-xs text-slate-500 mt-0.5">Audit verified deliverable submissions, track phase compliance, and authorize state rollout.</p>
         </div>
       </div>
 
       {/* Filters Bar */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-3 bg-white p-3.5 border border-slate-200 rounded-xs shadow-xs">
         <div className="relative w-full sm:w-80">
           <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
           <input
@@ -127,7 +127,7 @@ export const MilestonesMonitoringPanel = () => {
             placeholder="Search active project, HEI, code..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-9 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-[#007A61] outline-none"
+            className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xs text-xs text-slate-900 focus:bg-white focus:outline-none focus:border-[#007A61]"
           />
         </div>
         <div className="flex items-center space-x-1.5 self-start sm:self-auto">
@@ -135,8 +135,10 @@ export const MilestonesMonitoringPanel = () => {
             <button
               key={tab}
               onClick={() => setSelectedPhaseFilter(tab)}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                selectedPhaseFilter === tab ? 'bg-slate-900 text-white shadow-2xs' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+              className={`px-3.5 py-1.5 rounded-xs text-xs font-bold transition-all cursor-pointer border ${
+                selectedPhaseFilter === tab
+                  ? 'bg-[#007A61] text-white border-[#007A61] shadow-xs'
+                  : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
               }`}
             >
               {tab}
@@ -147,9 +149,10 @@ export const MilestonesMonitoringPanel = () => {
 
       {/* Projects List */}
       {filteredProjects.length === 0 ? (
-        <div className="bg-white border border-slate-200 rounded-2xl p-10 text-center text-slate-400 text-xs flex flex-col items-center justify-center">
+        <div className="bg-white border border-slate-200 rounded-xs p-10 text-center text-slate-400 text-xs flex flex-col items-center justify-center shadow-xs">
           <Info className="w-6 h-6 text-slate-300 mb-2" />
           <span className="font-bold text-slate-700 text-sm">No projects found</span>
+          <span className="text-slate-400 text-xs mt-1">No active projects match the selected milestone stage.</span>
         </div>
       ) : (
         <div className="space-y-3">

@@ -8,19 +8,18 @@ const departmentGrantRequestSchema = new mongoose.Schema(
     requesterCategory: {
       type: String,
       required: true,
-      enum: ['Ward Commissioner', 'Block / Tehsil Office', 'District Department']
+      default: 'State Ministry'
     },
     targetDeptId: { type: String, required: true, index: true },
     targetName: { type: String, required: true },
     targetCategory: {
       type: String,
       required: true,
-      enum: ['Block / Tehsil Office', 'District Department', 'State Ministry']
+      default: 'State Ministry'
     },
     tier: {
       type: String,
-      required: true,
-      enum: ['WARD_TO_BLOCK', 'BLOCK_TO_DISTRICT', 'DISTRICT_TO_STATE', 'WARD_TO_DISTRICT', 'WARD_TO_STATE', 'BLOCK_TO_STATE']
+      default: 'DISTRICT_TO_STATE'
     },
     district: { type: String, default: 'Ranchi' },
     block: { type: String, default: '' },

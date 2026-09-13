@@ -23,8 +23,13 @@ export const RequestGrantModal = ({
   const districtName = department?.district || 'Ranchi';
 
   let targetAuthorityName = `${blockName} Block Development Office`;
-  if (category === 'District Department') targetAuthorityName = 'Jharkhand State Secretariat (Apex Department)';
-  if (category === 'Block / Tehsil Office') targetAuthorityName = `${districtName} District Magistrate Office`;
+  if (category.toLowerCase().includes('state') || category.toLowerCase().includes('ministry')) {
+    targetAuthorityName = 'Government of Jharkhand CSR & State Innovation Pool';
+  } else if (category === 'District Department') {
+    targetAuthorityName = 'Jharkhand State Secretariat (Apex Department)';
+  } else if (category === 'Block / Tehsil Office') {
+    targetAuthorityName = `${districtName} District Magistrate Office`;
+  }
 
   useEffect(() => {
     if (prefilledAmount) setAmount(String(prefilledAmount));
