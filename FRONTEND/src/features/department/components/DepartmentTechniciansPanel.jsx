@@ -45,10 +45,10 @@ export const DepartmentTechniciansPanel = ({
           </div>
           <div>
             <h2 className="text-sm font-black text-slate-900 leading-tight">
-              Field Workers Directory ({technicians.length})
+              Technicians & Ground Staff ({technicians.length})
             </h2>
             <p className="text-xs text-slate-500">
-              {isWard ? 'Manage ward field workers, ground staff & portal access credentials' : 'Manage departmental field workers & portal access credentials'}
+              Register, manage credentials & dispatch field technicians to ground civic issues
             </p>
           </div>
         </div>
@@ -60,7 +60,7 @@ export const DepartmentTechniciansPanel = ({
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search field workers..."
+              placeholder="Search technicians..."
               className="w-full pl-8 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-[#007A61]"
             />
           </div>
@@ -70,7 +70,7 @@ export const DepartmentTechniciansPanel = ({
             className="flex items-center gap-1.5 px-3 py-1.5 bg-[#007A61] hover:bg-[#006651] text-white text-xs font-bold rounded-xl shadow-xs cursor-pointer transition-all shrink-0"
           >
             <Plus className="w-4 h-4" />
-            <span>Add Field Worker</span>
+            <span>Add Technician</span>
           </button>
         </div>
       </div>
@@ -79,7 +79,7 @@ export const DepartmentTechniciansPanel = ({
       <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
         {filtered.length === 0 ? (
           <div className="p-8 text-center text-xs text-slate-400 font-medium">
-            No field workers registered for this department. Click "Add Field Worker" to create credentials.
+            No technicians registered for this department. Click "Add Technician" to create credentials.
           </div>
         ) : (
           <>
@@ -102,7 +102,7 @@ export const DepartmentTechniciansPanel = ({
               <table className="w-full text-left border-collapse text-xs">
                 <thead>
                   <tr className="bg-slate-50/80 border-b border-slate-100 text-[10.5px] font-bold text-slate-400 uppercase tracking-wider">
-                    <th className="py-3 px-4">Field Worker & ID</th>
+                    <th className="py-3 px-4">Technician & ID</th>
                     <th className="py-3 px-4">Trade / Specialization</th>
                     <th className="py-3 px-4">Contact Phone</th>
                     <th className="py-3 px-4">Portal Login ID</th>

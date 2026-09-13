@@ -10,7 +10,7 @@ const DEFAULT_TRADE_MAP = {
 };
 
 export const technicianService = {
-  ensureDefaultTechnicians: async (departmentId, departmentName = '', block = 'Kanke Block', district = 'Ranchi') => {
+  ensureDefaultTechnicians: async (departmentId, departmentName = '', block = '', district = 'Ranchi') => {
     if (!departmentId) return;
     const existing = await technicianRepository.count({ departmentId });
     if (existing > 0) return;

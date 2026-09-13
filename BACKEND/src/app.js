@@ -105,6 +105,7 @@ app.use('/api/v1/admin/gis', gisRoutes);
 app.use('/api/v1/government/gis', gisRoutes);
 app.use('/api/v1/government/overview', overviewRoutes);
 app.use('/api/v1/government/funds', grantRoutes);
+app.use('/api/v1/government/grants', grantRoutes);
 app.use('/api/v1/government/grant-requests', grantRequestRoutes);
 app.use('/api/v1/university', universityRoutes);
 app.use('/api/v1/citizen', citizenRoutes);

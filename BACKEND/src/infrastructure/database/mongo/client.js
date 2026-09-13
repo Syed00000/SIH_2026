@@ -4,10 +4,22 @@ import config from '../../../shared/config/index.js';
 import logger from '../../../shared/logger/index.js';
 
 try {
+  dns.setDefaultResultOrder('ipv4first');
   dns.setServers(['8.8.8.8', '8.8.4.4', '1.1.1.1']);
 } catch (dnsErr) {
-  logger.warn('Could not set custom DNS servers:', dnsErr.message);
+  logger.warn('Could not set DNS configuration:', dnsErr.message);
 }
+
+// Mongoose connection resilience event hooks
+mongoose.connection.on('disconnected', () => {
+  logger.warn('MongoDB Atlas disconnected. Connection pool will auto-reconnect...');
+});
+mongoose.connection.on('reconnected', () => {
+  logger.info('MongoDB Atlas successfully reconnected.');
+});
+mongoose.connection.on('error', (err) => {
+  logger.error('MongoDB Atlas connection error:', err?.message || err);
+});
 
 export const connectMongo = async () => {
   if (mongoose.connection.readyState >= 1) {
@@ -21,7 +33,8 @@ export const connectMongo = async () => {
       maxPoolSize: 20,
       minPoolSize: 2,
       serverSelectionTimeoutMS: 10000,
-      socketTimeoutMS: 20000
+      socketTimeoutMS: 25000,
+      family: 4
     });
 
     logger.info(`Successfully connected to MongoDB Atlas (DB: ${mongoose.connection.db?.databaseName || 'joharsetu'})`);
@@ -30,7 +43,8 @@ export const connectMongo = async () => {
     logger.warn({ error: error.message }, 'Primary Atlas connection failed. Retrying with local instance fallback...');
     try {
       await mongoose.connect('mongodb://127.0.0.1:27017/joharsetu', {
-        serverSelectionTimeoutMS: 2000
+        serverSelectionTimeoutMS: 2000,
+        family: 4
       });
       logger.info('Successfully connected to local MongoDB instance');
       return mongoose.connection.db;

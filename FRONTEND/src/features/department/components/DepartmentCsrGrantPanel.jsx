@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { HandCoins, RefreshCw, Send, Siren, Inbox, SendHorizontal, LayoutList } from 'lucide-react';
+import { HandCoins, RefreshCw, Send, Siren, Inbox, SendHorizontal, LayoutList, Wrench } from 'lucide-react';
 import grantRequestService from '../../government/services/grantRequestService.js';
+import departmentService from '../../government/services/departmentService.js';
 import { RequestGrantModal } from './RequestGrantModal.jsx';
 import { EmergencyGrantModal } from './EmergencyGrantModal.jsx';
 import { GrantFundsModal } from './GrantFundsModal.jsx';
@@ -8,7 +9,7 @@ import { GrantRequestsTable } from './GrantRequestsTable.jsx';
 import { DepartmentCsrKpis } from './DepartmentCsrKpis.jsx';
 import { AllocateFundModal } from './AllocateFundModal.jsx';
 
-export const DepartmentCsrGrantPanel = ({ department }) => {
+export const DepartmentCsrGrantPanel = ({ department, onAddTechnician }) => {
   const [deptData, setDeptData] = useState(department);
   const deptId = department?.deptId || department?.id || deptData?.deptId || deptData?.id || '';
   const category = deptData?.category || department?.category || 'Administrative Tier';
@@ -34,10 +35,11 @@ export const DepartmentCsrGrantPanel = ({ department }) => {
   const loadDepartment = async () => {
     if (!deptId) return;
     try {
-      const res = await fetch(`/api/v1/government/departments/${deptId}`);
-      const json = await res.json();
-      if (json.success && json.data) setDeptData(json.data);
-    } catch (e) { console.warn('Could not load pool:', e); }
+      const data = await departmentService.getDepartmentById(deptId);
+      if (data) setDeptData(data);
+    } catch {
+      // safe fallback on transient reloads
+    }
   };
 
   const loadRequests = async () => {
@@ -104,6 +106,17 @@ export const DepartmentCsrGrantPanel = ({ department }) => {
             <span>{allocateButtonLabel}</span>
           </button>
 
+          {(isWard || isBlock) && onAddTechnician && (
+            <button
+              type="button"
+              onClick={onAddTechnician}
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-800 hover:bg-slate-900 text-white text-xs font-bold rounded-xl shadow-xs cursor-pointer transition-all"
+            >
+              <Wrench className="w-3.5 h-3.5 text-emerald-400" />
+              <span>+ Add Technician</span>
+            </button>
+          )}
+
           {(isWard || isBlock) && (
             <button
               type="button"
@@ -166,21 +179,13 @@ export const DepartmentCsrGrantPanel = ({ department }) => {
 
       <RequestGrantModal department={deptData} isOpen={isRequestModalOpen} onClose={() => setIsRequestModalOpen(false)} onCreated={(req) => { setOutboundReqs((p) => [req, ...p]); setSubTab('outbound'); }} />
       <EmergencyGrantModal department={deptData} isOpen={isEmergencyModalOpen} onClose={() => setIsEmergencyModalOpen(false)} onCreated={(req) => { setOutboundReqs((p) => [req, ...p]); setSubTab('outbound'); }} />
-      <GrantFundsModal
-        request={reviewingReq}
-        isOpen={Boolean(reviewingReq)}
-        onClose={() => setReviewingReq(null)}
-        onGranted={() => { loadRequests(); loadDepartment(); }}
-        onRejected={() => { loadRequests(); loadDepartment(); }}
-      />
+      <GrantFundsModal request={reviewingReq} isOpen={Boolean(reviewingReq)} onClose={() => setReviewingReq(null)} onGranted={() => { loadRequests(); loadDepartment(); }} onRejected={() => { loadRequests(); loadDepartment(); }} />
       <AllocateFundModal
         currentDepartment={{ ...(deptData || department), allocatedFundPool: availableBalance }}
         isOpen={isAllocateModalOpen}
         onClose={() => setIsAllocateModalOpen(false)}
         onFundAllocated={(res) => {
-          if (res?.fromDepartment?.newBalance !== undefined) {
-            setDeptData((prev) => ({ ...prev, allocatedFundPool: res.fromDepartment.newBalance }));
-          }
+          if (res?.fromDepartment?.newBalance !== undefined) setDeptData((prev) => ({ ...prev, allocatedFundPool: res.fromDepartment.newBalance }));
           loadDepartment();
           loadRequests();
         }}

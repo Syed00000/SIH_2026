@@ -12,7 +12,7 @@ export const DepartmentMobileNav = ({
   const tabs = [
     { id: 'overview', label: 'Overview', icon: Home },
     { id: 'problems', label: 'Problems', icon: Layers, badge: problemCount > 0 ? problemCount : null },
-    { id: 'technicians', label: isWard ? 'Workers' : 'Techs', icon: isWard ? Users : Wrench, badge: techCount > 0 ? techCount : null },
+    { id: 'technicians', label: 'Technicians', icon: Wrench, badge: techCount > 0 ? techCount : null },
     ...(isWard
       ? [{ id: 'csr-grant', label: 'CSR Grant', icon: HandCoins }]
       : [{ id: 'districts', label: 'Districts', icon: Building2, badge: districtCount > 0 ? districtCount : null }])

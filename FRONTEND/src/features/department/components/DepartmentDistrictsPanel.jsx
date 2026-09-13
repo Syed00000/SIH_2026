@@ -156,6 +156,7 @@ export const DepartmentDistrictsPanel = ({
                         </div>
                       </td>
                     </tr>
+                  );
                 })}
               </tbody>
             </table>

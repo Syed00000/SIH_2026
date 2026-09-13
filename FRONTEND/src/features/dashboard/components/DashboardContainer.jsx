@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../auth/AuthContext.jsx';
+import { LoginForm } from '../../auth/components/LoginForm.jsx';
 import { DashboardHeader } from './header/DashboardHeader.jsx';
 import { DashboardSidebar } from './sidebar/DashboardSidebar.jsx';
 import { DashboardFooter } from './footer/DashboardFooter.jsx';
@@ -39,19 +40,7 @@ export const DashboardContainer = ({ onNavigate }) => {
   }
 
   if (!user) {
-    return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
-        <Card className="max-w-md w-full text-center p-6 bg-white border border-slate-200 shadow-xs rounded-md">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-lg font-bold text-slate-900">Authentication Required</CardTitle>
-            <CardDescription className="text-slate-500 text-xs">Please sign in to access your JoharSetu portal dashboard.</CardDescription>
-          </CardHeader>
-          <CardContent className="pt-3">
-            <Button onClick={() => (onNavigate ? onNavigate('/login') : (window.location.href = '/login'))} className="w-full py-2 rounded-md font-semibold text-xs cursor-pointer bg-slate-900 text-white hover:bg-slate-800">Sign In Now</Button>
-          </CardContent>
-        </Card>
-      </div>
-    );
+    return <LoginForm onNavigate={onNavigate} />;
   }
 
   const role = (user.role || 'CITIZEN').toUpperCase();
