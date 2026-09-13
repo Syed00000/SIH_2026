@@ -5,7 +5,6 @@ import {
   Map,
   Users,
   FileText,
-  Settings,
   Building2,
   Briefcase,
   ShieldCheck,
@@ -55,8 +54,7 @@ export const GOV_MAIN_NAV_ITEMS = [
       { id: 'dept_panchayat', label: 'Gram Panchayats / Wards', icon: Map }
     ]
   },
-  { id: 'reports', label: 'Reports', icon: FileText },
-  { id: 'settings', label: 'Settings', icon: Settings }
+  { id: 'reports', label: 'Reports', icon: FileText }
 ];
 
 const TAB_TITLES = {
@@ -75,8 +73,7 @@ const TAB_TITLES = {
   dept_district: 'District Departments Governance',
   dept_panchayat: 'Gram Panchayats / Wards Governance',
   dept_block: 'Block Offices Governance',
-  reports: 'Executive Reports & Audits',
-  settings: 'Government Portal Settings'
+  reports: 'Executive Reports & Audits'
 };
 
 export const getGovTabTitle = (tab) => TAB_TITLES[tab] || 'Innovation Module';

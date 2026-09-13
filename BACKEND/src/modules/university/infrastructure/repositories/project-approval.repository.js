@@ -4,20 +4,20 @@ import { findUniversityIdentity } from '../helpers/lookup.helper.js';
 
 export class ProjectApprovalRepository {
   async updateProject(universityCode, projectId, updateData) {
-    const identity = await findUniversityIdentity(universityCode);
-    if (!identity) {
-      throw new Error('Unauthorized: Invalid or unknown university identity');
+    const isGovAdmin = universityCode === 'ALL' || !universityCode;
+    let identity = null;
+    if (!isGovAdmin) {
+      identity = await findUniversityIdentity(universityCode);
+      if (!identity) {
+        throw new Error('Unauthorized: Invalid or unknown university identity');
+      }
     }
 
     const baseQuery = typeof projectId === 'string' && projectId.match(/^[0-9a-fA-F]{24}$/)
       ? { _id: projectId }
       : { $or: [{ projectId }, { challengeId: projectId }] };
 
-    // Strictly enforce tenant boundary: project MUST belong to the calling university
-    const query = {
-      ...baseQuery,
-      universityCode: { $in: identity.validIdentifiers }
-    };
+    const query = isGovAdmin ? baseQuery : { ...baseQuery, universityCode: { $in: identity.validIdentifiers } };
 
     const cleanUpdate = { ...updateData };
     delete cleanUpdate._id;
@@ -26,12 +26,49 @@ export class ProjectApprovalRepository {
     delete cleanUpdate.updatedAt;
 
     try {
+      if (cleanUpdate.milestoneId) {
+        const existingProject = await UniversityProject.findOne(query);
+        if (existingProject) {
+          const milestones = Array.isArray(existingProject.milestones) ? [...existingProject.milestones] : [];
+          let found = false;
+          const updatedMilestones = milestones.map((m, idx) => {
+            const mId = m.milestoneId || m.id || `M${idx + 1}`;
+            if (String(mId) === String(cleanUpdate.milestoneId) || String(idx + 1) === String(cleanUpdate.milestoneId).replace(/^M/, '')) {
+              found = true;
+              return {
+                ...m,
+                status: cleanUpdate.status || 'Approved',
+                remarks: cleanUpdate.remarks || m.remarks || '',
+                verifiedAt: new Date(),
+                completedAt: (cleanUpdate.status === 'Approved' || cleanUpdate.status === 'Completed') ? (m.completedAt || new Date()) : m.completedAt
+              };
+            }
+            return m;
+          });
+          if (!found) {
+            updatedMilestones.push({
+              milestoneId: cleanUpdate.milestoneId,
+              title: cleanUpdate.milestoneTitle || `Milestone ${cleanUpdate.milestoneId}`,
+              status: cleanUpdate.status || 'Approved',
+              remarks: cleanUpdate.remarks || '',
+              verifiedAt: new Date(),
+              completedAt: new Date()
+            });
+          }
+          const completedCount = updatedMilestones.filter((m) => m.status === 'Completed' || m.status === 'Approved').length;
+          cleanUpdate.milestones = updatedMilestones;
+          cleanUpdate.milestonesCompleted = completedCount;
+          cleanUpdate.progressPercentage = Math.round((completedCount / (updatedMilestones.length || 7)) * 100);
+          if (cleanUpdate.progressPercentage === 100) cleanUpdate.status = 'Completed';
+        }
+      }
+
       const res = await UniversityProject.findOneAndUpdate(query, { $set: cleanUpdate }, { new: true });
       if (!res) {
         return null;
       }
 
-      const uniCode = identity.code;
+      const uniCode = identity?.code || res?.universityCode || 'RUNI-JH';
 
       if (cleanUpdate.teamMembers && Array.isArray(cleanUpdate.teamMembers)) {
         const { UniversityTeam } = await import('../model.js');

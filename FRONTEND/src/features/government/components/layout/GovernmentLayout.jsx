@@ -72,6 +72,7 @@ export const GovernmentLayout = ({ onLogout }) => {
     setSectors(governmentDataService.getFilteredSectors(selectedDistrict, sectorTimeframe));
     setTrendData(governmentDataService.getFilteredTrend(selectedDistrict, selectedSector, trendInterval));
     setHeis(governmentDataService.getFilteredHeis(selectedDistrict));
+    setTriageFeed(governmentDataService.getTriageFeed());
   };
 
   useEffect(() => {
@@ -140,9 +141,9 @@ export const GovernmentLayout = ({ onLogout }) => {
         selectedSector={selectedSector}
         setSelectedSector={setSelectedSector}
         onExportPdf={handleExportPdf}
-        notificationCount={7}
         isMobileMenuOpen={isMobileMenuOpen}
         setIsMobileMenuOpen={setIsMobileMenuOpen}
+        onNavigateTab={handleSetActiveTab}
       />
       <div className="flex-1 flex overflow-hidden relative min-h-0 bg-white">
         <GovernmentSidebar

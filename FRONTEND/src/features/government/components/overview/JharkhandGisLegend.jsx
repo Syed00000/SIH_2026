@@ -9,23 +9,23 @@ export const JharkhandGisLegend = ({ cursorCoords }) => {
           Problem Density
         </span>
         <div className="flex items-center space-x-1.5">
-          <span className="w-2.5 h-2.5 rounded-xs bg-[#ef4444]" />
-          <span className="text-slate-600 font-medium">Very High (&gt;50)</span>
+          <span className="w-2.5 h-2.5 rounded-xs bg-[#dc2626]" />
+          <span className="text-slate-600 font-medium">Active Hotspot (4+ Issues)</span>
         </div>
         <div className="flex items-center space-x-1.5">
-          <span className="w-2.5 h-2.5 rounded-xs bg-[#fb923c]" />
-          <span className="text-slate-600 font-medium">High (20-49)</span>
+          <span className="w-2.5 h-2.5 rounded-xs bg-[#ea580c]" />
+          <span className="text-slate-600 font-medium">Elevated (2-3 Issues)</span>
         </div>
         <div className="flex items-center space-x-1.5">
-          <span className="w-2.5 h-2.5 rounded-xs bg-[#fde047]" />
-          <span className="text-slate-600 font-medium">Moderate (10-19)</span>
+          <span className="w-2.5 h-2.5 rounded-xs bg-[#f59e0b]" />
+          <span className="text-slate-600 font-medium">Moderate (1 Issue)</span>
         </div>
         <div className="flex items-center space-x-1.5">
-          <span className="w-2.5 h-2.5 rounded-xs bg-[#86efac]" />
-          <span className="text-slate-600 font-medium">Low (1-9)</span>
+          <span className="w-2.5 h-2.5 rounded-xs bg-[#10b981]" />
+          <span className="text-slate-600 font-medium">Resolved Cases</span>
         </div>
         <div className="flex items-center space-x-1.5">
-          <span className="w-2.5 h-2.5 rounded-xs bg-[#22c55e]" />
+          <span className="w-2.5 h-2.5 rounded-xs bg-[#cbd5e1]" />
           <span className="text-slate-600 font-medium">Zero / Clean (0)</span>
         </div>
       </div>

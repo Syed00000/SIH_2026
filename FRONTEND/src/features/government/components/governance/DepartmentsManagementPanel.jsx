@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Search, RefreshCw, Landmark, Plus, LayoutGrid, List, SlidersHorizontal, Table, Grid, ChevronRight, CheckCircle2 } from 'lucide-react';
 import { DepartmentSummaryCards } from './DepartmentSummaryCards.jsx';
+import { DepartmentBanner } from './DepartmentBanner.jsx';
+import { DepartmentToolbar } from './DepartmentToolbar.jsx';
 import { DepartmentCard } from './DepartmentCard.jsx';
 import { DepartmentTable } from './DepartmentTable.jsx';
 import { DepartmentDetailPanel } from './DepartmentDetailPanel.jsx';
@@ -17,7 +18,6 @@ export const DepartmentsManagementPanel = ({ category = 'State Ministry' }) => {
   const [viewMode, setViewMode] = useState('list');
   const [statusFilter, setStatusFilter] = useState('All');
 
-  // Dedicated Panel state: 'list' | 'detail' | 'edit'
   const [activeView, setActiveView] = useState('list');
   const [selectedDepartment, setSelectedDepartment] = useState(null);
   const [editingDepartment, setEditingDepartment] = useState(null);
@@ -89,10 +89,8 @@ export const DepartmentsManagementPanel = ({ category = 'State Ministry' }) => {
       } else {
         if (d.category !== category) return false;
       }
-
       if (statusFilter === 'Active' && d.status !== 'Active') return false;
       if (statusFilter === 'Inactive' && d.status === 'Active') return false;
-
       if (!searchTerm.trim()) return true;
       const q = searchTerm.toLowerCase().trim();
       return (
@@ -129,61 +127,25 @@ export const DepartmentsManagementPanel = ({ category = 'State Ministry' }) => {
     );
   }
 
-  const title = category === 'State Ministry' ? 'STATE MINISTRIES & SECRETARIATS' :
-                category === 'District Department' ? 'DISTRICT DEPARTMENTS & NODAL DESKS' :
-                category === 'Gram Panchayat' ? 'GRAM PANCHAYATS & WARDS' :
-                category === 'Block / Tehsil Office' ? 'BLOCK & TEHSIL OFFICES' : 'DEPARTMENTS DIRECTORY';
-
-  const subtitle = category === 'State Ministry' ? 'Central state line ministries, secretariats, and nodal administrative desks' :
-                   category === 'District Department' ? 'District-level line departments, administrative collectors, and nodal authorities' :
-                   category === 'Gram Panchayat' ? 'Gram Panchayat Mukhiya and Ward Commissioner local governance telemetry desks' :
-                   'Block development offices (BDO) and tehsil administrative units';
+  const META = {
+    'State Ministry': { t: 'STATE MINISTRIES & SECRETARIATS', s: 'Central state line ministries, secretariats, and nodal administrative desks' },
+    'District Department': { t: 'DISTRICT DEPARTMENTS & NODAL DESKS', s: 'District-level line departments, administrative collectors, and nodal authorities' },
+    'Gram Panchayat': { t: 'GRAM PANCHAYATS & WARDS', s: 'Gram Panchayat Mukhiya and Ward Commissioner local governance telemetry desks' },
+    'Block / Tehsil Office': { t: 'BLOCK & TEHSIL OFFICES', s: 'Block development offices (BDO) and tehsil administrative units' }
+  };
+  const { t: title, s: subtitle } = META[category] || { t: 'DEPARTMENTS DIRECTORY', s: 'Department administrative units' };
 
   return (
     <div className="space-y-6 max-w-[1600px] mx-auto pb-12 select-none animate-fadeIn">
-      {/* Header Banner - Active Projects Theme */}
-      <div className="bg-white border border-slate-200/90 rounded-2xl p-5 shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <div className="flex items-center space-x-2 text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">
-            <span className="flex items-center space-x-1">
-              <Landmark className="w-3.5 h-3.5 text-slate-400" />
-              <span>Governance Directory</span>
-            </span>
-            <span>•</span>
-            <span className="text-slate-700">{category}</span>
-          </div>
-          <h1 className="text-xl md:text-2xl font-black text-slate-900 tracking-tight">
-            {title}
-          </h1>
-          <p className="text-xs md:text-sm text-slate-500 font-medium mt-0.5">
-            {subtitle}
-          </p>
-        </div>
+      <DepartmentBanner
+        category={category}
+        title={title}
+        subtitle={subtitle}
+        isLoading={isLoading}
+        onRefresh={loadData}
+        onAdd={() => { setEditingDepartment(null); setActiveView('edit'); }}
+      />
 
-        <div className="flex items-center space-x-2.5 flex-wrap">
-          <button
-            type="button"
-            onClick={loadData}
-            disabled={isLoading}
-            className="p-2 border border-slate-200 rounded-xl bg-white hover:bg-slate-50 text-slate-600 transition-colors cursor-pointer shadow-2xs"
-            title="Refresh Directory"
-          >
-            <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin text-[#007A61]' : ''}`} />
-          </button>
-          {category === 'State Ministry' && (
-            <button
-              type="button"
-              onClick={() => { setEditingDepartment(null); setActiveView('edit'); }}
-              className="px-4 py-2 bg-[#007A61] hover:bg-[#00624e] text-white rounded-xl text-xs font-bold transition-colors cursor-pointer flex items-center space-x-1.5 shadow-2xs"
-            >
-              <Plus className="w-4 h-4 text-emerald-100" />
-              <span>Add Department</span>
-            </button>
-          )}
-        </div>
-      </div>
-
-      {/* Top Metric Summary Cards */}
       <DepartmentSummaryCards
         totalDepartments={filteredDepartments.length}
         totalOfficers={filteredDepartments.reduce((acc, d) => acc + (d.officersCount || 0), 0) || admins.length}
@@ -191,64 +153,15 @@ export const DepartmentsManagementPanel = ({ category = 'State Ministry' }) => {
         activeProjects={filteredDepartments.reduce((acc, d) => acc + (d.activeProjectsCount || 0), 0)}
       />
 
-      {/* Filter Toolbar & Status Filter Tabs */}
-      <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-2xs space-y-4">
-        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-3">
-          <div className="flex items-center space-x-2 overflow-x-auto">
-            {['All', 'Active', 'Inactive'].map((tab) => (
-              <button
-                key={tab}
-                type="button"
-                onClick={() => setStatusFilter(tab)}
-                className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
-                  statusFilter === tab
-                    ? 'bg-[#007A61] text-white shadow-2xs'
-                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                }`}
-              >
-                {tab === 'All' ? 'All Units' : tab}
-              </button>
-            ))}
-          </div>
+      <DepartmentToolbar
+        statusFilter={statusFilter}
+        setStatusFilter={setStatusFilter}
+        viewMode={viewMode}
+        setViewMode={setViewMode}
+        searchTerm={searchTerm}
+        setSearchTerm={setSearchTerm}
+      />
 
-          <div className="flex items-center space-x-1.5 bg-slate-100 p-1 rounded-xl">
-            <button
-              type="button"
-              onClick={() => setViewMode('list')}
-              className={`p-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                viewMode === 'list' ? 'bg-white text-slate-900 shadow-2xs' : 'text-slate-500 hover:text-slate-900'
-              }`}
-              title="Table View"
-            >
-              <Table className="w-4 h-4" />
-            </button>
-            <button
-              type="button"
-              onClick={() => setViewMode('grid')}
-              className={`p-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                viewMode === 'grid' ? 'bg-white text-slate-900 shadow-2xs' : 'text-slate-500 hover:text-slate-900'
-              }`}
-              title="Grid View"
-            >
-              <Grid className="w-4 h-4" />
-            </button>
-          </div>
-        </div>
-
-        {/* Search Input */}
-        <div className="relative">
-          <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-          <input
-            type="text"
-            placeholder="Search departments, portal UID, Mukhiya, jurisdiction..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:bg-white focus:outline-hidden"
-          />
-        </div>
-      </div>
-
-      {/* Content: List Table or Grid Cards */}
       {viewMode === 'list' ? (
         <DepartmentTable
           departments={filteredDepartments}

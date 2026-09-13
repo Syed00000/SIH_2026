@@ -10,7 +10,7 @@ export const PerformanceLeaderboard = ({ leaderboardData = [] }) => {
         <div className="space-y-4">
           <div className="flex justify-between items-center border-b border-slate-100 pb-3">
             <div>
-              <h3 className="font-bold text-slate-900 text-sm">2. HEI Performance Leaderboard</h3>
+              <h3 className="font-bold text-slate-900 text-sm">1. Institutional Performance Leaderboard</h3>
               <p className="text-[10.5px] text-slate-400 font-medium">Rank index based on total allocated problems, successfully resolved solutions, and NEP credits.</p>
             </div>
             <button className="text-[11px] text-slate-900 font-bold hover:underline cursor-pointer">View Full Leaderboard</button>

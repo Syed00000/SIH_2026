@@ -1,9 +1,9 @@
 import React from 'react';
-import { Building, Users, FileText, CheckCircle, Award } from 'lucide-react';
+import { Building, Users, FileText, CheckCircle } from 'lucide-react';
 
 export const AcademicStatsBanner = ({ stats = {} }) => {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-5 gap-3.5">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
       {/* Total HEIs */}
       <div className="bg-white border border-slate-200/90 rounded-xl p-3.5 shadow-2xs relative overflow-hidden flex flex-col justify-between min-h-[92px]">
         <div className="flex justify-between items-start">
@@ -75,25 +75,8 @@ export const AcademicStatsBanner = ({ stats = {} }) => {
           </span>
         </div>
       </div>
-
-      {/* NEP Credits Earned */}
-      <div className="bg-white border border-slate-200/90 rounded-xl p-3.5 shadow-2xs relative overflow-hidden flex flex-col justify-between min-h-[92px]">
-        <div className="flex justify-between items-start">
-          <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">
-            NEP 2020 Credits Earned
-          </span>
-          <div className="shrink-0">
-            <Award className="w-4 h-4 text-indigo-600" />
-          </div>
-        </div>
-        <div className="mt-2 flex items-baseline">
-          <span className="text-xl font-extrabold text-slate-900 tracking-tight">{(stats.creditsEarned ?? 0).toLocaleString()}</span>
-          <span className="text-[9.5px] text-indigo-600 font-semibold ml-2">
-            Academic Framework
-          </span>
-        </div>
-      </div>
     </div>
   );
 };
+
 export default AcademicStatsBanner;

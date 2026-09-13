@@ -24,21 +24,13 @@ export class GrantRequestService {
 
     if (data.isEmergency) {
       if (requesterCategory === 'Ward Commissioner' || requesterCategory === 'Ward') {
-        if (data.emergencyTargetTier === 'STATE') {
-          tier = 'WARD_TO_STATE';
-          targetCategory = 'State Ministry';
-        } else {
-          tier = 'WARD_TO_DISTRICT';
-          targetCategory = 'District Department';
-        }
-      } else if (requesterCategory === 'Block / Tehsil Office') {
-        tier = 'BLOCK_TO_STATE';
-        targetCategory = 'State Ministry';
+        tier = data.emergencyTargetTier === 'STATE' ? 'WARD_TO_STATE' : 'WARD_TO_DISTRICT';
+        targetCategory = data.emergencyTargetTier === 'STATE' ? 'State Ministry' : 'District Department';
       } else {
-        tier = 'DISTRICT_TO_STATE';
+        tier = requesterCategory === 'Block / Tehsil Office' ? 'BLOCK_TO_STATE' : 'DISTRICT_TO_STATE';
         targetCategory = 'State Ministry';
       }
-    } else if (requesterCategory === 'District Department') {
+    } else if (requesterCategory === 'District Department' || requesterCategory === 'State Ministry') {
       tier = 'DISTRICT_TO_STATE';
       targetCategory = 'State Ministry';
     } else if (requesterCategory === 'Block / Tehsil Office') {
@@ -118,10 +110,49 @@ export class GrantRequestService {
       grantRemarks: grantData.remarks || 'Sanctioned & Disbursed via CSR Pool'
     });
 
+    // Atomically credit requester department pool balance
+    let targetDept = null;
+    try {
+      targetDept = await departmentRepository.findById(existing.requesterDeptId);
+      if (!targetDept) {
+        const { Department } = await import('../departments/infrastructure/department.schema.js');
+        targetDept = await Department.findOne({ deptId: existing.requesterDeptId });
+      }
+      if (targetDept) {
+        const currentPool = Number(targetDept.allocatedFundPool) || 0;
+        await departmentRepository.update(targetDept.deptId || targetDept._id, { allocatedFundPool: currentPool + sanctionedAmount });
+      }
+    } catch (deptErr) {
+      console.warn('Could not update requester department pool balance:', deptErr.message);
+    }
+
+    try {
+      const { GovernmentGrantFund } = await import('./model.js');
+      await GovernmentGrantFund.create({
+        fundId: `GGF-REQ-${Date.now().toString().slice(-5)}`,
+        title: `Grant Approved: ${existing.purpose}`,
+        scheme: existing.sector || 'State Innovation Grant for Department Civic Works',
+        department: targetDept?.name || existing.requesterName,
+        departmentId: targetDept?.deptId || existing.requesterDeptId,
+        departmentCategory: targetDept?.category || existing.requesterCategory,
+        targetDeptCode: targetDept?.code || '',
+        fundType: 'DEPARTMENT_ALLOCATION',
+        amount: sanctionedAmount,
+        sanctionOrderNo: `JH-SANCTION-REQ-${Date.now().toString().slice(-6)}`,
+        financialYear: '2026-2027',
+        allocationDate: new Date(),
+        allocatedBy: grantData.grantedBy || 'Super Admin, Govt of Jharkhand',
+        description: `Sanctioned grant for department request (${existing.requestId}): ${existing.purpose}`,
+        status: 'Active'
+      });
+    } catch (e) {
+      console.warn('Could not record grant fund entry for request:', e.message);
+    }
+
     try {
       await GovernmentGrantPayment.create({
         paymentId: `PAY-GR-${Date.now().toString().slice(-6)}`,
-        payer: existing.targetName,
+        payer: existing.targetName || 'Govt State Treasury (PFMS Escrow)',
         payee: `${existing.requesterName} (${existing.requesterDeptId})`,
         amount: `₹ ${sanctionedAmount.toLocaleString('en-IN')}`,
         rawAmount: sanctionedAmount,

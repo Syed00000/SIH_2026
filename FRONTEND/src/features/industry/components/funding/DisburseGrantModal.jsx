@@ -299,8 +299,8 @@ export const DisburseGrantModal = ({
             <input
               type="number"
               required
-              min="10000"
-              step="10000"
+              min="1"
+              step="any"
               placeholder="e.g. 1500000"
               value={amount}
               onChange={(e) => setAmount(e.target.value)}

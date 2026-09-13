@@ -49,7 +49,7 @@ export const DepartmentCsrGrantPanel = ({ department, onAddTechnician }) => {
         const inb = await grantRequestService.getRequests({ targetDeptId: deptId });
         setInboundReqs(Array.isArray(inb) ? inb : []);
       }
-      if (!isState && deptId) {
+      if (deptId) {
         const out = await grantRequestService.getRequests({ requesterDeptId: deptId });
         setOutboundReqs(Array.isArray(out) ? out : []);
       }
@@ -76,7 +76,7 @@ export const DepartmentCsrGrantPanel = ({ department, onAddTechnician }) => {
   const combinedReqs = [...inboundWithDir, ...outboundWithDir];
   const displayedRequests = subTab === 'all' ? combinedReqs : subTab === 'inbound' ? inboundWithDir : outboundWithDir;
 
-  const outboundLabel = isDistrict ? 'Requisitions to State Secretariat' : isBlock ? `Requisitions to ${districtName} District` : 'Outbound Requisitions';
+  const outboundLabel = isState ? 'Requisitions to State Innovation Pool' : isDistrict ? 'Requisitions to State Secretariat' : isBlock ? `Requisitions to ${districtName} District` : 'Outbound Requisitions';
   const allocateButtonLabel = isState ? 'Allocate Fund to District Department' : isDistrict ? 'Allocate Fund to Block' : isBlock ? 'Allocate Fund to Ward' : 'Disburse to Technicians';
 
   return (
@@ -128,16 +128,14 @@ export const DepartmentCsrGrantPanel = ({ department, onAddTechnician }) => {
             </button>
           )}
 
-          {!isState && (
-            <button
-              type="button"
-              onClick={() => setIsRequestModalOpen(true)}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold rounded-xl shadow-xs cursor-pointer transition-all"
-            >
-              <Send className="w-3.5 h-3.5" />
-              <span>Request Extra Grant</span>
-            </button>
-          )}
+          <button
+            type="button"
+            onClick={() => setIsRequestModalOpen(true)}
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold rounded-xl shadow-xs cursor-pointer transition-all active:scale-95"
+          >
+            <Send className="w-3.5 h-3.5" />
+            <span>{isState ? 'Request Fund from State Pool' : 'Request Grant Fund'}</span>
+          </button>
 
           <button type="button" onClick={() => { loadDepartment(); loadRequests(); }} disabled={loading} className="p-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl cursor-pointer transition-all">
             <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin text-emerald-600' : ''}`} />
@@ -168,11 +166,9 @@ export const DepartmentCsrGrantPanel = ({ department, onAddTechnician }) => {
             <span className="text-[10px] opacity-80">({inboundReqs.length})</span>
           </button>
         )}
-        {!isState && (
-          <button type="button" onClick={() => setSubTab('outbound')} className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer ${subTab === 'outbound' ? 'bg-emerald-700 text-white shadow-xs' : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'}`}>
-            <SendHorizontal className="w-3.5 h-3.5" /><span>{outboundLabel}</span><span className="text-[10px] opacity-80">({outboundReqs.length})</span>
-          </button>
-        )}
+        <button type="button" onClick={() => setSubTab('outbound')} className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer ${subTab === 'outbound' ? 'bg-emerald-700 text-white shadow-xs' : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'}`}>
+          <SendHorizontal className="w-3.5 h-3.5" /><span>{outboundLabel}</span><span className="text-[10px] opacity-80">({outboundReqs.length})</span>
+        </button>
       </div>
 
       <GrantRequestsTable requests={displayedRequests} type={subTab} onReviewRequest={setReviewingReq} />

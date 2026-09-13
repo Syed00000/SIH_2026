@@ -17,7 +17,15 @@ export { EscrowVaultsModal } from './EscrowVaultsModal.jsx';
 export { TdsComplianceModal } from './TdsComplianceModal.jsx';
 export { GeoVerificationModal } from './GeoVerificationModal.jsx';
 export { Gfr12AModal } from './Gfr12AModal.jsx';
-export { CaAuditReportModal } from './CaAuditReportModal.jsx';
-export { GatewayConfigModal } from './GatewayConfigModal.jsx';
-export { UnspentSweepModal } from './UnspentSweepModal.jsx';
-export { SourceDetailsModal } from './SourceDetailsModal.jsx';
+export { DepartmentAllocationTransferPanel } from './DepartmentAllocationTransferPanel.jsx';
+export { AllocateDepartmentFundModal } from './AllocateDepartmentFundModal.jsx';
+export { DepartmentAllocationTable } from './DepartmentAllocationTable.jsx';
+export { DepartmentSanctionReceiptModal } from './DepartmentSanctionReceiptModal.jsx';
+export { DepartmentFundRequestsPanel } from './DepartmentFundRequestsPanel.jsx';
+export { DepartmentRequestsTable } from './DepartmentRequestsTable.jsx';
+export { ApproveGrantRequestModal } from './ApproveGrantRequestModal.jsx';
+export { RejectGrantRequestModal } from './RejectGrantRequestModal.jsx';
+export { GrantRequestDetailsModal } from './GrantRequestDetailsModal.jsx';
+export { CreateDepartmentRequisitionModal } from './CreateDepartmentRequisitionModal.jsx';
+
+
