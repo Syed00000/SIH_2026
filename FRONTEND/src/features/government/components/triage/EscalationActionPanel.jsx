@@ -111,7 +111,7 @@ export const EscalationActionPanel = ({ selectedIssue }) => {
             type="checkbox"
             checked={notifyDistrict}
             onChange={(e) => setNotifyDistrict(e.target.checked)}
-            className="rounded text-blue-600 focus:ring-blue-500"
+            className="rounded text-[#007A61] focus:ring-[#007A61]"
           />
           <span className="text-slate-700 text-xs font-semibold">
             Send instant SMS alert to Deputy Commissioner (DC) Office

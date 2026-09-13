@@ -119,11 +119,13 @@ export const DistrictBoundariesLayer = ({
     if (!map || !geoData) return;
 
     if (geoJsonLayerRef.current) {
-      map.removeLayer(geoJsonLayerRef.current);
+      if (map?._mapPane) {
+        try { map.removeLayer(geoJsonLayerRef.current); } catch {}
+      }
       geoJsonLayerRef.current = null;
     }
 
-    if (!visible) return;
+    if (!visible || !map?._mapPane) return;
 
     // Calculate maximum problem count across districts for heatmap normalization
     let maxCount = 1;
@@ -156,7 +158,7 @@ export const DistrictBoundariesLayer = ({
           click: () => {
             if (onSelectDistrict) onSelectDistrict(distName);
             try {
-              map.flyToBounds(l.getBounds(), { maxZoom: 11, duration: 1 });
+              if (map?._mapPane) map.flyToBounds(l.getBounds(), { maxZoom: 11, duration: 1 });
             } catch (err) {}
           }
         });
@@ -166,9 +168,10 @@ export const DistrictBoundariesLayer = ({
     geoJsonLayerRef.current = layer;
 
     return () => {
-      if (geoJsonLayerRef.current && map) {
-        map.removeLayer(geoJsonLayerRef.current);
+      if (geoJsonLayerRef.current && map?._mapPane) {
+        try { map.removeLayer(geoJsonLayerRef.current); } catch {}
       }
+      geoJsonLayerRef.current = null;
     };
   }, [map, visible, geoData, selectedDistrict, districtStats]);
 

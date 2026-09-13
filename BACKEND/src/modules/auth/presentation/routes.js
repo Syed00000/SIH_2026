@@ -17,7 +17,7 @@ import {
   resetPasswordSchema
 } from './controller.js';
 import { validate } from '../../../shared/validation/validate.js';
-import { rateLimiter } from '../../../shared/security/rate-limiter.js';
+import { rateLimiter, resetRateLimiter } from '../../../shared/security/rate-limiter.js';
 import authenticate from '../../../shared/security/authenticate.js';
 
 const router = Router();
@@ -64,5 +64,13 @@ router.get('/latest-otp', async (req, res) => {
   }
 });
 router.get('/me', authenticate, me);
+
+router.all('/reset-rate-limit', (req, res) => {
+  resetRateLimiter();
+  res.status(200).json({
+    success: true,
+    message: 'Rate limit counters have been successfully reset.'
+  });
+});
 
 export default router;

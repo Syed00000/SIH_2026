@@ -5,8 +5,8 @@ const getStatusDisplay = (status) => {
   switch (status) {
     case 'Submitted':
       return (
-        <span className="inline-flex items-center space-x-1.5 text-[11px] font-semibold text-blue-600">
-          <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
+        <span className="inline-flex items-center space-x-1.5 text-[11px] font-semibold text-[#007A61]">
+          <span className="w-1.5 h-1.5 rounded-full bg-[#007A61]" />
           <span>Submitted</span>
         </span>
       );
@@ -56,7 +56,7 @@ export const MilestoneApprovals = ({
   const items = filteredMilestones?.length > 0 ? filteredMilestones : (milestones || []);
 
   const summaryCards = [
-    { label: 'Pending Review', count: milestoneSummary?.submitted || 0, color: 'text-blue-600', icon: Clock },
+    { label: 'Pending Review', count: milestoneSummary?.submitted || 0, color: 'text-[#007A61]', icon: Clock },
     { label: 'Under Review', count: milestoneSummary?.underReview || 0, color: 'text-amber-500', icon: AlertTriangle },
     { label: 'Changes Req.', count: milestoneSummary?.changesRequested || 0, color: 'text-rose-500', icon: FileText },
     { label: 'Approved', count: milestoneSummary?.approved || 0, color: 'text-emerald-500', icon: CheckCircle2 }

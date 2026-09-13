@@ -14,7 +14,7 @@ export const IssueDetailPanel = ({ issue, onClose, onNavigateOverride, onNavigat
       breadcrumbs={['Citizen AI Triage', 'Domain Classification', issue.id]}
       idBadge={issue.id}
       statusBadge={
-        <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-blue-50 text-blue-700 border border-blue-200">
+        <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-[#007A61]/10 text-[#007A61] border border-[#007A61]/20">
           AI Confidence: {issue.confidence}% · {issue.status}
         </span>
       }

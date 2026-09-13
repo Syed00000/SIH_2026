@@ -41,11 +41,11 @@ export const IssueDetailModal = ({ issue, onClose, onNavigateOverride, onNavigat
           </div>
 
           <div className="grid grid-cols-2 gap-2 text-xs">
-            <div className="p-2.5 rounded bg-blue-50/60 border border-blue-200">
-              <span className="font-bold text-blue-900 block mb-1">Top Keyphrase Triggers</span>
+            <div className="p-2.5 rounded bg-[#007A61]/10 border border-[#007A61]/20">
+              <span className="font-bold text-[#005a47] block mb-1">Top Keyphrase Triggers</span>
               <div className="flex flex-wrap gap-1">
                 {issue.keywords?.map((kw, i) => (
-                  <span key={i} className="bg-white px-1.5 py-0.5 rounded border border-blue-200 text-blue-800 text-[10.5px]">
+                  <span key={i} className="bg-white px-1.5 py-0.5 rounded border border-[#007A61]/20 text-[#007A61] text-[10.5px]">
                     {kw}
                   </span>
                 ))}

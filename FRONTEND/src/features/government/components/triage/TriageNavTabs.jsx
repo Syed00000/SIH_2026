@@ -8,9 +8,9 @@ export const TriageNavTabs = ({ activeTab, onSelectTab }) => {
       title: 'Domain Classification',
       description: 'Automatic sector categorization & routing',
       icon: Cpu,
-      activeBg: 'border-blue-500 bg-blue-50/40 ring-1 ring-blue-500/30 text-blue-950',
-      activeIcon: 'bg-blue-600 text-white',
-      inactiveIcon: 'bg-blue-50 text-blue-600 border border-blue-100',
+      activeBg: 'border-[#007A61] bg-[#007A61]/10 ring-1 ring-[#007A61]/30 text-[#005a47]',
+      activeIcon: 'bg-[#007A61] text-white',
+      inactiveIcon: 'bg-[#007A61]/10 text-[#007A61] border border-[#007A61]/20',
       tag: 'Auto-AI'
     },
     {

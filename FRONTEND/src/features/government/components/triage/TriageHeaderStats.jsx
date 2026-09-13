@@ -12,14 +12,14 @@ export const TriageHeaderStats = ({ triageCount = 0, overrideCount = 0, clusterC
       badge: 'Real-time Stream',
       badgeColor: 'bg-emerald-50 text-emerald-700 border-emerald-200',
       icon: FileText,
-      iconColor: 'text-blue-600 bg-blue-50'
+      iconColor: 'text-[#007A61] bg-[#007A61]/10'
     },
     {
       title: 'Confidence Level',
       value: avgConfidence > 0 ? `${avgConfidence}%` : '—',
       subtext: avgConfidence > 0 ? `Avg Model Score: ${avgConfidence}%` : 'Awaiting Inflow',
       badge: 'Model Inference',
-      badgeColor: 'bg-blue-50 text-blue-700 border-blue-200',
+      badgeColor: 'bg-[#007A61]/10 text-[#007A61] border-[#007A61]/20',
       icon: Clock,
       iconColor: 'text-emerald-600 bg-emerald-50'
     },

@@ -72,7 +72,7 @@ export const OverrideWorkspace = ({ selectedIssue, issues = [], onSelectIssue, o
             <div className="grid grid-cols-2 gap-2 pt-1 border-t border-slate-200/60">
               <div>
                 <span className="text-[10.5px] text-slate-400 block font-medium">Current Sector</span>
-                <span className="font-extrabold text-blue-700 text-xs mt-0.5 block">{issue.currentDomain || issue.domain}</span>
+                <span className="font-extrabold text-[#007A61] text-xs mt-0.5 block">{issue.currentDomain || issue.domain}</span>
               </div>
               <div>
                 <span className="text-[10.5px] text-slate-400 block font-medium">District</span>

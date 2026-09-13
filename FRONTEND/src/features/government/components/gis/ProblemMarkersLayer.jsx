@@ -26,15 +26,17 @@ export const ProblemMarkersLayer = ({
   const clusterGroupRef = useRef(null);
 
   useEffect(() => {
-    if (!map) return;
-
     if (clusterGroupRef.current) {
-      map.removeLayer(clusterGroupRef.current);
-      clusterGroupRef.current.clearLayers();
+      if (map?._mapPane) {
+        try {
+          map.removeLayer(clusterGroupRef.current);
+          clusterGroupRef.current.clearLayers();
+        } catch {}
+      }
       clusterGroupRef.current = null;
     }
 
-    if (!visible || !Array.isArray(problems) || problems.length === 0) return;
+    if (!visible || !map?._mapPane || !Array.isArray(problems) || problems.length === 0) return;
 
     const cluster = L.markerClusterGroup({
       chunkedLoading: true,
@@ -114,9 +116,10 @@ export const ProblemMarkersLayer = ({
     clusterGroupRef.current = cluster;
 
     return () => {
-      if (clusterGroupRef.current && map) {
-        map.removeLayer(clusterGroupRef.current);
+      if (clusterGroupRef.current && map?._mapPane) {
+        try { map.removeLayer(clusterGroupRef.current); } catch {}
       }
+      clusterGroupRef.current = null;
     };
   }, [map, problems, visible, onViewProblemDetails, onSelectDistrict]);
 

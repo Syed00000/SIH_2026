@@ -5,7 +5,7 @@ import { Badge } from '../../../../shared/components/ui/badge.jsx';
 
 export const TaxonomyQuickPills = ({ onSelectCategory }) => {
   const sectors = [
-    { id: 'water', name: 'Water & Sanitation', dept: 'DWSD', icon: Droplet, count: 18, color: 'text-blue-600 bg-blue-50 border-blue-200' },
+    { id: 'water', name: 'Water & Sanitation', dept: 'DWSD', icon: Droplet, count: 18, color: 'text-[#007A61] bg-[#007A61]/10 border-[#007A61]/20' },
     { id: 'infra', name: 'Public Infrastructure', dept: 'RCD / RDD', icon: Wrench, count: 14, color: 'text-amber-600 bg-amber-50 border-amber-200' },
     { id: 'agri', name: 'Agriculture & Irrigation', dept: 'Agriculture Dept', icon: Sprout, count: 11, color: 'text-emerald-600 bg-emerald-50 border-emerald-200' },
     { id: 'health', name: 'Health & Nutrition', dept: 'H&FW Dept', icon: HeartPulse, count: 9, color: 'text-rose-600 bg-rose-50 border-rose-200' },
@@ -21,7 +21,7 @@ export const TaxonomyQuickPills = ({ onSelectCategory }) => {
           <Card
             key={sec.id}
             onClick={() => onSelectCategory(sec.name)}
-            className="p-2.5 bg-white border-slate-200 shadow-2xs hover:border-blue-400 hover:shadow-xs transition-all cursor-pointer text-left group"
+            className="p-2.5 bg-white border-slate-200 shadow-2xs hover:border-[#007A61] hover:shadow-xs transition-all cursor-pointer text-left group"
           >
             <div className="flex items-center justify-between">
               <div className={`p-1.5 rounded border ${sec.color}`}>
@@ -31,7 +31,7 @@ export const TaxonomyQuickPills = ({ onSelectCategory }) => {
                 {sec.count}
               </Badge>
             </div>
-            <h4 className="font-bold text-slate-800 text-xs mt-2 group-hover:text-blue-600 truncate">
+            <h4 className="font-bold text-slate-800 text-xs mt-2 group-hover:text-[#007A61] truncate">
               {sec.name}
             </h4>
             <span className="text-[10px] text-slate-400 font-medium block truncate">

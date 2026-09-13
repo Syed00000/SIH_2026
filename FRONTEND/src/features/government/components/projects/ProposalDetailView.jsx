@@ -107,7 +107,7 @@ export const ProposalDetailView = ({
               </span>
               <a
                 href="?tab=projects_active"
-                className="px-3.5 py-1.5 bg-slate-900 hover:bg-slate-800 text-white rounded-lg text-xs font-bold transition-colors cursor-pointer flex items-center space-x-1.5 shadow-2xs"
+                className="px-3.5 py-1.5 bg-[#007A61] hover:bg-[#00624e] text-white rounded-lg text-xs font-bold transition-colors cursor-pointer flex items-center space-x-1.5 shadow-2xs"
               >
                 <span>View in Active Projects</span>
                 <ChevronRight className="w-3.5 h-3.5 text-slate-300" />
@@ -115,13 +115,13 @@ export const ProposalDetailView = ({
             </div>
           ) : (
             <div className="flex items-center space-x-2">
-              <span className="px-3 py-1.5 rounded-lg text-xs font-bold bg-blue-50 text-blue-800 border border-blue-200 flex items-center space-x-1.5">
-                <CheckCircle2 className="w-4 h-4 text-blue-600" />
+              <span className="px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-800 border border-emerald-200 flex items-center space-x-1.5">
+                <CheckCircle2 className="w-4 h-4 text-emerald-600" />
                 <span>Forwarded to CSR Grants Pipeline ✓</span>
               </span>
               <a
                 href="?tab=csr"
-                className="px-3.5 py-1.5 bg-slate-900 hover:bg-slate-800 text-white rounded-lg text-xs font-bold transition-colors cursor-pointer flex items-center space-x-1.5 shadow-2xs"
+                className="px-3.5 py-1.5 bg-[#007A61] hover:bg-[#00624e] text-white rounded-lg text-xs font-bold transition-colors cursor-pointer flex items-center space-x-1.5 shadow-2xs"
               >
                 <span>Open CSR Grants & Disbursal</span>
                 <ChevronRight className="w-3.5 h-3.5 text-slate-300" />

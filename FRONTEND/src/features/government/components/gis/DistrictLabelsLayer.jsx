@@ -15,12 +15,16 @@ export const DistrictLabelsLayer = ({
     if (!map) return;
 
     if (layerGroupRef.current) {
-      map.removeLayer(layerGroupRef.current);
-      layerGroupRef.current.clearLayers();
+      if (map?._mapPane) {
+        try {
+          map.removeLayer(layerGroupRef.current);
+          layerGroupRef.current.clearLayers();
+        } catch {}
+      }
       layerGroupRef.current = null;
     }
 
-    if (!visible) return;
+    if (!visible || !map?._mapPane) return;
 
     const group = L.layerGroup();
 
@@ -90,7 +94,7 @@ export const DistrictLabelsLayer = ({
       marker.on('click', () => {
         if (onSelectDistrict) onSelectDistrict(dist.name);
         try {
-          map.flyTo([dist.lat, dist.lng], 10.5, { duration: 1 });
+          if (map?._mapPane) map.flyTo([dist.lat, dist.lng], 10.5, { duration: 1 });
         } catch (e) {}
       });
 
@@ -101,9 +105,12 @@ export const DistrictLabelsLayer = ({
     layerGroupRef.current = group;
 
     return () => {
-      if (layerGroupRef.current && map) {
-        map.removeLayer(layerGroupRef.current);
+      if (layerGroupRef.current && map?._mapPane) {
+        try {
+          map.removeLayer(layerGroupRef.current);
+        } catch {}
       }
+      layerGroupRef.current = null;
     };
   }, [map, visible, selectedDistrict, districtStats, onSelectDistrict]);
 

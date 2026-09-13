@@ -74,7 +74,7 @@ export const ViewUniversityDetails = ({ university, onBack, onEdit, onUpdateStat
           <button
             type="button"
             onClick={onEdit}
-            className="px-3.5 py-1.5 text-xs font-semibold text-white bg-slate-900 hover:bg-black shadow-xs rounded-md transition-colors cursor-pointer flex items-center space-x-1.5"
+            className="px-3.5 py-1.5 text-xs font-semibold text-white bg-[#007A61] hover:bg-[#00624e] shadow-xs rounded-md transition-colors cursor-pointer flex items-center space-x-1.5"
           >
             <Pencil className="w-3.5 h-3.5" />
             <span>Edit University</span>

@@ -4,7 +4,6 @@ import { MongooseIndustry } from '../../industries/infrastructure/model.js';
 import { MongooseAdmin } from '../../admins/infrastructure/model.js';
 import { MongooseUser } from '../../../users/infrastructure/model.js';
 import { GovernmentGrantFund } from '../../grants/model.js';
-
 import { CitizenChallenge } from '../../../citizen/infrastructure/model.js';
 import { UniversityProject } from '../../../university/infrastructure/model.js';
 
@@ -29,7 +28,10 @@ router.get('/stats', async (req, res, next) => {
       stateGrantFunds,
       projectList,
       heisByDistrict,
-      industriesByCategory
+      industriesByCategory,
+      sectorsAgg,
+      topHeisList,
+      recentChallenges
     ] = await Promise.all([
       MongooseUniversity.countDocuments({
         $or: [{ status: 'Approved' }, { status: 'Active' }],
@@ -53,12 +55,14 @@ router.get('/stats', async (req, res, next) => {
       ]),
       GovernmentGrantFund.find({ status: 'Active' }).lean(),
       UniversityProject.find({ isDeleted: { $ne: true } }).lean(),
-      MongooseUniversity.aggregate([
-        { $group: { _id: '$district', count: { $sum: 1 } } }
+      MongooseUniversity.aggregate([{ $group: { _id: '$district', count: { $sum: 1 } } }]),
+      MongooseIndustry.aggregate([{ $group: { _id: '$category', count: { $sum: 1 } } }]),
+      CitizenChallenge.aggregate([
+        { $match: { isDeleted: { $ne: true } } },
+        { $group: { _id: '$domain', count: { $sum: 1 } } }
       ]),
-      MongooseIndustry.aggregate([
-        { $group: { _id: '$category', count: { $sum: 1 } } }
-      ])
+      MongooseUniversity.find({ isDeleted: { $ne: true } }).select('name code district status').limit(10).lean(),
+      CitizenChallenge.find({ isDeleted: { $ne: true } }).sort({ createdAt: -1 }).limit(10).lean()
     ]);
 
     const financials = industryFinancials[0] || { totalCsrFundsCr: 0, totalProjects: 0, totalLabs: 0 };
@@ -78,27 +82,29 @@ router.get('/stats', async (req, res, next) => {
     const availableInnovationCorpus = Math.max(0, totalCommittedCorpus - totalDisbursedFunds);
     const availableInnovationCorpusCr = Number((availableInnovationCorpus / 10000000).toFixed(2));
 
+    // Map top HEIs with actual active projects count and solved challenges
+    const topHeis = topHeisList.map((hei) => {
+      const activeProjects = projectList.filter((p) => p.universityCode === hei.code || p.universityId === String(hei._id)).length;
+      return {
+        id: String(hei._id),
+        name: hei.name,
+        code: hei.code,
+        district: hei.district || 'Jharkhand',
+        activeProjects,
+        projects: activeProjects,
+        solvedChallenges: 0,
+        solved: 0
+      };
+    });
+
     res.status(200).json({
       status: 'SUCCESS',
       data: {
-        heis: {
-          active: activeHeis,
-          total: totalHeis
-        },
-        industries: {
-          active: activeIndustries,
-          total: totalIndustries
-        },
-        admins: {
-          active: activeAdmins
-        },
-        problems: {
-          total: totalProblems,
-          received: totalProblems
-        },
-        citizens: {
-          total: totalCitizens
-        },
+        heis: { active: activeHeis, total: totalHeis },
+        industries: { active: activeIndustries, total: totalIndustries },
+        admins: { active: activeAdmins },
+        problems: { total: totalProblems, received: totalProblems },
+        citizens: { total: totalCitizens },
         financials: {
           totalCsrFundsCr: Number((financials.totalCsrFundsCr || 0).toFixed(2)),
           stateGrantsTotalCr: Number(stateGrantsTotalCr.toFixed(2)),
@@ -111,7 +117,10 @@ router.get('/stats', async (req, res, next) => {
           verifiedLabs: financials.totalLabs || 0
         },
         heisByDistrict,
-        industriesByCategory
+        industriesByCategory,
+        sectors: sectorsAgg.map((s) => ({ name: s._id || 'Other', count: s.count })),
+        topHeis,
+        recentChallenges
       }
     });
   } catch (error) {

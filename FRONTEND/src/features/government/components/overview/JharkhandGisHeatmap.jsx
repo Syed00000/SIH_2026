@@ -1,20 +1,15 @@
-import React, { useEffect, useRef, useState, useCallback } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { JHARKHAND_GEOJSON as JHARKHAND_STATE_GEOJSON } from '../../data/jharkhandGeoJson.js';
-import { JHARKHAND_DISTRICTS_DICT as JHARKHAND_DISTRICTS_DATA } from '../../data/jharkhandDistrictsMeta.js';
-import {
-  Plus,
-  Minus,
-  Home,
-  Layers,
-  MapPin,
-  Compass,
-  Radio,
-  Info
-} from 'lucide-react';
-import apiClient from '../../../../infrastructure/api/client.js';
 import { getMapTileConfig } from '../../utils/mapTileConfig.js';
+import { useJharkhandMapData } from './useJharkhandMapData.js';
+import { JharkhandGisHeader, JharkhandGisFloatingControls } from './JharkhandGisControls.jsx';
+import { JharkhandGisHoverCard } from './JharkhandGisHoverCard.jsx';
+import { JharkhandGisLegend, JharkhandGisFooter } from './JharkhandGisLegend.jsx';
+
+const JHARKHAND_CENTER = [23.65, 85.55];
+const DEFAULT_ZOOM = 7.4;
 
 export const JharkhandGisHeatmap = ({ selectedDistrict = 'All', onSelectDistrict }) => {
   const mapContainerRef = useRef(null);
@@ -26,150 +21,28 @@ export const JharkhandGisHeatmap = ({ selectedDistrict = 'All', onSelectDistrict
   const [cursorCoords, setCursorCoords] = useState({ lat: '23.6500', lng: '85.5500' });
   const [basemapMode, setBasemapMode] = useState('canvas');
 
-  // Baseline empty districts data state (Zero/Clean)
-  const [districtsData, setDistrictsData] = useState(() => {
-    const baseline = {};
-    Object.keys(JHARKHAND_DISTRICTS_DATA).forEach((key) => {
-      baseline[key] = {
-        ...JHARKHAND_DISTRICTS_DATA[key],
-        overallScore: 0,
-        riskLevel: 'Zero / Clean',
-        totalProblems: 0,
-        resolvedProblems: 0,
-        pendingProblems: 0,
-        activeHeis: 0,
-        topProblemAreas: []
-      };
-    });
-    return baseline;
-  });
-
-  const JHARKHAND_CENTER = [23.65, 85.55];
-  const DEFAULT_ZOOM = 7.4;
-
-  // Fetch real database data for the map
-  useEffect(() => {
-    const fetchMapData = async () => {
-      try {
-        const baseline = {};
-        Object.keys(JHARKHAND_DISTRICTS_DATA).forEach((key) => {
-          baseline[key] = {
-            ...JHARKHAND_DISTRICTS_DATA[key],
-            overallScore: 0,
-            riskLevel: 'Zero / Clean',
-            totalProblems: 0,
-            resolvedProblems: 0,
-            pendingProblems: 0,
-            activeHeis: 0,
-            topProblemAreas: []
-          };
-        });
-
-        // 1. Fetch citizen challenges for ground problem telemetry & severity
-        try {
-          const citizenRes = await apiClient.get('citizen/challenges?limit=100');
-          const cChallenges = citizenRes.data?.data || citizenRes.data || [];
-          if (Array.isArray(cChallenges)) {
-            cChallenges.forEach((c) => {
-              const dist = String(c.location?.district || c.district || 'Ranchi').toLowerCase().trim();
-              if (baseline[dist]) {
-                baseline[dist].totalProblems += 1;
-                const sev = String(c.severity || c.priority || 'High').toUpperCase();
-                if (c.status === 'Resolved' || c.status === 'COMPLETED') {
-                  baseline[dist].resolvedProblems += 1;
-                } else {
-                  baseline[dist].pendingProblems += 1;
-                }
-                baseline[dist].riskLevel = sev === 'CRITICAL' ? 'Critical / Urgent' : sev === 'HIGH' ? 'High Concern' : 'Active Need';
-                baseline[dist].overallScore = Math.min(100, Math.max(45, baseline[dist].totalProblems * 25));
-                if (c.title) {
-                  baseline[dist].topProblemAreas = Array.from(new Set([...(baseline[dist].topProblemAreas || []), c.title])).slice(0, 3);
-                }
-              }
-            });
-          }
-        } catch (e) {}
-
-        // 2. Fetch active projects to extract completed milestones
-        try {
-          const res = await apiClient.get('university/projects?universityCode=RU001');
-          const projects = res.data?.data || res.data || [];
-          const projectsList = Array.isArray(projects) ? projects : [];
-
-          projectsList.forEach((p) => {
-            const dist = String(p.district || 'Ranchi').toLowerCase().trim();
-            if (baseline[dist]) {
-              const completedCount = (p.milestones || []).filter((m) => m.status === 'Completed').length;
-              if (completedCount > 0) {
-                baseline[dist].resolvedProblems += 1;
-              }
-            }
-          });
-        } catch (e) {}
-
-        // 3. Fetch active HEIs count from overview stats
-        const statsRes = await apiClient.get('government/overview/stats');
-        const stats = statsRes.data?.data || statsRes.data || {};
-        const heisByDist = stats.heisByDistrict || [];
-        heisByDist.forEach((item) => {
-          const dist = String(item._id || 'Ranchi').toLowerCase().trim();
-          if (baseline[dist]) {
-            baseline[dist].activeHeis = item.count || 0;
-          }
-        });
-
-        setDistrictsData(baseline);
-      } catch (err) {
-        console.warn('Failed to load dynamic GIS map data:', err);
-      }
-    };
-
-    fetchMapData();
-  }, []);
-
-  // Compute District Color based on live problem density & severity
-  const getDistrictColor = useCallback((distId) => {
-    const data = districtsData[distId];
-    if (!data) return '#f8fafc';
-    const count = data.totalProblems || 0;
-    const resolved = data.resolvedProblems || 0;
-    const unresolved = count - resolved;
-    const risk = String(data.riskLevel || '').toUpperCase();
-
-    if (unresolved > 0) {
-      if (risk.includes('CRITICAL') || unresolved >= 3) return '#ef4444'; // Bright Red for Critical Grievances
-      if (risk.includes('HIGH') || unresolved >= 2) return '#f97316'; // Orange for High Severity
-      return '#f59e0b'; // Amber for Active Need
-    }
-    if (count > 0 && unresolved === 0) {
-      return '#10b981'; // Emerald Green for 100% Resolved
-    }
-    return '#e2e8f0'; // Neutral Slate for zero reported grievances
-  }, [districtsData]);
+  const { districtsData, getDistrictColor } = useJharkhandMapData();
 
   const updateBasemap = (mode) => {
-    if (!mapInstanceRef.current) return;
+    if (!mapInstanceRef.current?._mapPane) return;
     setBasemapMode(mode);
-
     if (baseTileLayerRef.current) {
-      mapInstanceRef.current.removeLayer(baseTileLayerRef.current);
+      try { mapInstanceRef.current.removeLayer(baseTileLayerRef.current); } catch {}
     }
-
     const tileCfg = getMapTileConfig({ mode });
-    const newTileLayer = L.tileLayer(tileCfg.url, {
+    const newTile = L.tileLayer(tileCfg.url, {
       subdomains: tileCfg.subdomains || 'abc',
       maxZoom: tileCfg.maxZoom || 19,
       attribution: tileCfg.attribution
-    });
-    newTileLayer.addTo(mapInstanceRef.current);
-    newTileLayer.bringToBack();
-    baseTileLayerRef.current = newTileLayer;
+    }).addTo(mapInstanceRef.current);
+    newTile.bringToBack();
+    baseTileLayerRef.current = newTile;
   };
 
   useEffect(() => {
     if (!mapContainerRef.current) return;
-
     if (!mapInstanceRef.current) {
+      if (mapContainerRef.current._leaflet_id) delete mapContainerRef.current._leaflet_id;
       const map = L.map(mapContainerRef.current, {
         center: JHARKHAND_CENTER,
         zoom: DEFAULT_ZOOM,
@@ -180,35 +53,30 @@ export const JharkhandGisHeatmap = ({ selectedDistrict = 'All', onSelectDistrict
       });
 
       const tileCfg = getMapTileConfig({ mode: 'light' });
-      const baseTile = L.tileLayer(tileCfg.url, {
+      baseTileLayerRef.current = L.tileLayer(tileCfg.url, {
         subdomains: tileCfg.subdomains || 'abc',
         maxZoom: tileCfg.maxZoom || 19,
         attribution: tileCfg.attribution
       }).addTo(map);
-      baseTileLayerRef.current = baseTile;
 
       map.on('mousemove', (e) => {
-        if (e && e.latlng) {
-          setCursorCoords({
-            lat: e.latlng.lat.toFixed(4),
-            lng: e.latlng.lng.toFixed(4)
-          });
+        if (e?.latlng) {
+          setCursorCoords({ lat: e.latlng.lat.toFixed(4), lng: e.latlng.lng.toFixed(4) });
         }
       });
-
       mapInstanceRef.current = map;
     }
 
-    if (JHARKHAND_STATE_GEOJSON) {
-      if (geoJsonLayerRef.current && mapInstanceRef.current) {
-        mapInstanceRef.current.removeLayer(geoJsonLayerRef.current);
+    const currentMap = mapInstanceRef.current;
+    if (JHARKHAND_STATE_GEOJSON && currentMap?._mapPane) {
+      if (geoJsonLayerRef.current) {
+        try { currentMap.removeLayer(geoJsonLayerRef.current); } catch {}
       }
 
       const layer = L.geoJSON(JHARKHAND_STATE_GEOJSON, {
         style: (feature) => {
           const distId = (feature.properties.id || feature.properties.dtname || '').toLowerCase().replace(/\s+/g, '_');
           const isSelected = selectedDistrict.toLowerCase() === distId || selectedDistrict === feature.properties.name;
-
           return {
             fillColor: getDistrictColor(distId),
             fillOpacity: isSelected ? 0.75 : 0.45,
@@ -225,230 +93,67 @@ export const JharkhandGisHeatmap = ({ selectedDistrict = 'All', onSelectDistrict
             totalProblems: 0,
             resolvedProblems: 0,
             activeHeis: 0,
-            riskLevel: 'Zero / Clean',
-            riskColor: '#22c55e',
-            demographics: { population: '—' }
+            riskLevel: 'Zero / Clean'
           };
 
           featureLayer.on({
             mouseover: (e) => {
-              const target = e.target;
-              target.setStyle({
-                fillOpacity: 0.8,
-                weight: 2,
-                color: '#0f172a'
-              });
-              target.bringToFront();
-              setHoveredDistrict({
-                ...distData,
-                name: distData.name || feature.properties.name
-              });
+              e.target.setStyle({ fillOpacity: 0.8, weight: 2, color: '#0f172a' });
+              e.target.bringToFront();
+              setHoveredDistrict({ ...distData, name: distData.name || feature.properties.name });
             },
             mouseout: (e) => {
-              if (geoJsonLayerRef.current) {
-                geoJsonLayerRef.current.resetStyle(e.target);
-              }
+              if (geoJsonLayerRef.current) geoJsonLayerRef.current.resetStyle(e.target);
               setHoveredDistrict(null);
             },
             click: () => {
               const name = distData.name || feature.properties.name;
-              if (onSelectDistrict) {
-                onSelectDistrict(name);
-              }
+              if (onSelectDistrict) onSelectDistrict(name);
             }
           });
         }
       });
 
-      layer.addTo(mapInstanceRef.current);
+      layer.addTo(currentMap);
       geoJsonLayerRef.current = layer;
     }
+
+    return () => {
+      if (geoJsonLayerRef.current && mapInstanceRef.current?._mapPane) {
+        try { mapInstanceRef.current.removeLayer(geoJsonLayerRef.current); } catch {}
+      }
+    };
   }, [getDistrictColor, onSelectDistrict, selectedDistrict, districtsData]);
 
-  const handleZoomIn = () => {
-    if (mapInstanceRef.current) mapInstanceRef.current.zoomIn();
-  };
-
-  const handleZoomOut = () => {
-    if (mapInstanceRef.current) mapInstanceRef.current.zoomOut();
-  };
-
-  const handleResetView = () => {
-    if (mapInstanceRef.current) {
-      mapInstanceRef.current.setView(JHARKHAND_CENTER, DEFAULT_ZOOM);
-    }
-  };
+  // Clean unmount of map instance
+  useEffect(() => {
+    return () => {
+      if (mapInstanceRef.current?._mapPane) {
+        try { mapInstanceRef.current.remove(); } catch {}
+      }
+      if (mapContainerRef.current) delete mapContainerRef.current._leaflet_id;
+      mapInstanceRef.current = null;
+    };
+  }, []);
 
   return (
     <div className="bg-white border border-slate-200/80 hover:border-slate-300/90 rounded-xl p-4 shadow-[0_1px_3px_rgba(15,23,42,0.03)] hover:shadow-[0_8px_24px_-6px_rgba(15,23,42,0.07)] relative flex flex-col h-full min-h-[410px] transition-all duration-300">
-      {/* Card Header */}
-      <div className="flex items-center justify-between pb-2.5 mb-2 border-b border-slate-100">
-        <div className="flex items-center space-x-2">
-          <Compass className="w-4 h-4 text-slate-700" />
-          <div>
-            <h3 className="text-xs font-bold text-slate-900 tracking-tight">
-              Jharkhand Geospatial Heatmap
-            </h3>
-            <p className="text-[10px] text-slate-400 font-medium leading-tight">
-              Spatial density distribution across 24 districts (EPSG:4326)
-            </p>
-          </div>
-        </div>
+      <JharkhandGisHeader basemapMode={basemapMode} onUpdateBasemap={updateBasemap} />
 
-        {/* GIS Controls */}
-        <div className="flex items-center space-x-1.5">
-          <div className="flex bg-slate-100 rounded-lg p-0.5 border border-slate-200/70 text-[10px] font-semibold">
-            <button
-              type="button"
-              onClick={() => updateBasemap('canvas')}
-              className={`px-2 py-0.5 rounded-md transition-all cursor-pointer ${
-                basemapMode === 'canvas'
-                  ? 'bg-white text-slate-900 shadow-xs font-bold'
-                  : 'text-slate-500 hover:text-slate-800'
-              }`}
-            >
-              Canvas
-            </button>
-            <button
-              type="button"
-              onClick={() => updateBasemap('satellite')}
-              className={`px-2 py-0.5 rounded-md transition-all cursor-pointer ${
-                basemapMode === 'satellite'
-                  ? 'bg-white text-slate-900 shadow-xs font-bold'
-                  : 'text-slate-500 hover:text-slate-800'
-              }`}
-            >
-              Satellite
-            </button>
-            <button
-              type="button"
-              onClick={() => updateBasemap('topo')}
-              className={`px-2 py-0.5 rounded-md transition-all cursor-pointer ${
-                basemapMode === 'topo'
-                  ? 'bg-white text-slate-900 shadow-xs font-bold'
-                  : 'text-slate-500 hover:text-slate-800'
-              }`}
-            >
-              Terrain
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Map Viewport Container */}
       <div className="relative flex-1 rounded-xl overflow-hidden border border-slate-100 bg-[#f8fafc] min-h-[320px]">
         <div ref={mapContainerRef} className="w-full h-full min-h-[320px]" />
 
-        {/* Custom Map Floating Controls */}
-        <div className="absolute top-3 left-3 z-[400] flex flex-col space-y-1 bg-white/95 backdrop-blur-xs p-1 rounded-xl border border-slate-200 shadow-xs">
-          <button
-            onClick={handleZoomIn}
-            className="w-6 h-6 flex items-center justify-center text-slate-700 hover:bg-slate-100 rounded-lg text-xs transition-colors cursor-pointer"
-            title="Zoom In"
-          >
-            <Plus className="w-3.5 h-3.5" />
-          </button>
-          <button
-            onClick={handleZoomOut}
-            className="w-6 h-6 flex items-center justify-center text-slate-700 hover:bg-slate-100 rounded-lg text-xs transition-colors cursor-pointer"
-            title="Zoom Out"
-          >
-            <Minus className="w-3.5 h-3.5" />
-          </button>
-          <div className="h-px bg-slate-200 my-0.5" />
-          <button
-            onClick={handleResetView}
-            className="w-6 h-6 flex items-center justify-center text-slate-700 hover:bg-slate-100 rounded-lg text-xs transition-colors cursor-pointer"
-            title="Reset Home View"
-          >
-            <Home className="w-3.5 h-3.5" />
-          </button>
-        </div>
+        <JharkhandGisFloatingControls
+          onZoomIn={() => mapInstanceRef.current?._mapPane && mapInstanceRef.current.zoomIn()}
+          onZoomOut={() => mapInstanceRef.current?._mapPane && mapInstanceRef.current.zoomOut()}
+          onResetView={() => mapInstanceRef.current?._mapPane && mapInstanceRef.current.setView(JHARKHAND_CENTER, DEFAULT_ZOOM)}
+        />
 
-        {/* Interactive District Hover Details Popup */}
-        {hoveredDistrict && (
-          <div className="absolute top-3 right-3 z-[400] bg-slate-900/95 backdrop-blur-md text-white p-3 rounded-xl border border-slate-700 shadow-xl text-xs space-y-1.5 min-w-[185px] animate-fadeIn">
-            <div className="flex items-center justify-between border-b border-slate-700/80 pb-1">
-              <span className="font-bold text-sm text-white flex items-center gap-1">
-                <MapPin className="w-3.5 h-3.5 text-blue-400" />
-                {hoveredDistrict.name}
-              </span>
-              <span
-                className="text-[9px] font-bold px-1.5 py-0.5 rounded border bg-emerald-500/20 text-emerald-400 border-emerald-500/40"
-              >
-                {hoveredDistrict.totalProblems > 0 ? 'Active Need' : 'Zero / Clean'}
-              </span>
-            </div>
-            <div className="flex justify-between text-[11px] text-slate-300">
-              <span>Total Problems:</span>
-              <span className="font-bold text-white">
-                {(hoveredDistrict.totalProblems || 0).toLocaleString()}
-              </span>
-            </div>
-            <div className="flex justify-between text-[11px] text-slate-300">
-              <span>Resolved:</span>
-              <span className="font-bold text-emerald-400">
-                {(hoveredDistrict.resolvedProblems || 0).toLocaleString()}
-              </span>
-            </div>
-            <div className="flex justify-between text-[11px] text-slate-300">
-              <span>Active HEIs:</span>
-              <span className="font-bold text-purple-300">
-                {hoveredDistrict.activeHeis || 0}
-              </span>
-            </div>
-            <div className="text-[9.5px] text-slate-400 pt-1 border-t border-slate-800 flex justify-between items-center">
-              <span>District Node</span>
-              <span className="text-blue-400 font-semibold cursor-pointer">Click to filter</span>
-            </div>
-          </div>
-        )}
-
-        {/* GIS Density Legend on bottom-left */}
-        <div className="absolute bottom-3 left-3 z-[400] bg-white/95 backdrop-blur-xs p-2.5 rounded-xl border border-slate-200 shadow-xs text-[10px] space-y-1">
-          <span className="font-bold text-slate-700 block text-[9.5px] uppercase tracking-wider mb-1">
-            Problem Density
-          </span>
-          <div className="flex items-center space-x-1.5">
-            <span className="w-2.5 h-2.5 rounded-xs bg-[#ef4444]" />
-            <span className="text-slate-600 font-medium">Very High (&gt;50)</span>
-          </div>
-          <div className="flex items-center space-x-1.5">
-            <span className="w-2.5 h-2.5 rounded-xs bg-[#fb923c]" />
-            <span className="text-slate-600 font-medium">High (20-49)</span>
-          </div>
-          <div className="flex items-center space-x-1.5">
-            <span className="w-2.5 h-2.5 rounded-xs bg-[#fde047]" />
-            <span className="text-slate-600 font-medium">Moderate (10-19)</span>
-          </div>
-          <div className="flex items-center space-x-1.5">
-            <span className="w-2.5 h-2.5 rounded-xs bg-[#86efac]" />
-            <span className="text-slate-600 font-medium">Low (1-9)</span>
-          </div>
-          <div className="flex items-center space-x-1.5">
-            <span className="w-2.5 h-2.5 rounded-xs bg-[#22c55e]" />
-            <span className="text-slate-600 font-medium">Zero / Clean (0)</span>
-          </div>
-        </div>
-
-        {/* GIS Scale & Coordinates Bar on bottom-right */}
-        <div className="absolute bottom-3 right-3 z-[400] bg-slate-900/80 backdrop-blur-xs text-white px-2.5 py-1 rounded-lg text-[9.5px] font-mono flex items-center space-x-2 border border-slate-700/60 shadow-xs">
-          <span>{cursorCoords?.lat || '23.6500'}° N, {cursorCoords?.lng || '85.5500'}° E</span>
-          <span className="text-slate-500">|</span>
-          <span className="text-slate-400">EPSG:4326</span>
-        </div>
+        <JharkhandGisHoverCard hoveredDistrict={hoveredDistrict} />
+        <JharkhandGisLegend cursorCoords={cursorCoords} />
       </div>
 
-      {/* Footer Status Bar */}
-      <div className="flex items-center justify-between text-[11px] text-slate-400 font-medium pt-2.5">
-        <div className="flex items-center space-x-1.5">
-          <Info className="w-3.5 h-3.5 text-slate-400" />
-          <span>Jharkhand State Remote Sensing Data Centre (JSAC) • 24 Districts</span>
-        </div>
-        <div className="text-[10px] font-semibold text-slate-500">
-          Filtered District: <strong className="text-slate-800">{selectedDistrict}</strong>
-        </div>
-      </div>
+      <JharkhandGisFooter selectedDistrict={selectedDistrict} />
     </div>
   );
 };

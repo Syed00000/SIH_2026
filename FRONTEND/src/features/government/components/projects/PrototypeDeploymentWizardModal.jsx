@@ -133,7 +133,7 @@ export const PrototypeDeploymentWizardModal = ({ isOpen, onClose, project, onDep
               </div>
               <div className="flex flex-wrap gap-2 pt-1">
                 {reportUrl && <button type="button" onClick={() => openPdf(reportUrl)} className="px-3.5 py-2 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-800 rounded-xl text-xs font-bold flex items-center space-x-1.5 cursor-pointer"><FileCheck2 className="w-4 h-4 text-emerald-600" /><span>View Verified Lab Report PDF ({project.testingReportPdfName || 'napkin.pdf'})</span></button>}
-                {blueprintUrl && <button type="button" onClick={() => openPdf(blueprintUrl)} className="px-3.5 py-2 bg-blue-50 hover:bg-blue-100 border border-blue-200 text-blue-800 rounded-xl text-xs font-bold flex items-center space-x-1.5 cursor-pointer"><FileText className="w-4 h-4 text-blue-600" /><span>View Student Blueprint PDF ({project.pdfName || 'napkin.pdf'})</span></button>}
+                {blueprintUrl && <button type="button" onClick={() => openPdf(blueprintUrl)} className="px-3.5 py-2 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-800 rounded-xl text-xs font-bold flex items-center space-x-1.5 cursor-pointer"><FileText className="w-4 h-4 text-[#007A61]" /><span>View Student Blueprint PDF ({project.pdfName || 'napkin.pdf'})</span></button>}
               </div>
             </div>
           )}
@@ -157,8 +157,8 @@ export const PrototypeDeploymentWizardModal = ({ isOpen, onClose, project, onDep
                   <input type="checkbox" checked={sendToDept} onChange={(e) => setSendToDept(e.target.checked)} className="w-4 h-4 text-[#007A61] rounded mt-0.5" />
                   <div className="text-xs"><span className="font-black text-slate-900 block">Send & Handover Prototype Dossier to {selectedDept}</span><span className="text-slate-600 text-[11px]">Officially transfer hardware blueprint, lab testing report & IP compliance to the department for on-ground rollout.</span></div>
                 </label>
-                <label className="flex items-start space-x-3 p-3 bg-blue-50/70 border border-blue-200 rounded-xl cursor-pointer">
-                  <input type="checkbox" checked={notifyCitizen} onChange={(e) => setNotifyCitizen(e.target.checked)} className="w-4 h-4 text-blue-600 rounded mt-0.5" />
+                <label className="flex items-start space-x-3 p-3 bg-emerald-50/70 border border-emerald-200 rounded-xl cursor-pointer">
+                  <input type="checkbox" checked={notifyCitizen} onChange={(e) => setNotifyCitizen(e.target.checked)} className="w-4 h-4 text-[#007A61] rounded mt-0.5" />
                   <div className="text-xs"><span className="font-black text-slate-900 block">Dispatch Instant Resolution Notification to Citizen</span><span className="text-slate-600 text-[11px]">Send real-time completion alert to citizen's notification bell and resolve problem status in public tracker.</span></div>
                 </label>
               </div>

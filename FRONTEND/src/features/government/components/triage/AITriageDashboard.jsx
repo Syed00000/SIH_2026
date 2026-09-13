@@ -47,6 +47,23 @@ export const AITriageDashboard = () => {
 
   return (
     <div className="space-y-3 pb-8">
+      {/* Official Page Header */}
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between pb-3 border-b border-slate-200">
+        <div>
+          <div className="flex items-center space-x-2">
+            <h1 className="text-base md:text-lg font-black text-slate-900 tracking-tight">
+              AI Problem Triage & Departmental Verification
+            </h1>
+            <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-[#007A61]/10 text-[#007A61] border border-[#007A61]/20">
+              Official Triage Engine
+            </span>
+          </div>
+          <p className="text-xs text-slate-500 font-medium">
+            Automated classification, duplicate identification, and verified departmental routing across Jharkhand
+          </p>
+        </div>
+      </div>
+
       {/* 1. Global Header KPI Metrics */}
       <TriageHeaderStats />
 

@@ -130,7 +130,7 @@ export const RecentProposalsQueue = ({
                   <button
                     type="button"
                     onClick={() => onApproveGrant && onApproveGrant(proposal)}
-                    className="px-4 py-2 text-xs font-bold text-white bg-[#2563eb] hover:bg-blue-700 rounded-lg shadow-2xs transition-colors cursor-pointer"
+                    className="px-4 py-2 text-xs font-bold text-white bg-[#007A61] hover:bg-[#00624e] rounded-lg shadow-2xs transition-colors cursor-pointer"
                   >
                     <span>Approve Grant</span>
                   </button>

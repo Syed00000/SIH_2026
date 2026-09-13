@@ -24,7 +24,7 @@ export const DeduplicationMetrics = ({ clusterCount = 0, mergedCount = 0 }) => {
       value: '0.88',
       detail: 'E5-Multilingual',
       icon: Zap,
-      color: 'text-blue-600 bg-blue-50'
+      color: 'text-[#007A61] bg-[#007A61]/10'
     },
     {
       label: 'Deduplication Precision',

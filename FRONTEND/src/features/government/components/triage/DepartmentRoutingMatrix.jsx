@@ -22,7 +22,7 @@ export const DepartmentRoutingMatrix = ({ criticalCount = 0, urgentCount = 0, no
       sla: '5 Days',
       action: 'Standard Department Queue Placement',
       count: normalCount,
-      color: 'text-blue-700 bg-blue-50 border-blue-200'
+      color: 'text-[#007A61] bg-[#007A61]/10 border-[#007A61]/20'
     }
   ];
 

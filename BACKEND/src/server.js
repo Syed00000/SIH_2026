@@ -72,6 +72,53 @@ const start = async () => {
     // 1. Initialize Database
     try {
       await connectMongo();
+      // Ensure primary government nodal administrator & super admin exist for administrative login
+      try {
+        const { Admin } = await import('./modules/government/admins/infrastructure/model.js');
+        const { syncAdminUserAuth } = await import('./modules/government/admins/application/helpers/admin-sync.helper.js');
+
+        const existingAdmin = await Admin.findOne({ email: 'admin@jharkhand.gov.in' });
+        if (!existingAdmin) {
+          const superAdmin = new Admin({
+            fullName: 'Government Super Administrator',
+            username: 'admin',
+            email: 'admin@jharkhand.gov.in',
+            password: 'Admin@123456',
+            mobileNumber: '9876543210',
+            role: 'State Government Admin',
+            primaryRole: 'Super Administrator',
+            accessLevel: 'State Level Access',
+            district: 'Ranchi',
+            assignedDepartment: 'Higher & Technical Education',
+            status: 'Active'
+          });
+          await superAdmin.save();
+          await syncAdminUserAuth(superAdmin);
+          logger.info('Default Super Admin initialized: admin@jharkhand.gov.in / Admin@123456');
+        }
+
+        const existingNodal = await Admin.findOne({ email: 'nodal@jharkhand.gov.in' });
+        if (!existingNodal) {
+          const defaultAdmin = new Admin({
+            fullName: 'State Nodal Administrator',
+            username: 'nodal_admin',
+            email: 'nodal@jharkhand.gov.in',
+            password: 'Nodal@123456',
+            mobileNumber: '9876543211',
+            role: 'State Nodal Officer',
+            primaryRole: 'State Level Administrator',
+            accessLevel: 'State Level Access',
+            district: 'Ranchi',
+            assignedDepartment: 'Higher & Technical Education',
+            status: 'Active'
+          });
+          await defaultAdmin.save();
+          await syncAdminUserAuth(defaultAdmin);
+          logger.info('Default Nodal Administrator initialized: nodal@jharkhand.gov.in / Nodal@123456');
+        }
+      } catch (adminInitErr) {
+        logger.warn('Admin bootstrap notice: ' + adminInitErr.message);
+      }
     } catch (dbErr) {
       logger.error('Failed to initialize MongoDB connection:', dbErr);
     }

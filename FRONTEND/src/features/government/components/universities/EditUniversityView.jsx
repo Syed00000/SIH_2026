@@ -78,7 +78,7 @@ export const EditUniversityView = ({ university, onCancel, onSuccess, onUpdateUn
             type="button"
             onClick={handleSubmit}
             disabled={isSubmitting}
-            className="px-4 py-1.5 text-xs font-semibold text-white bg-slate-900 hover:bg-black rounded-md shadow-xs transition-colors cursor-pointer flex items-center space-x-1.5 disabled:opacity-50"
+            className="px-4 py-1.5 text-xs font-semibold text-white bg-[#007A61] hover:bg-[#00624e] rounded-md shadow-xs transition-colors cursor-pointer flex items-center space-x-1.5 disabled:opacity-50"
           >
             <Save className="w-3.5 h-3.5" />
             <span>{isSubmitting ? 'Saving...' : 'Save All Changes'}</span>
@@ -106,7 +106,7 @@ export const EditUniversityView = ({ university, onCancel, onSuccess, onUpdateUn
           type="button"
           onClick={handleSubmit}
           disabled={isSubmitting}
-          className="px-4 py-1.5 text-xs font-semibold text-white bg-slate-900 hover:bg-black rounded-md shadow-xs transition-colors cursor-pointer flex items-center space-x-1.5 disabled:opacity-50"
+          className="px-4 py-1.5 text-xs font-semibold text-white bg-[#007A61] hover:bg-[#00624e] rounded-md shadow-xs transition-colors cursor-pointer flex items-center space-x-1.5 disabled:opacity-50"
         >
           <Save className="w-3.5 h-3.5" />
           <span>{isSubmitting ? 'Saving...' : 'Save All Changes'}</span>

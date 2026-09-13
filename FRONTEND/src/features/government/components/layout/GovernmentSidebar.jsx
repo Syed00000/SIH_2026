@@ -173,10 +173,10 @@ export const GovernmentSidebar = ({
                   }}
                   className={`w-full flex items-center justify-between rounded-xl text-xs font-bold transition-all relative cursor-pointer ${isSidebarExpanded ? 'px-3 py-2.5 text-left' : 'p-2.5 justify-center'
                     } ${isParentActive && !hasSubItems
-                      ? 'bg-slate-900 text-white shadow-xs'
+                      ? 'bg-[#007A61] text-white shadow-xs'
                       : isParentActive && hasSubItems
-                        ? 'bg-slate-100 text-slate-900'
-                        : 'text-slate-600 hover:bg-slate-100/70 hover:text-slate-900'
+                        ? 'bg-[#007A61]/10 text-[#007A61]'
+                        : 'text-slate-600 hover:bg-[#007A61]/5 hover:text-[#007A61]'
                     }`}
                   title={item.label}
                 >
@@ -217,8 +217,8 @@ export const GovernmentSidebar = ({
                             if (setIsMobileMenuOpen) setIsMobileMenuOpen(false);
                           }}
                           className={`w-full flex items-center space-x-2.5 px-3 py-2 rounded-lg text-[11px] font-semibold transition-all cursor-pointer text-left ${isSubActive
-                              ? 'bg-slate-900 text-white shadow-2xs font-bold'
-                              : 'text-slate-500 hover:text-slate-900 hover:bg-slate-100/60'
+                              ? 'bg-[#007A61] text-white shadow-2xs font-bold'
+                              : 'text-slate-500 hover:text-[#007A61] hover:bg-[#007A61]/5'
                             }`}
                         >
                           <SubIcon

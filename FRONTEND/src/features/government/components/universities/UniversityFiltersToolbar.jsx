@@ -74,7 +74,7 @@ export const UniversityFiltersToolbar = ({
       <button
         type="button"
         onClick={onAddUniversity}
-        className="inline-flex items-center space-x-1.5 bg-slate-900 hover:bg-black text-white font-semibold px-3.5 py-2 rounded-md text-xs shadow-xs transition-colors cursor-pointer shrink-0"
+        className="inline-flex items-center space-x-1.5 bg-[#007A61] hover:bg-[#00624e] text-white font-semibold px-3.5 py-2 rounded-md text-xs shadow-xs transition-colors cursor-pointer shrink-0"
       >
         <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
         <span>Add Universities</span>

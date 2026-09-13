@@ -162,7 +162,7 @@ export const AllocationOverride = ({
                         item.status === 'Reassignment Requested' ? 'bg-amber-400'
                         : item.status === 'Pending' ? 'bg-slate-400'
                         : item.status === 'Reassigned' ? 'bg-emerald-500'
-                        : item.status === 'Completed' ? 'bg-blue-500'
+                        : item.status === 'Completed' ? 'bg-[#007A61]'
                         : 'bg-slate-300'
                       }`} />
                       <span className="text-[10.5px] font-semibold text-slate-700">{item.status}</span>

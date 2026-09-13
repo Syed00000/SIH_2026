@@ -101,15 +101,15 @@ export const GovernmentLayout = ({ onLogout }) => {
     return () => clearInterval(interval);
   }, [selectedDistrict, selectedSector, sectorTimeframe, trendInterval]);
 
-  const handleApproveTriage = (id) => {
-    const updated = governmentDataService.approveTriage(id);
-    setTriageFeed(updated);
+  const handleApproveTriage = async (id) => {
+    const updated = await governmentDataService.approveTriage(id);
+    setTriageFeed([...updated]);
     setKpis(governmentDataService.getFilteredKpis(selectedDistrict, selectedSector));
   };
 
-  const handleRejectTriage = (id) => {
-    const updated = governmentDataService.rejectTriage(id);
-    setTriageFeed(updated);
+  const handleRejectTriage = async (id) => {
+    const updated = await governmentDataService.rejectTriage(id);
+    setTriageFeed([...updated]);
     setKpis(governmentDataService.getFilteredKpis(selectedDistrict, selectedSector));
   };
 

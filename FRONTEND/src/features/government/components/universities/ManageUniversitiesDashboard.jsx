@@ -133,7 +133,7 @@ export const ManageUniversitiesDashboard = ({ initialMode = 'list' }) => {
     <div className="space-y-4 pb-8 max-w-[1600px] w-full mx-auto select-none">
       {notification && (
         <div className={`fixed bottom-6 right-6 z-50 px-4 py-2.5 rounded-md shadow-xl text-xs font-semibold flex items-center space-x-2 ${
-          notification.type === 'error' ? 'bg-red-600 text-white' : 'bg-slate-900 text-white border border-slate-700'
+          notification.type === 'error' ? 'bg-red-600 text-white' : 'bg-[#007A61] text-white border border-[#00624e]'
         }`}>
           {notification.type === 'error' ? <AlertCircle className="w-4 h-4" /> : <CheckCircle2 className="w-4 h-4 text-emerald-400" />}
           <span>{notification.message}</span>

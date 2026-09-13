@@ -20,10 +20,10 @@ export const ProblemHeatmapLayer = ({ map, problems = [], visible = true }) => {
     let isCancelled = false;
 
     const setupHeatmap = async () => {
-      if (!map) return;
+      if (!map?._mapPane) return;
 
       if (heatLayerRef.current) {
-        map.removeLayer(heatLayerRef.current);
+        try { map.removeLayer(heatLayerRef.current); } catch {}
         heatLayerRef.current = null;
       }
 
@@ -56,7 +56,7 @@ export const ProblemHeatmapLayer = ({ map, problems = [], visible = true }) => {
         }
       }
 
-      if (isCancelled) return;
+      if (isCancelled || !map?._mapPane) return;
 
       // Check if L.heatLayer exists
       if (typeof L.heatLayer === 'function') {
@@ -82,8 +82,8 @@ export const ProblemHeatmapLayer = ({ map, problems = [], visible = true }) => {
 
     return () => {
       isCancelled = true;
-      if (heatLayerRef.current && map) {
-        map.removeLayer(heatLayerRef.current);
+      if (heatLayerRef.current && map?._mapPane) {
+        try { map.removeLayer(heatLayerRef.current); } catch {}
         heatLayerRef.current = null;
       }
     };

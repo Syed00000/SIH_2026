@@ -42,9 +42,14 @@ class ProjectCsrSyncService {
       this.csrLedger = Array.isArray(backendLedger) ? backendLedger : [];
 
       // 2. Fetch live projects from MongoDB (Statewide across all HEIs)
-      const res = await apiClient.get('university/projects?universityCode=ALL');
-      const data = res.data?.data || res.data || [];
-      const projectsList = Array.isArray(data) ? data : [];
+      let projectsList = [];
+      try {
+        const res = await apiClient.get('university/projects?universityCode=ALL');
+        const data = res.data?.data || res.data || [];
+        projectsList = Array.isArray(data) ? data : [];
+      } catch (err) {
+        console.warn('Backend projects sync notice:', err.message);
+      }
 
       // 3. Map Solution Proposals (Only projects approved & forwarded to Government by University)
       this.solutionProposals = projectsList

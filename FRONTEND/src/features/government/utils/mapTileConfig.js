@@ -35,20 +35,8 @@ export function getMapTileConfig({ mode = 'light' } = {}) {
     };
   }
 
-  // 1. MapTiler Provider
-  if (provider === 'maptiler') {
-    if (!maptilerApiKey || maptilerApiKey.trim() === '' || maptilerApiKey === 'YOUR_MAPTILER_API_KEY') {
-      return {
-        provider: 'maptiler',
-        url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-        attribution: OSM_ATTRIBUTION,
-        subdomains: 'abc',
-        maxZoom: 19,
-        isConfigMissing: true,
-        missingReason: 'Map service configuration is missing.'
-      };
-    }
-
+  // 1. MapTiler Provider (if key is explicitly configured)
+  if (provider === 'maptiler' && maptilerApiKey && maptilerApiKey.trim() !== '' && maptilerApiKey !== 'YOUR_MAPTILER_API_KEY') {
     return {
       provider: 'maptiler',
       url: `https://api.maptiler.com/maps/${encodeURIComponent(maptilerMapId)}/256/{z}/{x}/{y}.png?key=${encodeURIComponent(maptilerApiKey)}`,
@@ -59,7 +47,7 @@ export function getMapTileConfig({ mode = 'light' } = {}) {
     };
   }
 
-  // 2. OpenStreetMap / Default Fallback Provider
+  // 2. OpenStreetMap / Default High-Resolution Provider (no key required, fully supported)
   return {
     provider: 'osm',
     url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',

@@ -5,7 +5,7 @@ export const PriorityAiTriageFeed = ({ feed = [], onApprove, onReject, onViewAll
   const getCategoryVisuals = (category) => {
     switch (category) {
       case 'WATER':
-        return { icon: Droplet, bg: 'bg-blue-50 text-blue-600 border-blue-100', isLetterA: false };
+        return { icon: Droplet, bg: 'bg-[#007A61]/10 text-[#007A61] border-[#007A61]/20', isLetterA: false };
       case 'ROAD':
         return { icon: AlertTriangle, bg: 'bg-amber-50 text-amber-600 border-amber-100', isLetterA: false };
       case 'GARBAGE':
@@ -38,10 +38,17 @@ export const PriorityAiTriageFeed = ({ feed = [], onApprove, onReject, onViewAll
 
       {/* Feed Items List */}
       <div className="flex-1 space-y-2 overflow-y-auto pr-0.5 max-h-[290px]">
-        {feed.slice(0, 5).map((item) => {
-          const { icon: CategoryIcon } = getCategoryVisuals(item.category);
-          const isApproved = item.status === 'APPROVED';
-          const isRejected = item.status === 'REJECTED';
+        {feed.length === 0 ? (
+          <div className="h-full min-h-[200px] flex flex-col items-center justify-center text-center p-6 text-slate-400">
+            <ShieldAlert className="w-8 h-8 text-slate-300 mb-2" />
+            <p className="text-xs font-semibold text-slate-600">No Pending Submissions</p>
+            <p className="text-[10.5px] text-slate-400 mt-0.5">All incoming citizen problem statements have been triaged or queue is clear.</p>
+          </div>
+        ) : (
+          feed.slice(0, 5).map((item) => {
+            const { icon: CategoryIcon } = getCategoryVisuals(item.category);
+            const isApproved = item.status === 'APPROVED';
+            const isRejected = item.status === 'REJECTED';
 
           return (
             <div
@@ -73,7 +80,7 @@ export const PriorityAiTriageFeed = ({ feed = [], onApprove, onReject, onViewAll
                     </span>
                     <div className="w-12 h-1 bg-slate-100 rounded-full overflow-hidden inline-block ml-1">
                       <div
-                        className="h-full bg-blue-500 rounded-full"
+                        className="h-full bg-[#007A61] rounded-full"
                         style={{ width: `${item.confidence}%` }}
                       />
                     </div>
@@ -109,8 +116,9 @@ export const PriorityAiTriageFeed = ({ feed = [], onApprove, onReject, onViewAll
                 )}
               </div>
             </div>
-          );
-        })}
+            );
+          })
+        )}
       </div>
 
       {/* Footer Link */}
@@ -121,7 +129,7 @@ export const PriorityAiTriageFeed = ({ feed = [], onApprove, onReject, onViewAll
         </div>
         <button
           onClick={onViewAll}
-          className="inline-flex items-center text-[11.5px] font-bold text-blue-600 hover:text-blue-700 hover:underline cursor-pointer"
+          className="inline-flex items-center text-[11.5px] font-bold text-[#007A61] hover:text-[#00624e] hover:underline cursor-pointer"
         >
           <span>View All Submissions</span>
           <ArrowRight className="w-3 h-3 ml-1" />

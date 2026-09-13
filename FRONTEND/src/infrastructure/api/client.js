@@ -1,7 +1,21 @@
 import { config } from '../config.js';
 
-let accessToken = localStorage.getItem('joharsetu_token') || null;
-let refreshToken = localStorage.getItem('joharsetu_refresh_token') || null;
+import {
+  setAccessToken,
+  getAccessToken,
+  setRefreshToken,
+  getRefreshToken,
+  clearTokens
+} from './tokenStorage.js';
+
+export {
+  setAccessToken,
+  getAccessToken,
+  setRefreshToken,
+  getRefreshToken,
+  clearTokens
+};
+
 let onUnauthorizedCallback = null;
 let isRefreshing = false;
 let refreshSubscribers = [];
@@ -13,37 +27,6 @@ function subscribeTokenRefresh(cb) {
 function onRefreshed(newAccessToken) {
   refreshSubscribers.forEach((cb) => cb(newAccessToken));
   refreshSubscribers = [];
-}
-
-export function setAccessToken(token) {
-  accessToken = token;
-  if (token) {
-    localStorage.setItem('joharsetu_token', token);
-  } else {
-    localStorage.removeItem('joharsetu_token');
-  }
-}
-
-export function getAccessToken() {
-  return accessToken || localStorage.getItem('joharsetu_token');
-}
-
-export function setRefreshToken(token) {
-  refreshToken = token;
-  if (token) {
-    localStorage.setItem('joharsetu_refresh_token', token);
-  } else {
-    localStorage.removeItem('joharsetu_refresh_token');
-  }
-}
-
-export function getRefreshToken() {
-  return refreshToken || localStorage.getItem('joharsetu_refresh_token');
-}
-
-export function clearTokens() {
-  setAccessToken(null);
-  setRefreshToken(null);
 }
 
 export function onUnauthorized(callback) {
@@ -67,6 +50,11 @@ const buildUrl = (endpoint, params) => {
 
 export const performTokenRefresh = async () => {
   const currentRefreshToken = getRefreshToken();
+  if (!currentRefreshToken) {
+    clearTokens();
+    return null;
+  }
+
   const refreshUrl = buildUrl('auth/refresh');
   
   try {
@@ -87,14 +75,16 @@ export const performTokenRefresh = async () => {
         setRefreshToken(data.data.refreshToken);
       }
       return newAccess;
+    } else {
+      clearTokens();
     }
   } catch {
-    // Refresh failed
+    clearTokens();
   }
   return null;
 };
 
-const request = async (endpoint, options = {}, isRetry = false, isNetworkRetry = false) => {
+const request = async (endpoint, options = {}, isRetry = false, networkRetryCount = 0) => {
   const url = buildUrl(endpoint, options.params);
   const token = getAccessToken();
 
@@ -128,17 +118,28 @@ const request = async (endpoint, options = {}, isRetry = false, isNetworkRetry =
     if (response.status === 401 && !isRetry && !isAuthRoute) {
       if (!isRefreshing) {
         isRefreshing = true;
-        const newAccessToken = await performTokenRefresh();
-        isRefreshing = false;
+        let newAccessToken = null;
+        try {
+          newAccessToken = await performTokenRefresh();
+        } catch {
+          newAccessToken = null;
+        } finally {
+          isRefreshing = false;
+        }
 
         if (newAccessToken) {
           onRefreshed(newAccessToken);
           return request(endpoint, options, true);
         } else {
+          onRefreshed(null);
           clearTokens();
           if (onUnauthorizedCallback) {
             onUnauthorizedCallback();
           }
+          const error = new Error(data.error?.message || data.message || 'Authentication required');
+          error.status = 401;
+          error.response = { status: 401, data };
+          throw error;
         }
       } else {
         // Wait for the active refresh to resolve
@@ -168,10 +169,11 @@ const request = async (endpoint, options = {}, isRetry = false, isNetworkRetry =
 
     return data;
   } catch (error) {
-    // If it is a transient network-level error (server starting up/connecting) and haven't retried yet
-    if (!error.status && !isNetworkRetry) {
-      await new Promise((resolve) => setTimeout(resolve, 500));
-      return request(endpoint, options, isRetry, true);
+    // If it is a transient network error (server restarting/connecting) and retry count < 3
+    if (!error.status && networkRetryCount < 3) {
+      const delay = (networkRetryCount + 1) * 700;
+      await new Promise((resolve) => setTimeout(resolve, delay));
+      return request(endpoint, options, isRetry, networkRetryCount + 1);
     }
 
     if (!error.response) {

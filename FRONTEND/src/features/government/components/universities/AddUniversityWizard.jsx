@@ -173,7 +173,7 @@ export const AddUniversityWizard = ({ onCancel, onSuccess, onCreateUniversity })
             type="button"
             onClick={handleNext}
             disabled={isSubmitting}
-            className="px-4 py-1.5 text-xs font-semibold text-white bg-slate-900 hover:bg-black rounded-md shadow-xs transition-colors cursor-pointer flex items-center space-x-1.5 disabled:opacity-50"
+            className="px-4 py-1.5 text-xs font-semibold text-white bg-[#007A61] hover:bg-[#00624e] rounded-md shadow-xs transition-colors cursor-pointer flex items-center space-x-1.5 disabled:opacity-50"
           >
             <span>{currentStep === 6 ? (isSubmitting ? 'Registering...' : 'Complete & Register') : 'Continue'}</span>
             <ArrowRight className="w-3.5 h-3.5" />
@@ -225,7 +225,7 @@ export const AddUniversityWizard = ({ onCancel, onSuccess, onCreateUniversity })
             type="button"
             onClick={handleNext}
             disabled={isSubmitting}
-            className="px-4 py-1.5 text-xs font-semibold text-white bg-slate-900 hover:bg-black rounded-md shadow-xs transition-colors cursor-pointer flex items-center space-x-1.5 disabled:opacity-50"
+            className="px-4 py-1.5 text-xs font-semibold text-white bg-[#007A61] hover:bg-[#00624e] rounded-md shadow-xs transition-colors cursor-pointer flex items-center space-x-1.5 disabled:opacity-50"
           >
             <span>{currentStep === 6 ? (isSubmitting ? 'Registering University...' : 'Complete & Register') : 'Continue to Next Step'}</span>
             <ArrowRight className="w-3.5 h-3.5" />

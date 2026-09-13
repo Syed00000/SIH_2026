@@ -86,7 +86,7 @@ export const ManageUpdatesDashboard = () => {
           <button
             onClick={handleSync}
             disabled={syncing}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 transition-colors"
+            className="flex items-center gap-2 px-4 py-2 bg-[#007A61] text-white rounded-md hover:bg-[#00624e] disabled:opacity-50 transition-colors"
           >
             <RefreshCw className={`w-4 h-4 ${syncing ? 'animate-spin' : ''}`} />
             {syncing ? 'Syncing...' : 'Trigger Auto-Sync'}
@@ -99,7 +99,7 @@ export const ManageUpdatesDashboard = () => {
       </div>
 
       {syncMessage && (
-        <div className="mb-4 p-3 bg-blue-50 border border-blue-200 text-blue-800 rounded-md flex items-center gap-2 text-sm">
+        <div className="mb-4 p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-md flex items-center gap-2 text-sm">
           <AlertCircle className="w-4 h-4" />
           {syncMessage}
         </div>
@@ -140,7 +140,7 @@ export const ManageUpdatesDashboard = () => {
                   <td className="px-4 py-3">
                     <span className="inline-flex items-center gap-1">
                       <span className="font-medium text-gray-700">{update.platform}</span>
-                      {update.isAutoFetched && <span className="text-[10px] bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded">Auto</span>}
+                      {update.isAutoFetched && <span className="text-[10px] bg-[#007A61]/10 text-[#007A61] border border-[#007A61]/20 px-1.5 py-0.5 rounded">Auto</span>}
                     </span>
                     <div className="text-xs text-gray-500 mt-0.5 truncate max-w-[150px]">{update.source}</div>
                   </td>
@@ -162,7 +162,7 @@ export const ManageUpdatesDashboard = () => {
                   </td>
                   <td className="px-4 py-3 text-right">
                     <div className="flex items-center justify-end gap-2">
-                      <a href={update.sourceUrl} target="_blank" rel="noopener noreferrer" className="p-1.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors" title="View Source">
+                      <a href={update.sourceUrl} target="_blank" rel="noopener noreferrer" className="p-1.5 text-gray-500 hover:text-[#007A61] hover:bg-[#007A61]/10 rounded-md transition-colors" title="View Source">
                         <LinkIcon className="w-4 h-4" />
                       </a>
                       <button className="p-1.5 text-gray-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-md transition-colors" title="Edit">

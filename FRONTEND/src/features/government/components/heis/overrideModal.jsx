@@ -9,7 +9,8 @@ export const OverrideModal = ({
   setSuggestedHeiSelection,
   adminRemarks,
   setAdminRemarks,
-  submitOverrideAction
+  submitOverrideAction,
+  heisList = []
 }) => {
   if (!selectedRecord) return null;
 
@@ -42,17 +43,18 @@ export const OverrideModal = ({
               </div>
 
               <div className="space-y-1">
-                <label className="font-bold text-slate-700 block">Allocate Destination</label>
+                <label className="font-bold text-slate-700 block">Allocate Destination HEI</label>
                 <select
                   value={suggestedHeiSelection}
                   onChange={(e) => setSuggestedHeiSelection(e.target.value)}
                   className="w-full px-3 py-1.8 bg-slate-50 border border-slate-200 rounded-md font-semibold text-slate-700 cursor-pointer text-xs focus:ring-1 focus:ring-slate-900 focus:outline-none"
                 >
-                  <option value="BIT Mesra">BIT Mesra</option>
-                  <option value="NIT Jamshedpur">NIT Jamshedpur</option>
-                  <option value="Ranchi University">Ranchi University</option>
-                  <option value="Kolhan University">Kolhan University</option>
-                  <option value="Polytechnic Dhanbad">Polytechnic Dhanbad</option>
+                  <option value="">Select Target HEI...</option>
+                  {heisList.map((h) => (
+                    <option key={h._id || h.id || h.code} value={h.name}>
+                      {h.name} {h.district ? `(${h.district})` : ''}
+                    </option>
+                  ))}
                 </select>
               </div>
 
@@ -85,7 +87,7 @@ export const OverrideModal = ({
                 </button>
                 <button
                   onClick={() => submitOverrideAction(true)}
-                  className="px-4 py-1.8 bg-slate-900 hover:bg-black text-white rounded-md font-bold shadow-xs transition-colors cursor-pointer"
+                  className="px-4 py-1.8 bg-[#007A61] hover:bg-[#00624e] text-white rounded-md font-bold shadow-xs transition-colors cursor-pointer"
                 >
                   Approve Reassign
                 </button>
@@ -123,7 +125,7 @@ export const OverrideModal = ({
             <div className="flex justify-end pt-3 border-t border-slate-100">
               <button
                 onClick={() => setSelectedRecord(null)}
-                className="px-4 py-1.8 bg-slate-900 text-white rounded-xl font-bold cursor-pointer"
+                className="px-4 py-1.8 bg-[#007A61] hover:bg-[#00624e] text-white rounded-xl font-bold cursor-pointer"
               >
                 Close Logs
               </button>

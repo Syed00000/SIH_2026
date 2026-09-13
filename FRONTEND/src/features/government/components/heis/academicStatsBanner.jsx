@@ -11,13 +11,13 @@ export const AcademicStatsBanner = ({ stats = {} }) => {
             Total HEIs
           </span>
           <div className="shrink-0">
-            <Building className="w-4 h-4 text-blue-600" />
+            <Building className="w-4 h-4 text-[#007A61]" />
           </div>
         </div>
         <div className="mt-2 flex items-baseline">
           <span className="text-xl font-extrabold text-slate-900 tracking-tight">{stats.totalHeis ?? 0}</span>
-          <span className="text-[9px] text-emerald-600 font-bold ml-2 inline-flex items-center">
-            +3 this month <span className="ml-0.5">↑</span>
+          <span className="text-[9.5px] text-slate-500 font-semibold ml-2">
+            Accredited Institutions
           </span>
         </div>
       </div>
@@ -34,8 +34,8 @@ export const AcademicStatsBanner = ({ stats = {} }) => {
         </div>
         <div className="mt-2 flex items-baseline">
           <span className="text-xl font-extrabold text-slate-900 tracking-tight">{stats.activeTeams ?? 0}</span>
-          <span className="text-[9px] text-emerald-600 font-bold ml-2 inline-flex items-center">
-            +12 this month <span className="ml-0.5">↑</span>
+          <span className="text-[9.5px] text-emerald-600 font-semibold ml-2">
+            Active In-Progress
           </span>
         </div>
       </div>
@@ -52,8 +52,8 @@ export const AcademicStatsBanner = ({ stats = {} }) => {
         </div>
         <div className="mt-2 flex items-baseline">
           <span className="text-xl font-extrabold text-slate-900 tracking-tight">{stats.problemsAssigned ?? 0}</span>
-          <span className="text-[9px] text-emerald-600 font-bold ml-2 inline-flex items-center">
-            +28 this month <span className="ml-0.5">↑</span>
+          <span className="text-[9.5px] text-slate-500 font-semibold ml-2">
+            Allocated to Teams
           </span>
         </div>
       </div>
@@ -70,8 +70,8 @@ export const AcademicStatsBanner = ({ stats = {} }) => {
         </div>
         <div className="mt-2 flex items-baseline">
           <span className="text-xl font-extrabold text-slate-900 tracking-tight">{stats.solutionsSubmitted ?? 0}</span>
-          <span className="text-[9px] text-emerald-600 font-bold ml-2 inline-flex items-center">
-            +19 this month <span className="ml-0.5">↑</span>
+          <span className="text-[9.5px] text-emerald-600 font-semibold ml-2">
+            Resolved & Deployed
           </span>
         </div>
       </div>
@@ -88,8 +88,8 @@ export const AcademicStatsBanner = ({ stats = {} }) => {
         </div>
         <div className="mt-2 flex items-baseline">
           <span className="text-xl font-extrabold text-slate-900 tracking-tight">{(stats.creditsEarned ?? 0).toLocaleString()}</span>
-          <span className="text-[9px] text-emerald-600 font-bold ml-2 inline-flex items-center">
-            +1,250 this month <span className="ml-0.5">↑</span>
+          <span className="text-[9.5px] text-indigo-600 font-semibold ml-2">
+            Academic Framework
           </span>
         </div>
       </div>

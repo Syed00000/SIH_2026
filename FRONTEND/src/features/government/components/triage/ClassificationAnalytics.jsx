@@ -15,18 +15,18 @@ export const ClassificationAnalytics = ({ issues = [], issuesCount = 0 }) => {
   });
 
   const domainIcons = {
-    'Water Resources': { icon: Droplet, color: 'bg-blue-600' },
-    'Public Infrastructure': { icon: Wrench, color: 'bg-blue-500/80' },
-    'Healthcare': { icon: HeartPulse, color: 'bg-sky-600' },
-    'Agriculture': { icon: Sprout, color: 'bg-teal-600' },
-    'Sanitation': { icon: Trash2, color: 'bg-slate-500' }
+    'Water Resources': { icon: Droplet, color: 'bg-[#007A61]' },
+    'Public Infrastructure': { icon: Wrench, color: 'bg-amber-600' },
+    'Healthcare': { icon: HeartPulse, color: 'bg-rose-600' },
+    'Agriculture': { icon: Sprout, color: 'bg-emerald-600' },
+    'Sanitation': { icon: Trash2, color: 'bg-purple-600' }
   };
 
   const domainList = Object.keys(domainCounts).map((k) => ({
     name: k,
     count: domainCounts[k],
     percentage: total > 0 ? Math.round((domainCounts[k] / total) * 100) : 0,
-    color: domainIcons[k]?.color || 'bg-blue-600',
+    color: domainIcons[k]?.color || 'bg-[#007A61]',
     icon: domainIcons[k]?.icon || Droplet
   }));
 

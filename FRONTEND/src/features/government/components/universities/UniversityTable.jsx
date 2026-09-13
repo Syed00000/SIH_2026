@@ -107,7 +107,7 @@ export const UniversityTable = ({
                 onClick={() => onPageChange(pageNum)}
                 className={`w-7 h-7 rounded-md text-xs font-bold transition-colors cursor-pointer ${
                   page === pageNum
-                    ? 'bg-slate-900 text-white shadow-xs'
+                    ? 'bg-[#007A61] text-white shadow-xs'
                     : 'border border-slate-200 text-slate-700 hover:bg-slate-50'
                 }`}
               >

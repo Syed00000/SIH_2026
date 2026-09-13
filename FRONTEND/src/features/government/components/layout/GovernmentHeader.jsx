@@ -29,7 +29,7 @@ export const GovernmentHeader = ({
 
       {/* Center: JOHARSETU ADMIN Branding */}
       <div className="hidden lg:flex flex-col items-center justify-center text-center">
-        <span className="font-black text-[#0d1b3e] text-base tracking-wider uppercase leading-none">
+        <span className="font-black text-[#007A61] text-base tracking-wider uppercase leading-none">
           JOHARSETU ADMIN
         </span>
         <span className="text-xs text-slate-500 font-medium tracking-normal mt-1">
@@ -54,7 +54,7 @@ export const GovernmentHeader = ({
 
         {/* Admin User Profile Pill */}
         <div className="flex items-center space-x-2.5 pl-1">
-          <div className="w-9 h-9 rounded-full bg-[#0d1b3e] text-white flex items-center justify-center font-bold text-xs shadow-2xs shrink-0">
+          <div className="w-9 h-9 rounded-full bg-[#007A61] text-white flex items-center justify-center font-bold text-xs shadow-2xs shrink-0">
             AD
           </div>
           <div className="text-left leading-tight hidden md:block">

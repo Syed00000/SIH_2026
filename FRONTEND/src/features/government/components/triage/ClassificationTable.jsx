@@ -21,7 +21,7 @@ export const ClassificationTable = ({ issues, onInspectIssue, onRefresh }) => {
 
   const getDomainIcon = (domain) => {
     switch (domain) {
-      case 'Water Resources': return <Droplet className="w-3 h-3 text-blue-500 mr-1" />;
+      case 'Water Resources': return <Droplet className="w-3 h-3 text-[#007A61] mr-1" />;
       case 'Agriculture': return <Sprout className="w-3 h-3 text-emerald-500 mr-1" />;
       case 'Public Infrastructure': return <Wrench className="w-3 h-3 text-amber-500 mr-1" />;
       case 'Healthcare': return <HeartPulse className="w-3 h-3 text-rose-500 mr-1" />;
