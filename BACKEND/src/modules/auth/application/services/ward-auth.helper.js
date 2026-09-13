@@ -37,7 +37,7 @@ export async function findWardById(id) {
 
 export function toWardUserEntity(ward) {
   if (!ward) return null;
-  const wardId = ward.wardId || 'WRD-JH-RN-01';
+  const wardId = ward.wardId || (ward._id ? ward._id.toString() : '');
   const id = ward._id ? ward._id.toString() : wardId;
   const email = ward.credentials?.loginEmail || ward.councillorEmail || `${wardId.toLowerCase()}@jharkhand.gov.in`;
   const rawPass = ward.credentials?.password || 'Ward@2026';

@@ -1,12 +1,14 @@
 import React from 'react';
-import { Landmark, Eye, Trash2, Mail, MapPin, Send } from 'lucide-react';
+import { Landmark, Eye, Trash2, Mail, MapPin, Send, Edit2, Building2, Plus } from 'lucide-react';
 
 export const WardList = ({
   wards = [],
   challenges = [],
   onViewWard,
+  onEditWard,
   onDeleteWard,
-  onAllocateProblem
+  onAllocateProblem,
+  onAddWard
 }) => {
   if (!wards || wards.length === 0) {
     return (
@@ -14,10 +16,20 @@ export const WardList = ({
         <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 mx-auto flex items-center justify-center">
           <Landmark className="w-6 h-6" />
         </div>
-        <h3 className="text-sm font-bold text-slate-800">No Wards Registered Yet</h3>
+        <h3 className="text-sm font-bold text-slate-800">No Ward Departments Found</h3>
         <p className="text-xs text-slate-500 max-w-sm mx-auto">
-          No administrative wards found in this district. Click "Add Ward" to create the first ward entry.
+          No ward-level authorities or commissioner offices registered yet.
         </p>
+        {onAddWard && (
+          <button
+            type="button"
+            onClick={onAddWard}
+            className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#007A61] hover:bg-[#006651] text-white rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer mt-2"
+          >
+            <Plus className="w-4 h-4" />
+            <span>Add Ward Department</span>
+          </button>
+        )}
       </div>
     );
   }
@@ -26,18 +38,22 @@ export const WardList = ({
     <div className="space-y-3">
       <div className="flex items-center justify-between px-1">
         <span className="text-xs font-black text-slate-700 uppercase tracking-wider">
-          Registered District Wards ({wards.length})
+          Registered Ward Departments & Authorities ({wards.length})
         </span>
         <span className="text-[11px] text-slate-400 font-medium">
-          Ward management (CRUD operations & civic assignment)
+          Ward commissioner offices and municipal civic assignment
         </span>
       </div>
 
       <div className="space-y-2.5">
         {wards.map((ward) => {
-          const wardId = ward.wardId || ward.id || ward._id;
+          const wardId = ward.deptId || ward.code || ward.wardId || ward.id || ward._id;
           const assignedCount = challenges.filter(
-            (c) => c.assignedWard?.wardId === ward.wardId || c.assignedWard?.id === wardId
+            (c) =>
+              c.assignedDepartment?.deptId === ward.deptId ||
+              c.assignedDepartment?.name === ward.name ||
+              c.assignedWard?.wardId === (ward.wardId || ward.deptId) ||
+              c.assignedWard?.id === wardId
           ).length;
 
           return (
@@ -51,31 +67,43 @@ export const WardList = ({
                 </div>
                 <div className="min-w-0 space-y-1">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <h2 className="text-sm font-black text-slate-900 leading-tight">
+                    <h2 className="text-sm font-black text-slate-900 leading-tight capitalize">
                       {ward.name}
                     </h2>
-                    <span className="px-1.5 py-0.5 rounded text-[10px] font-extrabold bg-slate-100 text-slate-600 border border-slate-200">
-                      {ward.wardId}
+                    <span className="px-1.5 py-0.5 rounded text-[10px] font-extrabold bg-slate-100 text-slate-600 border border-slate-200 font-mono">
+                      {ward.code || ward.deptId || ward.wardId}
                     </span>
                     <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-100">
-                      Ward #{ward.wardNumber}
+                      {ward.category || (ward.wardNumber ? `Ward #${ward.wardNumber}` : 'Ward Commissioner')}
                     </span>
+                    {(ward.blockName || ward.blockId || ward.block) && (
+                      <span className="px-1.5 py-0.5 rounded text-[10px] font-extrabold bg-blue-50 text-blue-700 border border-blue-200 flex items-center gap-1">
+                        <Building2 className="w-3 h-3 text-blue-600" />
+                        {ward.blockName || ward.blockId || ward.block}
+                      </span>
+                    )}
                   </div>
 
                   <div className="flex items-center gap-3 text-[11px] text-slate-500 flex-wrap">
                     <span className="flex items-center gap-1 font-medium">
                       <MapPin className="w-3.5 h-3.5 text-slate-400" />
-                      {ward.district} District • {ward.localities?.length || 0} Localities
+                      {ward.district || 'Jharkhand'} District
                     </span>
-                    {ward.councillorName && (
+                    {(ward.headName || ward.councillorName) && (
                       <span className="font-semibold text-slate-700">
-                        In-charge: {ward.councillorName}
+                        Lead: {ward.headName || ward.councillorName} {ward.headRole ? `(${ward.headRole})` : ''}
                       </span>
                     )}
-                    {ward.councillorEmail && (
+                    {(ward.headEmail || ward.councillorEmail) && (
                       <span className="flex items-center gap-1 text-slate-500">
                         <Mail className="w-3 h-3 text-slate-400" />
-                        {ward.councillorEmail}
+                        {ward.headEmail || ward.councillorEmail}
+                      </span>
+                    )}
+                    {(ward.headPhone || ward.councillorPhone) && (
+                      <span className="flex items-center gap-1 text-slate-500">
+                        <Phone className="w-3 h-3 text-slate-400" />
+                        {ward.headPhone || ward.councillorPhone}
                       </span>
                     )}
                   </div>
@@ -123,6 +151,16 @@ export const WardList = ({
                 >
                   <Eye className="w-4 h-4" />
                 </button>
+                {onEditWard && (
+                  <button
+                    type="button"
+                    onClick={() => onEditWard(ward)}
+                    className="p-1.5 text-slate-500 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-colors cursor-pointer"
+                    title="Edit Ward Details"
+                  >
+                    <Edit2 className="w-4 h-4" />
+                  </button>
+                )}
                 <button
                   type="button"
                   onClick={() => onDeleteWard(ward)}

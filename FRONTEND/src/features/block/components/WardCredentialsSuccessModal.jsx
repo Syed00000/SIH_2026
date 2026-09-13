@@ -7,8 +7,8 @@ export const WardCredentialsSuccessModal = ({ isOpen, onClose, wardData }) => {
   if (!isOpen || !wardData) return null;
 
   const creds = wardData.credentials || {};
-  const wardId = wardData.wardId || 'WRD-JH-RN-01';
-  const loginEmail = creds.loginEmail || wardData.councillorEmail || `${wardId.toLowerCase()}@jharkhand.gov.in`;
+  const wardId = wardData.wardId || wardData.deptId || wardData.code || '';
+  const loginEmail = creds.loginEmail || wardData.councillorEmail || (wardId ? `${wardId.toLowerCase()}@jharkhand.gov.in` : '');
   const password = creds.password || 'Ward@2026';
 
   const copyToClipboard = async (text, fieldName) => {

@@ -1,6 +1,7 @@
 import WardDirectory from './WardDirectory.jsx';
+import WardCommissionerDashboard from './WardCommissionerDashboard.jsx';
 
-export { WardDirectory };
+export { WardDirectory, WardCommissionerDashboard };
 export { WardList } from './WardList.jsx';
 export { AddWardModal } from './AddWardModal.jsx';
 export { EditWardModal } from './EditWardModal.jsx';
