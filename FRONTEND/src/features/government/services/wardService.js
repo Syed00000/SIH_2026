@@ -8,28 +8,29 @@ export const wardService = {
     if (params.search) query.append('search', params.search);
     const queryString = query.toString();
     const res = await apiClient.get(`government/wards${queryString ? `?${queryString}` : ''}`);
-    return res?.data || res || [];
+    const list = res?.data?.data || res?.data || (Array.isArray(res) ? res : []);
+    return Array.isArray(list) ? list : (Array.isArray(res?.data) ? res.data : []);
   },
 
   async getWardById(id) {
     if (!id) return null;
     const res = await apiClient.get(`government/wards/${id}`);
-    return res?.data || res;
+    return res?.data?.data || res?.data || res;
   },
 
   async createWard(payload) {
     const res = await apiClient.post('government/wards', payload);
-    return res?.data || res;
+    return res?.data?.data || res?.data || res;
   },
 
   async updateWard(id, payload) {
     const res = await apiClient.put(`government/wards/${id}`, payload);
-    return res?.data || res;
+    return res?.data?.data || res?.data || res;
   },
 
   async deleteWard(id) {
     const res = await apiClient.delete(`government/wards/${id}`);
-    return res?.data || res;
+    return res?.data?.data || res?.data || res;
   },
 
   async assignProblemToWard(challengeId, ward, instructions = '') {
