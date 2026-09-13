@@ -7,6 +7,7 @@ export const TechnicianProblemDetailModal = ({
   onClose,
   onAccept,
   onOpenComplete,
+  onOpenReject,
   acceptingId
 }) => {
   if (!isOpen || !challenge) return null;
@@ -186,13 +187,34 @@ export const TechnicianProblemDetailModal = ({
             )}
 
             {isAccepted && !isCompleted && (
+              <>
+                <button
+                  type="button"
+                  onClick={() => { onClose(); onOpenReject(challenge); }}
+                  className="px-4 py-2 rounded-xl border border-rose-200 text-rose-700 bg-rose-50 hover:bg-rose-100 font-bold flex items-center gap-1.5 shadow-sm cursor-pointer"
+                >
+                  <AlertCircle className="w-4 h-4" />
+                  <span>Reject</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { onClose(); onOpenComplete(challenge); }}
+                  className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold flex items-center gap-1.5 shadow-sm cursor-pointer"
+                >
+                  <CheckCircle2 className="w-4 h-4" />
+                  <span>Mark as Done</span>
+                </button>
+              </>
+            )}
+
+            {isCompleted && challenge.status !== 'Resolved' && challenge.status !== 'Escalated' && (
               <button
                 type="button"
                 onClick={() => { onClose(); onOpenComplete(challenge); }}
-                className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold flex items-center gap-1.5 shadow-sm cursor-pointer"
+                className="px-4 py-2 rounded-xl border border-emerald-200 text-emerald-700 bg-emerald-50 hover:bg-emerald-100 font-bold flex items-center gap-1.5 shadow-sm cursor-pointer"
               >
-                <CheckCircle2 className="w-4 h-4" />
-                <span>Mark as Done</span>
+                <Wrench className="w-4 h-4" />
+                <span>Edit Report</span>
               </button>
             )}
           </div>

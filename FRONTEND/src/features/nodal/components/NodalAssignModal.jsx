@@ -88,21 +88,15 @@ export const NodalAssignModal = ({
                 setSelectedPriority={setSelectedPriority}
               />
 
-              {verificationStatus === 'Verified' && (
-                <DepartmentTargetingCard
-                  departments={departments}
-                  departmentLevel={departmentLevel}
-                  setDepartmentLevel={setDepartmentLevel}
-                  selectedDeptId={selectedDeptId}
-                  setSelectedDeptId={setSelectedDeptId}
-                />
-              )}
+              <DepartmentTargetingCard
+                departments={departments}
+                departmentLevel={departmentLevel}
+                setDepartmentLevel={setDepartmentLevel}
+                selectedDeptId={selectedDeptId}
+                setSelectedDeptId={setSelectedDeptId}
+              />
 
               <NodalNotesAndClarificationCard
-                verificationStatus={verificationStatus}
-                setVerificationStatus={setVerificationStatus}
-                clarificationResponse={clarificationResponse}
-                setClarificationResponse={setClarificationResponse}
                 nodalRemarks={nodalRemarks}
                 setNodalRemarks={setNodalRemarks}
               />

@@ -83,7 +83,17 @@ export const NodalChallengesTable = ({
 
                   {/* Assigned Institution / Department */}
                   <td className="px-3.5 py-3 whitespace-nowrap">
-                    {chl.assignedUniversity?.name ? (
+                    {chl.status === 'Not Solved' && (chl.assignedUniversity?.name || chl.assignedDepartment?.name || chl.assignedBlock?.name || chl.assignedWard?.name) ? (
+                      <div className="flex flex-col">
+                        <div className="flex items-center space-x-1.5 text-rose-700 font-bold">
+                          <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                          <span className="line-clamp-1">
+                            {chl.assignedUniversity?.name || chl.assignedDepartment?.name || chl.assignedBlock?.name || chl.assignedWard?.name}
+                          </span>
+                        </div>
+                        <span className="text-[10px] text-rose-600 font-semibold mt-0.5">Moved to this but not resolved</span>
+                      </div>
+                    ) : chl.assignedUniversity?.name ? (
                       <div className="flex items-center space-x-1.5 text-slate-900 font-bold">
                         <Building className="w-3.5 h-3.5 text-[#047857] shrink-0" />
                         <span className="line-clamp-1">{chl.assignedUniversity.name}</span>
@@ -124,6 +134,8 @@ export const NodalChallengesTable = ({
                           ? 'bg-purple-50 text-purple-800 border-purple-200'
                           : chl.status === 'Withdrawn'
                           ? 'bg-slate-100 text-slate-700 border-slate-300'
+                          : chl.status === 'Not Solved'
+                          ? 'bg-rose-50 text-rose-800 border-rose-200'
                           : chl.status === 'Rejected'
                           ? 'bg-rose-50 text-rose-800 border-rose-200'
                           : 'bg-amber-50 text-amber-800 border-amber-200'

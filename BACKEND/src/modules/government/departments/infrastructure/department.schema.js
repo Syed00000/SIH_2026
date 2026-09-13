@@ -94,6 +94,24 @@ const departmentSchema = new mongoose.Schema(
     goNumber: { type: String, default: null, trim: true },
     goDate: { type: String, default: null, trim: true },
     verificationStatus: { type: String, default: 'Pending Verification', trim: true },
+    hierarchyConfig: {
+      type: [String],
+      default: ['State Department', 'District Department', 'Block / Tehsil Office', 'Ward / Field Office']
+    },
+    escalationRules: {
+      type: [{
+        level: Number,
+        fromRole: String,
+        toRole: String,
+        timeHours: Number,
+        requiresApproval: Boolean
+      }],
+      default: []
+    },
+    mandate: {
+      objective: { type: String, default: '' },
+      description: { type: String, default: '' }
+    },
     approvalRequired: { type: Boolean, default: true },
     credentials: {
       loginId: { type: String, trim: true },

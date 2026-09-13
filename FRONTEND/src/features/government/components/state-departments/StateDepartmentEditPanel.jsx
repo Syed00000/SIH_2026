@@ -1,18 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { 
-  Building2, Map, Users, Shield, FileText, Upload, Settings, 
-  ArrowLeft, CheckCircle2, ChevronRight, DownloadCloud, Lock, FileBadge2, Save,
-  AlertCircle, KeyRound, Sparkles, Send
+  Building2, Users, Settings, ArrowLeft, CheckCircle2, Save,
+  AlertCircle, KeyRound, Sparkles, Network, FileText
 } from 'lucide-react';
 import { JHARKHAND_DISTRICTS_LIST } from '../../data/governmentConstants.js';
 
-export const DepartmentEditPanel = ({ department, defaultCategory = 'State Ministry', onBack, onSave }) => {
+export const StateDepartmentEditPanel = ({ department, onBack, onSave }) => {
   const isEditing = Boolean(department);
 
   const [formData, setFormData] = useState({
     name: '',
     code: '',
-    category: defaultCategory,
+    category: 'State Ministry',
     departmentType: 'State Government Department',
     parentAuthority: 'Government of Jharkhand',
     officialWebsite: '',
@@ -20,13 +19,14 @@ export const DepartmentEditPanel = ({ department, defaultCategory = 'State Minis
     officeAddress: '',
     applicableJurisdiction: 'Entire State of Jharkhand',
     headquartersLocation: 'Ranchi',
-    operationalDistrictsType: 'All 24 Districts (State Wide)',
+    operationalDistrictsType: 'All Districts',
     district: 'Ranchi',
-    involvedLowerLevels: [
-      'State Department (Mandatory)',
+    districtCoverage: [],
+    hierarchyConfig: [
+      'State Department',
       'District Department',
-      'Block / Sub-Division / Local Office',
-      'Gram Panchayat / Urban Local Body'
+      'Block / Tehsil Office',
+      'Ward / Field Office'
     ],
     headName: '',
     headRole: 'Principal Secretary',
@@ -37,13 +37,15 @@ export const DepartmentEditPanel = ({ department, defaultCategory = 'State Minis
     nodalOfficerEmail: '',
     nodalOfficerPhone: '',
     description: '',
+    mandate: {
+      objective: '',
+      description: ''
+    },
     keyFunctions: [''],
     powersApprovalAuthority: '',
     schemesManaged: '',
     departmentsCoordinated: '',
     problemCategoriesHandled: '',
-    goNumber: '',
-    goDate: '',
     verificationStatus: 'Pending Verification',
     status: 'Active',
     effectiveFrom: new Date().toISOString().split('T')[0],
@@ -74,7 +76,7 @@ export const DepartmentEditPanel = ({ department, defaultCategory = 'State Minis
       setFormData({
         name: department.name || '',
         code: department.code || department.deptId || '',
-        category: department.category || 'State Ministry',
+        category: 'State Ministry',
         departmentType: department.departmentType || 'State Government Department',
         parentAuthority: department.parentAuthority || 'Government of Jharkhand',
         officialWebsite: department.officialWebsite || '', 
@@ -82,16 +84,15 @@ export const DepartmentEditPanel = ({ department, defaultCategory = 'State Minis
         officeAddress: department.officeAddress || '',
         applicableJurisdiction: department.applicableJurisdiction || 'Entire State of Jharkhand',
         headquartersLocation: department.headquartersLocation || 'Ranchi',
-        operationalDistrictsType: department.operationalDistrictsType || 'All 24 Districts (State Wide)',
+        operationalDistrictsType: department.operationalDistrictsType || 'All Districts',
         district: department.district || 'Ranchi',
-        involvedLowerLevels: department.involvedLowerLevels?.length
-          ? department.involvedLowerLevels
-          : [
-              'State Department (Mandatory)',
-              'District Department',
-              'Block / Sub-Division / Local Office',
-              'Gram Panchayat / Urban Local Body'
-            ],
+        districtCoverage: department.districtCoverage || [],
+        hierarchyConfig: department.hierarchyConfig?.length ? department.hierarchyConfig : [
+          'State Department',
+          'District Department',
+          'Block / Tehsil Office',
+          'Ward / Field Office'
+        ],
         headName: department.headName || '',
         headRole: department.headRole || 'Principal Secretary',
         headPhone: department.headPhone || '',
@@ -101,13 +102,12 @@ export const DepartmentEditPanel = ({ department, defaultCategory = 'State Minis
         nodalOfficerEmail: department.nodalOfficerEmail || '',
         nodalOfficerPhone: department.nodalOfficerPhone || '',
         description: department.description || '',
+        mandate: department.mandate || { objective: '', description: '' },
         keyFunctions: department.keyFunctions?.length ? department.keyFunctions : [''], 
         powersApprovalAuthority: department.powersApprovalAuthority || '',
         schemesManaged: department.schemesManaged || '',
         departmentsCoordinated: department.departmentsCoordinated || '',
         problemCategoriesHandled: department.problemCategoriesHandled || '',
-        goNumber: department.goNumber || '',
-        goDate: department.goDate || '',
         verificationStatus: department.verificationStatus || 'Pending Verification',
         status: department.status || 'Active',
         effectiveFrom: department.effectiveFrom || new Date().toISOString().split('T')[0],
@@ -134,20 +134,36 @@ export const DepartmentEditPanel = ({ department, defaultCategory = 'State Minis
         ...prev,
         credentials: { ...prev.credentials, [field]: type === 'checkbox' ? checked : value }
       }));
+    } else if (name.startsWith('mandate.')) {
+      const field = name.split('.')[1];
+      setFormData(prev => ({
+        ...prev,
+        mandate: { ...prev.mandate, [field]: value }
+      }));
     } else {
       setFormData(prev => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
     }
     if (errors[name]) setErrors(prev => ({ ...prev, [name]: '' }));
   };
 
-  const handleCheckboxChange = (level) => {
+  const handleDistrictCoverageToggle = (dist) => {
     setFormData(prev => {
-      if (level === 'State Department (Mandatory)') return prev;
-      const isChecked = prev.involvedLowerLevels.includes(level);
+      const coverage = prev.districtCoverage || [];
+      const newCoverage = coverage.includes(dist) 
+        ? coverage.filter(d => d !== dist) 
+        : [...coverage, dist];
+      return { ...prev, districtCoverage: newCoverage };
+    });
+  };
+
+  const handleHierarchyToggle = (level) => {
+    setFormData(prev => {
+      if (level === 'State Department') return prev; // Cannot toggle root
+      const isChecked = prev.hierarchyConfig.includes(level);
       const newLevels = isChecked 
-        ? prev.involvedLowerLevels.filter((l) => l !== level)
-        : [...prev.involvedLowerLevels, level];
-      return { ...prev, involvedLowerLevels: newLevels };
+        ? prev.hierarchyConfig.filter((l) => l !== level)
+        : [...prev.hierarchyConfig, level];
+      return { ...prev, hierarchyConfig: newLevels };
     });
   };
 
@@ -223,31 +239,28 @@ export const DepartmentEditPanel = ({ department, defaultCategory = 'State Minis
         </div>
       )}
 
-      {/* Top Header Card - Consistent with User Admin Theme */}
+      {/* Top Header Card */}
       <div className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/90 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="flex items-center gap-3">
           <button
             type="button"
             onClick={onBack}
             className="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors cursor-pointer"
-            title="Back to Departments"
           >
             <ArrowLeft className="w-4 h-4" />
           </button>
           <div>
             <div className="flex items-center gap-1.5 text-xs text-slate-500 font-medium mb-0.5">
-              <span>Departments</span>
+              <span>State Governance</span>
               <span>/</span>
-              <span>{formData.category}</span>
-              <span>/</span>
-              <span className="text-slate-900 font-bold">{isEditing ? 'Edit Department' : `Register ${formData.category}`}</span>
+              <span className="text-slate-900 font-bold">{isEditing ? 'Edit State Department' : 'Register State Department'}</span>
             </div>
             <h1 className="text-base sm:text-lg font-black text-slate-900 tracking-tight flex items-center gap-2">
               <Building2 className="w-4 h-4 text-slate-700" />
-              <span>{isEditing ? `Edit: ${department?.name || 'Department'}` : `Register ${formData.category}`}</span>
+              <span>{isEditing ? `Edit: ${department?.name}` : `Register New State Department`}</span>
             </h1>
             <p className="text-xs text-slate-500 font-medium">
-              Create department, define administrative hierarchy, and configure secure department access
+              Create and configure a new state-level government department.
             </p>
           </div>
         </div>
@@ -267,7 +280,7 @@ export const DepartmentEditPanel = ({ department, defaultCategory = 'State Minis
             className="flex items-center gap-1.5 px-4 py-1.5 bg-slate-900 hover:bg-black text-white rounded-xl text-xs font-bold transition-all cursor-pointer shadow-xs disabled:opacity-50"
           >
             <Save className="w-3.5 h-3.5 text-slate-300" />
-            <span>{isSubmitting ? 'Saving...' : (isEditing ? 'Save Changes' : `Create ${formData.category}`)}</span>
+            <span>{isSubmitting ? 'Saving...' : (isEditing ? 'Save Changes' : 'Create State Department')}</span>
           </button>
         </div>
       </div>
@@ -290,10 +303,8 @@ export const DepartmentEditPanel = ({ department, defaultCategory = 'State Minis
                 <Building2 className="w-4 h-4 text-slate-700" />
                 <h3 className="text-xs font-bold text-slate-900 tracking-tight">1. Department Identity</h3>
               </div>
-              <span className="text-[10px] text-slate-500 font-medium">Basic information & office location</span>
             </div>
-
-            <div className="p-5 grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="p-5 grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="md:col-span-2">
                 <label className="block text-[11px] font-semibold text-slate-700 mb-1">
                   Department / Ministry Name <span className="text-red-500">*</span>
@@ -301,7 +312,7 @@ export const DepartmentEditPanel = ({ department, defaultCategory = 'State Minis
                 <input
                   type="text"
                   name="name"
-                  placeholder="e.g. Department of Higher & Technical Education"
+                  placeholder="e.g. Department of Rural Development"
                   value={formData.name}
                   onChange={handleChange}
                   required
@@ -316,40 +327,11 @@ export const DepartmentEditPanel = ({ department, defaultCategory = 'State Minis
                 <input
                   type="text"
                   name="code"
-                  placeholder="e.g. DHTE-001"
+                  placeholder="e.g. RDD-JH-001"
                   value={formData.code}
                   onChange={handleChange}
                   required
                   className="w-full px-3 py-2 bg-slate-50/60 border border-slate-200 rounded-xl focus:bg-white focus:ring-1 focus:ring-slate-900 focus:border-slate-900 outline-none text-xs text-slate-900 uppercase font-mono font-medium"
-                />
-              </div>
-
-              <div>
-                <label className="block text-[11px] font-semibold text-slate-700 mb-1">
-                  Department Category <span className="text-red-500">*</span>
-                </label>
-                <select
-                  name="category"
-                  value={formData.category}
-                  onChange={handleChange}
-                  className="w-full px-3 py-2 bg-slate-50/60 border border-slate-200 rounded-xl focus:bg-white focus:ring-1 focus:ring-slate-900 focus:border-slate-900 outline-none text-xs text-slate-900 font-medium"
-                >
-                  <option value="State Ministry">State Ministry</option>
-                  <option value="District Department">District Department</option>
-                  <option value="Block / Tehsil Office">Block / Tehsil Office</option>
-                  <option value="Gram Panchayat">Gram Panchayat</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-[11px] font-semibold text-slate-700 mb-1">
-                  Department Type
-                </label>
-                <input
-                  type="text"
-                  disabled
-                  value={formData.departmentType}
-                  className="w-full px-3 py-2 bg-slate-100 border border-slate-200 rounded-xl text-slate-500 text-xs font-medium cursor-not-allowed"
                 />
               </div>
 
@@ -362,38 +344,6 @@ export const DepartmentEditPanel = ({ department, defaultCategory = 'State Minis
                   disabled
                   value={formData.parentAuthority}
                   className="w-full px-3 py-2 bg-slate-100 border border-slate-200 rounded-xl text-slate-500 text-xs font-medium cursor-not-allowed"
-                />
-              </div>
-
-              {(formData.category === 'District Department' || formData.category === 'Block / Tehsil Office' || formData.category === 'Gram Panchayat') && (
-                <div>
-                  <label className="block text-[11px] font-semibold text-slate-700 mb-1">
-                    Select District <span className="text-red-500">*</span>
-                  </label>
-                  <select
-                    name="district"
-                    value={formData.district}
-                    onChange={handleChange}
-                    className="w-full px-3 py-2 bg-slate-50/60 border border-slate-200 rounded-xl focus:bg-white focus:ring-1 focus:ring-slate-900 focus:border-slate-900 outline-none text-xs text-slate-900 font-medium"
-                  >
-                    {JHARKHAND_DISTRICTS_LIST.map(d => (
-                      <option key={d} value={d}>{d}</option>
-                    ))}
-                  </select>
-                </div>
-              )}
-
-              <div>
-                <label className="block text-[11px] font-semibold text-slate-700 mb-1">
-                  Official Website
-                </label>
-                <input
-                  type="text"
-                  name="officialWebsite"
-                  placeholder="https://dhte.jharkhand.gov.in"
-                  value={formData.officialWebsite}
-                  onChange={handleChange}
-                  className="w-full px-3 py-2 bg-slate-50/60 border border-slate-200 rounded-xl focus:bg-white focus:ring-1 focus:ring-slate-900 focus:border-slate-900 outline-none text-xs text-slate-900 font-medium"
                 />
               </div>
 
@@ -418,8 +368,8 @@ export const DepartmentEditPanel = ({ department, defaultCategory = 'State Minis
                 </label>
                 <textarea
                   name="officeAddress"
-                  rows={3}
-                  placeholder="e.g. Project Bhawan, Dhurwa, Ranchi, Jharkhand - 834004"
+                  rows={2}
+                  placeholder="e.g. Project Bhawan, Dhurwa, Ranchi"
                   value={formData.officeAddress}
                   onChange={handleChange}
                   className="w-full px-3 py-2 bg-slate-50/60 border border-slate-200 rounded-xl focus:bg-white focus:ring-1 focus:ring-slate-900 focus:border-slate-900 outline-none text-xs text-slate-900 font-medium"
@@ -428,14 +378,152 @@ export const DepartmentEditPanel = ({ department, defaultCategory = 'State Minis
             </div>
           </div>
 
-          {/* Section 3: Department Leadership */}
+          {/* Section 2: Administrative Hierarchy */}
+          <div className="bg-white rounded-2xl border border-slate-200/90 shadow-2xs overflow-hidden">
+            <div className="px-5 py-3.5 border-b border-slate-100 bg-slate-50/70 flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <Network className="w-4 h-4 text-slate-700" />
+                <h3 className="text-xs font-bold text-slate-900 tracking-tight">2. Administrative Hierarchy & Jurisdiction</h3>
+              </div>
+            </div>
+            
+            <div className="p-5 space-y-5">
+              <div>
+                <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+                  District Coverage
+                </label>
+                <select
+                  name="operationalDistrictsType"
+                  value={formData.operationalDistrictsType}
+                  onChange={handleChange}
+                  className="w-full md:w-1/2 px-3 py-2 bg-slate-50/60 border border-slate-200 rounded-xl focus:bg-white focus:ring-1 focus:ring-slate-900 focus:border-slate-900 outline-none text-xs text-slate-900 font-medium mb-3"
+                >
+                  <option value="All Districts">All Districts (Entire State)</option>
+                  <option value="Selected Districts">Selected Districts Only</option>
+                </select>
+
+                {formData.operationalDistrictsType === 'Selected Districts' && (
+                  <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl max-h-48 overflow-y-auto">
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                      {JHARKHAND_DISTRICTS_LIST.map((dist) => (
+                        <label key={dist} className="flex items-center space-x-2 cursor-pointer p-1.5 hover:bg-slate-100 rounded">
+                          <input
+                            type="checkbox"
+                            checked={formData.districtCoverage.includes(dist)}
+                            onChange={() => handleDistrictCoverageToggle(dist)}
+                            className="rounded border-slate-300 text-slate-900 focus:ring-slate-900"
+                          />
+                          <span className="text-[11px] font-medium text-slate-700">{dist}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-semibold text-slate-700 mb-2">
+                  Configurable Department Hierarchy (Select Applicable Lower Levels)
+                </label>
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
+                  {[
+                    'State Department',
+                    'District Department',
+                    'Division / Zone',
+                    'Sub-Division',
+                    'Block / Tehsil Office',
+                    'Municipality',
+                    'Municipal Corporation',
+                    'Gram Panchayat',
+                    'Ward / Field Office'
+                  ].map((level) => (
+                    <label key={level} className={`flex items-start space-x-2.5 p-2.5 rounded-xl border cursor-pointer transition-colors ${
+                      formData.hierarchyConfig.includes(level)
+                        ? 'border-[#007A61] bg-[#007A61]/5'
+                        : 'border-slate-200 bg-white hover:bg-slate-50'
+                    }`}>
+                      <input
+                        type="checkbox"
+                        disabled={level === 'State Department'}
+                        checked={formData.hierarchyConfig.includes(level)}
+                        onChange={() => handleHierarchyToggle(level)}
+                        className="mt-0.5 rounded border-slate-300 text-[#007A61] focus:ring-[#007A61]"
+                      />
+                      <span className={`text-[11px] font-bold ${formData.hierarchyConfig.includes(level) ? 'text-[#007A61]' : 'text-slate-600'}`}>
+                        {level}
+                      </span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Section 3: Mandate & Functions */}
+          <div className="bg-white rounded-2xl border border-slate-200/90 shadow-2xs overflow-hidden">
+            <div className="px-5 py-3.5 border-b border-slate-100 bg-slate-50/70 flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <FileText className="w-4 h-4 text-slate-700" />
+                <h3 className="text-xs font-bold text-slate-900 tracking-tight">3. Mandate & Functions</h3>
+              </div>
+            </div>
+            <div className="p-5 space-y-4">
+              <div>
+                <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+                  Department Objective / Mandate
+                </label>
+                <textarea
+                  name="mandate.objective"
+                  rows={2}
+                  placeholder="Primary objective of the department..."
+                  value={formData.mandate.objective}
+                  onChange={handleChange}
+                  className="w-full px-3 py-2 bg-slate-50/60 border border-slate-200 rounded-xl focus:bg-white focus:ring-1 focus:ring-slate-900 focus:border-slate-900 outline-none text-xs text-slate-900 font-medium"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+                  Key Functions
+                </label>
+                <div className="space-y-2">
+                  {formData.keyFunctions.map((func, index) => (
+                    <div key={index} className="flex items-center space-x-2">
+                      <input
+                        type="text"
+                        value={func}
+                        onChange={(e) => handleKeyFunctionChange(index, e.target.value)}
+                        placeholder="e.g. Policy formulation, monitoring..."
+                        className="flex-1 px-3 py-1.5 bg-slate-50/60 border border-slate-200 rounded-lg outline-none text-xs text-slate-900 font-medium"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => removeKeyFunction(index)}
+                        className="px-2 py-1.5 text-red-500 hover:bg-red-50 rounded-lg font-bold"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  ))}
+                  <button
+                    type="button"
+                    onClick={addKeyFunction}
+                    className="text-[11px] font-bold text-[#007A61] hover:underline"
+                  >
+                    + Add Key Function
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Section 4: Department Leadership */}
           <div className="bg-white rounded-2xl border border-slate-200/90 shadow-2xs overflow-hidden">
             <div className="px-5 py-3.5 border-b border-slate-100 bg-slate-50/70 flex items-center justify-between">
               <div className="flex items-center space-x-2">
                 <Users className="w-4 h-4 text-slate-700" />
-                <h3 className="text-xs font-bold text-slate-900 tracking-tight">3. Department Leadership</h3>
+                <h3 className="text-xs font-bold text-slate-900 tracking-tight">4. Department Leadership</h3>
               </div>
-              <span className="text-[10px] text-slate-500 font-medium">HOD & Nodal Officer Information</span>
             </div>
 
             <div className="p-5 grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -466,92 +554,16 @@ export const DepartmentEditPanel = ({ department, defaultCategory = 'State Minis
                   className="w-full px-3 py-2 bg-slate-50/60 border border-slate-200 rounded-xl focus:bg-white focus:ring-1 focus:ring-slate-900 focus:border-slate-900 outline-none text-xs text-slate-900 font-medium"
                 />
               </div>
-
-              <div>
-                <label className="block text-[11px] font-semibold text-slate-700 mb-1">
-                  Official HOD Email <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="email"
-                  name="headEmail"
-                  placeholder="hod@jharkhand.gov.in"
-                  value={formData.headEmail}
-                  onChange={handleChange}
-                  className="w-full px-3 py-2 bg-slate-50/60 border border-slate-200 rounded-xl focus:bg-white focus:ring-1 focus:ring-slate-900 focus:border-slate-900 outline-none text-xs text-slate-900 font-medium"
-                />
-              </div>
-
-              <div>
-                <label className="block text-[11px] font-semibold text-slate-700 mb-1">
-                  Official HOD Contact Number
-                </label>
-                <input
-                  type="text"
-                  name="headPhone"
-                  placeholder="+91 9876543210"
-                  value={formData.headPhone}
-                  onChange={handleChange}
-                  className="w-full px-3 py-2 bg-slate-50/60 border border-slate-200 rounded-xl focus:bg-white focus:ring-1 focus:ring-slate-900 focus:border-slate-900 outline-none text-xs text-slate-900 font-medium"
-                />
-              </div>
-
-              <div className="md:col-span-2 pt-2 border-t border-slate-100">
-                <span className="text-[11px] font-bold text-slate-900 uppercase tracking-wider block mb-3">
-                  Designated Nodal Officer Contact
-                </span>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  <div>
-                    <label className="block text-[11px] font-semibold text-slate-700 mb-1">
-                      Nodal Officer Name
-                    </label>
-                    <input
-                      type="text"
-                      name="nodalOfficerName"
-                      placeholder="e.g. Smt. Anita Verma"
-                      value={formData.nodalOfficerName}
-                      onChange={handleChange}
-                      className="w-full px-3 py-2 bg-slate-50/60 border border-slate-200 rounded-xl focus:bg-white focus:ring-1 focus:ring-slate-900 focus:border-slate-900 outline-none text-xs text-slate-900 font-medium"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-[11px] font-semibold text-slate-700 mb-1">
-                      Nodal Officer Email
-                    </label>
-                    <input
-                      type="email"
-                      name="nodalOfficerEmail"
-                      placeholder="nodal@jharkhand.gov.in"
-                      value={formData.nodalOfficerEmail}
-                      onChange={handleChange}
-                      className="w-full px-3 py-2 bg-slate-50/60 border border-slate-200 rounded-xl focus:bg-white focus:ring-1 focus:ring-slate-900 focus:border-slate-900 outline-none text-xs text-slate-900 font-medium"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-[11px] font-semibold text-slate-700 mb-1">
-                      Nodal Officer Phone
-                    </label>
-                    <input
-                      type="text"
-                      name="nodalOfficerPhone"
-                      placeholder="+91 9876543210"
-                      value={formData.nodalOfficerPhone}
-                      onChange={handleChange}
-                      className="w-full px-3 py-2 bg-slate-50/60 border border-slate-200 rounded-xl focus:bg-white focus:ring-1 focus:ring-slate-900 focus:border-slate-900 outline-none text-xs text-slate-900 font-medium"
-                    />
-                  </div>
-                </div>
-              </div>
             </div>
           </div>
 
-          {/* Section 4: Department Login & Portal Access */}
+          {/* Section 5: State Department Principal Credentials */}
           <div className="bg-white rounded-2xl border border-slate-200/90 shadow-2xs overflow-hidden">
             <div className="px-5 py-3.5 border-b border-slate-100 bg-slate-50/70 flex items-center justify-between">
               <div className="flex items-center space-x-2">
                 <KeyRound className="w-4 h-4 text-slate-700" />
-                <h3 className="text-xs font-bold text-slate-900 tracking-tight">4. Department Login & Portal Access</h3>
+                <h3 className="text-xs font-bold text-slate-900 tracking-tight">5. State Department Principal Login & Access</h3>
               </div>
-              <span className="text-[10px] text-slate-500 font-medium">Principal portal credentials</span>
             </div>
 
             <div className="p-5 grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -576,7 +588,7 @@ export const DepartmentEditPanel = ({ department, defaultCategory = 'State Minis
                 <input
                   type="text"
                   name="credentials.loginId"
-                  placeholder="e.g. DHTE-001"
+                  placeholder="e.g. RDD-JH-001"
                   value={formData.credentials.loginId}
                   onChange={handleChange}
                   className="w-full px-3 py-2 bg-slate-50/60 border border-slate-200 rounded-xl focus:bg-white focus:ring-1 focus:ring-slate-900 focus:border-slate-900 outline-none text-xs text-slate-900 font-medium"
@@ -607,119 +619,25 @@ export const DepartmentEditPanel = ({ department, defaultCategory = 'State Minis
                   <span>Generate Secure Password</span>
                 </button>
               </div>
-
             </div>
           </div>
 
-
-          {/* Section 7: Activation & Audit */}
-          <div className="bg-white rounded-2xl border border-slate-200/90 shadow-2xs overflow-hidden">
-            <div className="px-5 py-3.5 border-b border-slate-100 bg-slate-50/70 flex items-center justify-between">
-              <div className="flex items-center space-x-2">
-                <Settings className="w-4 h-4 text-slate-700" />
-                <h3 className="text-xs font-bold text-slate-900 tracking-tight">7. Activation & Audit Status</h3>
-              </div>
-              <span className="text-[10px] text-slate-500 font-medium">State status flags</span>
-            </div>
-
-            <div className="p-5 space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div>
-                  <label className="block text-[11px] font-semibold text-slate-700 mb-2">
-                    Department Status <span className="text-red-500">*</span>
-                  </label>
-                  <div className="flex items-center gap-4">
-                    <label className="flex items-center gap-1.5 cursor-pointer">
-                      <input
-                        type="radio"
-                        name="status"
-                        value="Active"
-                        checked={formData.status === 'Active'}
-                        onChange={handleChange}
-                        className="accent-slate-900"
-                      />
-                      <span className="text-emerald-700 font-bold">Active</span>
-                    </label>
-                    <label className="flex items-center gap-1.5 cursor-pointer">
-                      <input
-                        type="radio"
-                        name="status"
-                        value="Inactive"
-                        checked={formData.status === 'Inactive'}
-                        onChange={handleChange}
-                        className="accent-slate-900"
-                      />
-                      <span className="text-slate-600 font-medium">Inactive</span>
-                    </label>
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-[11px] font-semibold text-slate-700 mb-1">
-                    Effective From Date <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="date"
-                    name="effectiveFrom"
-                    value={formData.effectiveFrom}
-                    onChange={handleChange}
-                    className="w-full px-3 py-2 bg-slate-50/60 border border-slate-200 rounded-xl focus:bg-white focus:ring-1 focus:ring-slate-900 focus:border-slate-900 outline-none text-xs text-slate-900 font-medium"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-[11px] font-semibold text-slate-700 mb-1">
-                    State Higher Approval
-                  </label>
-                  <div className="flex items-center space-x-2 pt-1.5">
-                    <label className="relative inline-flex items-center cursor-pointer">
-                      <input
-                        type="checkbox"
-                        name="approvalRequired"
-                        checked={formData.approvalRequired}
-                        onChange={handleChange}
-                        className="sr-only peer"
-                      />
-                      <div className="w-9 h-5 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-slate-900"></div>
-                    </label>
-                    <span className="text-[11px] text-slate-600 font-medium">Requires approval</span>
-                  </div>
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-[11px] font-semibold text-slate-700 mb-1">
-                  Administrative Remarks (Optional)
-                </label>
-                <input
-                  type="text"
-                  name="remarks"
-                  placeholder="Any operational notes or comments..."
-                  value={formData.remarks}
-                  onChange={handleChange}
-                  className="w-full px-3 py-2 bg-slate-50/60 border border-slate-200 rounded-xl focus:bg-white focus:ring-1 focus:ring-slate-900 focus:border-slate-900 outline-none text-xs text-slate-900 font-medium"
-                />
-              </div>
-            </div>
-
-            {/* Bottom Form Action Buttons */}
-            <div className="bg-slate-50/80 border-t border-slate-100 p-4 flex items-center justify-end gap-2.5">
-              <button
-                type="button"
-                onClick={onBack}
-                className="px-4 py-2 bg-white border border-slate-200 rounded-xl text-slate-700 text-xs font-bold hover:bg-slate-50 transition-colors cursor-pointer shadow-2xs"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                className="px-5 py-2 bg-slate-900 hover:bg-black text-white rounded-xl text-xs font-bold transition-all cursor-pointer shadow-xs disabled:opacity-50 flex items-center space-x-1.5"
-              >
-                <CheckCircle2 className="w-3.5 h-3.5 text-slate-300" />
-                <span>{isSubmitting ? 'Saving...' : (isEditing ? 'Update Department' : `Create ${formData.category}`)}</span>
-              </button>
-            </div>
+          <div className="bg-slate-50/80 border-t border-slate-100 p-4 flex items-center justify-end gap-2.5 rounded-2xl">
+            <button
+              type="button"
+              onClick={onBack}
+              className="px-4 py-2 bg-white border border-slate-200 rounded-xl text-slate-700 text-xs font-bold hover:bg-slate-50 transition-colors cursor-pointer shadow-2xs"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="px-5 py-2 bg-slate-900 hover:bg-black text-white rounded-xl text-xs font-bold transition-all cursor-pointer shadow-xs disabled:opacity-50 flex items-center space-x-1.5"
+            >
+              <CheckCircle2 className="w-3.5 h-3.5 text-slate-300" />
+              <span>{isSubmitting ? 'Saving...' : (isEditing ? 'Update State Department' : 'Create State Department')}</span>
+            </button>
           </div>
         </form>
       </div>
@@ -727,4 +645,4 @@ export const DepartmentEditPanel = ({ department, defaultCategory = 'State Minis
   );
 };
 
-export default DepartmentEditPanel;
+

@@ -108,7 +108,7 @@ export const CitizenChallengeDetailModal = ({ challenge = null, isOpen, onClose,
           </div>
 
           {/* Attached Evidence Section */}
-          <CitizenChallengeEvidenceSection challenge={challenge} />
+          {isResolved && <CitizenChallengeEvidenceSection challenge={challenge} />}
 
           {/* Deployed Prototype & Resolution Dossier */}
           {protoPdf && (

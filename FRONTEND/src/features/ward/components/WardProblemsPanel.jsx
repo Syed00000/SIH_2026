@@ -7,7 +7,7 @@ export const WardProblemsPanel = ({
   onSelectChallenge
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('All');
+  const [statusTab, setStatusTab] = useState('Current Level');
 
   const filtered = challenges.filter((c) => {
     const matchesSearch =
@@ -16,12 +16,15 @@ export const WardProblemsPanel = ({
       c.challengeId?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       c.domain?.toLowerCase().includes(searchTerm.toLowerCase());
 
-    const matchesStatus =
-      statusFilter === 'All' ||
-      (statusFilter === 'In Progress' && (c.status === 'In Progress' || c.status === 'Assigned')) ||
-      c.status === statusFilter;
-
-    return matchesSearch && matchesStatus;
+    if (!matchesSearch) return false;
+    
+    if (statusTab === 'Current Level') {
+      if (c.status === 'Escalated') return false;
+    } else if (statusTab === 'Forwarded / Escalated') {
+      if (c.status !== 'Escalated') return false;
+    }
+    
+    return true;
   });
 
   return (
@@ -47,13 +50,13 @@ export const WardProblemsPanel = ({
           </div>
 
           <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl">
-            {['All', 'In Progress', 'Resolved'].map((st) => (
+            {['Current Level', 'Forwarded / Escalated'].map((st) => (
               <button
                 key={st}
                 type="button"
-                onClick={() => setStatusFilter(st)}
-                className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                  statusFilter === st ? 'bg-white text-[#007A61] shadow-2xs' : 'text-slate-600 hover:text-slate-900'
+                onClick={() => setStatusTab(st)}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                  statusTab === st ? 'bg-white text-[#007A61] shadow-2xs' : 'text-slate-600 hover:text-slate-900'
                 }`}
               >
                 {st}

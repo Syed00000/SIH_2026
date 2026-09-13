@@ -8,8 +8,7 @@ export const TriageVerificationCard = ({
   setSelectedPriority
 }) => {
   return (
-    <div className="space-y-3">
-      {/* Domain & Priority Selectors */}
+    <div className="space-y-4">
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div>
           <label className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1.5">

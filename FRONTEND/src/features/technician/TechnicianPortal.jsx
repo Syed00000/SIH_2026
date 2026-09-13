@@ -7,6 +7,7 @@ import { TechnicianProblemsList } from './TechnicianProblemsList.jsx';
 import { TechnicianProfileTab } from './TechnicianProfileTab.jsx';
 import { TechnicianProblemDetailModal } from './TechnicianProblemDetailModal.jsx';
 import { CompleteTaskModal } from './CompleteTaskModal.jsx';
+import { RejectTaskModal } from './RejectTaskModal.jsx';
 import { GovernmentFooter } from '../government/components/layout/GovernmentFooter.jsx';
 import { citizenService } from '../citizen/services/citizenService.js';
 import apiClient from '../../infrastructure/api/client.js';
@@ -21,8 +22,10 @@ export const TechnicianPortal = ({ user, onLogout }) => {
   const [refreshing, setRefreshing] = useState(false);
   const [selectedChallenge, setSelectedChallenge] = useState(null);
   const [completingTask, setCompletingTask] = useState(null);
+  const [rejectingTask, setRejectingTask] = useState(null);
   const [acceptingId, setAcceptingId] = useState(null);
   const [isSubmittingComplete, setIsSubmittingComplete] = useState(false);
+  const [isSubmittingReject, setIsSubmittingReject] = useState(false);
   const [bannerNotice, setBannerNotice] = useState('');
 
   const tId = (user?.technicianId || user?.id || user?._id || '').toUpperCase();
@@ -108,8 +111,37 @@ export const TechnicianPortal = ({ user, onLogout }) => {
     }
   };
 
+  const handleRejectTask = async (challenge, reason) => {
+    const targetId = challenge.challengeId || challenge.id || challenge._id;
+    try {
+      setIsSubmittingReject(true);
+      const payload = {
+        status: 'Not Solved',
+        assignedTechnician: {
+          ...challenge.assignedTechnician,
+          status: 'Rejected',
+          rejectedAt: new Date(),
+          rejectReason: reason
+        }
+      };
+
+      await apiClient.patch(`citizen/challenges/${targetId}/triage`, payload);
+      setTasks((prev) => prev.map((t) => ((t.challengeId || t.id || t._id) === targetId ? { ...t, status: 'Not Solved', assignedTechnician: { ...(t.assignedTechnician || {}), status: 'Rejected', rejectReason: reason } } : t)));
+      if (selectedChallenge && (selectedChallenge.challengeId || selectedChallenge.id) === targetId) {
+        setSelectedChallenge((prev) => (prev ? { ...prev, status: 'Not Solved', assignedTechnician: { ...(prev.assignedTechnician || {}), status: 'Rejected', rejectReason: reason } } : null));
+      }
+      setRejectingTask(null);
+      setBannerNotice(`Problem ${targetId} marked as Not Solved and returned to Ward Commissioner.`);
+      setTimeout(() => setBannerNotice(''), 5000);
+    } catch (err) {
+      alert(err.response?.data?.message || 'Failed to reject task');
+    } finally {
+      setIsSubmittingReject(false);
+    }
+  };
+
   const counts = useMemo(() => {
-    const pending = tasks.filter((t) => t.assignedTechnician?.status !== 'Accepted' && t.assignedTechnician?.status !== 'Completed' && t.status !== 'Resolved').length;
+    const pending = tasks.filter((t) => t.assignedTechnician?.status !== 'Accepted' && t.assignedTechnician?.status !== 'Completed' && t.assignedTechnician?.status !== 'Rejected' && t.status !== 'Resolved' && t.status !== 'Not Solved').length;
     const active = tasks.filter((t) => t.assignedTechnician?.status === 'Accepted' && t.status !== 'Resolved' && t.assignedTechnician?.status !== 'Completed').length;
     const pendingApproval = tasks.filter((t) => t.assignedTechnician?.status === 'Completed' && t.status !== 'Resolved').length;
     const completed = tasks.filter((t) => t.status === 'Resolved').length;
@@ -172,6 +204,7 @@ export const TechnicianPortal = ({ user, onLogout }) => {
         onClose={() => setSelectedChallenge(null)}
         onAccept={handleAcceptTask}
         onOpenComplete={(t) => setCompletingTask(t)}
+        onOpenReject={(t) => setRejectingTask(t)}
         acceptingId={acceptingId}
       />
 
@@ -181,6 +214,14 @@ export const TechnicianPortal = ({ user, onLogout }) => {
         onClose={() => setCompletingTask(null)}
         onConfirm={handleCompleteTask}
         completing={isSubmittingComplete}
+      />
+
+      <RejectTaskModal
+        challenge={rejectingTask}
+        isOpen={Boolean(rejectingTask)}
+        onClose={() => setRejectingTask(null)}
+        onConfirm={handleRejectTask}
+        rejecting={isSubmittingReject}
       />
     </div>
   );

@@ -61,7 +61,7 @@ export const citizenChallengeSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ['Submitted', 'Under Review', 'In Progress', 'Resolved', 'Deployed', 'Rejected', 'Clarification Requested', 'Clarified', 'Accepted', 'Declined', 'Withdrawn', 'Escalated'],
+      enum: ['Submitted', 'Under Review', 'In Progress', 'Resolved', 'Deployed', 'Rejected', 'Clarification Requested', 'Clarified', 'Accepted', 'Declined', 'Withdrawn', 'Escalated', 'Not Solved'],
       default: 'Under Review',
       index: true
     },
@@ -94,6 +94,17 @@ export const citizenChallengeSchema = new mongoose.Schema(
     },
     mediaUrls: {
       type: [String],
+      default: () => []
+    },
+    escalationEvidence: {
+      type: [{
+        level: String,
+        authorityName: String,
+        technicianName: String,
+        remarks: String,
+        mediaUrls: [String],
+        date: Date
+      }],
       default: () => []
     },
 

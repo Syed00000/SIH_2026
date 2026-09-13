@@ -3,14 +3,16 @@ import { exportChallengeDossierPdf } from '../../../shared/utils/pdfExport.js';
 import { DossierOverviewTab } from './dossier/DossierOverviewTab.jsx';
 import { DossierMediaTab } from './dossier/DossierMediaTab.jsx';
 import { DossierLocationTab } from './dossier/DossierLocationTab.jsx';
+import { DossierTrackingTab } from './dossier/DossierTrackingTab.jsx';
 import { DossierActionFooter } from './dossier/DossierActionFooter.jsx';
 import { FullPageDetailPanel } from '../../../shared/components/layout/FullPageDetailPanel.jsx';
-import { FileText, Image, MapPin, Download, Lock } from 'lucide-react';
+import { FileText, Image, MapPin, Download, Lock, Activity } from 'lucide-react';
 
 const DOSSIER_TABS = [
   { id: 'dossier', label: 'Problem Dossier & Vetting', icon: FileText },
   { id: 'media', label: 'Ground Truth Media & Evidence', icon: Image },
-  { id: 'location', label: 'Location & Demographics', icon: MapPin }
+  { id: 'location', label: 'Location & Demographics', icon: MapPin },
+  { id: 'tracking', label: 'Tracking', icon: Activity }
 ];
 
 export const ProblemEvidenceDossierPanel = ({
@@ -141,6 +143,7 @@ export const ProblemEvidenceDossierPanel = ({
             landmark={landmark}
           />
         )}
+        {activeTab === 'tracking' && <DossierTrackingTab challenge={challenge} />}
       </div>
     </FullPageDetailPanel>
   );

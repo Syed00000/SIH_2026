@@ -57,14 +57,18 @@ export const BlockPortal = ({ user, onLogout }) => {
 
         const allChls = resChls?.challenges || [];
         const bName = (currentBlock.name || '').toLowerCase();
-        const bId = (currentBlock.blockId || '').toUpperCase();
+        const bId = (currentBlock.blockId || currentBlock.deptId || currentBlock.id || currentBlock._id || '').toUpperCase();
         setChallenges(allChls.filter((c) => {
           const aId = (c.assignedDepartment?.deptId || c.assignedDepartment?.id || '').toUpperCase();
+          const abId = (c.assignedBlock?.blockId || c.assignedBlock?.id || '').toUpperCase();
           const aBlock = (c.assignedDepartment?.block || c.location?.block || '').toLowerCase();
           const aName = (c.assignedDepartment?.name || '').toLowerCase();
           const assignedBlockName = (c.assignedBlock?.name || '').toLowerCase();
           const locationBlock = (c.location?.block || '').toLowerCase();
-          return aId === bId || aBlock.includes(bName) || aName.includes(bName) || assignedBlockName.includes(bName) || locationBlock.includes(bName);
+          
+          const isLegacyEscalation = Boolean(c.assignedBlock && (c.assignedBlock.blockId === 'BLK-JH-RN-01' || c.assignedBlock.level === 'Block / Tehsil Office'));
+          
+          return aId === bId || abId === bId || aBlock.includes(bName) || aName.includes(bName) || assignedBlockName.includes(bName) || locationBlock.includes(bName) || isLegacyEscalation;
         }));
 
         const deptsList = deptsRes?.data?.data || deptsRes?.data || deptsRes || [];
