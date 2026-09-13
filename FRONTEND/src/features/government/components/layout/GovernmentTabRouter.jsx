@@ -1,5 +1,6 @@
 import React from 'react';
 import { GovernmentOverview } from '../overview/GovernmentOverview.jsx';
+import { AITriageDashboard } from '../triage/AITriageDashboard.jsx';
 import { HeiHubPanel } from '../heis/heiHubPanel.jsx';
 import { ManageUniversitiesDashboard } from '../universities/ManageUniversitiesDashboard.jsx';
 import { ManageIndustriesDashboard } from '../industries/ManageIndustriesDashboard.jsx';
@@ -12,7 +13,9 @@ import {
 } from '../projects/index.js';
 import { GovernmentGisDashboard } from '../gis/GovernmentGisDashboard.jsx';
 import { AdminManagement, DepartmentsManagementPanel } from '../governance/index.js';
+import { StateDepartmentsManagementPanel } from '../state-departments/StateDepartmentsManagementPanel.jsx';
 import { CSRGrantsLifecycleDashboard } from '../csr/CSRGrantsLifecycleDashboard.jsx';
+import { ManageUpdatesDashboard } from '../updates/ManageUpdatesDashboard.jsx';
 import { GovernmentReportsPanel } from '../reports/GovernmentReportsPanel.jsx';
 import { ComingSoonPanel } from '../common/ComingSoonPanel.jsx';
 
@@ -62,6 +65,19 @@ export const GovernmentTabRouter = ({
     return <GovernmentReportsPanel selectedDistrict={selectedDistrict} />;
   }
 
+  if (activeTab === 'triage') {
+    return (
+      <AITriageDashboard
+        selectedDistrict={selectedDistrict}
+        onSelectDistrict={setSelectedDistrict}
+      />
+    );
+  }
+
+  if (activeTab === 'updates') {
+    return <ManageUpdatesDashboard />;
+  }
+
   if (['projects_solutions', 'projects_overview', 'projects_active'].includes(activeTab)) {
     return <ActiveProjectsPanel />;
   }
@@ -81,10 +97,14 @@ export const GovernmentTabRouter = ({
   if (['governance_industries', 'manage_industries', 'industries'].includes(activeTab)) {
     return <ManageIndustriesDashboard />;
   }
-  if (['governance_departments', 'departments', 'dept_state', 'dept_district', 'dept_panchayat', 'dept_block'].includes(activeTab)) {
+  if (activeTab === 'dept_state') {
+    return <StateDepartmentsManagementPanel />;
+  }
+
+  if (['governance_departments', 'departments', 'dept_district', 'dept_panchayat', 'dept_block'].includes(activeTab)) {
     const cat = activeTab === 'dept_district' ? 'District Department' :
       activeTab === 'dept_panchayat' ? 'Gram Panchayat' :
-      activeTab === 'dept_block' ? 'Block / Tehsil Office' : 'State Ministry';
+      'Block / Tehsil Office';
     return <DepartmentsManagementPanel key={activeTab} category={cat} />;
   }
   if (activeTab === 'gis') return <GovernmentGisDashboard />;

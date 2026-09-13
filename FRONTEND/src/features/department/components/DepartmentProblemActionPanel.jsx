@@ -17,7 +17,7 @@ export const DepartmentProblemActionPanel = ({ problem, department, onClose, onU
   const fullAddress = [location.village || problem.village, location.panchayat || problem.panchayat, location.block || problem.block, location.district || problem.district || 'Ranchi', 'Jharkhand'].filter(Boolean).join(', ');
 
   const deptCategory = department?.category || problem.assignedDepartment?.category || '';
-  const isWard = deptCategory === 'Ward Commissioner' || deptCategory === 'Ward' || deptCategory === 'Ward Office';
+  const isWard = deptCategory === 'Ward Commissioner' || deptCategory === 'Ward' || deptCategory === 'Ward Office' || deptCategory === 'Ward / Field Office';
   const isBlock = deptCategory === 'Block / Tehsil Office' || deptCategory === 'Gram Panchayat';
 
   const higherAuthorityLabel = isWard ? 'Move to Block Office' : (isBlock ? 'Move to District Department' : 'Move to State Ministry');
@@ -62,7 +62,58 @@ export const DepartmentProblemActionPanel = ({ problem, department, onClose, onU
       setSubmitting(true);
       setMsg({ type: '', text: '' });
       const targetId = problem.challengeId || problem.id || problem._id;
+      
       const payload = { status: 'Escalated', action: 'ESCALATE_TO_HIGHER_AUTHORITY', currentLevel };
+      
+      try {
+        const deptRes = await apiClient.get('government/departments');
+        const depts = deptRes?.data?.data || deptRes?.data || [];
+        const targetDistrict = problem.location?.district || problem.district || department?.district || 'Ranchi';
+        
+        if (currentLevel === 'WARD') {
+          const blocks = depts.filter(d => d.category === 'Block / Tehsil Office');
+          const targetBlock = blocks.find(b => (b.district || '').toLowerCase() === targetDistrict.toLowerCase()) || blocks[0];
+          if (targetBlock) {
+            payload.assignedBlock = {
+              id: targetBlock.deptId || targetBlock.id || targetBlock._id,
+              blockId: targetBlock.deptId || targetBlock.id || targetBlock._id,
+              name: targetBlock.name,
+              level: 'Block / Tehsil Office',
+              category: 'Block / Tehsil Office',
+              district: targetBlock.district || targetDistrict
+            };
+          }
+        } else if (currentLevel === 'BLOCK') {
+          const distDepts = depts.filter(d => d.category === 'District Department');
+          const targetDept = distDepts.find(d => (d.district || '').toLowerCase() === targetDistrict.toLowerCase()) || distDepts[0];
+          if (targetDept) {
+            payload.assignedDepartment = {
+              id: targetDept.deptId || targetDept.id || targetDept._id,
+              deptId: targetDept.deptId || targetDept.id || targetDept._id,
+              name: targetDept.name,
+              level: 'District Department',
+              category: 'District Department',
+              district: targetDept.district || targetDistrict
+            };
+          }
+        } else if (currentLevel === 'DISTRICT') {
+          const stateDepts = depts.filter(d => d.category === 'State Ministry');
+          const targetState = stateDepts[0];
+          if (targetState) {
+            payload.assignedDepartment = {
+              id: targetState.deptId || targetState.id || targetState._id,
+              deptId: targetState.deptId || targetState.id || targetState._id,
+              name: targetState.name,
+              level: 'State Ministry',
+              category: 'State Ministry',
+              district: targetState.district || targetDistrict
+            };
+          }
+        }
+      } catch (err) {
+        console.error('Failed to fetch dynamic department for escalation', err);
+      }
+
       const res = await apiClient.patch(`citizen/challenges/${targetId}/triage`, payload);
       const updated = res?.data?.data || res?.data || { ...problem, status: 'Escalated' };
       setMsg({ type: 'success', text: `Problem escalated to ${higherAuthorityLabel}.` });

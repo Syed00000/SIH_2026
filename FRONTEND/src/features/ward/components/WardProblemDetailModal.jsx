@@ -50,18 +50,42 @@ export const WardProblemDetailModal = ({ isOpen, challenge, onClose, onUpdated, 
   };
 
   const handleEscalateToBlock = async () => {
-    if (!window.confirm('Escalate this problem to Higher Authority (Block Office)?')) return;
     try {
       setSubmitting(true);
       setError('');
+      
+      const deptRes = await apiClient.get('government/departments').catch(() => null);
+      const depts = deptRes?.data?.data || deptRes?.data || [];
+      const blocks = depts.filter(d => d.category === 'Block / Tehsil Office');
+      
+      if (blocks.length === 0) {
+        alert('No registered Block Offices found to escalate to.');
+        setSubmitting(false);
+        return;
+      }
+      
+      const targetBlock = blocks.find(b => (b.district || '').toLowerCase() === (challenge.location?.district || '').toLowerCase()) || blocks[0];
+      
+      if (!window.confirm(`Escalate this problem to ${targetBlock.name}?`)) {
+        setSubmitting(false);
+        return;
+      }
+
       const res = await apiClient.patch(`citizen/challenges/${targetId}/triage`, {
         status: 'Escalated',
-        action: 'ESCALATE_TO_HIGHER_AUTHORITY',
-        currentLevel: 'WARD'
+        triageRemarks: `Escalated from Ward to Block (${targetBlock.name}).`,
+        assignedBlock: {
+          id: targetBlock.deptId || targetBlock.id || targetBlock._id,
+          blockId: targetBlock.deptId || targetBlock.id || targetBlock._id,
+          name: targetBlock.name,
+          level: 'Block / Tehsil Office',
+          category: 'Block / Tehsil Office',
+          district: targetBlock.district || challenge.district || 'Ranchi'
+        }
       });
       const updated = res?.data?.data || res?.data || { ...challenge, status: 'Escalated' };
       if (onUpdated) onUpdated(updated);
-      setSuccess('Problem escalated to Higher Authority (Block Office).');
+      setSuccess(`Problem escalated to ${targetBlock.name}.`);
       setTimeout(() => { onClose(); }, 1000);
     } catch (err) {
       setError(err.response?.data?.message || err.message || 'Failed to escalate to Block');

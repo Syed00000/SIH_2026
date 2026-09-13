@@ -10,13 +10,19 @@ export const CompleteTaskModal = ({ challenge, isOpen, onClose, onConfirm, compl
   const canvasRef = useRef(null);
 
   useEffect(() => {
-    if (!isOpen) {
+    if (isOpen && challenge) {
+      setRemarks(challenge.assignedTechnician?.completionRemarks || '');
+      const citizenUrls = (challenge.media || []).map((m) => m.url || m);
+      const techUrls = (challenge.mediaUrls || []).filter((u) => !citizenUrls.includes(u));
+      const lastTechUrl = techUrls.length > 0 ? techUrls[techUrls.length - 1] : null;
+      setAttachment(lastTechUrl);
+    } else {
       stopCamera();
       setRemarks('');
       setError('');
       setAttachment(null);
     }
-  }, [isOpen]);
+  }, [isOpen, challenge]);
 
   const stopCamera = () => {
     if (videoRef.current && videoRef.current.srcObject) {

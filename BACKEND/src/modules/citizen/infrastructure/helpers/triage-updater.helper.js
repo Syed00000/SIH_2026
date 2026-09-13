@@ -147,51 +147,83 @@ export function applyTriageChanges(challenge, triageData, user = null) {
   // 2. Action: Escalate to Higher Authority (Ward -> Block -> District -> State)
   if (triageData.status === 'Escalated' || triageData.action === 'ESCALATE_TO_HIGHER_AUTHORITY') {
     challenge.status = 'Escalated';
+
     const lvl = (triageData.currentLevel || '').toUpperCase();
     const isWard = lvl === 'WARD' || (challenge.assignedWard?.name && challenge.assignedWard.status !== 'Escalated') || challenge.assignedDepartment?.category === 'Ward Commissioner';
-    const isBlock = lvl === 'BLOCK' || (!isWard && (challenge.assignedBlock?.name || challenge.assignedDepartment?.category === 'Block / Tehsil Office'));
+    const isBlock = lvl === 'BLOCK' || (!isWard && (challenge.assignedBlock?.name && challenge.assignedBlock.status !== 'Escalated') || challenge.assignedDepartment?.category === 'Block / Tehsil Office');
+
+    // Capture previous evidence before assigning to higher level
+    if (challenge.assignedTechnician && challenge.assignedTechnician.status === 'Completed') {
+      const existingUrls = challenge.mediaUrls || [];
+      const newMedia = existingUrls.length > 0 ? [existingUrls[existingUrls.length - 1]] : [];
+      if (!challenge.escalationEvidence) challenge.escalationEvidence = [];
+      
+      const prevLevel = isWard ? 'WARD' : (isBlock ? 'BLOCK' : 'DISTRICT');
+      challenge.escalationEvidence.push({
+        level: prevLevel,
+        authorityName: user?.fullName || 'Authority',
+        technicianName: challenge.assignedTechnician.name || 'Field Technician',
+        remarks: challenge.assignedTechnician.completionRemarks || 'No remarks provided.',
+        mediaUrls: newMedia,
+        date: new Date()
+      });
+      // Reset technician for the next authority level to assign a new one
+      challenge.assignedTechnician = null;
+    }
 
     if (isWard) {
       if (challenge.assignedWard) challenge.assignedWard.status = 'Escalated';
-      const bName = challenge.location?.block || challenge.location?.district || 'Kanke';
-      challenge.assignedBlock = {
-        name: `${bName} Block Office`,
-        blockId: 'BLK-JH-RN-01',
-        level: 'Block / Tehsil Office',
-        category: 'Block / Tehsil Office',
-        district: challenge.district || 'Ranchi',
-        assignedAt: new Date(),
-        assignedBy: user?.fullName || 'Ward Authority',
-        status: 'Assigned'
-      };
-      challenge.triageRemarks = `Escalated from Ward to Block (${bName} Block Office).`;
+      if (!triageData.assignedBlock) {
+        const bName = challenge.location?.block || challenge.location?.district || 'Kanke';
+        challenge.assignedBlock = {
+          name: `${bName} Block Office`,
+          blockId: 'BLK-JH-RN-01',
+          level: 'Block / Tehsil Office',
+          category: 'Block / Tehsil Office',
+          district: challenge.district || 'Ranchi',
+          assignedAt: new Date(),
+          assignedBy: user?.fullName || 'Ward Authority',
+          status: 'Assigned'
+        };
+        challenge.triageRemarks = `Escalated from Ward to Block (${bName} Block Office).`;
+      } else {
+        challenge.triageRemarks = triageData.triageRemarks || `Escalated from Ward to Block.`;
+      }
     } else if (isBlock) {
       if (challenge.assignedBlock) challenge.assignedBlock.status = 'Escalated';
-      const dName = challenge.location?.district || challenge.district || 'Ranchi';
-      challenge.assignedDepartment = {
-        name: `${dName} District Department`,
-        deptId: 'DEPT-JH-DIST-RNC',
-        level: 'District Department',
-        category: 'District Department',
-        district: dName,
-        assignedAt: new Date(),
-        assignedBy: user?.fullName || 'Block Office',
-        status: 'Assigned'
-      };
-      challenge.triageRemarks = `Escalated from Block to District (${dName} District Department).`;
+      if (!triageData.assignedDepartment) {
+        const dName = challenge.location?.district || challenge.district || 'Ranchi';
+        challenge.assignedDepartment = {
+          name: `${dName} District Department`,
+          deptId: 'DEPT-JH-DIST-RNC',
+          level: 'District Department',
+          category: 'District Department',
+          district: dName,
+          assignedAt: new Date(),
+          assignedBy: user?.fullName || 'Block Office',
+          status: 'Assigned'
+        };
+        challenge.triageRemarks = `Escalated from Block to District (${dName} District Department).`;
+      } else {
+        challenge.triageRemarks = triageData.triageRemarks || `Escalated from Block to District.`;
+      }
     } else {
       // District -> State
-      challenge.assignedDepartment = {
-        name: 'State Department',
-        deptId: 'DEPT-JH-STATE',
-        level: 'State Ministry',
-        category: 'State Ministry',
-        district: 'Ranchi',
-        assignedAt: new Date(),
-        assignedBy: user?.fullName || 'District Authority',
-        status: 'Assigned'
-      };
-      challenge.triageRemarks = 'Escalated from District to State Ministry for high-level intervention.';
+      if (!triageData.assignedDepartment) {
+        challenge.assignedDepartment = {
+          name: 'State Department',
+          deptId: 'DEPT-JH-STATE',
+          level: 'State Ministry',
+          category: 'State Ministry',
+          district: 'Ranchi',
+          assignedAt: new Date(),
+          assignedBy: user?.fullName || 'District Authority',
+          status: 'Assigned'
+        };
+        challenge.triageRemarks = 'Escalated from District to State Ministry for high-level intervention.';
+      } else {
+        challenge.triageRemarks = triageData.triageRemarks || 'Escalated to State Ministry.';
+      }
     }
   }
 

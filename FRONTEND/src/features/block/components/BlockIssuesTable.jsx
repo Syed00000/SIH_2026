@@ -4,6 +4,7 @@ import { MapPin, Search, Eye, AlertCircle, CheckCircle2, Clock, Building2 } from
 export const BlockIssuesTable = ({ challenges = [], panchayats = [], onSelectProblem, onAssign }) => {
   const [selectedPanchayat, setSelectedPanchayat] = useState('All');
   const [search, setSearch] = useState('');
+  const [statusTab, setStatusTab] = useState('Current Level');
 
   const filtered = useMemo(() => {
     return challenges.filter((c) => {
@@ -18,9 +19,15 @@ export const BlockIssuesTable = ({ challenges = [], panchayats = [], onSelectPro
         const matchId = (c.challengeId || '').toLowerCase().includes(q);
         if (!matchTitle && !matchDesc && !matchId) return false;
       }
+      if (statusTab === 'Current Level') {
+        if (c.status === 'Escalated') return false;
+      } else if (statusTab === 'Forwarded / Escalated') {
+        if (c.status !== 'Escalated') return false;
+      }
+
       return true;
     });
-  }, [challenges, selectedPanchayat, search]);
+  }, [challenges, selectedPanchayat, search, statusTab]);
 
   return (
     <div className="bg-white rounded-2xl border border-slate-200/90 shadow-2xs overflow-hidden select-none">
@@ -50,6 +57,23 @@ export const BlockIssuesTable = ({ challenges = [], panchayats = [], onSelectPro
             ))}
           </select>
         </div>
+      </div>
+      
+      {/* Status Filter Tabs */}
+      <div className="px-3.5 pt-3 pb-1 flex gap-2 border-b border-slate-100">
+        {['Current Level', 'Forwarded / Escalated'].map((tab) => (
+          <button
+            key={tab}
+            onClick={() => setStatusTab(tab)}
+            className={`px-4 py-2 text-xs font-bold transition-all rounded-t-lg border-b-2 ${
+              statusTab === tab 
+                ? 'border-[#007A61] text-[#007A61] bg-emerald-50/50' 
+                : 'border-transparent text-slate-500 hover:text-slate-800 hover:bg-slate-50'
+            }`}
+          >
+            {tab}
+          </button>
+        ))}
       </div>
 
       {/* Table Body */}

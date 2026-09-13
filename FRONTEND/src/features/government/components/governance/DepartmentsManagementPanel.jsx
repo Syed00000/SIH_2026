@@ -55,6 +55,7 @@ export const DepartmentsManagementPanel = ({ category = 'State Ministry' }) => {
       await loadData();
     } catch (err) {
       console.error('Error saving department:', err);
+      throw err;
     }
   };
 
@@ -121,6 +122,7 @@ export const DepartmentsManagementPanel = ({ category = 'State Ministry' }) => {
     return (
       <DepartmentEditPanel
         department={editingDepartment}
+        defaultCategory={category}
         onBack={() => setActiveView('list')}
         onSave={async (payload) => { await handleSaveDepartment(payload); setActiveView('list'); }}
       />

@@ -11,7 +11,18 @@ export const BlockOverviewPanel = ({
   const activeCount = challenges.filter((c) => c.status !== 'Resolved' && c.status !== 'Deployed').length;
   const resolvedCount = challenges.filter((c) => c.status === 'Resolved' || c.status === 'Deployed').length;
   const panchayats = block?.panchayats || [];
-  const recentIssues = challenges.slice(0, 5);
+  const [activeTab, setActiveTab] = React.useState('Active');
+
+  const filteredIssues = challenges.filter((p) => {
+    if (activeTab === 'Active') {
+      return p.status !== 'Resolved' && p.status !== 'Deployed' && p.status !== 'Escalated';
+    } else if (activeTab === 'Forwarded') {
+      return p.status === 'Escalated';
+    } else if (activeTab === 'Resolved') {
+      return p.status === 'Resolved' || p.status === 'Deployed';
+    }
+    return true;
+  });
 
   const kpis = [
     { label: 'Total Challenges', value: challenges.length, icon: AlertCircle, color: 'text-blue-600', bg: 'bg-blue-50' },
@@ -79,27 +90,55 @@ export const BlockOverviewPanel = ({
 
       {/* Recent Civic Issues Card */}
       <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-xs space-y-3">
-        <div className="flex items-center justify-between">
-          <h3 className="text-sm font-black text-slate-900">Recent Civic Grievances</h3>
+        <div className="flex flex-col md:flex-row md:items-center justify-between border-b border-slate-100 pb-3 gap-3">
+          <h3 className="text-sm font-black text-slate-900">Civic Grievances</h3>
+          
+          <div className="flex bg-slate-100 p-1 rounded-xl">
+            <button
+              onClick={() => setActiveTab('Active')}
+              className={`px-3 py-1.5 rounded-lg text-[10px] font-extrabold uppercase tracking-wider transition-all ${
+                activeTab === 'Active' ? 'bg-white text-blue-700 shadow-xs' : 'text-slate-500 hover:text-slate-700'
+              }`}
+            >
+              Active / Upcoming
+            </button>
+            <button
+              onClick={() => setActiveTab('Forwarded')}
+              className={`px-3 py-1.5 rounded-lg text-[10px] font-extrabold uppercase tracking-wider transition-all ${
+                activeTab === 'Forwarded' ? 'bg-white text-amber-700 shadow-xs' : 'text-slate-500 hover:text-slate-700'
+              }`}
+            >
+              Forwarded
+            </button>
+            <button
+              onClick={() => setActiveTab('Resolved')}
+              className={`px-3 py-1.5 rounded-lg text-[10px] font-extrabold uppercase tracking-wider transition-all ${
+                activeTab === 'Resolved' ? 'bg-white text-emerald-700 shadow-xs' : 'text-slate-500 hover:text-slate-700'
+              }`}
+            >
+              Resolved
+            </button>
+          </div>
+
           {onNavigateTab && (
             <button
               type="button"
               onClick={() => onNavigateTab('challenges')}
               className="text-xs font-bold text-[#007A61] hover:underline flex items-center gap-1 cursor-pointer"
             >
-              <span>View All Challenges</span>
+              <span>View All</span>
               <ArrowRight className="w-3.5 h-3.5" />
             </button>
           )}
         </div>
 
-        {recentIssues.length === 0 ? (
+        {filteredIssues.length === 0 ? (
           <div className="py-8 text-center text-xs text-slate-400 font-medium">
-            No civic issues currently recorded in this block.
+            No civic issues found in this category.
           </div>
         ) : (
           <div className="divide-y divide-slate-100">
-            {recentIssues.map((issue) => {
+            {filteredIssues.slice(0, 10).map((issue) => {
               const id = issue.challengeId || issue.id || issue._id;
               return (
                 <div

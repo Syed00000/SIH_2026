@@ -20,6 +20,18 @@ export const DepartmentOverview = ({
   ];
 
   const recentProblems = problems.slice(0, 5);
+  const [activeTab, setActiveTab] = React.useState('Active');
+
+  const filteredProblems = problems.filter((p) => {
+    if (activeTab === 'Active') {
+      return p.status !== 'Resolved' && p.status !== 'Deployed' && p.status !== 'Escalated';
+    } else if (activeTab === 'Forwarded') {
+      return p.status === 'Escalated';
+    } else if (activeTab === 'Resolved') {
+      return p.status === 'Resolved' || p.status === 'Deployed';
+    }
+    return true;
+  });
 
   return (
     <div className="space-y-4 select-none text-left animate-in fade-in duration-150">
@@ -46,13 +58,41 @@ export const DepartmentOverview = ({
 
       {/* Recent Problems Table */}
       <div className="bg-white rounded-2xl border border-slate-200/90 shadow-2xs p-4 space-y-3">
-        <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+        <div className="flex flex-col md:flex-row md:items-center justify-between border-b border-slate-100 pb-3 gap-3">
           <div>
             <h2 className="text-sm font-black text-slate-900 uppercase tracking-wide">
-              Recent Assigned Civic Problems
+              Civic Problems
             </h2>
-            <p className="text-[10px] text-slate-400 font-medium">Ground directives assigned by Nodal authority</p>
+            <p className="text-[10px] text-slate-400 font-medium">Manage and track your assigned directives</p>
           </div>
+          
+          <div className="flex bg-slate-100 p-1 rounded-xl">
+            <button
+              onClick={() => setActiveTab('Active')}
+              className={`px-3 py-1.5 rounded-lg text-[10px] font-extrabold uppercase tracking-wider transition-all ${
+                activeTab === 'Active' ? 'bg-white text-blue-700 shadow-xs' : 'text-slate-500 hover:text-slate-700'
+              }`}
+            >
+              Active / Upcoming
+            </button>
+            <button
+              onClick={() => setActiveTab('Forwarded')}
+              className={`px-3 py-1.5 rounded-lg text-[10px] font-extrabold uppercase tracking-wider transition-all ${
+                activeTab === 'Forwarded' ? 'bg-white text-amber-700 shadow-xs' : 'text-slate-500 hover:text-slate-700'
+              }`}
+            >
+              Forwarded
+            </button>
+            <button
+              onClick={() => setActiveTab('Resolved')}
+              className={`px-3 py-1.5 rounded-lg text-[10px] font-extrabold uppercase tracking-wider transition-all ${
+                activeTab === 'Resolved' ? 'bg-white text-emerald-700 shadow-xs' : 'text-slate-500 hover:text-slate-700'
+              }`}
+            >
+              Resolved
+            </button>
+          </div>
+
           {onNavigateProblems && (
             <button
               type="button"
@@ -65,9 +105,9 @@ export const DepartmentOverview = ({
           )}
         </div>
 
-        {recentProblems.length === 0 ? (
+        {filteredProblems.length === 0 ? (
           <div className="py-8 text-center text-slate-400 text-xs font-medium">
-            No civic problems currently assigned to this department.
+            No civic problems found in this category.
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -82,7 +122,7 @@ export const DepartmentOverview = ({
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
-                {recentProblems.map((p) => {
+                {filteredProblems.slice(0, 10).map((p) => {
                   const idKey = p.challengeId || p.id || p._id;
                   const locStr = [p.location?.panchayat || p.panchayat, p.location?.district || p.district || 'Ranchi'].filter(Boolean).join(', ');
                   return (

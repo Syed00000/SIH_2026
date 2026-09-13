@@ -2,6 +2,9 @@ import React from 'react';
 import { MapPin, User } from 'lucide-react';
 
 export const DepartmentProblemEvidence = ({ problem, submitter, fullAddress, techUrls, tech }) => {
+  const escalatedUrls = (problem.escalationEvidence || []).flatMap(e => e.mediaUrls || []);
+  const currentTechUrls = techUrls.filter(url => !escalatedUrls.includes(url));
+
   return (
     <>
       <div className="bg-white rounded-2xl border border-slate-200/90 shadow-2xs p-4 space-y-2.5">
@@ -45,7 +48,7 @@ export const DepartmentProblemEvidence = ({ problem, submitter, fullAddress, tec
           <div className="space-y-2">
             <h4 className="text-[11px] font-bold text-[#007A61] bg-[#007A61]/10 px-2 py-1 rounded">Field Resolution Proof (Technician)</h4>
             <div className="grid grid-cols-2 gap-2">
-              {techUrls.length > 0 ? techUrls.map((url, i) => (
+              {currentTechUrls.length > 0 ? currentTechUrls.map((url, i) => (
                 <a key={i} href={url} target="_blank" rel="noreferrer" className="aspect-video md:aspect-square rounded-lg border border-slate-200 overflow-hidden hover:border-[#007A61] transition-colors block bg-slate-50">
                   <img src={url} alt="Technician Proof" className="w-full h-full object-cover" />
                 </a>
@@ -79,6 +82,26 @@ export const DepartmentProblemEvidence = ({ problem, submitter, fullAddress, tec
                   <span className="text-[10px] font-extrabold text-rose-800 uppercase tracking-wide block mb-0.5">Attempt {idx + 1}</span>
                   <p className="text-xs text-rose-950 leading-relaxed font-medium mb-1">{hw.completionRemarks || 'No remarks provided.'}</p>
                   <p className="text-[10px] text-rose-600 font-medium">Rejected: {hw.rejectReason}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {problem.escalationEvidence?.length > 0 && (
+          <div className="mt-4 space-y-3">
+            <h4 className="text-[11px] font-bold text-slate-500 uppercase tracking-wide border-b border-slate-100 pb-1">Previous Authority Evidence (Escalated)</h4>
+            {problem.escalationEvidence.map((ev, idx) => (
+              <div key={idx} className="p-3 bg-blue-50/50 rounded-xl border border-blue-100 flex gap-3">
+                {ev.mediaUrls && ev.mediaUrls.length > 0 && (
+                  <a href={ev.mediaUrls[0]} target="_blank" rel="noreferrer" className="w-16 h-16 shrink-0 rounded-lg overflow-hidden border border-blue-200 hover:border-blue-300 block bg-white">
+                    <img src={ev.mediaUrls[0]} alt="Escalated Proof" className="w-full h-full object-cover" />
+                  </a>
+                )}
+                <div>
+                  <span className="text-[10px] font-extrabold text-blue-800 uppercase tracking-wide block mb-0.5">{ev.level} Level Verification</span>
+                  <p className="text-xs text-blue-950 leading-relaxed font-medium mb-1">{ev.remarks || 'No remarks provided.'}</p>
+                  <p className="text-[10px] text-blue-600 font-medium">Verified by: {ev.technicianName} ({new Date(ev.date).toLocaleDateString()})</p>
                 </div>
               </div>
             ))}

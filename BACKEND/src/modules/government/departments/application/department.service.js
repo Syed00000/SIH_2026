@@ -109,7 +109,34 @@ export class DepartmentService {
         passwordHash,
         generatedPassword: rawPassword
       },
-      status: data.status || 'Active'
+      status: data.status || 'Active',
+      hierarchyConfig: data.hierarchyConfig || undefined,
+      escalationRules: data.escalationRules || undefined,
+      mandate: data.mandate || undefined,
+      departmentType: data.departmentType || undefined,
+      parentAuthority: data.parentAuthority || undefined,
+      officialWebsite: data.officialWebsite || undefined,
+      officeAddress: data.officeAddress || undefined,
+      applicableJurisdiction: data.applicableJurisdiction || undefined,
+      headquartersLocation: data.headquartersLocation || undefined,
+      operationalDistrictsType: data.operationalDistrictsType || undefined,
+      involvedLowerLevels: data.involvedLowerLevels || undefined,
+      nodalOfficerName: data.nodalOfficerName || undefined,
+      nodalOfficerDesignation: data.nodalOfficerDesignation || undefined,
+      nodalOfficerEmail: data.nodalOfficerEmail || undefined,
+      nodalOfficerPhone: data.nodalOfficerPhone || undefined,
+      officeSecretariatLocation: data.officeSecretariatLocation || undefined,
+      effectiveFrom: data.effectiveFrom || undefined,
+      remarks: data.remarks || undefined,
+      keyFunctions: data.keyFunctions || undefined,
+      powersApprovalAuthority: data.powersApprovalAuthority || undefined,
+      schemesManaged: data.schemesManaged || undefined,
+      departmentsCoordinated: data.departmentsCoordinated || undefined,
+      problemCategoriesHandled: data.problemCategoriesHandled || undefined,
+      goNumber: data.goNumber || undefined,
+      goDate: data.goDate || undefined,
+      verificationStatus: data.verificationStatus || undefined,
+      approvalRequired: data.approvalRequired !== undefined ? data.approvalRequired : undefined
     };
 
     const created = await this.repo.create(payload);

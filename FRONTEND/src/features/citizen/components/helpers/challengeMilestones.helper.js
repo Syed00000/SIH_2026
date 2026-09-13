@@ -10,48 +10,73 @@ export function getChallengeMilestones(challenge = {}) {
   const isUniAssigned = Boolean(assignedUni?.name || assignedUni?.universityName);
 
   if (isBlockAssigned) {
-    const blockName = assignedDept?.block || challenge.assignedBlock || 'Block Office';
-    const deptName = assignedDept?.name || 'Civic Department';
+    const steps = [];
+    
+    steps.push({
+      step: steps.length + 1,
+      title: 'Problem Submitted',
+      description: 'Filed with citizen geo-location & grievance verification.',
+      status: 'COMPLETED'
+    });
 
-    return [
-      {
-        step: 1,
-        title: 'Problem Submitted',
-        description: 'Filed with citizen geo-location & grievance verification.',
+    if (challenge.assignedWard?.name) {
+      steps.push({
+        step: steps.length + 1,
+        title: 'Ward Commissioner Assigned',
+        description: `Triage assigned to ${challenge.assignedWard.name}.`,
         status: 'COMPLETED'
-      },
-      {
-        step: 2,
-        title: 'Block & Department Assigned',
-        description: `Triage assigned to ${blockName} • ${deptName}.`,
+      });
+    }
+
+    if (challenge.assignedBlock?.name || typeof challenge.assignedBlock === 'string') {
+      const bName = typeof challenge.assignedBlock === 'string' ? challenge.assignedBlock : challenge.assignedBlock.name;
+      steps.push({
+        step: steps.length + 1,
+        title: 'Block / Tehsil Assigned',
+        description: `Problem routed to ${bName}.`,
         status: 'COMPLETED'
-      },
-      {
-        step: 3,
-        title: (hasTechnician && (assignedTech.status === 'Accepted' || assignedTech.status === 'Completed'))
-          ? 'Field Technician Accepted' : 'Field Technician Dispatched',
-        description: (hasTechnician && (assignedTech.status === 'Accepted' || assignedTech.status === 'Completed'))
-          ? `${assignedTech.name} (${assignedTech.specialization || 'Field Tech'}) accepted • Ph: ${assignedTech.phone}`
-          : (hasTechnician ? `Assigned to ${assignedTech.name}. Awaiting technician acceptance.` : 'Department in-charge reviewing problem for technician allocation.'),
-        status: (hasTechnician && (assignedTech.status === 'Accepted' || assignedTech.status === 'Completed'))
-          ? 'COMPLETED' : (hasTechnician ? 'CURRENT' : (isResolved ? 'COMPLETED' : 'PENDING'))
-      },
-      {
-        step: 4,
-        title: 'Field Remediation in Progress',
-        description: isResolved
-          ? 'On-ground maintenance and repair work completed.'
-          : ((hasTechnician && (assignedTech.status === 'Accepted' || assignedTech.status === 'In Progress'))
-            ? 'Technician active on ground for site repair.' : 'Pending technician acceptance & site work.'),
-        status: isResolved ? 'COMPLETED' : ((hasTechnician && (assignedTech.status === 'Accepted' || assignedTech.status === 'In Progress')) ? 'CURRENT' : 'PENDING')
-      },
-      {
-        step: 5,
-        title: 'Civic Problem Resolved',
-        description: isResolved ? 'Ground remediation verified and closed.' : 'Awaiting completion verification.',
-        status: isResolved ? 'COMPLETED' : 'PENDING'
-      }
-    ];
+      });
+    }
+
+    if (assignedDept?.name) {
+      const isState = assignedDept.category === 'State Ministry';
+      steps.push({
+        step: steps.length + 1,
+        title: isState ? 'State Ministry Assigned' : 'District Department Assigned',
+        description: `Problem escalated to ${assignedDept.name}.`,
+        status: 'COMPLETED'
+      });
+    }
+
+    steps.push({
+      step: steps.length + 1,
+      title: (hasTechnician && (assignedTech.status === 'Accepted' || assignedTech.status === 'Completed'))
+        ? 'Field Technician Accepted' : 'Field Technician Dispatched',
+      description: (hasTechnician && (assignedTech.status === 'Accepted' || assignedTech.status === 'Completed'))
+        ? `${assignedTech.name} (${assignedTech.specialization || 'Field Tech'}) accepted • Ph: ${assignedTech.phone}`
+        : (hasTechnician ? `Assigned to ${assignedTech.name}. Awaiting technician acceptance.` : 'Authority reviewing problem for technician allocation.'),
+      status: (hasTechnician && (assignedTech.status === 'Accepted' || assignedTech.status === 'Completed'))
+        ? 'COMPLETED' : (hasTechnician ? 'CURRENT' : (isResolved ? 'COMPLETED' : 'PENDING'))
+    });
+
+    steps.push({
+      step: steps.length + 1,
+      title: 'Field Remediation in Progress',
+      description: isResolved
+        ? 'On-ground maintenance and repair work completed.'
+        : ((hasTechnician && (assignedTech.status === 'Accepted' || assignedTech.status === 'In Progress'))
+          ? 'Technician active on ground for site repair.' : 'Pending technician acceptance & site work.'),
+      status: isResolved ? 'COMPLETED' : ((hasTechnician && (assignedTech.status === 'Accepted' || assignedTech.status === 'In Progress')) ? 'CURRENT' : 'PENDING')
+    });
+
+    steps.push({
+      step: steps.length + 1,
+      title: 'Civic Problem Resolved',
+      description: isResolved ? 'Ground remediation verified and closed.' : 'Awaiting completion verification.',
+      status: isResolved ? 'COMPLETED' : 'PENDING'
+    });
+
+    return steps;
   }
 
   // University / R&D Lifecycle
