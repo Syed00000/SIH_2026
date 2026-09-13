@@ -1,5 +1,5 @@
 import React from 'react';
-import { LayoutDashboard, FileText, Building2, Landmark, LogOut, HandCoins } from 'lucide-react';
+import { LayoutDashboard, FileText, Building2, Landmark, LogOut, HandCoins, Wrench } from 'lucide-react';
 
 export const BlockSidebar = ({
   activePanel = 'overview',
@@ -8,6 +8,7 @@ export const BlockSidebar = ({
   challengesCount = 0,
   departmentsCount = 0,
   wardsCount = 0,
+  techniciansCount = 0,
   onLogout,
   onBackToDistrict
 }) => {
@@ -19,6 +20,7 @@ export const BlockSidebar = ({
     { id: 'challenges', label: 'Civic Challenges', icon: FileText, badge: challengesCount },
     { id: 'departments', label: 'Block Departments', icon: Building2, badge: departmentsCount },
     { id: 'wards', label: 'Wards Directory', icon: Landmark, badge: wardsCount },
+    { id: 'technicians', label: 'Technicians', icon: Wrench, badge: techniciansCount },
     { id: 'csr-grant', label: 'CSR Grant', icon: HandCoins, badge: null }
   ];
 

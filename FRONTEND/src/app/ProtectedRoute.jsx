@@ -1,6 +1,7 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { useAuth } from '../features/auth/AuthContext.jsx';
 import { ShieldAlert, ArrowRight, LogOut } from 'lucide-react';
+import { LoginForm } from '../features/auth/components/LoginForm.jsx';
 
 export const ProtectedRoute = ({
   allowedRoles,
@@ -19,14 +20,10 @@ export const ProtectedRoute = ({
     userRole === 'SUPER_ADMIN' ||
     userRole === 'GOVERNMENT';
 
-  // If not authenticated, redirect to /login
-  // REMOVED BYPASS FOR DEVELOPMENT:
-  // if (!loading && !isAuthenticated) {
-  //   return (
-  //     <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
-  //     ...
-  //   );
-  // }
+  // If not authenticated, render login page directly
+  if (!loading && !isAuthenticated) {
+    return <LoginForm onNavigate={onNavigate} />;
+  }
 
   // If logged in but role not permitted
   if (!loading && isAuthenticated && !isRoleAllowed) {

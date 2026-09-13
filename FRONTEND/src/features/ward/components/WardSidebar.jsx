@@ -1,5 +1,5 @@
 import React from 'react';
-import { Home, AlertCircle, Users, HandCoins, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Home, AlertCircle, Wrench, HandCoins, ChevronLeft, ChevronRight } from 'lucide-react';
 
 export const WardSidebar = ({
   activeTab = 'overview',
@@ -11,7 +11,7 @@ export const WardSidebar = ({
   const items = [
     { id: 'overview', label: 'Overview', icon: Home },
     { id: 'problems', label: 'Assigned Problems', icon: AlertCircle, badge: assignedCount },
-    { id: 'field-workers', label: 'Field Workers', icon: Users },
+    { id: 'field-workers', label: 'Technicians', icon: Wrench },
     { id: 'csr-grant', label: 'CSR Grant', icon: HandCoins }
   ];
 

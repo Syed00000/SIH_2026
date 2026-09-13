@@ -65,6 +65,28 @@ export const errorHandler = (err, req, res, next) => {
     });
   }
 
+  // Handle Mongoose CastError (e.g. invalid ObjectId format)
+  if (err.name === 'CastError') {
+    return res.status(400).json({
+      success: false,
+      error: {
+        code: 'BAD_REQUEST',
+        message: `Invalid identifier format for ${err.path || 'resource'}: ${err.value}`
+      }
+    });
+  }
+
+  // Handle Mongoose Schema Validation Error
+  if (err.name === 'ValidationError') {
+    return res.status(400).json({
+      success: false,
+      error: {
+        code: 'VALIDATION_ERROR',
+        message: err.message
+      }
+    });
+  }
+
   const isProduction = config.NODE_ENV === 'production';
   return res.status(500).json({
     success: false,

@@ -23,7 +23,7 @@ export const DepartmentSidebar = ({
   const NAV_ITEMS = [
     { id: 'overview', label: 'Department Overview', icon: Home },
     { id: 'problems', label: 'Assigned Civic Problems', icon: Layers },
-    { id: 'technicians', label: isWardDept || isBlockDept ? 'Field Workers' : 'Technician Directory', icon: isWardDept ? Users : Wrench },
+    { id: 'technicians', label: 'Technicians', icon: Wrench },
     ...(!isWardDept ? [{ id: 'districts', label: tabLabel, icon: Building2 }] : []),
     { id: 'csr-grant', label: 'CSR Grant', icon: HandCoins }
   ];

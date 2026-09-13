@@ -53,8 +53,20 @@ export const WardPortal = ({ user, onLogout }) => {
       const wardChls = targetWardCode ? allChls.filter((c) => c.assignedWard?.wardId?.toUpperCase() === targetWardCode.toUpperCase() || c.assignedWard?.id === targetWardCode || c.assignedWard?.id === currentWard?._id) : allChls;
       setChallenges(wardChls);
 
-      const techRes = await technicianService.getTechnicians({ departmentName: currentWard?.name, block: currentWard?.block, district: currentWard?.district });
-      setTechnicians(techRes?.data?.data || techRes?.data || []);
+      const wardBlock = currentWard?.blockName || currentWard?.block || '';
+      const techRes = await technicianService.getTechnicians({
+        departmentName: currentWard?.name,
+        block: wardBlock,
+        district: currentWard?.district
+      });
+      const rawTechs = techRes?.data?.data || techRes?.data || [];
+      const scopedTechs = rawTechs.filter((t) => {
+        const isStateOrDist = t.departmentId?.includes('STATE') || t.departmentId?.includes('DIST') || (t.departmentName || '').toLowerCase().includes('state') || (t.departmentName || '').toLowerCase().includes('district');
+        if (isStateOrDist) return false;
+        if (wardBlock && t.block) return t.block.toLowerCase().includes(wardBlock.toLowerCase());
+        return true;
+      });
+      setTechnicians(scopedTechs);
     } catch (err) {
       console.warn('Error loading WardPortal data:', err);
     } finally {
@@ -97,7 +109,13 @@ export const WardPortal = ({ user, onLogout }) => {
         </div>
       </div>
 
-      <WardProblemDetailModal isOpen={Boolean(selectedChallenge)} challenge={selectedChallenge} onClose={() => setSelectedChallenge(null)} onUpdated={(up) => setChallenges((prev) => prev.map((c) => ((c.challengeId || c._id) === (up.challengeId || up._id) ? up : c)))} />
+      <WardProblemDetailModal
+        isOpen={Boolean(selectedChallenge)}
+        challenge={selectedChallenge}
+        onClose={() => setSelectedChallenge(null)}
+        onUpdated={(up) => setChallenges((prev) => prev.map((c) => (((c.challengeId || c._id) === (up.challengeId || up._id)) ? up : c)))}
+        onAssignTechnician={() => { setActiveTab('field-workers'); setSelectedChallenge(null); }}
+      />
       <AddTechnicianModal department={ward} isOpen={isAddTechOpen} onClose={() => setIsAddTechOpen(false)} onCreated={handleCreatedTech} />
       <ViewTechnicianModal technician={viewingTech} isOpen={Boolean(viewingTech)} onClose={() => setViewingTech(null)} />
       <EditTechnicianModal technician={editingTech} isOpen={Boolean(editingTech)} onClose={() => setEditingTech(null)} onUpdated={handleUpdatedTech} />

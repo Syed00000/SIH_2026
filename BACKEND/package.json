@@ -6,7 +6,7 @@
   "main": "src/server.js",
   "scripts": {
     "start": "node src/server.js",
-    "dev": "node --watch --watch-path=src src/server.js",
+    "dev": "nodemon src/server.js",
     "kill-port": "npx --yes kill-port 3000",
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js --runInBand --detectOpenHandles"
   },
@@ -29,6 +29,7 @@
   },
   "devDependencies": {
     "jest": "^29.7.0",
+    "nodemon": "^3.1.14",
     "pino-pretty": "^11.2.2",
     "supertest": "^7.0.0"
   },

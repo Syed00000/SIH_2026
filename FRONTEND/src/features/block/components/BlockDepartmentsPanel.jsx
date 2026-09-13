@@ -120,7 +120,17 @@ export const BlockDepartmentsPanel = ({
                         </span>
                       </td>
                       <td className="py-3.5 px-4 text-right">
-                        <div className="flex items-center justify-end gap-1">
+                        <div className="flex items-center justify-end gap-1.5">
+                          <button
+                            type="button"
+                            title="Open Department Portal"
+                            onClick={() => {
+                              window.location.href = `/department?deptId=${encodeURIComponent(dept.deptId || dept.id)}`;
+                            }}
+                            className="px-2 py-1 bg-emerald-50 hover:bg-emerald-100 text-[#007A61] font-bold text-[10.5px] rounded-lg border border-emerald-200 transition cursor-pointer"
+                          >
+                            Open Portal
+                          </button>
                           <button
                             type="button"
                             title="View Department Details"

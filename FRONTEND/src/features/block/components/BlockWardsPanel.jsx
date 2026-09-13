@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Landmark, Plus, Search, MapPin, Mail, ArrowUpRight, Eye, Edit2, Trash2 } from 'lucide-react';
+import { Landmark, Plus, Search, MapPin, Mail, Eye, Edit2, Trash2 } from 'lucide-react';
 
 export const BlockWardsPanel = ({
   wards = [],
@@ -166,7 +166,6 @@ export const BlockWardsPanel = ({
                     {assignedCount} Assigned
                   </span>
 
-                  <button type="button" onClick={() => { window.location.href = `/ward?wardId=${encodeURIComponent(wardId)}`; }} className="p-1.5 text-emerald-700 hover:bg-emerald-50 rounded-lg cursor-pointer" title="Open Ward Portal"><ArrowUpRight className="w-4 h-4" /></button>
                   <button type="button" onClick={() => onViewWard && onViewWard(ward)} className="p-1.5 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-lg cursor-pointer" title="View Ward"><Eye className="w-4 h-4" /></button>
                   <button type="button" onClick={() => onEditWard && onEditWard(ward)} className="p-1.5 text-slate-500 hover:text-blue-700 hover:bg-blue-50 rounded-lg cursor-pointer" title="Edit Ward"><Edit2 className="w-4 h-4" /></button>
                   <button type="button" onClick={() => onDeleteWard && onDeleteWard(ward)} className="p-1.5 text-slate-500 hover:text-rose-700 hover:bg-rose-50 rounded-lg cursor-pointer" title="Delete Ward"><Trash2 className="w-4 h-4" /></button>

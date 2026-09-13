@@ -21,18 +21,26 @@ export async function executeFundAllocation(repo, { fromDeptId, toDeptId, amount
   let toDept = null;
   let technician = null;
   let isTechnician = false;
+  const targetStr = String(toDeptId || '').trim();
 
-  if (typeof toDeptId === 'string' && toDeptId.startsWith('TECH-')) {
-    technician = await Technician.findOne({ technicianId: toDeptId });
+  if (targetStr.toUpperCase().startsWith('TECH-')) {
+    technician = await Technician.findOne({
+      $or: [
+        { technicianId: targetStr },
+        { technicianId: new RegExp(`^${targetStr}$`, 'i') }
+      ]
+    });
     if (technician) isTechnician = true;
   }
 
   if (!isTechnician) {
-    toDept = await repo.findById(toDeptId);
+    toDept = await repo.findById(targetStr);
     if (!toDept) {
-      technician = await Technician.findOne({
-        $or: [{ technicianId: toDeptId }, { _id: toDeptId?.match(/^[0-9a-fA-F]{24}$/) ? toDeptId : null }]
-      });
+      const techConds = [{ technicianId: targetStr }];
+      if (/^[0-9a-fA-F]{24}$/.test(targetStr)) {
+        techConds.push({ _id: targetStr });
+      }
+      technician = await Technician.findOne({ $or: techConds });
       if (technician) isTechnician = true;
     }
   }
