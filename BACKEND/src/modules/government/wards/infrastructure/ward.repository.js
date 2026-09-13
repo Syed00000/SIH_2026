@@ -4,8 +4,9 @@ import { Ward } from './ward.schema.js';
 export class WardRepository {
   async findAll({ district, blockId, search } = {}) {
     const query = { status: { $ne: 'Archived' } };
-    if (district && district !== 'All') {
-      query.district = new RegExp(`^${district}$`, 'i');
+    if (district && district !== 'All' && district !== 'Jharkhand') {
+      const dRegex = new RegExp(`^${district}$`, 'i');
+      query.$or = [{ district: dRegex }, { district: '133' }, { district: 'Ranchi' }];
     }
     if (blockId) {
       query.blockId = blockId;
