@@ -15,6 +15,21 @@ export class IndustryLifecycleService {
     const existing = await this.repository.findById(id);
     if (!existing) throw new NotFoundError('Industry organization not found');
 
+    const newPass = (
+      updateData.credentials?.password ||
+      updateData.credentials?.generatedPassword ||
+      updateData.initialPassword ||
+      updateData.password
+    )?.toString().trim();
+
+    let passwordHash = null;
+    if (newPass) {
+      passwordHash = await bcrypt.hash(newPass, 10);
+      if (!updateData.credentials) updateData.credentials = {};
+      updateData.credentials.passwordHash = passwordHash;
+      updateData.credentials.generatedPassword = newPass;
+    }
+
     const updated = await this.repository.update(id, {
       ...updateData,
       $push: {
@@ -27,8 +42,9 @@ export class IndustryLifecycleService {
       }
     });
 
-    if (existing.userId) {
-      await syncIndustryUserUpdate(existing.userId, updateData);
+    const finalUserId = await syncIndustryUserUpdate(existing.userId, updateData, existing, passwordHash);
+    if (finalUserId && !existing.userId) {
+      await this.repository.update(id, { userId: finalUserId });
     }
 
     return updated;

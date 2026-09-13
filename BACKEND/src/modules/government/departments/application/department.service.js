@@ -1,3 +1,5 @@
+import bcrypt from 'bcryptjs';
+import MongooseUser from '../../../users/infrastructure/model.js';
 import { departmentRepository } from '../infrastructure/department.repository.js';
 import { Admin } from '../../admins/infrastructure/model.js';
 import { CitizenChallenge } from '../../../citizen/infrastructure/model.js';
@@ -82,9 +84,9 @@ export class DepartmentService {
     const code = data.code?.trim() || data.name.split(' ').map((w) => w[0] || '').join('').toUpperCase();
     const digits = deptId.replace(/\D/g, '') || '2026';
     
-    // Use credentials object from frontend if provided, fallback to root level or defaults
-    const password = data.credentials?.password?.trim() || data.password?.trim() || `Dept@JH${digits}!`;
-    const loginEmail = data.credentials?.loginEmail?.trim() || data.headEmail?.trim() || `${deptId.toLowerCase()}@jharkhand.gov.in`;
+    const rawPassword = data.credentials?.password?.trim() || data.password?.trim() || `Dept@JH${digits}!`;
+    const passwordHash = await bcrypt.hash(rawPassword, 10);
+    const loginEmail = (data.credentials?.loginEmail?.trim() || data.headEmail?.trim() || `${deptId.toLowerCase()}@jharkhand.gov.in`).toLowerCase();
     const loginId = data.credentials?.loginId?.trim() || data.loginId?.trim() || deptId;
 
     const payload = {
@@ -103,13 +105,30 @@ export class DepartmentService {
       credentials: {
         loginId,
         loginEmail,
-        password,
-        generatedPassword: password
+        password: rawPassword,
+        passwordHash,
+        generatedPassword: rawPassword
       },
       status: data.status || 'Active'
     };
 
-    return this.repo.create(payload);
+    const created = await this.repo.create(payload);
+    try {
+      const cleanPhone = (data.headPhone || '').toString().replace(/\D/g, '').slice(-10) || `98${Math.floor(10000000 + Math.random() * 90000000)}`;
+      await MongooseUser.findOneAndUpdate(
+        { email: loginEmail },
+        {
+          fullName: data.name.trim(), email: loginEmail, mobileNumber: cleanPhone, passwordHash,
+          role: 'DEPARTMENT', accountStatus: 'ACTIVE',
+          emailVerification: { verified: true, verifiedAt: new Date() },
+          profile: { deptId, department: data.name.trim(), category: data.category || 'District Department', district: data.district || 'Ranchi' }
+        },
+        { upsert: true, new: true }
+      );
+    } catch (userErr) {
+      console.warn('MongooseUser creation error for dept:', userErr.message);
+    }
+    return created;
   }
 
   async getDepartment(id) {
@@ -126,12 +145,30 @@ export class DepartmentService {
       const existing = await this.repo.findById(id);
       const prevCreds = existing?.credentials || {};
       const newPass = updates.credentials?.password?.trim() || updates.password?.trim() || prevCreds.password || prevCreds.generatedPassword || 'Dept@JH2026!';
+      const passwordHash = await bcrypt.hash(newPass, 10);
+      const loginEmail = (updates.credentials?.loginEmail?.trim() || updates.headEmail?.trim() || prevCreds.loginEmail || existing?.headEmail || `${(existing?.deptId || id).toLowerCase()}@jharkhand.gov.in`).toLowerCase();
+
       updates.credentials = {
         loginId: updates.credentials?.loginId?.trim() || updates.loginId?.trim() || prevCreds.loginId || existing?.deptId || id,
-        loginEmail: updates.credentials?.loginEmail?.trim() || updates.headEmail?.trim() || prevCreds.loginEmail,
+        loginEmail,
         password: newPass,
+        passwordHash,
         generatedPassword: newPass
       };
+
+      try {
+        await MongooseUser.findOneAndUpdate(
+          { $or: [{ email: loginEmail }, { 'profile.deptId': existing?.deptId || id }] },
+          {
+            passwordHash,
+            role: 'DEPARTMENT',
+            accountStatus: 'ACTIVE',
+            emailVerification: { verified: true, verifiedAt: new Date() }
+          }
+        );
+      } catch (err) {
+        console.warn('MongooseUser update on dept update error:', err.message);
+      }
     }
     const dept = await this.repo.update(id, updates);
     if (!dept) throw new Error('Department not found for update');

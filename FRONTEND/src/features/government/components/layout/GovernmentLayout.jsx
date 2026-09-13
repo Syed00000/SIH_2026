@@ -133,7 +133,7 @@ export const GovernmentLayout = ({ onLogout }) => {
   });
 
   return (
-    <div className="min-h-screen bg-white flex flex-col h-screen overflow-hidden text-slate-900 font-sans">
+    <div className="w-full h-screen bg-white flex flex-col overflow-hidden text-slate-900 font-sans">
       <GovernmentHeader
         selectedDistrict={selectedDistrict}
         setSelectedDistrict={setSelectedDistrict}

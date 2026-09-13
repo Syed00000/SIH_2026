@@ -99,6 +99,7 @@ const departmentSchema = new mongoose.Schema(
       loginId: { type: String, trim: true },
       loginEmail: { type: String, lowercase: true, trim: true },
       password: { type: String, default: null },
+      passwordHash: { type: String, default: null },
       generatedPassword: { type: String, default: null },
       mfaRequired: { type: Boolean, default: false },
       firstLoginPasswordChange: { type: Boolean, default: true },

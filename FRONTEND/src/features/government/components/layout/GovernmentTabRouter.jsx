@@ -85,7 +85,7 @@ export const GovernmentTabRouter = ({
     const cat = activeTab === 'dept_district' ? 'District Department' :
       activeTab === 'dept_panchayat' ? 'Gram Panchayat' :
       activeTab === 'dept_block' ? 'Block / Tehsil Office' : 'State Ministry';
-    return <DepartmentsManagementPanel category={cat} />;
+    return <DepartmentsManagementPanel key={activeTab} category={cat} />;
   }
   if (activeTab === 'gis') return <GovernmentGisDashboard />;
   if (['users_admin', 'user_governance'].includes(activeTab)) {

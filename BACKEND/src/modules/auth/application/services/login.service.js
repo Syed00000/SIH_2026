@@ -33,9 +33,14 @@ export class LoginService {
       throw new AuthenticationError('ACCOUNT_BLOCKED');
     }
 
-    // Auto-activate and verify university, faculty & admin roles if pending
+    // Auto-activate and verify portal roles if pending verification
     if (!user.emailVerification?.verified || user.accountStatus !== 'ACTIVE') {
-      if (['UNIVERSITY', 'FACULTY', 'GOVERNMENT', 'NODAL'].includes(user.role)) {
+      const autoVerifyRoles = [
+        'UNIVERSITY', 'FACULTY', 'GOVERNMENT', 'NODAL', 'DEPARTMENT',
+        'INDUSTRY', 'WARD', 'BLOCK', 'TECHNICIAN', 'ADMIN', 'SUPER_ADMIN',
+        'CITIZEN', 'USER'
+      ];
+      if (autoVerifyRoles.includes(user.role)) {
         await this.userService.updateResetCredentials(user.id, {
           accountStatus: 'ACTIVE',
           emailVerification: { verified: true, verifiedAt: new Date() }

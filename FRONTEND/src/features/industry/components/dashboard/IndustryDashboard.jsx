@@ -41,7 +41,7 @@ export const IndustryDashboard = ({ activeTab, setActiveTab, user }) => {
   }
 
   const renderContent = () => {
-    if (activeTab === 'dashboard') {
+    if (activeTab === 'dashboard' || activeTab === 'overview') {
       return (
         <div className="space-y-4">
           <div className="grid grid-cols-1 xl:grid-cols-8 gap-4">

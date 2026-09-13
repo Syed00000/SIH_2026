@@ -43,10 +43,20 @@ export function Router() {
   }, []);
 
   const navigate = (path, searchObj) => {
-    const searchStr = searchObj ? `?${new URLSearchParams(searchObj).toString()}` : '';
-    window.history.pushState({}, '', `${path}${searchStr}`);
-    setCurrentPath(path);
-    setQueryParams(searchObj || {});
+    let cleanPath = path;
+    let combinedQuery = { ...(searchObj || {}) };
+    if (path.includes('?')) {
+      const [base, query] = path.split('?');
+      cleanPath = base;
+      const parsed = Object.fromEntries(new URLSearchParams(query));
+      combinedQuery = { ...parsed, ...combinedQuery };
+    }
+    const searchStr = Object.keys(combinedQuery).length > 0
+      ? `?${new URLSearchParams(combinedQuery).toString()}`
+      : '';
+    window.history.pushState({}, '', `${cleanPath}${searchStr}`);
+    setCurrentPath(cleanPath);
+    setQueryParams(combinedQuery);
   };
 
   const handleLogout = async () => {
@@ -163,6 +173,14 @@ export function Router() {
       return (
         <ProtectedRoute allowedRoles={['TECHNICIAN', 'GOVERNMENT', 'ADMIN', 'DEPARTMENT']} onNavigate={navigate}>
           <TechnicianPortal user={user} onLogout={handleLogout} />
+        </ProtectedRoute>
+      );
+    }
+
+    if (currentPath === '/industry-portal' || currentPath === '/industry-dashboard') {
+      return (
+        <ProtectedRoute allowedRoles={['INDUSTRY', 'GOVERNMENT', 'ADMIN']} onNavigate={navigate}>
+          <DashboardContainer onNavigate={navigate} />
         </ProtectedRoute>
       );
     }
