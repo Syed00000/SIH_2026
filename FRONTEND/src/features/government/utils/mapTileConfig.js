@@ -13,17 +13,16 @@ export const OSM_ATTRIBUTION =
 export const ESRI_ATTRIBUTION =
   'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community';
 
+export const CARTO_ATTRIBUTION =
+  '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions" target="_blank" rel="noopener noreferrer">CARTO</a>';
+
 /**
  * Returns configuration for Leaflet tileLayer
  * @param {Object} options
- * @param {string} [options.mode='light'] - 'light' | 'satellite'
+ * @param {string} [options.mode='canvas'] - 'canvas' | 'satellite' | 'topo' | 'light'
  * @returns {Object} { url, attribution, subdomains, maxZoom, isConfigMissing, provider }
  */
-export function getMapTileConfig({ mode = 'light' } = {}) {
-  const provider = (import.meta.env.VITE_MAP_PROVIDER || 'maptiler').toLowerCase();
-  const maptilerApiKey = import.meta.env.VITE_MAPTILER_API_KEY;
-  const maptilerMapId = import.meta.env.VITE_MAPTILER_MAP_ID || 'streets-v4';
-
+export function getMapTileConfig({ mode = 'canvas' } = {}) {
   if (mode === 'satellite') {
     return {
       provider: 'esri_satellite',
@@ -35,24 +34,23 @@ export function getMapTileConfig({ mode = 'light' } = {}) {
     };
   }
 
-  // 1. MapTiler Provider (if key is explicitly configured)
-  if (provider === 'maptiler' && maptilerApiKey && maptilerApiKey.trim() !== '' && maptilerApiKey !== 'YOUR_MAPTILER_API_KEY') {
+  if (mode === 'topo' || mode === 'terrain') {
     return {
-      provider: 'maptiler',
-      url: `https://api.maptiler.com/maps/${encodeURIComponent(maptilerMapId)}/256/{z}/{x}/{y}.png?key=${encodeURIComponent(maptilerApiKey)}`,
-      attribution: MAPTILER_ATTRIBUTION,
-      subdomains: [],
-      maxZoom: 19,
+      provider: 'opentopo',
+      url: 'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',
+      attribution: OSM_ATTRIBUTION,
+      subdomains: 'abc',
+      maxZoom: 17,
       isConfigMissing: false
     };
   }
 
-  // 2. OpenStreetMap / Default High-Resolution Provider (no key required, fully supported)
+  // High-Resolution CartoDB Voyager (clean, muted, professional GIS aesthetic)
   return {
-    provider: 'osm',
-    url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-    attribution: OSM_ATTRIBUTION,
-    subdomains: 'abc',
+    provider: 'carto_voyager',
+    url: 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
+    attribution: CARTO_ATTRIBUTION,
+    subdomains: 'abcd',
     maxZoom: 19,
     isConfigMissing: false
   };

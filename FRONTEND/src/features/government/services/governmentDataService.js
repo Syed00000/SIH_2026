@@ -78,14 +78,15 @@ class GovernmentDataService {
   }
 
   getFilteredKpis(district = 'All', sector = 'All') {
-    const approvedCount = this.triageItems.filter((t) => t.status === 'APPROVED').length;
     const stats = this.statsData;
 
     const totalHeis = stats?.heis?.total || 0;
     const activeHeis = stats?.heis?.active || totalHeis || 0;
-    const realProblemsCount = stats?.problems?.total ?? stats?.citizens?.total ?? 0;
+    const realProblemsCount = stats?.problems?.received ?? stats?.problems?.total ?? 0;
+    const solvedCount = stats?.problems?.solved ?? this.triageItems.filter((t) => t.status === 'APPROVED').length;
+    const resolutionRate = stats?.problems?.resolutionRate ?? (realProblemsCount > 0 ? Math.round((solvedCount / realProblemsCount) * 100) : 0);
 
-    const availableCorpus = stats?.financials?.availableInnovationCorpus || (stats?.financials?.stateGrantsTotal || 0);
+    const availableCorpus = stats?.financials?.availableInnovationCorpus ?? stats?.financials?.stateGrantsTotal ?? 0;
     const availableCorpusCr = stats?.financials?.availableInnovationCorpusCr || stats?.financials?.totalInnovationCorpusCr || 0;
 
     let corpusDisplay = `₹ ${availableCorpus.toLocaleString('en-IN')}`;
@@ -102,24 +103,29 @@ class GovernmentDataService {
         value: realProblemsCount.toLocaleString('en-IN'),
         numeric: realProblemsCount,
         growthText: 'Verified Citizen Grievances',
+        indicator: 'Total Inflow',
         growthDirection: 'up'
       },
       activeHeis: {
-        value: activeHeis.toLocaleString(),
+        value: activeHeis.toLocaleString('en-IN'),
         numeric: activeHeis,
         growthText: 'Accredited HEIs',
+        indicator: 'All 24 Districts',
         growthDirection: 'up'
       },
       csrFunds: {
         value: corpusDisplay,
         numeric: availableCorpusCr,
         growthText: 'Available Innovation Pool',
+        indicator: 'Govt. Approved',
         growthDirection: 'up'
       },
       problemsSolved: {
-        value: approvedCount.toLocaleString(),
-        numeric: approvedCount,
-        growthText: 'Resolved',
+        value: solvedCount.toLocaleString('en-IN'),
+        numeric: solvedCount,
+        rate: resolutionRate,
+        growthText: `${resolutionRate}% Resolution Rate`,
+        indicator: 'Verified Solved',
         growthDirection: 'up'
       }
     };
@@ -140,12 +146,12 @@ class GovernmentDataService {
     const total = this.statsData?.problems?.total || 0;
     return {
       points: [
-        { month: 'Jan', count: 0 },
-        { month: 'Feb', count: 0 },
-        { month: 'Mar', count: 0 },
         { month: 'Apr', count: 0 },
         { month: 'May', count: 0 },
-        { month: 'Jun', count: total }
+        { month: 'Jun', count: 0 },
+        { month: 'Jul', count: 0 },
+        { month: 'Aug', count: 0 },
+        { month: 'Sep', count: total }
       ]
     };
   }

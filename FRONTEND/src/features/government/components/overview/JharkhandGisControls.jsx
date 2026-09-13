@@ -1,17 +1,25 @@
 import React from 'react';
 import { Compass, Plus, Minus, Home } from 'lucide-react';
 
-export const JharkhandGisHeader = ({ basemapMode, onUpdateBasemap }) => {
+export const JharkhandGisHeader = ({ basemapMode, onUpdateBasemap, problemCount = 0 }) => {
   return (
     <div className="flex items-center justify-between pb-2.5 mb-2 border-b border-slate-100">
       <div className="flex items-center space-x-2">
-        <Compass className="w-4 h-4 text-slate-700" />
+        <Compass className="w-4 h-4 text-[#007A61]" />
         <div>
-          <h3 className="text-xs font-bold text-slate-900 tracking-tight">
-            Jharkhand Geospatial Heatmap
-          </h3>
+          <div className="flex items-center gap-2">
+            <h3 className="text-xs font-bold text-slate-900 tracking-tight">
+              Jharkhand Geospatial Heatmap
+            </h3>
+            {problemCount > 0 && (
+              <span className="text-[9px] font-extrabold px-2 py-0.5 rounded-full bg-red-50 text-red-700 border border-red-200 flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-red-600 animate-pulse" />
+                {problemCount} Live Problems Mapped
+              </span>
+            )}
+          </div>
           <p className="text-[10px] text-slate-400 font-medium leading-tight">
-            Spatial density distribution across 24 districts (EPSG:4326)
+            Live geographic incident tracking & spatial density across 24 districts
           </p>
         </div>
       </div>

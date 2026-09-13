@@ -1,8 +1,8 @@
 import React from 'react';
-import { Bell } from 'lucide-react';
+import { GovernmentNotificationPopover } from './GovernmentNotificationPopover.jsx';
 
 export const GovernmentHeader = ({
-  notificationCount = 7
+  onNavigateTab
 }) => {
   return (
     <header className="sticky top-0 z-30 w-full bg-white border-b border-slate-200 px-4 md:px-6 py-2 flex items-center justify-between flex-shrink-0 shadow-2xs">
@@ -37,20 +37,10 @@ export const GovernmentHeader = ({
         </span>
       </div>
 
-      {/* Right Controls: Notification Bell, User Avatar */}
+      {/* Right Controls: Notification Bell Popover, User Avatar */}
       <div className="flex items-center space-x-3 sm:space-x-4">
-        {/* Notification Bell with Badge */}
-        <div className="relative">
-          <button
-            className="w-9 h-9 rounded-full border border-slate-200 flex items-center justify-center text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors cursor-pointer shadow-2xs"
-            title="Notifications"
-          >
-            <Bell className="w-4 h-4" />
-            <span className="absolute -top-1 -right-1 bg-red-600 text-white font-extrabold text-[10px] rounded-full w-4 h-4 flex items-center justify-center ring-2 ring-white shadow-xs">
-              {notificationCount}
-            </span>
-          </button>
-        </div>
+        {/* Live System Notification Popover */}
+        <GovernmentNotificationPopover onNavigateTab={onNavigateTab} />
 
         {/* Admin User Profile Pill */}
         <div className="flex items-center space-x-2.5 pl-1">

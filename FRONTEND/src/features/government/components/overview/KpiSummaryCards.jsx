@@ -6,30 +6,30 @@ export const KpiSummaryCards = ({ kpis }) => {
     {
       title: 'Problems Received',
       value: kpis?.problemsReceived?.value || '0',
-      growth: kpis?.problemsReceived?.growthText || 'Total Inflow',
+      growth: kpis?.problemsReceived?.growthText || 'Verified Citizen Grievances',
       icon: ClipboardList,
-      indicator: 'Total Inflow'
+      indicator: kpis?.problemsReceived?.indicator || 'Total Inflow'
     },
     {
       title: 'Active HEIs',
       value: kpis?.activeHeis?.value || '0',
       growth: kpis?.activeHeis?.growthText || 'Accredited HEIs',
       icon: Building2,
-      indicator: 'All 24 Districts'
+      indicator: kpis?.activeHeis?.indicator || 'All 24 Districts'
     },
     {
       title: 'CSR Funds Committed',
-      value: kpis?.csrFunds?.value || '₹0.00 Cr',
-      growth: kpis?.csrFunds?.growthText || 'Committed Funds',
+      value: kpis?.csrFunds?.value || '₹ 0.00',
+      growth: kpis?.csrFunds?.growthText || 'Available Innovation Pool',
       icon: IndianRupee,
-      indicator: 'Govt. Approved'
+      indicator: kpis?.csrFunds?.indicator || 'Govt. Approved'
     },
     {
       title: 'Problems Solved',
       value: kpis?.problemsSolved?.value || kpis?.solvedProblems?.value || '0',
-      growth: kpis?.problemsSolved?.growthText || 'Verified Solutions',
+      growth: kpis?.problemsSolved?.growthText || '0% Resolution Rate',
       icon: CheckCircle2,
-      indicator: 'Resolution Rate'
+      indicator: kpis?.problemsSolved?.indicator || 'Verified Solved'
     }
   ];
 

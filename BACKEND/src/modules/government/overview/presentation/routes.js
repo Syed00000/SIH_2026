@@ -3,15 +3,26 @@ import { MongooseUniversity } from '../../heis/infrastructure/model.js';
 import { MongooseIndustry } from '../../industries/infrastructure/model.js';
 import { MongooseAdmin } from '../../admins/infrastructure/model.js';
 import { MongooseUser } from '../../../users/infrastructure/model.js';
-import { GovernmentGrantFund } from '../../grants/model.js';
+import { GrantFundService } from '../../grants/service.js';
 import { CitizenChallenge } from '../../../citizen/infrastructure/model.js';
 import { UniversityProject } from '../../../university/infrastructure/model.js';
+import { governmentNotificationService } from '../application/government-notification.service.js';
 
 const router = Router();
+const grantFundService = new GrantFundService();
 
 router.get('/', (req, res, next) => {
   req.url = '/stats';
   router.handle(req, res, next);
+});
+
+router.get('/notifications', async (req, res, next) => {
+  try {
+    const data = await governmentNotificationService.getLiveNotifications();
+    res.status(200).json({ status: 'SUCCESS', data });
+  } catch (error) {
+    next(error);
+  }
 });
 
 router.get('/stats', async (req, res, next) => {
@@ -23,9 +34,11 @@ router.get('/stats', async (req, res, next) => {
       totalIndustries,
       activeAdmins,
       totalProblems,
+      solvedProblems,
+      inProgressProblems,
       totalCitizens,
       industryFinancials,
-      stateGrantFunds,
+      fundsOverview,
       projectList,
       heisByDistrict,
       industriesByCategory,
@@ -42,6 +55,11 @@ router.get('/stats', async (req, res, next) => {
       MongooseIndustry.countDocuments(),
       MongooseAdmin.countDocuments({ status: 'Active' }),
       CitizenChallenge.countDocuments({ isDeleted: { $ne: true } }),
+      CitizenChallenge.countDocuments({ isDeleted: { $ne: true }, status: { $in: ['Resolved', 'Completed', 'Deployed'] } }),
+      CitizenChallenge.countDocuments({
+        isDeleted: { $ne: true },
+        status: { $in: ['In Progress', 'Under Review', 'Accepted', 'Assigned', 'Clarified', 'Clarification Requested', 'Submitted'] }
+      }),
       MongooseUser.countDocuments({ role: 'CITIZEN' }),
       MongooseIndustry.aggregate([
         {
@@ -53,7 +71,7 @@ router.get('/stats', async (req, res, next) => {
           }
         }
       ]),
-      GovernmentGrantFund.find({ status: 'Active' }).lean(),
+      grantFundService.getFundsOverview(),
       UniversityProject.find({ isDeleted: { $ne: true } }).lean(),
       MongooseUniversity.aggregate([{ $group: { _id: '$district', count: { $sum: 1 } } }]),
       MongooseIndustry.aggregate([{ $group: { _id: '$category', count: { $sum: 1 } } }]),
@@ -66,7 +84,7 @@ router.get('/stats', async (req, res, next) => {
     ]);
 
     const financials = industryFinancials[0] || { totalCsrFundsCr: 0, totalProjects: 0, totalLabs: 0 };
-    const stateGrantsTotal = stateGrantFunds.reduce((sum, f) => sum + (Number(f.amount) || 0), 0);
+    const stateGrantsTotal = fundsOverview?.stateGrantsTotal || 0;
     const stateGrantsTotalCr = stateGrantsTotal / 10000000;
     const totalCommittedCorpus = stateGrantsTotal + ((financials.totalCsrFundsCr || 0) * 10000000);
     const totalInnovationCorpusCr = Number(((financials.totalCsrFundsCr || 0) + stateGrantsTotalCr).toFixed(2));
@@ -81,10 +99,14 @@ router.get('/stats', async (req, res, next) => {
 
     const availableInnovationCorpus = Math.max(0, totalCommittedCorpus - totalDisbursedFunds);
     const availableInnovationCorpusCr = Number((availableInnovationCorpus / 10000000).toFixed(2));
+    const resolutionRate = totalProblems > 0 ? Math.round((solvedProblems / totalProblems) * 100) : 0;
 
     // Map top HEIs with actual active projects count and solved challenges
     const topHeis = topHeisList.map((hei) => {
       const activeProjects = projectList.filter((p) => p.universityCode === hei.code || p.universityId === String(hei._id)).length;
+      const solvedChallenges = recentChallenges.filter(
+        (c) => (c.assignedUniversity?.id === String(hei._id) || c.assignedUniversity?.code === hei.code) && ['Resolved', 'Completed', 'Deployed'].includes(c.status)
+      ).length;
       return {
         id: String(hei._id),
         name: hei.name,
@@ -92,8 +114,8 @@ router.get('/stats', async (req, res, next) => {
         district: hei.district || 'Jharkhand',
         activeProjects,
         projects: activeProjects,
-        solvedChallenges: 0,
-        solved: 0
+        solvedChallenges,
+        solved: solvedChallenges
       };
     });
 
@@ -103,7 +125,13 @@ router.get('/stats', async (req, res, next) => {
         heis: { active: activeHeis, total: totalHeis },
         industries: { active: activeIndustries, total: totalIndustries },
         admins: { active: activeAdmins },
-        problems: { total: totalProblems, received: totalProblems },
+        problems: {
+          total: totalProblems,
+          received: totalProblems,
+          solved: solvedProblems,
+          inProgress: inProgressProblems,
+          resolutionRate
+        },
         citizens: { total: totalCitizens },
         financials: {
           totalCsrFundsCr: Number((financials.totalCsrFundsCr || 0).toFixed(2)),

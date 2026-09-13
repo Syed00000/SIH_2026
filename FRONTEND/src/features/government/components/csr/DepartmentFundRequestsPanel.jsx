@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Search, Landmark, Clock, CheckCircle2, XCircle, AlertTriangle, Sparkles, Filter } from 'lucide-react';
+import { Search, Landmark, Clock, CheckCircle2, XCircle, AlertTriangle, Sparkles, Filter } from 'lucide-react';
 import { DepartmentRequestsTable } from './DepartmentRequestsTable.jsx';
 import { ApproveGrantRequestModal } from './ApproveGrantRequestModal.jsx';
 import { RejectGrantRequestModal } from './RejectGrantRequestModal.jsx';
 import { GrantRequestDetailsModal } from './GrantRequestDetailsModal.jsx';
-import { CreateDepartmentRequisitionModal } from './CreateDepartmentRequisitionModal.jsx';
 import apiClient from '../../../../infrastructure/api/client.js';
 
 export const DepartmentFundRequestsPanel = () => {
@@ -15,7 +14,6 @@ export const DepartmentFundRequestsPanel = () => {
   const [approvingReq, setApprovingReq] = useState(null);
   const [rejectingReq, setRejectingReq] = useState(null);
   const [viewingReq, setViewingReq] = useState(null);
-  const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [notification, setNotification] = useState(null);
 
   const fetchRequests = async () => {
@@ -87,15 +85,6 @@ export const DepartmentFundRequestsPanel = () => {
             Receive, review, and clear grant requisitions submitted by state & district departments with direct pool transfer.
           </p>
         </div>
-
-        <button
-          type="button"
-          onClick={() => setIsCreateOpen(true)}
-          className="px-4 py-2 bg-[#007A61] hover:bg-[#00624e] text-white text-xs font-bold rounded-xs flex items-center space-x-1.5 transition-colors cursor-pointer shadow-xs shrink-0"
-        >
-          <Plus className="w-4 h-4" />
-          <span>+ New Requisition</span>
-        </button>
       </div>
 
       {/* Summary KPI Strip */}
@@ -181,12 +170,6 @@ export const DepartmentFundRequestsPanel = () => {
         request={viewingReq}
         onClose={() => setViewingReq(null)}
         onOpenApprove={(r) => setApprovingReq(r)}
-      />
-
-      <CreateDepartmentRequisitionModal
-        isOpen={isCreateOpen}
-        onClose={() => setIsCreateOpen(false)}
-        onCreated={() => handleActionComplete('Department fund requisition submitted successfully!')}
       />
     </div>
   );
