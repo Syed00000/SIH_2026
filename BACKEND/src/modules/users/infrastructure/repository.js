@@ -93,7 +93,7 @@ export class MongoUserRepository extends UserRepository {
       }).select('+passwordHash');
       if (doc) return this._toEntity(doc);
 
-      // 4. University entity lookup
+      // 4. University entity lookup & auto-reconciliation
       try {
         const MongooseUniversity = (await import('../../government/heis/infrastructure/model.js')).default;
         const uni = await MongooseUniversity.findOne({
@@ -101,13 +101,60 @@ export class MongoUserRepository extends UserRepository {
             { code: { $regex: new RegExp(`^${clean}$`, 'i') } },
             { aisheCode: { $regex: new RegExp(`^${clean}$`, 'i') } },
             { universityEmail: lower },
-            { 'nodalOfficer.email': lower }
+            { 'nodalOfficer.email': lower },
+            { 'credentials.loginEmail': lower }
           ]
         });
         if (uni) {
-          const targetEmail = (uni.nodalOfficer?.email || uni.universityEmail)?.toLowerCase();
+          const targetEmail = (uni.credentials?.loginEmail || uni.nodalOfficer?.email || uni.universityEmail)?.toLowerCase().trim();
           if (targetEmail) {
-            doc = await MongooseUser.findOne({ email: targetEmail }).select('+passwordHash');
+            let targetHash = uni.credentials?.passwordHash;
+            if (!targetHash && uni.credentials?.generatedPassword) {
+              targetHash = await bcrypt.hash(uni.credentials.generatedPassword, 10);
+              await MongooseUniversity.findByIdAndUpdate(uni._id, { 'credentials.passwordHash': targetHash });
+            }
+
+            if (uni.userId) {
+              doc = await MongooseUser.findById(uni.userId).select('+passwordHash');
+            }
+            if (!doc) {
+              doc = await MongooseUser.findOne({ email: targetEmail }).select('+passwordHash');
+            }
+
+            if (!doc) {
+              let mobile = (uni.nodalOfficer?.phone || uni.universityPhone || '').replace(/\D/g, '').slice(-10);
+              if (!mobile || !/^[6-9]\d{9}$/.test(mobile)) {
+                mobile = `98${Math.floor(10000000 + Math.random() * 90000000)}`;
+              }
+              const existingMobile = await MongooseUser.findOne({ mobileNumber: mobile });
+              if (existingMobile) {
+                mobile = `96${Date.now().toString().slice(-8)}`;
+              }
+
+              doc = await MongooseUser.create({
+                fullName: uni.nodalOfficer?.name || uni.name,
+                email: targetEmail,
+                mobileNumber: mobile,
+                passwordHash: targetHash || (await bcrypt.hash('HEI@Jharkhand2026!', 10)),
+                role: 'UNIVERSITY',
+                accountStatus: 'ACTIVE',
+                emailVerification: { verified: true, verifiedAt: new Date() },
+                profile: {
+                  institutionName: uni.name,
+                  aisheCode: uni.code,
+                  institutionType: uni.universityType || 'State University'
+                }
+              });
+              await MongooseUniversity.findByIdAndUpdate(uni._id, { userId: doc._id });
+            } else {
+              let changed = false;
+              if (doc.email !== targetEmail) { doc.email = targetEmail; changed = true; }
+              if (targetHash && doc.passwordHash !== targetHash) { doc.passwordHash = targetHash; changed = true; }
+              if (doc.role !== 'UNIVERSITY') { doc.role = 'UNIVERSITY'; changed = true; }
+              if (doc.accountStatus !== 'ACTIVE') { doc.accountStatus = 'ACTIVE'; changed = true; }
+              if (!doc.emailVerification?.verified) { doc.emailVerification = { verified: true, verifiedAt: new Date() }; changed = true; }
+              if (changed) await doc.save();
+            }
             if (doc) return this._toEntity(doc);
           }
         }
@@ -212,6 +259,75 @@ export class MongoUserRepository extends UserRepository {
           if (adminUser) return this._toEntity(adminUser);
         }
       } catch (adminErr) {
+        // Continue fallback
+      }
+
+      // 7. Industry Organization lookup & auto-reconciliation
+      try {
+        const Industry = (await import('../../government/industries/infrastructure/model.js')).default;
+        const ind = await Industry.findOne({
+          $or: [
+            { industryId: { $regex: new RegExp(`^${clean}$`, 'i') } },
+            { officialEmail: lower },
+            { 'credentials.loginEmail': lower },
+            { mobileNumber: clean }
+          ]
+        });
+        if (ind) {
+          const targetEmail = (ind.credentials?.loginEmail || ind.officialEmail)?.toLowerCase().trim();
+          if (targetEmail) {
+            let targetHash = ind.credentials?.passwordHash;
+            if (!targetHash && ind.credentials?.generatedPassword) {
+              targetHash = await bcrypt.hash(ind.credentials.generatedPassword, 10);
+              await Industry.findByIdAndUpdate(ind._id, { 'credentials.passwordHash': targetHash });
+            }
+
+            let indUser = null;
+            if (ind.userId) {
+              indUser = await MongooseUser.findById(ind.userId).select('+passwordHash');
+            }
+            if (!indUser) {
+              indUser = await MongooseUser.findOne({ email: targetEmail }).select('+passwordHash');
+            }
+
+            if (!indUser) {
+              let cleanMob = (ind.mobileNumber || '').replace(/\D/g, '').slice(-10);
+              if (!cleanMob || !/^[6-9]\d{9}$/.test(cleanMob)) {
+                cleanMob = `98${Math.floor(10000000 + Math.random() * 90000000)}`;
+              }
+              const existingMobile = await MongooseUser.findOne({ mobileNumber: cleanMob });
+              if (existingMobile) {
+                cleanMob = `97${Date.now().toString().slice(-8)}`;
+              }
+
+              indUser = await MongooseUser.create({
+                fullName: ind.spocName || ind.legalName,
+                email: targetEmail,
+                mobileNumber: cleanMob,
+                passwordHash: targetHash || (await bcrypt.hash('Industry@123456', 10)),
+                role: 'INDUSTRY',
+                accountStatus: ind.status === 'Active' ? 'ACTIVE' : 'SUSPENDED',
+                emailVerification: { verified: true, verifiedAt: new Date() },
+                profile: {
+                  organizationName: ind.legalName,
+                  entityType: ind.category
+                }
+              });
+              await Industry.findByIdAndUpdate(ind._id, { userId: indUser._id });
+            } else {
+              let changed = false;
+              if (indUser.email !== targetEmail) { indUser.email = targetEmail; changed = true; }
+              if (targetHash && indUser.passwordHash !== targetHash) { indUser.passwordHash = targetHash; changed = true; }
+              if (indUser.role !== 'INDUSTRY') { indUser.role = 'INDUSTRY'; changed = true; }
+              if (indUser.accountStatus !== 'ACTIVE') { indUser.accountStatus = 'ACTIVE'; changed = true; }
+              if (!indUser.emailVerification?.verified) { indUser.emailVerification = { verified: true, verifiedAt: new Date() }; changed = true; }
+              if (changed) await indUser.save();
+            }
+
+            if (indUser) return this._toEntity(indUser);
+          }
+        }
+      } catch (indErr) {
         // Continue fallback
       }
     }

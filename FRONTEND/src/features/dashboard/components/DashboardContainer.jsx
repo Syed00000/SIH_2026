@@ -24,8 +24,9 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../..
 import { Alert } from '../../../shared/components/ui/alert.jsx';
 
 export const DashboardContainer = ({ onNavigate }) => {
-  const { user, logout, loading } = useAuth();
-  const [activeTab, setActiveTab] = useState('overview');
+  const { user, loading, logout } = useAuth();
+  const role = (user?.role || 'CITIZEN').toUpperCase();
+  const [activeTab, setActiveTab] = useState(role === 'INDUSTRY' ? 'dashboard' : 'overview');
   const [isSidebarExpanded, setIsSidebarExpanded] = useState(true);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [selectedLanguage, setSelectedLanguage] = useState('English');
@@ -43,8 +44,6 @@ export const DashboardContainer = ({ onNavigate }) => {
     return <LoginForm onNavigate={onNavigate} />;
   }
 
-  const role = (user.role || 'CITIZEN').toUpperCase();
-
   const handleLogout = async () => {
     await logout();
     if (onNavigate) onNavigate('/login'); else window.location.href = '/login';
@@ -52,11 +51,11 @@ export const DashboardContainer = ({ onNavigate }) => {
 
   // 1. Render Dedicated Portals
   const urlPortal = typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('portal') : null;
-  if (urlPortal === 'citizen' || role === 'CITIZEN') return <CitizenPortal user={user} onLogout={handleLogout} />;
+  if (urlPortal === 'citizen' || role === 'CITIZEN' || role === 'USER') return <CitizenPortal user={user} onLogout={handleLogout} />;
   if (urlPortal === 'nodal' || role.includes('NODAL')) return <NodalPortal user={user} onLogout={handleLogout} onNavigate={onNavigate} />;
   if (urlPortal === 'faculty' || role.includes('FACULTY')) return <FacultyLayout user={user} onLogout={handleLogout} />;
   if (urlPortal === 'university' || role === 'UNIVERSITY' || role === 'HEI') return <UniversityLayout user={user} onLogout={handleLogout} />;
-  if (role === 'GOVERNMENT' || role === 'ADMIN') return <GovernmentLayout onLogout={handleLogout} />;
+  if (role === 'GOVERNMENT' || role === 'ADMIN' || role === 'SUPER_ADMIN') return <GovernmentLayout onLogout={handleLogout} />;
   if (urlPortal === 'department' || role === 'DEPARTMENT' || role.includes('DEPT')) return <DepartmentPortal user={user} onLogout={handleLogout} />;
   if (urlPortal === 'ward' || role === 'WARD') return <WardPortal user={user} onLogout={handleLogout} onNavigate={onNavigate} />;
   if (urlPortal === 'block' || role === 'BLOCK') return <BlockPortal user={user} onLogout={handleLogout} />;
@@ -114,7 +113,7 @@ export const DashboardContainer = ({ onNavigate }) => {
           {/* Scrollable Dashboard Viewport */}
           <main className="flex-1 p-3.5 md:p-4.5 space-y-3.5 overflow-y-auto min-h-0 bg-white">
             {/* Email Verification Alert */}
-            {!user.emailVerified && (
+            {user && !user.emailVerified && !user.emailVerification?.verified && (
               <Alert variant="warning" title="Email Unverified">
                 <div className="flex items-center justify-between w-full text-xs">
                   <span>
@@ -123,8 +122,8 @@ export const DashboardContainer = ({ onNavigate }) => {
                   <button
                     onClick={() =>
                       onNavigate
-                        ? onNavigate('/verify-email', { email: user.email })
-                        : (window.location.href = `/verify-email?email=${encodeURIComponent(user.email)}`)
+                        ? onNavigate('/verify-email', { email: user?.email })
+                        : (window.location.href = `/verify-email?email=${encodeURIComponent(user?.email || '')}`)
                     }
                     className="bg-slate-900 text-white font-bold px-2.5 py-1 rounded text-[10px] hover:bg-slate-800 transition-colors ml-3 cursor-pointer shadow-2xs"
                   >

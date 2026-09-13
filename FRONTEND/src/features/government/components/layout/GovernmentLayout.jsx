@@ -216,7 +216,7 @@ export const GovernmentLayout = ({ onLogout }) => {
   };
 
   return (
-    <div className="min-h-screen bg-white flex flex-col h-screen overflow-hidden text-slate-900 font-sans">
+    <div className="w-full h-screen bg-white flex flex-col overflow-hidden text-slate-900 font-sans">
       {/* 1. Top Fixed Government Header with real-time District & Sector Selectors */}
       <GovernmentHeader
         selectedDistrict={selectedDistrict}
@@ -291,11 +291,14 @@ export const GovernmentLayout = ({ onLogout }) => {
             ) : activeTab === 'governance_industries' || activeTab === 'manage_industries' || activeTab === 'industries' ? (
               <ManageIndustriesDashboard />
             ) : activeTab === 'governance_departments' || activeTab === 'departments' || activeTab === 'dept_state' || activeTab === 'dept_district' || activeTab === 'dept_panchayat' || activeTab === 'dept_block' ? (
-              <DepartmentsManagementPanel category={
-                activeTab === 'dept_district' ? 'District Department' :
-                activeTab === 'dept_panchayat' ? 'Gram Panchayat' :
-                activeTab === 'dept_block' ? 'Block / Tehsil Office' : 'State Ministry'
-              } />
+              <DepartmentsManagementPanel
+                key={activeTab}
+                category={
+                  activeTab === 'dept_district' ? 'District Department' :
+                  activeTab === 'dept_panchayat' ? 'Gram Panchayat' :
+                  activeTab === 'dept_block' ? 'Block / Tehsil Office' : 'State Ministry'
+                }
+              />
             ) : activeTab === 'updates' ? (
               <ManageUpdatesDashboard />
             ) : activeTab === 'gis' ? (

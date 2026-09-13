@@ -38,8 +38,11 @@ export const DepartmentsManagementPanel = ({ category = 'State Ministry' }) => {
   };
 
   useEffect(() => {
+    setActiveView('list');
+    setSelectedDepartment(null);
+    setEditingDepartment(null);
     loadData();
-  }, []);
+  }, [category]);
 
   const handleSaveDepartment = async (payload) => {
     try {
@@ -171,9 +174,9 @@ export const DepartmentsManagementPanel = ({ category = 'State Ministry' }) => {
             <button
               type="button"
               onClick={() => { setEditingDepartment(null); setActiveView('edit'); }}
-              className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold transition-colors cursor-pointer flex items-center space-x-1.5 shadow-2xs"
+              className="px-4 py-2 bg-[#007A61] hover:bg-[#00624e] text-white rounded-xl text-xs font-bold transition-colors cursor-pointer flex items-center space-x-1.5 shadow-2xs"
             >
-              <Plus className="w-4 h-4 text-slate-300" />
+              <Plus className="w-4 h-4 text-emerald-100" />
               <span>Add Department</span>
             </button>
           )}
@@ -199,7 +202,7 @@ export const DepartmentsManagementPanel = ({ category = 'State Ministry' }) => {
                 onClick={() => setStatusFilter(tab)}
                 className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
                   statusFilter === tab
-                    ? 'bg-slate-900 text-white shadow-2xs'
+                    ? 'bg-[#007A61] text-white shadow-2xs'
                     : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                 }`}
               >

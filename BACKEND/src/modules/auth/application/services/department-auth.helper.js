@@ -41,6 +41,7 @@ export function getDepartmentValidPasswords(dept) {
   const passwords = new Set();
 
   if (dept.credentials?.password) passwords.add(dept.credentials.password.trim());
+  if (dept.credentials?.passwordHash) passwords.add(dept.credentials.passwordHash.trim());
   if (dept.credentials?.generatedPassword) passwords.add(dept.credentials.generatedPassword.trim());
   passwords.add(`Dept@JH${digits}!`);
   passwords.add('Dept@JH2026!');
@@ -52,6 +53,14 @@ export async function verifyDepartmentPassword(dept, rawPassword) {
   if (!dept || !rawPassword) return false;
   const trimmed = rawPassword.trim();
   const validPasswords = getDepartmentValidPasswords(dept);
+
+  if (dept.credentials?.passwordHash) {
+    try {
+      if (await bcrypt.compare(trimmed, dept.credentials.passwordHash)) return true;
+    } catch {
+      // Continue
+    }
+  }
 
   for (const vp of validPasswords) {
     if (vp === rawPassword || vp === trimmed || vp.toLowerCase() === trimmed.toLowerCase()) {
@@ -83,6 +92,7 @@ export function toDepartmentUserEntity(dept) {
     fullName: dept.name,
     email,
     mobileNumber: dept.headPhone || '9800000000',
+    passwordHash: dept.credentials?.passwordHash || null,
     role: 'DEPARTMENT',
     deptId,
     department: dept.name,

@@ -58,51 +58,50 @@ export const LoginForm = ({ onNavigate }) => {
     try {
       const res = await login(email.trim(), password);
       const loggedUser = res?.user;
-      if (loggedUser?.role === 'DEPARTMENT' || loggedUser?.deptId) {
+      const userRole = (loggedUser?.role || '').toUpperCase();
+
+      const goTo = (dest, params) => {
+        if (onNavigate) {
+          onNavigate(dest, params);
+        } else {
+          const qs = params ? `?${new URLSearchParams(params).toString()}` : '';
+          window.location.href = `${dest}${qs}`;
+        }
+      };
+
+      if (userRole === 'DEPARTMENT' || loggedUser?.deptId) {
         const targetId = loggedUser.deptId || loggedUser.id;
-        const dest = `/department?deptId=${encodeURIComponent(targetId)}`;
-        if (onNavigate) {
-          onNavigate(dest);
-        } else {
-          window.location.href = dest;
-        }
-        return;
+        return goTo('/department', { deptId: targetId });
       }
-      if (loggedUser?.role === 'WARD' || loggedUser?.wardId) {
+      if (userRole === 'WARD' || loggedUser?.wardId) {
         const targetId = loggedUser.wardId || loggedUser.id;
-        const dest = `/ward?wardId=${encodeURIComponent(targetId)}`;
-        if (onNavigate) {
-          onNavigate(dest);
-        } else {
-          window.location.href = dest;
-        }
-        return;
+        return goTo('/ward', { wardId: targetId });
       }
-      if (loggedUser?.role === 'BLOCK' || loggedUser?.blockId) {
+      if (userRole === 'BLOCK' || loggedUser?.blockId) {
         const targetId = loggedUser.blockId || loggedUser.id;
-        const dest = `/block?blockId=${encodeURIComponent(targetId)}`;
-        if (onNavigate) {
-          onNavigate(dest);
-        } else {
-          window.location.href = dest;
-        }
-        return;
+        return goTo('/block', { blockId: targetId });
       }
-      if (loggedUser?.role === 'TECHNICIAN' || loggedUser?.technicianId || loggedUser?.role?.includes('TECH')) {
+      if (userRole === 'TECHNICIAN' || loggedUser?.technicianId || userRole.includes('TECH')) {
         const targetId = loggedUser.technicianId || loggedUser.id || '';
-        const dest = `/technician?techId=${encodeURIComponent(targetId)}`;
-        if (onNavigate) {
-          onNavigate(dest);
-        } else {
-          window.location.href = dest;
-        }
-        return;
+        return goTo('/technician', { techId: targetId });
       }
-      if (onNavigate) {
-        onNavigate('/dashboard');
-      } else {
-        window.location.href = '/dashboard';
+      if (userRole === 'UNIVERSITY' || userRole === 'HEI') {
+        return goTo('/university');
       }
+      if (userRole === 'NODAL' || userRole.includes('NODAL')) {
+        return goTo('/nodal');
+      }
+      if (userRole === 'INDUSTRY') {
+        return goTo('/industry-portal');
+      }
+      if (userRole === 'CITIZEN' || userRole === 'USER') {
+        return goTo('/citizen');
+      }
+      if (userRole === 'GOVERNMENT' || userRole === 'ADMIN' || userRole === 'SUPER_ADMIN') {
+        return goTo('/government');
+      }
+
+      return goTo('/dashboard');
     } catch (error) {
       const status = error?.response?.status || error?.status;
       const errData = error?.response?.data?.error || error?.response?.data || {};
