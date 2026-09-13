@@ -25,13 +25,32 @@ export const transporter = nodemailer.createTransport({
   }
 });
 
+let etherealTransporter = null;
+
+const getEtherealTransporter = async () => {
+  if (!etherealTransporter) {
+    logger.info('Generating Nodemailer Ethereal test account for email fallback...');
+    const testAccount = await nodemailer.createTestAccount();
+    etherealTransporter = nodemailer.createTransport({
+      host: "smtp.ethereal.email",
+      port: 587,
+      secure: false,
+      auth: {
+        user: testAccount.user,
+        pass: testAccount.pass,
+      },
+    });
+  }
+  return etherealTransporter;
+};
+
 export const sendVerificationEmail = async ({ email, name, code }) => {
   if (!email) throw new Error('Recipient email is required for sending verification OTP.');
 
   const mailOptions = {
     from: `"JoharSetu Jharkhand Portal" <${emailUser}>`,
     to: email,
-    subject: `🔐 ${code} is your JoharSetu Email Verification OTP Code`,
+    subject: `JoharSetu Registration OTP: ${code}`,
     html: getVerificationEmailHtml({ name, code })
   };
 
@@ -41,8 +60,16 @@ export const sendVerificationEmail = async ({ email, name, code }) => {
     logger.info({ messageId: info.messageId, recipient: email }, '✅ Live SMTP Verification OTP Email sent successfully!');
     return info;
   } catch (err) {
-    logger.warn({ recipient: email, error: err.message }, '⚠️ SMTP dispatch failed. OTP is preserved in database and console.');
-    return { error: err.message, delivered: false };
+    logger.warn({ recipient: email, error: err.message }, '⚠️ SMTP dispatch failed. Falling back to Ethereal Email...');
+    try {
+      const fallbackTransporter = await getEtherealTransporter();
+      const fallbackInfo = await fallbackTransporter.sendMail(mailOptions);
+      logger.info({ messageId: fallbackInfo.messageId, url: nodemailer.getTestMessageUrl(fallbackInfo) }, '✅ OTP Email dropped in Ethereal (Test Inbox). Click the URL to view it.');
+      return fallbackInfo;
+    } catch (fallbackErr) {
+      logger.error('Ethereal fallback also failed', fallbackErr);
+      return { error: err.message, delivered: false };
+    }
   }
 };
 
@@ -53,7 +80,7 @@ export const sendPasswordResetEmail = async ({ email, name, otp, code }) => {
   const mailOptions = {
     from: `"JoharSetu Jharkhand Portal" <${emailUser}>`,
     to: email,
-    subject: `🔑 ${resetCode} is your JoharSetu Password Reset Code`,
+    subject: `JoharSetu Password Reset: ${resetCode}`,
     html: getPasswordResetEmailHtml({ name, resetCode })
   };
 
@@ -63,8 +90,16 @@ export const sendPasswordResetEmail = async ({ email, name, otp, code }) => {
     logger.info({ messageId: info.messageId, recipient: email }, '✅ Live SMTP Password Reset Email sent successfully!');
     return info;
   } catch (err) {
-    logger.warn({ recipient: email, error: err.message }, '⚠️ SMTP password reset dispatch failed.');
-    return { error: err.message, delivered: false };
+    logger.warn({ recipient: email, error: err.message }, '⚠️ SMTP password reset dispatch failed. Falling back to Ethereal Email...');
+    try {
+      const fallbackTransporter = await getEtherealTransporter();
+      const fallbackInfo = await fallbackTransporter.sendMail(mailOptions);
+      logger.info({ messageId: fallbackInfo.messageId, url: nodemailer.getTestMessageUrl(fallbackInfo) }, '✅ Password Reset Email dropped in Ethereal (Test Inbox). Click the URL to view it.');
+      return fallbackInfo;
+    } catch (fallbackErr) {
+      logger.error('Ethereal fallback also failed', fallbackErr);
+      return { error: err.message, delivered: false };
+    }
   }
 };
 
@@ -88,7 +123,7 @@ export const sendIndustryOnboardingEmail = async ({
   const mailOptions = {
     from: `"Government of Jharkhand — JoharSetu" <${emailUser}>`,
     to: targetRecipients,
-    subject: `🏛️ Official Approval & Portal Login Credentials — ${organizationName}`,
+    subject: `JoharSetu Portal Access - ${organizationName}`,
     html: getIndustryOnboardingEmailHtml({ spocName, organizationName, industryId, loginEmail, temporaryPassword })
   };
 
