@@ -133,7 +133,7 @@ export const DepartmentPortal = ({ user, onLogout }) => {
       case 'field-workers':
         return <DepartmentTechniciansPanel technicians={technicians} department={department} onAddTech={() => setIsAddTechOpen(true)} onViewTech={setViewingTech} onEditTech={setEditingTech} onDeletedTech={handleDeletedTech} />;
       case 'csr-grant':
-        return <DepartmentCsrGrantPanel department={department} problems={problems} onAddTechnician={() => setIsAddTechOpen(true)} />;
+        return <DepartmentCsrGrantPanel department={department} problems={problems} />;
       case 'districts':
         if (isWardDept) return <DepartmentOverview department={department} problems={problems} onSelectProblem={(p) => setSelectedProblem(p)} onNavigateProblems={() => setActiveTab('problems')} />;
         return <DepartmentDistrictsPanel districts={districts} isDistrictDept={department?.category === 'District Department'} isBlockDept={department?.category === 'Block / Tehsil Office'} onAddDistrict={() => setIsAddDistrictOpen(true)} onDeletedDistrict={handleDeletedDistrict} />;

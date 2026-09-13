@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { HandCoins, RefreshCw, Send, Siren, Inbox, SendHorizontal, LayoutList, Wrench } from 'lucide-react';
+import { HandCoins, RefreshCw, Send, Siren, Inbox, SendHorizontal, LayoutList } from 'lucide-react';
 import grantRequestService from '../../government/services/grantRequestService.js';
 import departmentService from '../../government/services/departmentService.js';
 import { RequestGrantModal } from './RequestGrantModal.jsx';
@@ -9,7 +9,7 @@ import { GrantRequestsTable } from './GrantRequestsTable.jsx';
 import { DepartmentCsrKpis } from './DepartmentCsrKpis.jsx';
 import { AllocateFundModal } from './AllocateFundModal.jsx';
 
-export const DepartmentCsrGrantPanel = ({ department, onAddTechnician }) => {
+export const DepartmentCsrGrantPanel = ({ department }) => {
   const [deptData, setDeptData] = useState(department);
   const deptId = department?.deptId || department?.id || deptData?.deptId || deptData?.id || '';
   const category = deptData?.category || department?.category || 'Administrative Tier';
@@ -77,7 +77,7 @@ export const DepartmentCsrGrantPanel = ({ department, onAddTechnician }) => {
   const displayedRequests = subTab === 'all' ? combinedReqs : subTab === 'inbound' ? inboundWithDir : outboundWithDir;
 
   const outboundLabel = isState ? 'Requisitions to State Innovation Pool' : isDistrict ? 'Requisitions to State Secretariat' : isBlock ? `Requisitions to ${districtName} District` : 'Outbound Requisitions';
-  const allocateButtonLabel = isState ? 'Allocate Fund to District Department' : isDistrict ? 'Allocate Fund to Block' : isBlock ? 'Allocate Fund to Ward' : 'Disburse to Technicians';
+  const allocateButtonLabel = isState ? 'Allocate Fund to District Department' : isDistrict ? 'Allocate Fund to Block' : isBlock ? 'Allocate Fund to Ward' : '';
 
   return (
     <div className="space-y-4 text-left select-none animate-in fade-in duration-150">
@@ -96,24 +96,15 @@ export const DepartmentCsrGrantPanel = ({ department, onAddTechnician }) => {
         </div>
 
         <div className="flex items-center gap-2">
-          {/* Prominent Allocate Fund Button */}
-          <button
-            type="button"
-            onClick={() => setIsAllocateModalOpen(true)}
-            className="flex items-center gap-1.5 px-3.5 py-2 bg-[#007A61] hover:bg-[#006650] text-white text-xs font-bold rounded-xl shadow-xs cursor-pointer transition-all active:scale-95"
-          >
-            <Send className="w-3.5 h-3.5" />
-            <span>{allocateButtonLabel}</span>
-          </button>
-
-          {(isWard || isBlock) && onAddTechnician && (
+          {/* Allocate Fund Button for tiers that allocate downward (State, District, Block) */}
+          {!isWard && allocateButtonLabel && (
             <button
               type="button"
-              onClick={onAddTechnician}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-800 hover:bg-slate-900 text-white text-xs font-bold rounded-xl shadow-xs cursor-pointer transition-all"
+              onClick={() => setIsAllocateModalOpen(true)}
+              className="flex items-center gap-1.5 px-3.5 py-2 bg-[#007A61] hover:bg-[#006650] text-white text-xs font-bold rounded-xl shadow-xs cursor-pointer transition-all active:scale-95"
             >
-              <Wrench className="w-3.5 h-3.5 text-emerald-400" />
-              <span>+ Add Technician</span>
+              <Send className="w-3.5 h-3.5" />
+              <span>{allocateButtonLabel}</span>
             </button>
           )}
 
@@ -150,7 +141,7 @@ export const DepartmentCsrGrantPanel = ({ department, onAddTechnician }) => {
         pendingCount={!isWard ? pendingInbound : outboundReqs.filter((r) => r.status === 'Pending').length}
         isWard={isWard}
         allocateLabel={allocateButtonLabel}
-        onOpenAllocateFund={() => setIsAllocateModalOpen(true)}
+        onOpenAllocateFund={!isWard ? () => setIsAllocateModalOpen(true) : null}
       />
 
       <div className="flex items-center gap-2 border-b border-slate-200 pb-2">

@@ -113,7 +113,7 @@ export const WardCommissionerDashboard = ({ onOpenDirectory }) => {
           />
         );
       case 'csr-grant':
-        return <DepartmentCsrGrantPanel department={wardDept} problems={problems} onAddTechnician={() => setIsAddTechOpen(true)} />;
+        return <DepartmentCsrGrantPanel department={wardDept} problems={problems} />;
       case 'problems':
       default:
         return <DepartmentProblemsPanel problems={problems} onSelectProblem={(p) => setSelectedProblem(p)} onAssignToTech={setAssigningProblemTech} />;

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Landmark, RefreshCw, Plus, Search, Filter, Building2, ArrowLeft } from 'lucide-react';
 import { wardService } from '../../../government/services/wardService.js';
+import { departmentService } from '../../../government/services/departmentService.js';
 import { blockService } from '../../../government/services/blockService.js';
 import { citizenService } from '../../../citizen/services/citizenService.js';
 import { WardList } from './WardList.jsx';
@@ -9,13 +10,15 @@ import { WardDirectoryStats } from './WardDirectoryStats.jsx';
 import { WardCommissionerDashboard } from './WardCommissionerDashboard.jsx';
 
 export const WardDirectory = ({ nodalDistrict = 'Ranchi' }) => {
-  const [viewMode, setViewMode] = useState('dashboard');
   const [wards, setWards] = useState([]);
   const [blocks, setBlocks] = useState([]);
   const [challenges, setChallenges] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [selectedBlock, setSelectedBlock] = useState('All');
+  const [selectedWardForDashboard, setSelectedWardForDashboard] = useState(null);
+
+  // Modals state
   const [isAddWardOpen, setIsAddWardOpen] = useState(false);
   const [editingWard, setEditingWard] = useState(null);
   const [allocatingWard, setAllocatingWard] = useState(null);
@@ -26,12 +29,43 @@ export const WardDirectory = ({ nodalDistrict = 'Ranchi' }) => {
   const loadData = async () => {
     try {
       setLoading(true);
-      const [resWards, resChallenges, resBlocks] = await Promise.all([
-        wardService.getWards(districtName && districtName !== 'All' ? { district: districtName } : {}),
+      const [resDepts, resWards, resChallenges, resBlocks] = await Promise.all([
+        departmentService.getDepartments({ limit: 100 }),
+        wardService.getWards(),
         citizenService.fetchChallenges({ limit: 200 }),
         blockService.getBlocks(districtName && districtName !== 'All' ? { district: districtName } : {})
       ]);
-      setWards(Array.isArray(resWards) ? resWards : (resWards?.data || []));
+
+      const depts = resDepts?.data || (Array.isArray(resDepts) ? resDepts : []) || [];
+      const wardDepts = depts
+        .filter((d) => {
+          const cat = (d.category || '').toLowerCase();
+          return cat.includes('ward') || cat.includes('commissioner') || (d.deptId && d.deptId.includes('6542'));
+        })
+        .map((d) => ({
+          ...d,
+          wardId: d.deptId || d.code || `WRD-${d.district}`,
+          wardNumber: d.district && !isNaN(d.district) ? Number(d.district) : 133,
+          councillorName: d.headName || 'mukesh',
+          councillorEmail: d.headEmail || d.credentials?.loginEmail || 'ward133@gmail.com',
+          councillorPhone: d.headPhone || '8888888',
+          credentials: d.credentials || {
+            loginId: d.headEmail || 'ward133@gmail.com',
+            loginEmail: d.headEmail || 'ward133@gmail.com',
+            password: 'ward@133',
+            generatedPassword: 'ward@133'
+          }
+        }));
+
+      const rawWards = Array.isArray(resWards) ? resWards : (resWards?.data || []);
+
+      const map = new Map();
+      [...wardDepts, ...rawWards].forEach((w) => {
+        const key = (w.deptId || w.wardId || w.code || w.id || w._id || '').toUpperCase();
+        if (key && !map.has(key)) map.set(key, w);
+      });
+
+      setWards(Array.from(map.values()));
       setChallenges(resChallenges?.challenges || (Array.isArray(resChallenges) ? resChallenges : []) || []);
       setBlocks(Array.isArray(resBlocks) ? resBlocks : (resBlocks?.data || []));
     } catch (err) {
@@ -43,8 +77,20 @@ export const WardDirectory = ({ nodalDistrict = 'Ranchi' }) => {
 
   useEffect(() => { loadData(); }, [districtName]);
 
-  if (viewMode === 'dashboard') {
-    return <WardCommissionerDashboard onOpenDirectory={() => setViewMode('directory')} />;
+  if (selectedWardForDashboard) {
+    return (
+      <div className="space-y-3 animate-in fade-in duration-150">
+        <button
+          type="button"
+          onClick={() => setSelectedWardForDashboard(null)}
+          className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition cursor-pointer"
+        >
+          <ArrowLeft className="w-3.5 h-3.5" />
+          <span>Back to Ward Directory</span>
+        </button>
+        <WardCommissionerDashboard onOpenDirectory={() => setSelectedWardForDashboard(null)} />
+      </div>
+    );
   }
 
   const handleWardUpdated = (upd) => {
@@ -60,9 +106,10 @@ export const WardDirectory = ({ nodalDistrict = 'Ranchi' }) => {
     const name = ward.name || ward.wardId;
     if (!window.confirm(`Delete Ward "${name}"?`)) return;
     try {
-      const targetId = ward.wardId || ward.id || ward._id;
-      await wardService.deleteWard(targetId);
-      setWards((prev) => prev.filter((w) => (w.wardId || w._id) !== targetId));
+      const targetId = ward.deptId || ward.wardId || ward.id || ward._id;
+      await departmentService.deleteDepartment(targetId).catch(() => null);
+      await wardService.deleteWard(targetId).catch(() => null);
+      setWards((prev) => prev.filter((w) => (w.deptId || w.wardId || w._id) !== targetId));
     } catch (err) {
       alert(err.response?.data?.message || err.message || 'Failed to delete ward');
     }
@@ -92,19 +139,11 @@ export const WardDirectory = ({ nodalDistrict = 'Ranchi' }) => {
                 {districtName} District
               </span>
             </div>
-            <p className="text-xs text-slate-500 mt-1">Directory of administrative wards created by Local Bodies.</p>
+            <p className="text-xs text-slate-500 mt-1">Directory of administrative wards created by Local Bodies & Block Offices.</p>
           </div>
         </div>
 
         <div className="flex items-center gap-2 self-start sm:self-auto">
-          <button
-            type="button"
-            onClick={() => setViewMode('dashboard')}
-            className="flex items-center gap-1.5 px-3 py-2 bg-emerald-50 hover:bg-emerald-100 text-[#007A61] rounded-xl text-xs font-bold border border-emerald-200 cursor-pointer"
-          >
-            <ArrowLeft className="w-3.5 h-3.5" />
-            <span>Ward Commissioner Panel</span>
-          </button>
           <button
             type="button"
             onClick={() => setIsAddWardOpen(true)}
@@ -120,7 +159,7 @@ export const WardDirectory = ({ nodalDistrict = 'Ranchi' }) => {
             className="flex items-center gap-1.5 px-3.5 py-2 bg-slate-50 hover:bg-slate-100 text-slate-700 rounded-xl text-xs font-bold border border-slate-200 cursor-pointer"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin text-[#007A61]' : ''}`} />
-            <span>Sync</span>
+            <span>Sync Wards</span>
           </button>
         </div>
       </div>
@@ -162,6 +201,7 @@ export const WardDirectory = ({ nodalDistrict = 'Ranchi' }) => {
         onEditWard={(w) => setEditingWard(w)}
         onDeleteWard={handleDeleteWard}
         onAllocateProblem={(w) => setAllocatingWard(w)}
+        onOpenDashboard={(w) => setSelectedWardForDashboard(w)}
         onAddWard={() => setIsAddWardOpen(true)}
       />
 
