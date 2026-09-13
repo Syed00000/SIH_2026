@@ -3,6 +3,7 @@ import WardCommissionerDashboard from './WardCommissionerDashboard.jsx';
 
 export { WardDirectory, WardCommissionerDashboard };
 export { WardList } from './WardList.jsx';
+export { WardCard } from './WardCard.jsx';
 export { AddWardModal } from './AddWardModal.jsx';
 export { EditWardModal } from './EditWardModal.jsx';
 export { ViewWardModal } from './ViewWardModal.jsx';

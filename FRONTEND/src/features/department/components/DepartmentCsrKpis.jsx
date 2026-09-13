@@ -26,7 +26,7 @@ export const DepartmentCsrKpis = ({
               <span>{allocateLabel}</span>
             </button>
           ) : (
-            <span className="text-[10px] text-slate-500 font-medium block truncate mt-0.5">Ready for hierarchy transfer</span>
+            <span className="text-[10px] text-slate-500 font-medium block truncate mt-0.5">{isWard ? 'Available for civic works' : 'Ready for hierarchy transfer'}</span>
           )}
         </div>
         <div className="w-9 h-9 rounded-xl bg-emerald-50 flex items-center justify-center shrink-0"><IndianRupee className="w-4 h-4 text-emerald-700" /></div>
