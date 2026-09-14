@@ -145,10 +145,12 @@ class ProjectCsrSyncService {
             p.budgetStatus === 'Grant Disbursed' ||
             (typeof p.budgetStatus === 'string' && p.budgetStatus.includes('Grant Disbursed'));
           const isDeployed = p.status === 'Deployed' || Boolean(p.isDeployed);
-          return isFunded || isDeployed;
+          const isProtoSent = Boolean(p.prototypeSentToGovernment || p.isPrototypeSentToGov || p.sentToGovernment || p.pdfUrl || p.prototypeStatus === 'Approved' || p.prototypeStatus === 'Ready for Deployment');
+          return isFunded || isDeployed || isProtoSent;
         })
         .map((p) => {
-          const isProtoDone = Boolean(p.testingCompleted || p.testingReportPdfUrl || p.prototypeSentToGovernment || p.prototypeStatus === 'Approved' || p.prototypeStatus === 'Ready for Deployment' || p.status === 'Deployed' || p.isDeployed);
+          const isProtoSent = Boolean(p.prototypeSentToGovernment || p.isPrototypeSentToGov || p.sentToGovernment || p.pdfUrl || p.prototypeStatus === 'Approved' || p.prototypeStatus === 'Ready for Deployment');
+          const isProtoDone = Boolean(p.testingCompleted || p.testingReportPdfUrl || isProtoSent || p.status === 'Deployed' || p.isDeployed);
           const isDeployed = Boolean(p.status === 'Deployed' || p.isDeployed);
           return {
             id: p.projectId || p.id.replace('PROP-', ''),
@@ -165,6 +167,8 @@ class ProjectCsrSyncService {
             trlLevel: isDeployed ? 'TRL-9' : (p.trlLevel || (isProtoDone ? 'TRL-7' : 'TRL-4')),
             isProtoDone,
             isDeployed,
+            prototypeSentToGovernment: isProtoSent,
+            handoverDepartment: p.handoverDepartment || '',
             testingCompleted: p.testingCompleted,
             testingReportPdfUrl: p.testingReportPdfUrl,
             testingReportPdfName: p.testingReportPdfName,

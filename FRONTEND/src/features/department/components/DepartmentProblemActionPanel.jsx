@@ -26,16 +26,14 @@ export const DepartmentProblemActionPanel = ({ problem, department, onClose, onU
   const fullAddress = [location.village || problem.village, location.panchayat || problem.panchayat, location.block || problem.block, location.district || problem.district || 'Ranchi', 'Jharkhand'].filter(Boolean).join(', ');
 
   const deptCategory = department?.category || problem.assignedDepartment?.category || '';
-  const isWard = deptCategory === 'Ward Commissioner' || deptCategory === 'Ward' || deptCategory === 'Ward Office' || deptCategory === 'Ward / Field Office';
-  const isBlock = deptCategory === 'Block / Tehsil Office' || deptCategory === 'Gram Panchayat';
-  const isState = deptCategory === 'State Ministry' || deptCategory === 'State Department' || deptCategory === 'State';
+  const isWard = deptCategory === 'Ward Commissioner' || deptCategory === 'Ward' || deptCategory === 'Ward Office' || deptCategory === 'Ward / Field Office' || deptCategory === 'Gram Panchayat';
+  const isBlock = deptCategory === 'Block / Tehsil Office';
+  const isDistrict = deptCategory === 'District Department';
+  const isState = deptCategory === 'State Department';
+  const isMinistry = deptCategory === 'State Ministry' || deptCategory === 'Apex Government' || deptCategory === 'Ministry';
 
-  const higherAuthorityLabel = isWard 
-    ? 'Move to Block Office' 
-    : (isBlock 
-      ? 'Move to District Department' 
-      : (isState ? 'Escalate to Chief Secretary / CMO' : 'Move to State Ministry'));
-  const currentLevel = isWard ? 'WARD' : (isBlock ? 'BLOCK' : (isState ? 'STATE' : 'DISTRICT'));
+  const currentLevel = isMinistry ? 'MINISTRY' : isState ? 'STATE' : isDistrict ? 'DISTRICT' : isBlock ? 'BLOCK' : 'WARD';
+  const higherAuthorityLabel = isMinistry ? 'Move to Apex Secretariat' : isState ? 'Move to State Ministry' : isDistrict ? 'Move to State Ministry' : isBlock ? 'Move to District Department' : 'Move to Block Office';
 
   const handleApprove = async () => {
     try {
@@ -85,44 +83,16 @@ export const DepartmentProblemActionPanel = ({ problem, department, onClose, onU
         const targetDistrict = problem.location?.district || problem.district || department?.district || 'Ranchi';
         
         if (currentLevel === 'WARD') {
-          const blocks = depts.filter(d => d.category === 'Block / Tehsil Office');
-          const targetBlock = blocks.find(b => (b.district || '').toLowerCase() === targetDistrict.toLowerCase()) || blocks[0];
-          if (targetBlock) {
-            payload.assignedBlock = {
-              id: targetBlock.deptId || targetBlock.id || targetBlock._id,
-              blockId: targetBlock.deptId || targetBlock.id || targetBlock._id,
-              name: targetBlock.name,
-              level: 'Block / Tehsil Office',
-              category: 'Block / Tehsil Office',
-              district: targetBlock.district || targetDistrict
-            };
-          }
+          const targetBlock = depts.find(d => d.category === 'Block / Tehsil Office' && (d.district || '').toLowerCase() === targetDistrict.toLowerCase()) || depts.find(d => d.category === 'Block / Tehsil Office');
+          if (targetBlock) payload.assignedBlock = { id: targetBlock.deptId || targetBlock.id || targetBlock._id, blockId: targetBlock.deptId || targetBlock.id || targetBlock._id, name: targetBlock.name, level: 'Block / Tehsil Office', category: 'Block / Tehsil Office', district: targetBlock.district || targetDistrict };
         } else if (currentLevel === 'BLOCK') {
-          const distDepts = depts.filter(d => d.category === 'District Department');
-          const targetDept = distDepts.find(d => (d.district || '').toLowerCase() === targetDistrict.toLowerCase()) || distDepts[0];
-          if (targetDept) {
-            payload.assignedDepartment = {
-              id: targetDept.deptId || targetDept.id || targetDept._id,
-              deptId: targetDept.deptId || targetDept.id || targetDept._id,
-              name: targetDept.name,
-              level: 'District Department',
-              category: 'District Department',
-              district: targetDept.district || targetDistrict
-            };
-          }
+          const targetDept = depts.find(d => d.category === 'District Department' && (d.district || '').toLowerCase() === targetDistrict.toLowerCase()) || depts.find(d => d.category === 'District Department');
+          if (targetDept) payload.assignedDepartment = { id: targetDept.deptId || targetDept.id || targetDept._id, deptId: targetDept.deptId || targetDept.id || targetDept._id, name: targetDept.name, level: 'District Department', category: 'District Department', district: targetDept.district || targetDistrict };
         } else if (currentLevel === 'DISTRICT' || currentLevel === 'STATE') {
-          const stateDepts = depts.filter(d => d.category === 'State Ministry');
-          const targetState = stateDepts[0];
-          if (targetState) {
-            payload.assignedDepartment = {
-              id: targetState.deptId || targetState.id || targetState._id,
-              deptId: targetState.deptId || targetState.id || targetState._id,
-              name: targetState.name,
-              level: 'State Ministry',
-              category: 'State Ministry',
-              district: targetState.district || targetDistrict
-            };
-          }
+          const targetState = depts.find(d => d.category === 'State Ministry' || d.category === 'State Department');
+          if (targetState) payload.assignedDepartment = { id: targetState.deptId || targetState.id || targetState._id, deptId: targetState.deptId || targetState.id || targetState._id, name: targetState.name, level: targetState.category || 'State Ministry', category: targetState.category || 'State Ministry', district: targetState.district || targetDistrict };
+        } else if (currentLevel === 'MINISTRY') {
+          payload.assignedDepartment = { id: 'DEPT-JH-APEX', deptId: 'DEPT-JH-APEX', name: 'Apex Government / Cabinet Secretariat', level: 'Apex Government', category: 'Apex Government', district: 'Ranchi' };
         }
       } catch (err) {
         console.error('Failed to fetch dynamic department for escalation', err);

@@ -42,7 +42,7 @@ export const ReadonlyTeamTable = ({
                   <span>Leader: {leader}</span>
                 </span>
               )}
-              <span>&bull; Faculty Mentor: {faculty?.name || 'Dr. Binod Kumar'}</span>
+              <span>&bull; Faculty Mentor: {faculty?.name || 'Faculty Mentor'}</span>
             </p>
           </div>
         </div>

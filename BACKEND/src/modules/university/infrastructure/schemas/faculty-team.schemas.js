@@ -20,6 +20,8 @@ export const universityFacultySchema = new mongoose.Schema(
     availabilityStatus: { type: String, enum: ['Available', 'In Project', 'On Leave', 'Inactive'], default: 'Available' },
     bio: { type: String, default: '' },
     passwordHash: { type: String, default: null },
+    password: { type: String, default: null },
+    generatedPassword: { type: String, default: null },
     userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null, index: true },
     assignedChallenges: [{ challengeId: String, title: String, role: { type: String, default: 'Primary Mentor' } }],
     status: { type: String, enum: ['Active', 'Inactive', 'Removed'], default: 'Active' },

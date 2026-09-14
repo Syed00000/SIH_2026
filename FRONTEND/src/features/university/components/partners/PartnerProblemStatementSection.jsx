@@ -18,7 +18,7 @@ export const PartnerProblemStatementSection = ({
           .filter((p) => p.sentToUniversity || p.prototypeStatus === 'In Review' || p.prototypeStatus === 'Approved')
           .map((p) => ({
             id: p.projectId || p.id, title: p.title, problemStatement: p.problemStatement || p.title,
-            domain: p.domain || 'University R&D', facultyName: p.leadMentor || p.facultyMentor?.name || 'Dr. Binod Kumar',
+            domain: p.domain || 'University R&D', facultyName: p.leadMentor || p.facultyMentor?.name || 'Faculty Mentor',
             studentTeam: p.studentTeam || 'Student Squad', studentLead: p.studentLead || 'Lead',
             prototypeData: p.prototypeData, pdfUrl: p.pdfUrl || p.prototypeData?.pdfUrl,
             pdfName: p.pdfName || p.prototypeData?.pdfName || 'Prototype_Report.pdf',
@@ -168,7 +168,7 @@ export const PartnerProblemStatementSection = ({
           <div className="flex items-center justify-between pt-1 border-t border-slate-100">
             <div className="flex items-center space-x-1.5 text-[11px] text-slate-600 font-medium">
               <UserCheck className="w-3.5 h-3.5 text-[#007A61]" />
-              <span>Mentor: <strong className="text-slate-800">{activeProblem.facultyName || 'Dr. Binod Kumar'}</strong></span>
+              <span>Mentor: <strong className="text-slate-800">{activeProblem.facultyName || 'Faculty Mentor'}</strong></span>
             </div>
 
             {isApproved ? (

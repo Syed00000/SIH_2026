@@ -5,7 +5,6 @@ import { useNodalOverviewData } from './overview/hooks/useNodalOverviewData.js';
 import { NodalWelcomeBanner } from './overview/NodalWelcomeBanner.jsx';
 import { NodalUnassignedQueueCard } from './overview/NodalUnassignedQueueCard.jsx';
 import { NodalProblemDomainAnalyticsCard } from './overview/NodalProblemDomainAnalyticsCard.jsx';
-import { NodalProcessWorkflowCard } from './overview/NodalProcessWorkflowCard.jsx';
 import { SkeletonStatCards, SkeletonOverviewPanels } from './common/NodalSkeletonLoaders.jsx';
 
 export const NodalOverview = ({ onNavigateChallenges, onNavigateUniversities, nodalDistrict = '' }) => {
@@ -56,9 +55,6 @@ export const NodalOverview = ({ onNavigateChallenges, onNavigateUniversities, no
           />
         </div>
       )}
-
-      {/* 4. State Triage Workflow Guide */}
-      <NodalProcessWorkflowCard />
 
       {/* Triage / Assignment Modal */}
       {isAssignModalOpen && (

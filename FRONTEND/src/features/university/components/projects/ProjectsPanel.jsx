@@ -9,7 +9,7 @@ import { ProjectEditModal } from './ProjectEditModal.jsx';
 import { AssignFacultyMentorModal } from './AssignFacultyMentorModal.jsx';
 import { universityApiService } from '../../services/universityApiService.js';
 
-export const ProjectsPanel = ({ onNavigateTab }) => {
+export const ProjectsPanel = ({ onNavigateTab, universityCode = 'CUJ-099' }) => {
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedProject, setSelectedProject] = useState(null);
@@ -23,14 +23,16 @@ export const ProjectsPanel = ({ onNavigateTab }) => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingProject, setEditingProject] = useState(null);
 
+  const code = universityCode || 'CUJ-099';
+
   const fetchProjects = async () => {
     setLoading(true);
-    const data = await universityApiService.getProjects('RU001');
+    const data = await universityApiService.getProjects(code);
     setProjects(Array.isArray(data) ? data : []);
     setLoading(false);
   };
 
-  useEffect(() => { fetchProjects(); }, []);
+  useEffect(() => { fetchProjects(); }, [code]);
 
   const totalCount = projects.length;
   const deployedCount = projects.filter((p) => p.status === 'Deployed' || p.isDeployed || p.isLocked).length;
@@ -40,7 +42,7 @@ export const ProjectsPanel = ({ onNavigateTab }) => {
   const facultyOptions = Array.from(new Set(projects.map((p) => p.facultyMentor?.name || p.leadMentor).filter(Boolean)));
 
   const handleUpdateProject = async (updatedProj) => {
-    await universityApiService.updateProject(updatedProj.projectId || updatedProj._id, updatedProj);
+    await universityApiService.updateProject(updatedProj.projectId || updatedProj._id, updatedProj, code);
     setProjects((prev) => prev.map((p) => (p.projectId === updatedProj.projectId ? updatedProj : p)));
     if (selectedProject?.projectId === updatedProj.projectId) setSelectedProject(updatedProj);
   };

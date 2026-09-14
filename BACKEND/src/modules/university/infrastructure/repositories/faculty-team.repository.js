@@ -3,6 +3,7 @@ import { UniversityFaculty, UniversityTeam } from '../model.js';
 import User from '../../../users/infrastructure/model.js';
 import { findUniversityIdentity } from '../helpers/lookup.helper.js';
 import { syncFacultyUserAccount } from '../helpers/faculty-user-sync.helper.js';
+import { teamRepository } from './team.repository.js';
 
 export class FacultyTeamRepository {
   async getFacultyByUniversity(universityCode) {
@@ -62,6 +63,8 @@ export class FacultyTeamRepository {
             researchAreas: facultyData.researchAreas || ['Artificial Intelligence', 'Smart Governance'],
             availabilityStatus: facultyData.availabilityStatus || 'Available',
             bio: facultyData.bio || '',
+            password,
+            generatedPassword: password,
             passwordHash,
             userId: userAccount?._id || userAccount?.id || null,
             status: 'Active'
@@ -94,10 +97,12 @@ export class FacultyTeamRepository {
 
       if (updated?.email && updateData.password) {
         const passwordHash = await bcrypt.hash(updateData.password, 12);
-        await UniversityFaculty.findByIdAndUpdate(updated._id, { $set: { passwordHash } });
+        await UniversityFaculty.findByIdAndUpdate(updated._id, {
+          $set: { passwordHash, password: updateData.password, generatedPassword: updateData.password }
+        });
         await User.findOneAndUpdate(
           { email: updated.email.toLowerCase().trim() },
-          { $set: { passwordHash } }
+          { $set: { passwordHash, generatedPassword: updateData.password } }
         ).catch(() => {});
       }
 
@@ -176,25 +181,10 @@ export class FacultyTeamRepository {
     return { success: true, facultyId };
   }
 
-  async getTeamsByUniversity(universityCode) {
-    const { teamRepository } = await import('./team.repository.js');
-    return teamRepository.getTeamsByUniversity(universityCode);
-  }
-
-  async createTeam(universityCode, teamData) {
-    const { teamRepository } = await import('./team.repository.js');
-    return teamRepository.createTeam(universityCode, teamData);
-  }
-
-  async updateTeam(universityCode, teamId, updateData) {
-    const { teamRepository } = await import('./team.repository.js');
-    return teamRepository.updateTeam(universityCode, teamId, updateData);
-  }
-
-  async deleteTeam(universityCode, teamId) {
-    const { teamRepository } = await import('./team.repository.js');
-    return teamRepository.deleteTeam(universityCode, teamId);
-  }
+  getTeamsByUniversity(code) { return teamRepository.getTeamsByUniversity(code); }
+  createTeam(code, data) { return teamRepository.createTeam(code, data); }
+  updateTeam(code, id, data) { return teamRepository.updateTeam(code, id, data); }
+  deleteTeam(code, id) { return teamRepository.deleteTeam(code, id); }
 }
 
 export const facultyTeamRepository = new FacultyTeamRepository();

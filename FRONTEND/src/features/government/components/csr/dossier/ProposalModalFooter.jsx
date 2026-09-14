@@ -56,7 +56,7 @@ export const ProposalModalFooter = ({
         <button
           type="button"
           onClick={onClose}
-          className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-700 border border-slate-200 hover:bg-slate-50 cursor-pointer transition-all shadow-2xs"
+          className="px-4 py-2 rounded-md text-xs font-bold text-slate-700 border border-slate-300 hover:bg-slate-50 cursor-pointer transition-all shadow-2xs"
         >
           Close Dossier
         </button>
@@ -65,7 +65,7 @@ export const ProposalModalFooter = ({
           <button
             type="button"
             onClick={handleSaveStatus}
-            className="px-4 py-2 rounded-xl text-xs font-bold bg-slate-900 hover:bg-slate-800 text-white cursor-pointer shadow-2xs transition-all"
+            className="px-4 py-2 rounded-md text-xs font-bold bg-slate-900 hover:bg-slate-800 text-white cursor-pointer shadow-2xs transition-all"
           >
             Save Notes
           </button>
@@ -75,10 +75,10 @@ export const ProposalModalFooter = ({
           type="button"
           disabled={isProcessing || isFullyDisbursed}
           onClick={handleRequestRevision}
-          className={`px-4 py-2 rounded-xl text-xs font-bold shadow-2xs flex items-center space-x-1.5 transition-all ${
+          className={`px-4 py-2 rounded-md text-xs font-bold shadow-2xs flex items-center space-x-1.5 transition-all ${
             isFullyDisbursed
               ? 'bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed'
-              : 'bg-amber-500 hover:bg-amber-600 text-white cursor-pointer'
+              : 'bg-amber-600 hover:bg-amber-700 text-white cursor-pointer'
           }`}
         >
           <RotateCcw className="w-3.5 h-3.5" />
@@ -89,7 +89,7 @@ export const ProposalModalFooter = ({
           <button
             type="button"
             disabled
-            className="px-5 py-2 rounded-xl text-xs font-extrabold bg-slate-100 text-slate-500 border border-slate-300 flex items-center space-x-1.5 cursor-not-allowed shadow-2xs"
+            className="px-5 py-2 rounded-md text-xs font-extrabold bg-slate-100 text-slate-500 border border-slate-300 flex items-center space-x-1.5 cursor-not-allowed shadow-2xs"
           >
             <Lock className="w-4 h-4 text-slate-400" />
             <span>Approved Amount Completed</span>
@@ -98,7 +98,7 @@ export const ProposalModalFooter = ({
           <button
             type="button"
             onClick={handleLowFundClick}
-            className="px-5 py-2 rounded-xl text-xs font-extrabold bg-rose-600 hover:bg-rose-700 text-white cursor-pointer shadow-2xs flex items-center space-x-1.5 transition-all ring-2 ring-rose-400"
+            className="px-5 py-2 rounded-md text-xs font-extrabold bg-rose-600 hover:bg-rose-700 text-white cursor-pointer shadow-2xs flex items-center space-x-1.5 transition-all ring-2 ring-rose-400"
             title="State Grant Treasury has ₹ 0 available"
           >
             <AlertTriangle className="w-4 h-4 text-white shrink-0" />
@@ -109,7 +109,7 @@ export const ProposalModalFooter = ({
             type="button"
             disabled={isProcessing || currentReleaseAmt <= 0}
             onClick={handleDisburseSecondEmi}
-            className="px-5 py-2 rounded-xl text-xs font-extrabold bg-blue-600 hover:bg-blue-700 text-white cursor-pointer shadow-2xs flex items-center space-x-1.5 transition-all hover:shadow-xs disabled:opacity-50"
+            className="px-5 py-2 rounded-md text-xs font-extrabold bg-blue-600 hover:bg-blue-700 text-white cursor-pointer shadow-2xs flex items-center space-x-1.5 transition-all hover:shadow-xs disabled:opacity-50"
           >
             <Coins className="w-4 h-4" />
             <span>
@@ -125,7 +125,7 @@ export const ProposalModalFooter = ({
             type="button"
             disabled={isProcessing}
             onClick={handleApproveAndSanction}
-            className="px-5 py-2 rounded-xl text-xs font-bold bg-[#007A61] hover:bg-[#006650] text-white cursor-pointer shadow-2xs flex items-center space-x-1.5 transition-all"
+            className="px-5 py-2 rounded-md text-xs font-bold bg-[#007A61] hover:bg-[#006650] text-white cursor-pointer shadow-2xs flex items-center space-x-1.5 transition-all"
           >
             <ShieldCheck className="w-4 h-4" />
             <span>Approve & Sanction Grant</span>

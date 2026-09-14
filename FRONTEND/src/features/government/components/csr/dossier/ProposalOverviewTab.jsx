@@ -37,9 +37,9 @@ export const ProposalOverviewTab = ({
     <div className="space-y-4 text-xs select-none">
       {/* Supplemental Faculty Grant Banner */}
       {additionalAmountNum > 0 && !isFullyDisbursed && (
-        <div className="bg-amber-50 border border-amber-300 rounded-xl p-3.5 flex items-center justify-between shadow-2xs">
+        <div className="bg-amber-50 border border-amber-300 rounded-md p-3.5 flex items-center justify-between shadow-2xs">
           <div className="flex items-center space-x-2.5">
-            <div className="w-8 h-8 rounded-lg bg-amber-500 text-white flex items-center justify-center font-black shrink-0 text-sm">
+            <div className="w-8 h-8 rounded-sm bg-amber-500 text-white flex items-center justify-center font-black shrink-0 text-sm">
               +₹
             </div>
             <div>
@@ -51,7 +51,7 @@ export const ProposalOverviewTab = ({
               </p>
             </div>
           </div>
-          <span className="px-2.5 py-1 bg-amber-600 text-white font-mono text-[10px] font-extrabold rounded shrink-0">
+          <span className="px-2 py-0.5 bg-amber-600 text-white font-mono text-[10px] font-extrabold rounded-xs shrink-0">
             REVISED DPR GRANT
           </span>
         </div>
@@ -59,9 +59,9 @@ export const ProposalOverviewTab = ({
 
       {/* 100% Fully Disbursed Status Banner */}
       {isFullyDisbursed && (
-        <div className="bg-emerald-50 border border-emerald-300 rounded-xl p-3.5 flex items-center justify-between shadow-2xs">
+        <div className="bg-emerald-50 border border-emerald-300 rounded-md p-3.5 flex items-center justify-between shadow-2xs">
           <div className="flex items-center space-x-2.5">
-            <div className="w-8 h-8 rounded-lg bg-emerald-600 text-white flex items-center justify-center font-black shrink-0">
+            <div className="w-8 h-8 rounded-sm bg-emerald-600 text-white flex items-center justify-center font-black shrink-0">
               ✓
             </div>
             <div>
@@ -73,7 +73,7 @@ export const ProposalOverviewTab = ({
               </p>
             </div>
           </div>
-          <span className="px-2.5 py-1 bg-emerald-600 text-white font-mono text-[10px] font-extrabold rounded shrink-0">
+          <span className="px-2 py-0.5 bg-emerald-600 text-white font-mono text-[10px] font-extrabold rounded-xs shrink-0">
             CORPUS FULLY RELEASED
           </span>
         </div>
@@ -81,9 +81,9 @@ export const ProposalOverviewTab = ({
 
       {/* University Tranche 2 EMI Request Banner */}
       {!isFullyDisbursed && trancheReq?.status === 'Pending' && (
-        <div className="bg-blue-50 border border-blue-200 rounded-xl p-3.5 flex items-center justify-between shadow-2xs">
+        <div className="bg-blue-50 border border-blue-200 rounded-md p-3.5 flex items-center justify-between shadow-2xs">
           <div className="flex items-center space-x-2.5">
-            <div className="w-8 h-8 rounded-lg bg-blue-600 text-white flex items-center justify-center font-black shrink-0">
+            <div className="w-8 h-8 rounded-sm bg-blue-600 text-white flex items-center justify-center font-black shrink-0">
               ₹
             </div>
             <div>
@@ -95,7 +95,7 @@ export const ProposalOverviewTab = ({
               </p>
             </div>
           </div>
-          <span className="px-2.5 py-1 bg-blue-600 text-white font-mono text-[10px] font-extrabold rounded shrink-0">
+          <span className="px-2 py-0.5 bg-blue-600 text-white font-mono text-[10px] font-extrabold rounded-xs shrink-0">
             ACTION REQUIRED
           </span>
         </div>
@@ -103,16 +103,16 @@ export const ProposalOverviewTab = ({
 
       {/* 3 Metric Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-        <div className="bg-white border border-slate-200/90 rounded-xl p-3.5 shadow-2xs space-y-1">
-          <span className="text-[10px] uppercase font-extrabold text-slate-400 block tracking-wider">
+        <div className="bg-white border border-slate-300 rounded-md p-4 shadow-2xs space-y-1">
+          <span className="text-[10px] uppercase font-bold text-slate-500 block tracking-wider">
             Approved DPR Budget
           </span>
           <span className="text-base font-black font-mono text-slate-900 block mt-0.5">
             {budgetDisplay}
           </span>
           {additionalAmountNum > 0 ? (
-            <span className="text-[10.5px] font-black text-amber-800 bg-amber-100/90 border border-amber-300 px-1.5 py-0.5 rounded inline-block mt-0.5">
-              +₹ {additionalAmountNum.toLocaleString('en-IN')} Extra from Faculty
+            <span className="text-[10.5px] font-bold text-amber-800 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-sm inline-block mt-0.5">
+              +₹ {additionalAmountNum.toLocaleString('en-IN')} Faculty Revision
             </span>
           ) : (
             <span className="text-[11px] text-slate-500 font-medium block">
@@ -121,27 +121,27 @@ export const ProposalOverviewTab = ({
           )}
         </div>
 
-        <div className="bg-white border border-slate-200/90 rounded-xl p-3.5 shadow-2xs space-y-1">
-          <span className="text-[10px] uppercase font-extrabold text-slate-400 block tracking-wider">
+        <div className="bg-white border border-slate-300 rounded-md p-4 shadow-2xs space-y-1">
+          <span className="text-[10px] uppercase font-bold text-slate-500 block tracking-wider">
             Disbursed to Escrow
           </span>
           <span className="text-base font-black font-mono text-[#007A61] block mt-0.5">
             {disbursedDisplay}
           </span>
           <span className="text-[11px] text-slate-500 font-medium block">
-            {rawDisbursed > 0 ? 'Tranche Released & Credited ✓' : 'Tranche Balance: Available'}
+            {rawDisbursed > 0 ? 'PFMS Escrow Transfer Credited' : 'Tranche Allocation Available'}
           </span>
         </div>
 
-        <div className="bg-white border border-slate-200/90 rounded-xl p-3.5 shadow-2xs space-y-1">
-          <span className="text-[10px] uppercase font-extrabold text-slate-400 block tracking-wider">
-            Diligence Status
+        <div className="bg-white border border-slate-300 rounded-md p-4 shadow-2xs space-y-1">
+          <span className="text-[10px] uppercase font-bold text-slate-500 block tracking-wider">
+            Technical Diligence
           </span>
-          <span className="text-base font-bold text-slate-900 block mt-0.5">
-            {proposal.dueDiligence || 'Passed (All Checks)'}
+          <span className="text-base font-extrabold text-[#007A61] block mt-0.5">
+            {proposal.dueDiligence || 'Technical Advisory Clearance'}
           </span>
           <span className="text-[11px] text-slate-500 font-medium block">
-            Verified by State Council
+            Approved by State Advisory Council
           </span>
         </div>
       </div>
@@ -158,30 +158,30 @@ export const ProposalOverviewTab = ({
       />
 
       {/* Challenge Dossier Summary */}
-      <div className="border border-slate-200/90 rounded-xl p-4 bg-slate-50/60 space-y-2 shadow-2xs">
-        <h4 className="text-xs font-extrabold text-slate-900 uppercase tracking-wider">Problem Description & Context</h4>
+      <div className="border border-slate-300 rounded-md p-4 bg-slate-50/70 space-y-2 shadow-2xs">
+        <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider">Problem Statement &amp; Research Context</h4>
         <p className="text-slate-800 font-semibold text-xs leading-relaxed">{proposal.projectTitle || proposal.title || 'Societal Problem Resolution Project'}</p>
-        <div className="pt-2 border-t border-slate-200/60 flex flex-wrap gap-4 text-xs text-slate-600">
-          <span><strong>Lead Investigator:</strong> {proposal.leadMentor || proposal.teamLead || 'Dr. Amitabh Verma'}</span>
-          <span><strong>Institution:</strong> {proposal.institutionName || 'Ranchi University (RU001)'}</span>
-          <span><strong>District:</strong> {proposal.district || 'Ranchi'}</span>
+        <div className="pt-2 border-t border-slate-200 flex flex-wrap gap-4 text-xs text-slate-600">
+          <span><strong>Lead Investigator:</strong> {proposal.leadMentor || proposal.teamLead || 'Faculty Mentor'}</span>
+          <span><strong>Nodal Institution:</strong> {proposal.institutionName || 'Ranchi University (CUJ-099)'}</span>
+          <span><strong>District Jurisdiction:</strong> {proposal.district || 'Ranchi, Jharkhand'}</span>
         </div>
         {additionalAmountNum > 0 && (
-          <div className="mt-2.5 pt-2 border-t border-amber-200 flex flex-wrap items-center justify-between gap-2 bg-amber-50/80 p-2.5 rounded-lg">
+          <div className="mt-2.5 pt-2 border-t border-amber-200 flex flex-wrap items-center justify-between gap-2 bg-amber-50/80 p-2.5 rounded-md">
             <span className="font-extrabold text-xs text-amber-950">Faculty Supplemental Grant Allocation</span>
-            <span className="font-mono font-black text-amber-900 bg-amber-100 px-2 py-0.5 rounded border border-amber-300 text-xs">+₹ {additionalAmountNum.toLocaleString('en-IN')}</span>
+            <span className="font-mono font-black text-amber-900 bg-amber-100 px-2 py-0.5 rounded-sm border border-amber-300 text-xs">+₹ {additionalAmountNum.toLocaleString('en-IN')}</span>
           </div>
         )}
       </div>
 
-      {/* Statutory Registrations */}
-      <div className="border border-slate-200/90 rounded-xl p-4 bg-white space-y-2 shadow-2xs">
-        <h4 className="text-xs font-extrabold text-slate-900 uppercase tracking-wider">Statutory Registrations & Governance</h4>
+      {/* Statutory Registrations & Governance */}
+      <div className="border border-slate-300 rounded-md p-4 bg-white space-y-2.5 shadow-2xs">
+        <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider">Institutional Accreditation &amp; Governance</h4>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
-          <div><span className="text-[10px] text-slate-400 font-bold block">MCA CSR-1 NO.</span><span className="font-mono font-extrabold text-slate-800">CSR00018921</span></div>
-          <div><span className="text-[10px] text-slate-400 font-bold block">80G / 12A STATUS</span><span className="font-extrabold text-slate-800">80G-VALIDATED</span></div>
-          <div><span className="text-[10px] text-slate-400 font-bold block">BOARD APPROVAL</span><span className="font-extrabold text-[#007A61]">Approved (A-Grade)</span></div>
-          <div><span className="text-[10px] text-slate-400 font-bold block">MOU STATUS</span><span className="font-extrabold text-slate-800">MoU Executed (Active)</span></div>
+          <div><span className="text-[10px] text-slate-400 font-bold block">INSTITUTION TYPE</span><span className="font-semibold text-slate-800">State University</span></div>
+          <div><span className="text-[10px] text-slate-400 font-bold block">AISHE / NIRF CODE</span><span className="font-mono font-bold text-slate-800">CUJ-099 (Jharkhand)</span></div>
+          <div><span className="text-[10px] text-slate-400 font-bold block">NAAC ACCREDITATION</span><span className="font-bold text-[#007A61]">Grade 'A' (Valid 2028)</span></div>
+          <div><span className="text-[10px] text-slate-400 font-bold block">FRAMEWORK MOU</span><span className="font-semibold text-slate-800">Executed &amp; Active</span></div>
         </div>
       </div>
     </div>
