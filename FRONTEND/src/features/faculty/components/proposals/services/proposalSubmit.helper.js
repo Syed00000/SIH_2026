@@ -10,6 +10,7 @@ export const saveProposalDraft = async ({ currentProject, totalCalculatedBudget,
   const baseline = Number(String(currentProject.baselineBudget || currentProject.originalBudget || '80000').replace(/[^\d]/g, '')) || 80000;
   const additionalAmount = Math.max(0, totalCalculatedBudget - baseline);
 
+  const uniCode = currentProject.universityCode || 'CUJ-099';
   return universityApiService.updateProject(currentProject.projectId || currentProject._id, {
     ...currentProject,
     methodology,
@@ -19,7 +20,7 @@ export const saveProposalDraft = async ({ currentProject, totalCalculatedBudget,
     proposedBudget: budgetFormatted,
     additionalAmount,
     baselineBudget: baseline
-  });
+  }, uniCode);
 };
 
 export const submitProposalFinal = async ({ currentProject, totalCalculatedBudget, budgetItems, methodology, milestoneStages }) => {
@@ -43,6 +44,7 @@ export const submitProposalFinal = async ({ currentProject, totalCalculatedBudge
       })
     : [];
 
+  const uniCode = currentProject.universityCode || 'CUJ-099';
   return universityApiService.updateProject(currentProject.projectId || currentProject._id, {
     ...currentProject,
     adminRemarks: '',
@@ -60,5 +62,5 @@ export const submitProposalFinal = async ({ currentProject, totalCalculatedBudge
     milestones: updatedMilestones,
     milestonesCompleted: 3,
     progressPercentage: 43
-  });
+  }, uniCode);
 };

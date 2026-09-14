@@ -2,11 +2,11 @@ import React from 'react';
 import { ArrowLeft, X, Printer, FileText, Layers, IndianRupee, DollarSign, ShieldCheck } from 'lucide-react';
 
 const TABS = [
-  { id: 'overview', label: '1. Executive Abstract', icon: FileText },
-  { id: 'methodology', label: '2. Technical Architecture', icon: Layers },
-  { id: 'budget', label: '3. DPR Budget Table', icon: IndianRupee },
-  { id: 'payments', label: '4. Tranches & Payments', icon: DollarSign },
-  { id: 'statutory', label: '5. Due Diligence & MoU', icon: ShieldCheck }
+  { id: 'overview', label: 'Executive Summary', icon: FileText },
+  { id: 'methodology', label: 'Technical Scope & Methodology', icon: Layers },
+  { id: 'budget', label: 'DPR Line-Item Budget', icon: IndianRupee },
+  { id: 'payments', label: 'Tranches & PFMS Disbursals', icon: DollarSign },
+  { id: 'statutory', label: 'Statutory & Governance', icon: ShieldCheck }
 ];
 
 export const ProposalModalHeader = ({
@@ -18,37 +18,37 @@ export const ProposalModalHeader = ({
 }) => {
   return (
     <>
-      <div className="px-6 py-4 bg-gradient-to-r from-slate-950 via-slate-900 to-slate-950 text-white flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0 border-b border-slate-800">
+      <div className="px-6 py-4 bg-white text-slate-900 flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0 border-b border-slate-200">
         <div className="flex-1 pr-4 min-w-0">
           <div className="flex items-center space-x-3 mb-2">
             <button
               type="button"
               onClick={onClose}
-              className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-black transition-all border border-white/20 cursor-pointer shadow-xs"
+              className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-md bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold transition-all border border-slate-300 cursor-pointer shadow-2xs"
             >
-              <ArrowLeft className="w-4 h-4 text-emerald-300" />
+              <ArrowLeft className="w-4 h-4 text-[#007A61]" />
               <span>Back to Proposals</span>
             </button>
-            <span className="text-white/30 hidden sm:inline">|</span>
-            <span className="text-[11px] font-bold text-slate-400 hidden sm:inline uppercase tracking-wider">
+            <span className="text-slate-300 hidden sm:inline">|</span>
+            <span className="text-[11px] font-bold text-slate-500 hidden sm:inline uppercase tracking-wider">
               Department of Higher &amp; Technical Education • Government of Jharkhand
             </span>
           </div>
 
           <div className="flex flex-wrap items-center gap-2 mb-1.5">
-            <span className="font-mono font-black text-xs px-2.5 py-0.5 bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 rounded-lg">
+            <span className="font-mono font-black text-xs px-2.5 py-0.5 bg-emerald-50 text-[#007A61] border border-emerald-300 rounded-md">
               {proposal.id}
             </span>
-            <span className="font-extrabold text-xs text-slate-200">{proposal.institutionName}</span>
-            <span className="text-slate-500">•</span>
-            <span className="text-xs text-slate-300">{proposal.sourceScheme}</span>
+            <span className="font-extrabold text-xs text-slate-800">{proposal.institutionName}</span>
+            <span className="text-slate-400">•</span>
+            <span className="text-xs text-slate-600 font-semibold">{proposal.sourceScheme}</span>
             {Number(proposal.additionalAmount) > 0 && (
-              <span className="font-bold text-[10.5px] px-2 py-0.5 bg-amber-500/20 text-amber-300 border border-amber-500/40 rounded-md">
+              <span className="font-bold text-[10.5px] px-2 py-0.5 bg-amber-50 text-amber-800 border border-amber-300 rounded-md">
                 +₹ {Number(proposal.additionalAmount).toLocaleString('en-IN')} Extra Grant
               </span>
             )}
           </div>
-          <h2 className="text-sm sm:text-base font-extrabold text-white tracking-tight line-clamp-1">
+          <h2 className="text-sm sm:text-base font-black text-slate-900 tracking-tight line-clamp-1">
             {proposal.projectTitle || proposal.title || 'Societal Problem Resolution Project'}
           </h2>
         </div>
@@ -57,16 +57,16 @@ export const ProposalModalHeader = ({
           <button
             type="button"
             onClick={handlePrintSanctionOrder}
-            className="px-3 py-1.5 rounded-xl border border-white/15 bg-white/10 hover:bg-white/20 text-white flex items-center space-x-1.5 text-xs font-bold cursor-pointer transition-all shadow-2xs"
+            className="px-3 py-1.5 rounded-md border border-slate-300 bg-white hover:bg-slate-50 text-slate-800 flex items-center space-x-1.5 text-xs font-bold cursor-pointer transition-all shadow-2xs"
           >
-            <Printer className="w-3.5 h-3.5 text-emerald-300" />
+            <Printer className="w-3.5 h-3.5 text-[#007A61]" />
             <span className="hidden sm:inline">Sanction Order</span>
           </button>
 
           <button
             type="button"
             onClick={onClose}
-            className="p-1.5 rounded-xl text-slate-400 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+            className="p-1.5 rounded-md text-slate-400 hover:text-slate-800 hover:bg-slate-100 transition-colors cursor-pointer border border-transparent hover:border-slate-200"
             title="Close Panel"
           >
             <X className="w-5 h-5" />
@@ -84,7 +84,7 @@ export const ProposalModalHeader = ({
               onClick={() => setActiveSubTab(tab.id)}
               className={`py-3 px-3.5 border-b-2 flex items-center space-x-2 transition-all cursor-pointer whitespace-nowrap text-xs font-bold -mb-px ${
                 isActive
-                  ? 'border-[#007A61] text-[#007A61] bg-white rounded-t-lg shadow-2xs'
+                  ? 'border-[#007A61] text-[#007A61] bg-white rounded-t-sm shadow-2xs'
                   : 'border-transparent text-slate-500 hover:text-slate-900 hover:border-slate-300'
               }`}
             >

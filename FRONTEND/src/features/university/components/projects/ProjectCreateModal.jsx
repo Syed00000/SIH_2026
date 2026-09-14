@@ -104,7 +104,7 @@ export const ProjectCreateModal = ({ isOpen, onClose, onSave, facultyList = [] }
                 type="text"
                 value={formData.leadMentor}
                 onChange={(e) => setFormData({ ...formData, leadMentor: e.target.value })}
-                placeholder="e.g. Dr. Binod Kumar (or Unassigned)"
+                placeholder="e.g. Faculty Mentor (or Unassigned)"
                 className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:ring-1 focus:ring-[#007A61] focus:bg-white shadow-2xs"
               />
             </div>

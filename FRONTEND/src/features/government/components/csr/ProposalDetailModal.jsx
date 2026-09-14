@@ -132,7 +132,7 @@ export const ProposalDetailModal = ({
 
   return (
     <div className="w-full space-y-4 max-w-7xl mx-auto pb-12 select-none animate-fadeIn text-left">
-      <div className="bg-white border border-slate-200/90 rounded-2xl shadow-sm flex flex-col overflow-hidden transition-all">
+      <div className="bg-white border border-slate-300 rounded-md shadow-sm flex flex-col overflow-hidden transition-all">
         <ProposalModalHeader
           proposal={proposal}
           onClose={onClose}

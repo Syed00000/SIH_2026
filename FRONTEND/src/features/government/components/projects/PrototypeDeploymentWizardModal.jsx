@@ -126,7 +126,7 @@ export const PrototypeDeploymentWizardModal = ({ isOpen, onClose, project, onDep
                   <span className="text-[10.5px] font-extrabold text-emerald-800 bg-emerald-100/80 px-2.5 py-0.5 rounded-full border border-emerald-300">100% Lab Verified (NABL)</span>
                 </div>
                 <div className="grid grid-cols-2 gap-3 text-xs">
-                  <div><span className="text-[10px] font-bold text-slate-400 block uppercase">Lead Faculty Investigator:</span><span className="font-bold text-slate-900">{project.teamLead || 'binod'}</span></div>
+                  <div><span className="text-[10px] font-bold text-slate-400 block uppercase">Lead Faculty Investigator:</span><span className="font-bold text-slate-900">{project.teamLead || project.facultyMentor?.name || 'Faculty Mentor'}</span></div>
                   <div><span className="text-[10px] font-bold text-slate-400 block uppercase">Testing Partner Lab:</span><span className="font-bold text-slate-900">{project.testingPartner || 'Ariba Research Labs'}</span></div>
                 </div>
                 <div><span className="text-[10px] font-bold text-slate-400 block uppercase">Hardware / IoT Specs:</span><p className="text-xs font-semibold text-slate-800 mt-0.5">{project.hardwareSpecs || 'Embedded Microcontroller with LoRaWAN wireless telemetry & environmental sensors.'}</p></div>

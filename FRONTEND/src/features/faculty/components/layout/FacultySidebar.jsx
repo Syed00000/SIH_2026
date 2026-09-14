@@ -32,7 +32,7 @@ export const FacultySidebar = ({
   setIsMobileMenuOpen,
   onLogout,
   universityName = 'Ranchi University',
-  facultyName = 'Dr. Binod Kumar',
+  facultyName = 'Faculty Mentor',
   revisionCount = 0
 }) => {
   return (

@@ -1,11 +1,12 @@
 import React from 'react';
-import { Eye, Rocket, FlaskConical, FileCheck2, ShieldCheck, CheckCircle2, ArrowRight } from 'lucide-react';
+import { Eye, Rocket, FlaskConical, FileCheck2, ShieldCheck, CheckCircle2, ArrowRight, Building2 } from 'lucide-react';
 import { openPdf } from '../../../../shared/utils/openPdf.js';
 
 export const PrototypeListingTable = ({
   projects = [],
   onInspect,
   onOpenDeployWizard,
+  onOpenDeployTerms,
   onAdvanceTrl
 }) => {
   if (projects.length === 0) {
@@ -120,22 +121,35 @@ export const PrototypeListingTable = ({
                     )}
                   </td>
 
-                  {/* Actions: Single View Details button */}
+                  {/* Actions */}
                   <td className="py-3 px-4 text-right whitespace-nowrap">
-                    <button
-                      type="button"
-                      onClick={() => onInspect(p)}
-                      className="px-3 py-1.5 text-xs font-bold text-slate-800 bg-white hover:bg-slate-50 border border-slate-300 rounded-xs transition-all cursor-pointer inline-flex items-center space-x-1.5 shadow-xs hover:border-[#007A61] hover:text-[#007A61]"
-                      title="Open Full Details &amp; Evaluation Panel"
-                    >
-                      <Eye className="w-3.5 h-3.5" />
-                      <span>View Details</span>
-                      {isDeployed && (
-                        <span className="ml-1 text-[10px] font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded-xs border border-emerald-200">
-                          ✓ Deployed
+                    <div className="inline-flex items-center space-x-1.5 justify-end">
+                      <button
+                        type="button"
+                        onClick={() => onInspect(p)}
+                        className="px-2.5 py-1.5 text-xs font-bold text-slate-800 bg-white hover:bg-slate-50 border border-slate-300 rounded-xs transition-all cursor-pointer inline-flex items-center space-x-1 shadow-xs hover:border-[#007A61] hover:text-[#007A61]"
+                        title="View Full Details & Technical Specs"
+                      >
+                        <Eye className="w-3.5 h-3.5" />
+                        <span>Details</span>
+                      </button>
+
+                      {isDeployed ? (
+                        <span className="text-[10px] font-bold text-emerald-800 bg-emerald-50 px-2 py-1 rounded-xs border border-emerald-300">
+                          ✓ Handed Over to Dept
                         </span>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => onOpenDeployTerms ? onOpenDeployTerms(p) : onInspect(p)}
+                          className="px-3 py-1.5 text-xs font-bold text-white bg-[#007A61] hover:bg-[#00604c] rounded-xs transition-all cursor-pointer inline-flex items-center space-x-1.5 shadow-xs"
+                          title="Move / Handover Solution to State Department"
+                        >
+                          <Building2 className="w-3.5 h-3.5 text-emerald-200" />
+                          <span>Move to Department</span>
+                        </button>
                       )}
-                    </button>
+                    </div>
                   </td>
                 </tr>
               );

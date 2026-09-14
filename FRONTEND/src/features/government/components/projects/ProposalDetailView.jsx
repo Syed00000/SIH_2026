@@ -245,7 +245,7 @@ export const ProposalDetailView = ({
               </div>
               <div className="p-3.5 bg-slate-50 rounded-lg border border-slate-200">
                 <span className="text-[10px] font-bold text-slate-400 uppercase block">Student Research Fellows</span>
-                <span className="font-bold text-slate-900 text-sm block mt-0.5">{proposal.studentTeam || 'Binod, Amit Kumar, Priya Kumari'}</span>
+                <span className="font-bold text-slate-900 text-sm block mt-0.5">{proposal.studentTeam || 'Student Research Cohort'}</span>
                 <span className="text-[11px] text-slate-500 font-medium">B.Tech / M.Tech Research Cohort</span>
               </div>
             </div>

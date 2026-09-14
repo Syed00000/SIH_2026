@@ -40,6 +40,10 @@ export async function findUniversityIdentity(identifier) {
     { 'nodalOfficer.email': clean.toLowerCase() }
   ];
 
+  if (clean.toUpperCase() === 'RU001' || clean.toUpperCase() === 'RU') {
+    orConditions.push({ shortName: 'RU' }, { code: 'CUJ-099' }, { name: { $regex: /^ranchi\s+university$/i } });
+  }
+
   if (isObjectId) {
     orConditions.unshift({ _id: clean });
   }
@@ -63,6 +67,11 @@ export async function findUniversityIdentity(identifier) {
     if (code) validSet.add(code);
     if (aisheCode) validSet.add(aisheCode);
     if (id) validSet.add(id);
+    if (code === 'CUJ-099' || uniDoc.shortName === 'RU' || clean.toUpperCase() === 'RU001') {
+      validSet.add('RU001');
+      validSet.add('RU');
+      validSet.add('CUJ-099');
+    }
 
     return {
       id,

@@ -187,7 +187,7 @@ export async function syncBidirectionalProjectApprovals(uniCode = 'RU001') {
               sanctionedBudget: a.sanctionedBudget || a.proposedBudget || '₹ 80,000', proposedBudget: a.proposedBudget || '₹ 80,000',
               budget: a.sanctionedBudget || a.proposedBudget || '₹ 80,000', disbursedAmount: a.disbursedAmount || '₹ 80,000',
               sentToGovernment: true, governmentStatus: 'Under State Evaluation', leadMentor: a.requestedBy || a.faculty?.name || 'Faculty Lead',
-              universityCode: code, trancheRequest: a.trancheRequest || null, progressPercentage: 100, milestonesCompleted: 7, milestonesTotal: 7
+              universityCode: code, trancheRequest: a.trancheRequest || null, progressPercentage: 71, milestonesCompleted: 5, milestonesTotal: 7
             }
           },
           { upsert: true }

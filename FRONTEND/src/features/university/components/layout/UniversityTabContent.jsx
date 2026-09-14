@@ -127,11 +127,11 @@ export const UniversityTabContent = ({
     );
   }
 
-  if (activeTab === 'projects') return <ProjectsPanel onNavigateTab={(tab) => setActiveTab(tab)} />;
-  if (activeTab === 'create-project') return <CreateProjectPanel onBack={() => setActiveTab('projects')} onSuccess={() => setActiveTab('projects')} />;
-  if (activeTab === 'partners') return <IndustryPartnersPanel />;
-  if (activeTab === 'approvals') return <ApprovalsPanel />;
-  if (activeTab === 'reports') return <ReportsPanel />;
+  if (activeTab === 'projects') return <ProjectsPanel onNavigateTab={(tab) => setActiveTab(tab)} universityCode={universityCode} />;
+  if (activeTab === 'create-project') return <CreateProjectPanel onBack={() => setActiveTab('projects')} onSuccess={() => setActiveTab('projects')} universityCode={universityCode} />;
+  if (activeTab === 'partners') return <IndustryPartnersPanel universityCode={universityCode} />;
+  if (activeTab === 'approvals') return <ApprovalsPanel universityCode={universityCode} />;
+  if (activeTab === 'reports') return <ReportsPanel universityCode={universityCode} />;
   if (activeTab === 'notifications') {
     return (
       <UniversityNotificationsPanel

@@ -22,15 +22,24 @@ export const PrototypesEvaluationPanel = () => {
   }, []);
 
   const prototypeProjects = useMemo(() => projects.filter((p) => {
-    const isProtoSent = Boolean(p.prototypeSentToGovernment || p.isPrototypeSentToGov);
-    const isProtoApproved = (p.prototypeStatus === 'Approved' || p.prototypeStatus === 'Ready for Deployment') && isProtoSent;
+    const isProtoSent = Boolean(p.prototypeSentToGovernment || p.isPrototypeSentToGov || p.sentToGovernment || p.pdfUrl || p.prototypeStatus === 'Approved' || p.prototypeStatus === 'Ready for Deployment');
     const isDeployed = p.status === 'Deployed' || Boolean(p.isDeployed);
-    return isProtoSent || isProtoApproved || isDeployed;
+    return isProtoSent || isDeployed;
   }), [projects]);
 
   const showToast = (msg, type = 'success') => {
     setNotification({ msg, type });
     setTimeout(() => setNotification(null), 3500);
+  };
+
+  const handleDeploySuccess = (pId) => {
+    const updated = projectCsrSyncService.deployPrototype(pId);
+    setProjects(updated);
+    if (selectedProjectForModal) {
+      const found = updated.find(x => x.id === pId || x.projectId === pId || x.challengeId === pId);
+      if (found) setSelectedProjectForModal(found);
+    }
+    showToast('Prototype Handed Over to Department & Deployed Statewide!');
   };
 
   const handleAdvanceTrl = async (projectId) => {
@@ -77,13 +86,7 @@ export const PrototypesEvaluationPanel = () => {
           isOpen={Boolean(selectedProjectForTermsModal)}
           onClose={() => setSelectedProjectForTermsModal(null)}
           project={selectedProjectForTermsModal}
-          onDeploySuccess={(pId) => {
-            const updated = projectCsrSyncService.deployPrototype(pId);
-            setProjects(updated);
-            const found = updated.find(x => x.id === pId || x.projectId === pId || x.challengeId === pId);
-            if (found) setSelectedProjectForModal(found);
-            showToast('Prototype Deployed & Citizen Alert Dispatched!');
-          }}
+          onDeploySuccess={handleDeploySuccess}
         />
       </div>
     );
@@ -160,18 +163,36 @@ export const PrototypesEvaluationPanel = () => {
 
       {/* Main Content */}
       {viewMode === 'list' ? (
-        <PrototypeListingTable projects={filteredProjects} onInspect={(p) => setSelectedProjectForModal(p)} onAdvanceTrl={handleAdvanceTrl} />
+        <PrototypeListingTable
+          projects={filteredProjects}
+          onInspect={(p) => setSelectedProjectForModal(p)}
+          onAdvanceTrl={handleAdvanceTrl}
+          onOpenDeployTerms={(p) => setSelectedProjectForTermsModal(p)}
+        />
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
           {filteredProjects.length === 0 ? (
             <div className="col-span-2 bg-white rounded-xs p-12 text-center border border-slate-200 text-slate-400 shadow-xs">No prototypes match the selected filter.</div>
           ) : (
             filteredProjects.map((prj) => (
-              <PrototypeInteractiveCard key={prj.id} project={prj} onInspect={(p) => setSelectedProjectForModal(p)} onAdvanceTrl={handleAdvanceTrl} />
+              <PrototypeInteractiveCard
+                key={prj.id}
+                project={prj}
+                onInspect={(p) => setSelectedProjectForModal(p)}
+                onAdvanceTrl={handleAdvanceTrl}
+                onOpenDeployTerms={(p) => setSelectedProjectForTermsModal(p)}
+              />
             ))
           )}
         </div>
       )}
+
+      <PrototypeDeploymentTermsModal
+        isOpen={Boolean(selectedProjectForTermsModal)}
+        onClose={() => setSelectedProjectForTermsModal(null)}
+        project={selectedProjectForTermsModal}
+        onDeploySuccess={handleDeploySuccess}
+      />
     </div>
   );
 };

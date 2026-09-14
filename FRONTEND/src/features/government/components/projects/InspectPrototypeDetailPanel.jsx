@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import {
   FlaskConical, Radio, ShieldCheck, Users, Printer, FileCheck2,
-  RotateCcw, Rocket, ChevronLeft, ChevronRight, CheckCircle2, AlertCircle, Send, Lock
+  RotateCcw, Rocket, ChevronLeft, ChevronRight, CheckCircle2, AlertCircle, Send, Lock, Building2
 } from 'lucide-react';
 import { FullPageDetailPanel } from '../../../../shared/components/layout/FullPageDetailPanel.jsx';
 import { openPdf } from '../../../../shared/utils/openPdf.js';
@@ -103,14 +103,14 @@ export const InspectPrototypeDetailPanel = ({ project, onClose, onOpenDeployTerm
               </button>
             )}
             {isApproved ? (
-              <div className="px-5 py-2.5 rounded-xl text-xs font-black bg-emerald-100 text-emerald-900 border border-emerald-300 flex items-center space-x-2 cursor-default select-none shadow-xs">
+              <div className="px-5 py-2.5 rounded-md text-xs font-black bg-emerald-100 text-emerald-900 border border-emerald-300 flex items-center space-x-2 cursor-default select-none shadow-xs">
                 <Lock className="w-4 h-4 text-emerald-800" />
-                <span>✓ Deployed (TRL-9) · Changes Locked</span>
+                <span>✓ Handed Over & Deployed (TRL-9) · Locked</span>
               </div>
             ) : (
-              <button type="button" onClick={() => onOpenDeployTerms?.(project)} className="px-6 py-2.5 rounded-xl text-xs font-black bg-[#007A61] hover:bg-[#00604c] text-white cursor-pointer shadow-md flex items-center space-x-2 transition-all">
-                <Rocket className="w-4 h-4 text-emerald-200" />
-                <span>🚀 Deploy Prototype (TRL-9)</span>
+              <button type="button" onClick={() => onOpenDeployTerms?.(project)} className="px-6 py-2.5 rounded-md text-xs font-black bg-[#007A61] hover:bg-[#00604c] text-white cursor-pointer shadow-md flex items-center space-x-2 transition-all">
+                <Building2 className="w-4 h-4 text-emerald-200" />
+                <span>Move to Department (TRL-9 Handover)</span>
               </button>
             )}
           </div>

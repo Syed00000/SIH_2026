@@ -75,7 +75,7 @@ export const FacultyAddModal = ({
                 required
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                placeholder="e.g. Dr. Binod Kumar"
+                placeholder="e.g. Dr. A. K. Sharma"
                 className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:ring-1 focus:ring-[#007A61] focus:bg-white transition-all shadow-2xs"
               />
             </div>

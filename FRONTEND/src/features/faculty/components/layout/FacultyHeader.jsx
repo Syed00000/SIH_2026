@@ -23,9 +23,9 @@ const relTime = (ts) => {
 };
 
 export const FacultyHeader = ({
-  universityName = 'Ranchi University', facultyName = 'Dr. Binod Kumar', facultyRole = 'Senior Research Scientist',
-  department = 'Electrical & Electronics', notificationCount = 0, notifications = [],
-  onSelectNotification, onViewAllNotifications, onClearNotifications, universityCode = 'RU001', onProfileClick
+  universityName = 'Ranchi University', facultyName = 'Faculty Mentor', facultyRole = 'Associate Professor',
+  department = 'Engineering Department', notificationCount = 0, notifications = [],
+  onSelectNotification, onViewAllNotifications, onClearNotifications, universityCode = 'CUJ-099', onProfileClick
 }) => {
   const [open, setOpen] = useState(false);
   const [notifs, setNotifs] = useState([]);

@@ -116,7 +116,7 @@ export const ProblemStatementSelector = ({
           <div className="flex items-center justify-between text-[10.5px] text-slate-600 font-medium pt-1 border-t border-slate-100">
             <div className="flex items-center space-x-1.5 truncate max-w-[70%]">
               <UserCheck className="w-3.5 h-3.5 text-[#007A61] shrink-0" />
-              <span className="truncate">Faculty Mentor: <strong className="text-slate-800">{selectedItem.facultyName || 'Dr. Binod Kumar'}</strong></span>
+              <span className="truncate">Faculty Mentor: <strong className="text-slate-800">{selectedItem.facultyName || 'Faculty Mentor'}</strong></span>
             </div>
             <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
               Ready for Industry Lab
