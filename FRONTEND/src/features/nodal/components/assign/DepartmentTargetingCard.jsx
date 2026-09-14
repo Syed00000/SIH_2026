@@ -3,14 +3,15 @@ import { Landmark, CheckCircle2, Info, Sparkles } from 'lucide-react';
 
 export const DepartmentTargetingCard = ({
   departments = [],
+  universities = [],
   departmentLevel,
   setDepartmentLevel,
   selectedDeptId,
   setSelectedDeptId,
   aiRecommendedDept
 }) => {
-  // Filter departments based on the selected level/category
-  const filteredDepartments = departments.filter(d => d.category === departmentLevel);
+  const isUniversity = departmentLevel === 'University / HEI';
+  const filteredDepartments = isUniversity ? [] : departments.filter(d => d.category === departmentLevel);
 
   const selectedDeptObj = departments.find(d => (d.deptId || d.id || d._id) === selectedDeptId);
   const selectedDeptName = (selectedDeptObj?.name || '').toLowerCase();
@@ -27,7 +28,7 @@ export const DepartmentTargetingCard = ({
         <div className="flex items-center space-x-2">
           <Landmark className="w-4 h-4 text-[#007A61]" />
           <label className="block text-[11px] font-bold text-slate-800 uppercase tracking-wider">
-            Target Government Department Allocation
+            Target Department & Institutional Allocation
           </label>
         </div>
         {aiRecommendedDept?.name && (
@@ -56,31 +57,47 @@ export const DepartmentTargetingCard = ({
             <option value="Block / Tehsil Office">Block / Tehsil Office</option>
             <option value="Ward Commissioner">Ward Commissioner</option>
             <option value="Gram Panchayat">Gram Panchayat</option>
+            <option value="University / HEI">University / Higher Education Institute (HEI)</option>
           </select>
         </div>
 
         <div>
           <label className="block text-[10.5px] font-bold text-slate-600 mb-1.5">
-            Assign Specific Department
+            {isUniversity ? 'Assign Specific University / HEI' : 'Assign Specific Department'}
           </label>
           <select
             value={selectedDeptId}
             onChange={(e) => setSelectedDeptId(e.target.value)}
             className="w-full border border-slate-300 rounded-lg p-2 text-xs font-semibold text-slate-900 bg-white focus:outline-hidden focus:border-[#007A61] cursor-pointer"
           >
-            <option value="">— Select {departmentLevel} —</option>
-            {filteredDepartments.map((d) => {
-              const id = d.deptId || d.id || d._id;
-              const location = d.district ? `(${d.district})` : '';
-              const isAiMatch = aiDeptName && (d.name || '').toLowerCase().includes(aiDeptName);
-              return (
-                <option key={id} value={id}>
-                  {isAiMatch ? `✨ [AI Match] ` : ''}{d.name} {location}
-                </option>
-              );
-            })}
+            <option value="">— Select {isUniversity ? 'University / HEI' : departmentLevel} —</option>
+            {isUniversity
+              ? universities.map((u) => {
+                  const id = u.code || u.aisheCode || u._id || u.id;
+                  const location = u.district ? `(${u.district})` : '';
+                  return (
+                    <option key={id} value={id}>
+                      {u.name} {location}
+                    </option>
+                  );
+                })
+              : filteredDepartments.map((d) => {
+                  const id = d.deptId || d.id || d._id;
+                  const location = d.district ? `(${d.district})` : '';
+                  const isAiMatch = aiDeptName && (d.name || '').toLowerCase().includes(aiDeptName);
+                  return (
+                    <option key={id} value={id}>
+                      {isAiMatch ? '✨ [AI Match] ' : ''}{d.name} {location}
+                    </option>
+                  );
+                })}
           </select>
-          {filteredDepartments.length === 0 && (
+          {isUniversity && universities.length === 0 && (
+            <p className="text-[10px] text-amber-600 mt-1 font-medium">
+              No registered universities found.
+            </p>
+          )}
+          {!isUniversity && filteredDepartments.length === 0 && (
             <p className="text-[10px] text-amber-600 mt-1 font-medium">
               No departments registered for this level.
             </p>

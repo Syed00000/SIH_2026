@@ -93,3 +93,51 @@ export const getPasswordStrength = (pass) => {
   }
   return { label: 'Strong', width: '100%', color: 'bg-emerald-500' };
 };
+
+export const validateRegisterStep = (step, formData) => {
+  if (step === 1) {
+    if (!formData.role) return 'Please select a registration role.';
+  } else if (step === 2) {
+    if (!formData.fullName.trim()) return 'Full Name is required.';
+    if (!/^[6-9]\d{9}$/.test(formData.mobileNumber)) return 'Invalid 10-digit Indian mobile number.';
+    if (!formData.email.trim() || !formData.email.includes('@')) return 'Invalid email address.';
+    if (formData.password.length < 8) return 'Password must be at least 8 characters long.';
+    if (formData.password !== formData.confirmPassword) return 'Passwords do not match.';
+  } else if (step === 3) {
+    if (formData.role === 'CITIZEN') {
+      if (!formData.district) return 'Please select your District.';
+      if (!formData.blockOrULB) return 'Please select your Block/ULB.';
+    } else if (formData.role === 'UNIVERSITY') {
+      if (!formData.institutionName?.trim()) return 'Institution Name is required.';
+      if (!formData.aisheCode?.trim()) return 'AISHE Code is required.';
+    } else if (formData.role === 'INDUSTRY') {
+      if (!formData.organizationName?.trim()) return 'Organization Name is required.';
+    }
+  }
+  return null;
+};
+
+export const buildRegistrationProfile = (formData) => ({
+  preferredLanguage: formData.preferredLanguage,
+  location:
+    formData.role === 'CITIZEN'
+      ? {
+          district: formData.district,
+          blockOrULB: formData.blockOrULB,
+          panchayatOrWard: formData.panchayatOrWard
+        }
+      : null,
+  institutionName: formData.role === 'UNIVERSITY' ? formData.institutionName : null,
+  aisheCode: formData.role === 'UNIVERSITY' ? formData.aisheCode : null,
+  registrationNumber: formData.role === 'UNIVERSITY' ? formData.registrationNumber : null,
+  institutionType: formData.role === 'UNIVERSITY' ? formData.institutionType : null,
+  nodalOfficerDesignation: formData.role === 'UNIVERSITY' ? formData.nodalOfficerDesignation : null,
+  academicFocusDomains: formData.role === 'UNIVERSITY' ? formData.academicFocusDomains : [],
+  organizationName: formData.role === 'INDUSTRY' ? formData.organizationName : null,
+  entityType: formData.role === 'INDUSTRY' ? formData.entityType : null,
+  cin: formData.role === 'INDUSTRY' ? formData.cin : null,
+  gstin: formData.role === 'INDUSTRY' ? formData.gstin : null,
+  ngoDarpanId: formData.role === 'INDUSTRY' ? formData.ngoDarpanId : null,
+  primaryContactDesignation: formData.role === 'INDUSTRY' ? formData.primaryContactDesignation : null,
+  supportSectors: formData.role === 'INDUSTRY' ? formData.supportSectors : []
+});

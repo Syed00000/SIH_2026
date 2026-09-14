@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { HandCoins, RefreshCw, Send, Siren, Inbox, SendHorizontal, LayoutList } from 'lucide-react';
+import { HandCoins, RefreshCw, Send, Siren, Inbox, SendHorizontal, LayoutList, AlertCircle } from 'lucide-react';
 import grantRequestService from '../../government/services/grantRequestService.js';
 import departmentService from '../../government/services/departmentService.js';
 import { RequestGrantModal } from './RequestGrantModal.jsx';
@@ -11,7 +11,7 @@ import { AllocateFundModal } from './AllocateFundModal.jsx';
 
 export const DepartmentCsrGrantPanel = ({ department }) => {
   const [deptData, setDeptData] = useState(department);
-  const deptId = department?.deptId || department?.id || deptData?.deptId || deptData?.id || '';
+  const deptId = department?.deptId || deptData?.deptId || department?.id || deptData?.id || '';
   const category = deptData?.category || department?.category || 'Administrative Tier';
   const cat = category.toLowerCase();
   const isState = deptId === 'DEPT-JH-STATE' || cat.includes('state') || cat.includes('ministry');
@@ -29,6 +29,13 @@ export const DepartmentCsrGrantPanel = ({ department }) => {
   const [reviewingReq, setReviewingReq] = useState(null);
   const [loading, setLoading] = useState(false);
 
+  useEffect(() => {
+    if (department) {
+      setDeptData(department);
+      setSubTab(isWard ? 'outbound' : isState ? 'inbound' : 'all');
+    }
+  }, [department, isWard, isState]);
+
   const rawDist = deptData?.headquartersLocation || deptData?.district;
   const districtName = (rawDist && isNaN(rawDist)) ? rawDist : 'Ranchi';
 
@@ -37,20 +44,19 @@ export const DepartmentCsrGrantPanel = ({ department }) => {
     try {
       const data = await departmentService.getDepartmentById(deptId);
       if (data) setDeptData(data);
-    } catch {
-      // safe fallback on transient reloads
-    }
+    } catch { /* ignore fallback */ }
   };
 
   const loadRequests = async () => {
     try {
       setLoading(true);
-      if (!isWard && deptId) {
-        const inb = await grantRequestService.getRequests({ targetDeptId: deptId });
+      const queryId = deptData?.deptId || department?.deptId || deptId;
+      if (!isWard && queryId) {
+        const inb = await grantRequestService.getRequests({ targetDeptId: queryId });
         setInboundReqs(Array.isArray(inb) ? inb : []);
       }
-      if (deptId) {
-        const out = await grantRequestService.getRequests({ requesterDeptId: deptId });
+      if (queryId) {
+        const out = await grantRequestService.getRequests({ requesterDeptId: queryId });
         setOutboundReqs(Array.isArray(out) ? out : []);
       }
     } catch (err) { console.warn('Error loading requests:', err); } finally { setLoading(false); }
@@ -59,10 +65,7 @@ export const DepartmentCsrGrantPanel = ({ department }) => {
   useEffect(() => {
     loadDepartment();
     loadRequests();
-    const timer = setInterval(() => {
-      loadDepartment();
-      loadRequests();
-    }, 5000);
+    const timer = setInterval(() => { loadDepartment(); loadRequests(); }, 5000);
     return () => clearInterval(timer);
   }, [deptId]);
 
@@ -73,8 +76,7 @@ export const DepartmentCsrGrantPanel = ({ department }) => {
 
   const inboundWithDir = inboundReqs.map((r) => ({ ...r, direction: 'inbound' }));
   const outboundWithDir = outboundReqs.map((r) => ({ ...r, direction: 'outbound' }));
-  const combinedReqs = [...inboundWithDir, ...outboundWithDir];
-  const displayedRequests = subTab === 'all' ? combinedReqs : subTab === 'inbound' ? inboundWithDir : outboundWithDir;
+  const displayedRequests = subTab === 'all' ? [...inboundWithDir, ...outboundWithDir] : subTab === 'inbound' ? inboundWithDir : outboundWithDir;
 
   const outboundLabel = isState ? 'Requisitions to State Innovation Pool' : isDistrict ? 'Requisitions to State Secretariat' : isBlock ? `Requisitions to ${districtName} District` : 'Outbound Requisitions';
   const allocateButtonLabel = isState ? 'Allocate Fund to District Department' : isDistrict ? 'Allocate Fund to Block' : isBlock ? 'Allocate Fund to Ward' : '';
@@ -96,58 +98,48 @@ export const DepartmentCsrGrantPanel = ({ department }) => {
         </div>
 
         <div className="flex items-center gap-2">
-          {/* Allocate Fund Button for tiers that allocate downward (State, District, Block) */}
           {!isWard && allocateButtonLabel && (
-            <button
-              type="button"
-              onClick={() => setIsAllocateModalOpen(true)}
-              className="flex items-center gap-1.5 px-3.5 py-2 bg-[#007A61] hover:bg-[#006650] text-white text-xs font-bold rounded-xl shadow-xs cursor-pointer transition-all active:scale-95"
-            >
-              <Send className="w-3.5 h-3.5" />
-              <span>{allocateButtonLabel}</span>
+            <button type="button" onClick={() => setIsAllocateModalOpen(true)} className="flex items-center gap-1.5 px-3.5 py-2 bg-[#007A61] hover:bg-[#006650] text-white text-xs font-bold rounded-xl shadow-xs cursor-pointer transition-all active:scale-95">
+              <Send className="w-3.5 h-3.5" /><span>{allocateButtonLabel}</span>
             </button>
           )}
-
           {(isWard || isBlock) && (
-            <button
-              type="button"
-              onClick={() => setIsEmergencyModalOpen(true)}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-rose-700 hover:bg-rose-800 text-white text-xs font-bold rounded-xl shadow-xs cursor-pointer transition-all"
-            >
-              <Siren className="w-3.5 h-3.5 text-rose-200 animate-pulse" />
-              <span>Emergency CSR (SOS)</span>
+            <button type="button" onClick={() => setIsEmergencyModalOpen(true)} className="flex items-center gap-1.5 px-3 py-1.5 bg-rose-700 hover:bg-rose-800 text-white text-xs font-bold rounded-xl shadow-xs cursor-pointer transition-all">
+              <Siren className="w-3.5 h-3.5 text-rose-200 animate-pulse" /><span>Emergency CSR (SOS)</span>
             </button>
           )}
-
-          <button
-            type="button"
-            onClick={() => setIsRequestModalOpen(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold rounded-xl shadow-xs cursor-pointer transition-all active:scale-95"
-          >
-            <Send className="w-3.5 h-3.5" />
-            <span>{isState ? 'Request Fund from State Pool' : 'Request Grant Fund'}</span>
+          <button type="button" onClick={() => setIsRequestModalOpen(true)} className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold rounded-xl shadow-xs cursor-pointer transition-all active:scale-95">
+            <Send className="w-3.5 h-3.5" /><span>{isState ? 'Request Fund from State Pool' : 'Request Grant Fund'}</span>
           </button>
-
           <button type="button" onClick={() => { loadDepartment(); loadRequests(); }} disabled={loading} className="p-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl cursor-pointer transition-all">
             <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin text-emerald-600' : ''}`} />
           </button>
         </div>
       </div>
 
+      {availableBalance <= 0 && (
+        <div className="p-3 bg-rose-50 border border-rose-300 rounded-2xl flex items-center justify-between gap-2 text-rose-900 text-xs font-semibold">
+          <div className="flex items-center gap-2">
+            <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
+            <span>Yeh department fund allocate nahi kar sakta kyunki iske paas ₹0 fund hai (Sufficient fund nahi hai).</span>
+          </div>
+          <button type="button" onClick={() => setIsRequestModalOpen(true)} className="px-3 py-1 bg-rose-700 hover:bg-rose-800 text-white rounded-xl text-[11px] font-bold shrink-0 cursor-pointer">
+            Request Grant
+          </button>
+        </div>
+      )}
+
       <DepartmentCsrKpis
-        availableBalance={availableBalance}
-        totalSpentOnProblems={totalDisbursedInbound}
-        totalAllocated={totalAllocated}
+        availableBalance={availableBalance} totalSpentOnProblems={totalDisbursedInbound} totalAllocated={totalAllocated}
         pendingCount={!isWard ? pendingInbound : outboundReqs.filter((r) => r.status === 'Pending').length}
-        isWard={isWard}
-        allocateLabel={allocateButtonLabel}
+        isWard={isWard} allocateLabel={allocateButtonLabel}
         onOpenAllocateFund={!isWard ? () => setIsAllocateModalOpen(true) : null}
       />
 
       <div className="flex items-center gap-2 border-b border-slate-200 pb-2">
         {!isWard && !isState && (
           <button type="button" onClick={() => setSubTab('all')} className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer ${subTab === 'all' ? 'bg-emerald-700 text-white shadow-xs' : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'}`}>
-            <LayoutList className="w-3.5 h-3.5" /><span>All Requisitions</span><span className="text-[10px] opacity-80">({combinedReqs.length})</span>
+            <LayoutList className="w-3.5 h-3.5" /><span>All Requisitions</span><span className="text-[10px] opacity-80">({displayedRequests.length})</span>
           </button>
         )}
         {!isWard && (
@@ -163,18 +155,19 @@ export const DepartmentCsrGrantPanel = ({ department }) => {
       </div>
 
       <GrantRequestsTable requests={displayedRequests} type={subTab} onReviewRequest={setReviewingReq} />
-
       <RequestGrantModal department={deptData} isOpen={isRequestModalOpen} onClose={() => setIsRequestModalOpen(false)} onCreated={(req) => { setOutboundReqs((p) => [req, ...p]); setSubTab('outbound'); }} />
       <EmergencyGrantModal department={deptData} isOpen={isEmergencyModalOpen} onClose={() => setIsEmergencyModalOpen(false)} onCreated={(req) => { setOutboundReqs((p) => [req, ...p]); setSubTab('outbound'); }} />
-      <GrantFundsModal request={reviewingReq} isOpen={Boolean(reviewingReq)} onClose={() => setReviewingReq(null)} onGranted={() => { loadRequests(); loadDepartment(); }} onRejected={() => { loadRequests(); loadDepartment(); }} />
+      <GrantFundsModal
+        request={reviewingReq} currentDepartment={deptData || department} availableBalance={availableBalance}
+        isOpen={Boolean(reviewingReq)} onClose={() => setReviewingReq(null)}
+        onGranted={() => { loadRequests(); loadDepartment(); }} onRejected={() => { loadRequests(); loadDepartment(); }}
+      />
       <AllocateFundModal
         currentDepartment={{ ...(deptData || department), allocatedFundPool: availableBalance }}
-        isOpen={isAllocateModalOpen}
-        onClose={() => setIsAllocateModalOpen(false)}
+        isOpen={isAllocateModalOpen} onClose={() => setIsAllocateModalOpen(false)}
         onFundAllocated={(res) => {
           if (res?.fromDepartment?.newBalance !== undefined) setDeptData((prev) => ({ ...prev, allocatedFundPool: res.fromDepartment.newBalance }));
-          loadDepartment();
-          loadRequests();
+          loadDepartment(); loadRequests();
         }}
       />
     </div>

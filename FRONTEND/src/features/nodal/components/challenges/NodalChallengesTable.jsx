@@ -11,12 +11,9 @@ export const NodalChallengesTable = ({
   onOpenChat,
   onQuickReject,
   onQuickDelete,
-  onOpenTriage,
-  problemScope = 'big'
+  onOpenTriage
 }) => {
-  if (loading) {
-    return <SkeletonTable rows={6} cols={6} />;
-  }
+  if (loading) return <SkeletonTable rows={6} cols={6} />;
 
   if (challenges.length === 0) {
     return (
@@ -201,7 +198,7 @@ export const NodalChallengesTable = ({
                           className="bg-[#047857] hover:bg-[#064e3b] text-white text-[10.5px] font-bold px-2.5 py-1 rounded-md transition-all shadow-2xs flex items-center space-x-1"
                         >
                           <Send className="w-3 h-3" />
-                          <span>{problemScope === 'small' ? 'Assign Block' : 'Allocate'}</span>
+                          <span>Allocate</span>
                         </button>
                       )}
                     </div>

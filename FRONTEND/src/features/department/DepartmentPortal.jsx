@@ -24,6 +24,7 @@ export const DepartmentPortal = ({ user, onLogout }) => {
   const [activeTab, setActiveTab] = useState('overview');
   const [isSidebarExpanded, setIsSidebarExpanded] = useState(true);
   const [department, setDepartment] = useState(null);
+  const [allDepartments, setAllDepartments] = useState([]);
   const [problems, setProblems] = useState([]);
   const [technicians, setTechnicians] = useState([]);
   const [districts, setDistricts] = useState([]);
@@ -53,6 +54,7 @@ export const DepartmentPortal = ({ user, onLogout }) => {
       setLoading(true);
       const resDepts = await departmentService.getDepartments({ limit: 100 });
       const depts = resDepts?.data || (Array.isArray(resDepts) ? resDepts : []) || [];
+      setAllDepartments(depts);
       
       let matched = null;
       if (queryDeptId) {
@@ -143,6 +145,13 @@ export const DepartmentPortal = ({ user, onLogout }) => {
     }
   };
 
+  const handleSelectDepartment = (targetDept) => {
+    setDepartment(targetDept);
+    const url = new URL(window.location);
+    url.searchParams.set('deptId', targetDept.deptId || targetDept.id || targetDept._id);
+    window.history.replaceState({}, '', url.toString());
+  };
+
   return (
     <div className="min-h-screen bg-white flex flex-col overflow-hidden h-screen text-slate-800 antialiased select-none">
       <DepartmentHeader
@@ -150,6 +159,8 @@ export const DepartmentPortal = ({ user, onLogout }) => {
         activeTab={activeTab}
         onNavigateTab={(t) => { setSelectedProblem(null); setActiveTab(t); setIsMobileMenuOpen(false); }}
         onToggleSidebar={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+        allDepartments={allDepartments}
+        onSelectDepartment={handleSelectDepartment}
       />
 
       <div className="flex-1 flex flex-row min-w-0 min-h-0 overflow-hidden bg-white">

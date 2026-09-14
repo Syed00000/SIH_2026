@@ -22,7 +22,9 @@ export function applyTriageChanges(challenge, triageData, user = null) {
     challenge.acceptanceStatus = 'Clarified';
   }
 
-  if (triageData.assignedUniversity?.id) {
+  if (triageData.assignedUniversity === null) {
+    challenge.assignedUniversity = null;
+  } else if (triageData.assignedUniversity?.id) {
     challenge.assignedUniversity = {
       id: triageData.assignedUniversity.id,
       name: triageData.assignedUniversity.name || 'Assigned University',
@@ -34,6 +36,9 @@ export function applyTriageChanges(challenge, triageData, user = null) {
       declineReason: ''
     };
     challenge.acceptanceStatus = challenge.assignedUniversity.acceptanceStatus;
+    challenge.assignedDepartment = null;
+    challenge.assignedWard = null;
+    challenge.assignedBlock = null;
     if (user) {
       challenge.allocatedBy = {
         id: user.id || user._id ? String(user.id || user._id) : '',
@@ -47,7 +52,9 @@ export function applyTriageChanges(challenge, triageData, user = null) {
     }
   }
 
-  if (triageData.assignedWard && (triageData.assignedWard.name || triageData.assignedWard.wardId)) {
+  if (triageData.assignedWard === null) {
+    challenge.assignedWard = null;
+  } else if (triageData.assignedWard && (triageData.assignedWard.name || triageData.assignedWard.wardId)) {
     const w = triageData.assignedWard;
     challenge.assignedWard = {
       id: w.id || w.wardId || '',
@@ -64,9 +71,12 @@ export function applyTriageChanges(challenge, triageData, user = null) {
       priority: triageData.priority || challenge.priority || 'Medium',
       status: 'Assigned'
     };
+    challenge.assignedUniversity = null;
   }
 
-  if (triageData.assignedBlock && (triageData.assignedBlock.name || triageData.assignedBlock.blockId)) {
+  if (triageData.assignedBlock === null) {
+    challenge.assignedBlock = null;
+  } else if (triageData.assignedBlock && (triageData.assignedBlock.name || triageData.assignedBlock.blockId)) {
     const b = triageData.assignedBlock;
     challenge.assignedBlock = {
       id: b.id || b.blockId || '',
@@ -82,9 +92,12 @@ export function applyTriageChanges(challenge, triageData, user = null) {
       priority: triageData.priority || challenge.priority || 'Medium',
       status: 'Assigned'
     };
+    challenge.assignedUniversity = null;
   }
 
-  if (triageData.assignedDepartment && (triageData.assignedDepartment.name || triageData.assignedDepartment.deptId)) {
+  if (triageData.assignedDepartment === null) {
+    challenge.assignedDepartment = null;
+  } else if (triageData.assignedDepartment && (triageData.assignedDepartment.name || triageData.assignedDepartment.deptId)) {
     const d = triageData.assignedDepartment;
     challenge.assignedDepartment = {
       id: d.id || d.deptId || '',
@@ -101,6 +114,7 @@ export function applyTriageChanges(challenge, triageData, user = null) {
       priority: triageData.priority || challenge.priority || 'Medium',
       status: 'Assigned'
     };
+    challenge.assignedUniversity = null;
   }
 
   if (triageData.assignedTechnician) {

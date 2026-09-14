@@ -4,6 +4,7 @@ import { fetchNodalAssignData } from '../assignPayload.helper.js';
 
 export const useAssignDataLoader = ({ initialChallenge, onSuccess, onClose }) => {
   const [departments, setDepartments] = useState([]);
+  const [universities, setUniversities] = useState([]);
   const [allChallenges, setAllChallenges] = useState([]);
   const [loadingData, setLoadingData] = useState(false);
   const [activeChallenge, setActiveChallenge] = useState(initialChallenge || null);
@@ -15,8 +16,9 @@ export const useAssignDataLoader = ({ initialChallenge, onSuccess, onClose }) =>
   const loadData = async () => {
     setLoadingData(true);
     try {
-      const { depts, chls } = await fetchNodalAssignData();
+      const { depts, chls, unis } = await fetchNodalAssignData();
       setDepartments(depts);
+      setUniversities(unis || []);
       setAllChallenges(chls);
 
       if (initialChallenge) {
@@ -58,6 +60,7 @@ export const useAssignDataLoader = ({ initialChallenge, onSuccess, onClose }) =>
 
   return {
     departments,
+    universities,
     allChallenges,
     loadingData,
     activeChallenge,

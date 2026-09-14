@@ -1,8 +1,11 @@
 import React from 'react';
-import { X, Landmark, Mail, Phone, MapPin, Users, Key } from 'lucide-react';
+import { X, Landmark, Mail, Phone, MapPin, Key, Copy } from 'lucide-react';
 
 export const ViewWardModal = ({ isOpen, ward, onClose }) => {
   if (!isOpen || !ward) return null;
+
+  const loginEmail = ward.credentials?.loginEmail || ward.credentials?.loginId || ward.headEmail || ward.councillorEmail;
+  const password = ward.credentials?.password || ward.credentials?.generatedPassword;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in select-none">
@@ -14,7 +17,9 @@ export const ViewWardModal = ({ isOpen, ward, onClose }) => {
             </div>
             <div>
               <h2 className="text-sm font-black text-slate-900 leading-none">{ward.name}</h2>
-              <p className="text-[10px] text-slate-500 mt-0.5">{ward.wardId} • Ward #{ward.wardNumber}</p>
+              <p className="text-[10px] text-slate-500 mt-0.5">
+                {ward.deptId || ward.code || ward.wardId} • Ward #{ward.wardNumber || ward.district || '133'}
+              </p>
             </div>
           </div>
           <button type="button" onClick={onClose} className="text-slate-400 hover:text-slate-700 p-1 cursor-pointer">
@@ -26,7 +31,7 @@ export const ViewWardModal = ({ isOpen, ward, onClose }) => {
           <div className="grid grid-cols-2 gap-2 bg-slate-50 p-3 rounded-xl border border-slate-100">
             <div>
               <span className="text-[10px] text-slate-400 font-bold uppercase">District</span>
-              <p className="font-extrabold text-slate-800">{ward.district} District</p>
+              <p className="font-extrabold text-slate-800">{ward.district || 'Jharkhand'} District</p>
             </div>
             <div>
               <span className="text-[10px] text-slate-400 font-bold uppercase">Status</span>
@@ -37,33 +42,60 @@ export const ViewWardModal = ({ isOpen, ward, onClose }) => {
           <div className="space-y-1.5">
             <span className="text-[10px] text-slate-400 font-bold uppercase">Councillor / In-charge</span>
             <div className="bg-slate-50 p-3 rounded-xl border border-slate-100 space-y-1">
-              <p className="font-extrabold text-slate-800">{ward.councillorName || 'Not Assigned'}</p>
-              {ward.councillorEmail && (
+              <p className="font-extrabold text-slate-800">
+                {ward.headName || ward.councillorName || 'Not Assigned'} {ward.headRole ? `(${ward.headRole})` : ''}
+              </p>
+              {(ward.headEmail || ward.councillorEmail) && (
                 <p className="flex items-center gap-1.5 text-slate-600">
                   <Mail className="w-3.5 h-3.5 text-slate-400" />
-                  {ward.councillorEmail}
+                  {ward.headEmail || ward.councillorEmail}
                 </p>
               )}
-              {ward.councillorPhone && (
+              {(ward.headPhone || ward.councillorPhone) && (
                 <p className="flex items-center gap-1.5 text-slate-600">
                   <Phone className="w-3.5 h-3.5 text-slate-400" />
-                  {ward.councillorPhone}
+                  {ward.headPhone || ward.councillorPhone}
                 </p>
               )}
             </div>
           </div>
 
-          {ward.credentials && (
+          {/* Secure Credentials shown only in View Modal */}
+          {loginEmail && (
             <div className="space-y-1.5">
-              <span className="text-[10px] text-slate-400 font-bold uppercase">Ward Portal Credentials</span>
-              <div className="bg-amber-50/70 p-3 rounded-xl border border-amber-200/80 space-y-1">
-                <p className="flex items-center gap-1 text-slate-700">
-                  <Key className="w-3.5 h-3.5 text-amber-600" />
-                  <span className="font-bold">Login Email:</span> {ward.credentials?.loginEmail || ward.councillorEmail}
-                </p>
-                <p className="text-slate-600">
-                  <span className="font-bold">Password:</span> {ward.credentials?.password || 'Ward@2026'}
-                </p>
+              <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Ward Portal Credentials</span>
+              <div className="bg-amber-50/80 p-3.5 rounded-xl border border-amber-200 space-y-2">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-1.5 text-slate-700">
+                    <Key className="w-3.5 h-3.5 text-amber-600" />
+                    <span className="font-bold">Login Email:</span>
+                    <span className="font-mono font-semibold text-slate-900 select-all">{loginEmail}</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => navigator.clipboard?.writeText(loginEmail)}
+                    className="text-[10px] font-bold text-amber-700 hover:text-amber-900 px-2 py-0.5 rounded bg-amber-100 hover:bg-amber-200 transition-colors cursor-pointer"
+                  >
+                    Copy
+                  </button>
+                </div>
+                {password && (
+                  <div className="flex items-center justify-between pt-1 border-t border-amber-200/60">
+                    <div className="flex items-center gap-1.5 text-slate-700">
+                      <span className="font-bold">Password:</span>
+                      <span className="font-mono font-semibold text-slate-900 bg-white px-2 py-0.5 rounded border border-amber-200 select-all">
+                        {password}
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => navigator.clipboard?.writeText(password)}
+                      className="text-[10px] font-bold text-amber-700 hover:text-amber-900 px-2 py-0.5 rounded bg-amber-100 hover:bg-amber-200 transition-colors cursor-pointer"
+                    >
+                      Copy
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           )}

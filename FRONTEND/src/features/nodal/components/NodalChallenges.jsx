@@ -12,7 +12,6 @@ import { NodalChallengesTable } from './challenges/NodalChallengesTable.jsx';
 
 export const NodalChallenges = ({ initialStatusFilter = 'All Status', nodalDistrict = '' }) => {
   const [viewMode, setViewMode] = useState('table');
-  const [problemScopeTab, setProblemScopeTab] = useState('big'); // 'big' | 'small'
   const [isAssignWardOpen, setIsAssignWardOpen] = useState(false);
   const [wardAssignChallenge, setWardAssignChallenge] = useState(null);
   const [dossierInitialTab, setDossierInitialTab] = useState('dossier');
@@ -48,17 +47,17 @@ export const NodalChallenges = ({ initialStatusFilter = 'All Status', nodalDistr
       <div className="space-y-4 select-none text-left animate-in fade-in duration-150">
         <ProblemEvidenceDossierPanel
           challenge={selectedDossierChallenge}
-          problemScope={problemScopeTab}
           initialTab={dossierInitialTab}
           onTriageSuccess={(updated) => {
             handleTriageSuccess(updated);
             setSelectedDossierChallenge(updated);
           }}
           onClose={() => setSelectedDossierChallenge(null)}
-          onOpenTriage={problemScopeTab === 'big' ? () => {
-            handleOpenTriage(selectedDossierChallenge);
-          } : null}
-          onOpenAssignBlock={problemScopeTab === 'small' ? () => handleOpenAssignWard(selectedDossierChallenge) : null}
+          onOpenTriage={() => {
+            setSelectedChallenge(selectedDossierChallenge);
+            setIsAssignModalOpen(true);
+          }}
+          onOpenAssignBlock={() => handleOpenAssignWard(selectedDossierChallenge)}
           onOpenChat={() => setChatChallenge(selectedDossierChallenge)}
         />
 
@@ -99,7 +98,7 @@ export const NodalChallenges = ({ initialStatusFilter = 'All Status', nodalDistr
     <div className="space-y-4 select-none text-left animate-in fade-in duration-150">
       <NodalChallengesHeader onReload={loadChallenges} loading={loading} toastMsg={toastMsg} />
 
-      <ProblemScopeTabs activeTab={problemScopeTab} onTabChange={setProblemScopeTab} totalCount={filteredChallenges.length} />
+      <ProblemScopeTabs totalCount={filteredChallenges.length} />
 
       <NodalFilterBar
         searchTerm={searchTerm} setSearchTerm={setSearchTerm} statusFilter={statusFilter} setStatusFilter={setStatusFilter}
@@ -113,16 +112,14 @@ export const NodalChallenges = ({ initialStatusFilter = 'All Status', nodalDistr
           loading={loading} challenges={filteredChallenges} deletingId={deletingId}
           onOpenDossier={handleOpenDossier} onOpenChat={setChatChallenge}
           onQuickReject={handleQuickReject} onQuickDelete={handleQuickDelete}
-          problemScope={problemScopeTab}
-          onOpenTriage={(chl) => (problemScopeTab === 'small' ? handleOpenAssignBlock(chl) : handleOpenTriage(chl))}
+          onOpenTriage={handleOpenTriage}
         />
       ) : (
         <NodalChallengesGrid
           loading={loading} challenges={filteredChallenges} deletingId={deletingId}
           onOpenDossier={handleOpenDossier} onOpenChat={setChatChallenge}
           onQuickReject={handleQuickReject} onQuickDelete={handleQuickDelete}
-          problemScope={problemScopeTab}
-          onOpenTriage={(chl) => (problemScopeTab === 'small' ? handleOpenAssignWard(chl) : handleOpenTriage(chl))}
+          onOpenTriage={handleOpenTriage}
         />
       )}
 

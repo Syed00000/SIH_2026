@@ -42,7 +42,6 @@ export const GovernmentTabRouter = ({
     return (
       <GovernmentOverview
         kpis={kpis}
-        triageFeed={filteredTriageFeed}
         sectors={sectors}
         sectorTimeframe={sectorTimeframe}
         onChangeSectorTimeframe={setSectorTimeframe}
@@ -50,11 +49,7 @@ export const GovernmentTabRouter = ({
         trendInterval={trendInterval}
         onChangeTrendInterval={setTrendInterval}
         heis={heis}
-        selectedDistrict={selectedDistrict}
-        onSelectDistrict={setSelectedDistrict}
         onSelectSector={setSelectedSector}
-        onApproveTriage={handleApproveTriage}
-        onRejectTriage={handleRejectTriage}
         onViewAllTriage={() => handleSetActiveTab('projects_proposals')}
         onViewAllHeis={() => handleSetActiveTab('heis')}
       />

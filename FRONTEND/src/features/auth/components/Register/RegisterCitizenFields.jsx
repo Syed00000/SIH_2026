@@ -1,7 +1,7 @@
 import React from 'react';
 import { Input } from '../../../../shared/components/ui/input.jsx';
 import { JHARKHAND_DISTRICTS } from './registerConstants.js';
-import { MapPin, Building2, Home, Languages } from 'lucide-react';
+import { MapPin, Building2, Home } from 'lucide-react';
 
 export const RegisterCitizenFields = ({ formData, onChange }) => {
   const districtNames = Object.keys(JHARKHAND_DISTRICTS).sort();
@@ -98,27 +98,6 @@ export const RegisterCitizenFields = ({ formData, onChange }) => {
         onChange={(e) => onChange('panchayatOrWard', e.target.value)}
         placeholder="Enter Panchayat or Ward name (Optional)"
       />
-
-      {/* Preferred Language */}
-      <div className="flex flex-col gap-1.5">
-        <label className="text-xs font-bold uppercase tracking-wider text-slate-700">
-          Preferred Language
-        </label>
-        <div className="relative w-full">
-          <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
-            <Languages className="w-4 h-4 stroke-[2]" />
-          </div>
-          <select
-            value={formData.preferredLanguage}
-            onChange={(e) => onChange('preferredLanguage', e.target.value)}
-            className={selectStyle}
-          >
-            <option value="HINDI">Hindi (हिन्दी)</option>
-            <option value="ENGLISH">English</option>
-            <option value="SANTHALI">Santhali (ᱥᱟᱱᱛᱟᱲᱤ)</option>
-          </select>
-        </div>
-      </div>
     </div>
   );
 };

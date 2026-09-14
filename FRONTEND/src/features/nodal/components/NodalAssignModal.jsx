@@ -13,10 +13,12 @@ export const NodalAssignModal = ({
   isOpen,
   onClose,
   challenge: initialChallenge,
+  targetUniversity,
   onSuccess
 }) => {
   const {
     departments,
+    universities,
     allChallenges,
     loadingData,
     submitting,
@@ -45,6 +47,7 @@ export const NodalAssignModal = ({
     handleFormSubmit
   } = useNodalAssignForm({
     initialChallenge,
+    targetUniversity,
     onClose,
     onSuccess
   });
@@ -55,7 +58,7 @@ export const NodalAssignModal = ({
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-150">
       <div className="bg-white rounded-md max-w-xl w-full border border-slate-300 shadow-2xl overflow-hidden flex flex-col max-h-[90vh] animate-in zoom-in-95 duration-150 text-left">
         <AssignModalHeader
-          isUniversityTargetMode={false}
+          isUniversityTargetMode={Boolean(targetUniversity || departmentLevel === 'University / HEI')}
           activeChallenge={activeChallenge}
           onClose={onClose}
         />
@@ -132,6 +135,7 @@ export const NodalAssignModal = ({
 
               <DepartmentTargetingCard
                 departments={departments}
+                universities={universities}
                 departmentLevel={departmentLevel}
                 setDepartmentLevel={setDepartmentLevel}
                 selectedDeptId={selectedDeptId}
