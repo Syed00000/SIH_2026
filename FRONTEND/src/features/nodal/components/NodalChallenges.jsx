@@ -15,6 +15,7 @@ export const NodalChallenges = ({ initialStatusFilter = 'All Status', nodalDistr
   const [problemScopeTab, setProblemScopeTab] = useState('big'); // 'big' | 'small'
   const [isAssignWardOpen, setIsAssignWardOpen] = useState(false);
   const [wardAssignChallenge, setWardAssignChallenge] = useState(null);
+  const [dossierInitialTab, setDossierInitialTab] = useState('dossier');
 
   const {
     searchTerm, setSearchTerm, statusFilter, setStatusFilter, domainFilter, setDomainFilter,
@@ -24,6 +25,11 @@ export const NodalChallenges = ({ initialStatusFilter = 'All Status', nodalDistr
     toastMsg, deletingId, loadChallenges, handleOpenTriage, handleQuickReject, handleQuickDelete,
     handleTriageSuccess, filteredChallenges
   } = useNodalChallenges({ initialStatusFilter, nodalDistrict });
+
+  const handleOpenDossier = (chl, tab = 'dossier') => {
+    setDossierInitialTab(tab);
+    setSelectedDossierChallenge(chl);
+  };
 
   const handleOpenAssignWard = (chl) => {
     setWardAssignChallenge(chl);
@@ -43,10 +49,14 @@ export const NodalChallenges = ({ initialStatusFilter = 'All Status', nodalDistr
         <ProblemEvidenceDossierPanel
           challenge={selectedDossierChallenge}
           problemScope={problemScopeTab}
+          initialTab={dossierInitialTab}
+          onTriageSuccess={(updated) => {
+            handleTriageSuccess(updated);
+            setSelectedDossierChallenge(updated);
+          }}
           onClose={() => setSelectedDossierChallenge(null)}
           onOpenTriage={problemScopeTab === 'big' ? () => {
-            setSelectedChallenge(selectedDossierChallenge);
-            setIsAssignModalOpen(true);
+            handleOpenTriage(selectedDossierChallenge);
           } : null}
           onOpenAssignBlock={problemScopeTab === 'small' ? () => handleOpenAssignWard(selectedDossierChallenge) : null}
           onOpenChat={() => setChatChallenge(selectedDossierChallenge)}
@@ -101,7 +111,7 @@ export const NodalChallenges = ({ initialStatusFilter = 'All Status', nodalDistr
       {viewMode === 'table' ? (
         <NodalChallengesTable
           loading={loading} challenges={filteredChallenges} deletingId={deletingId}
-          onOpenDossier={setSelectedDossierChallenge} onOpenChat={setChatChallenge}
+          onOpenDossier={handleOpenDossier} onOpenChat={setChatChallenge}
           onQuickReject={handleQuickReject} onQuickDelete={handleQuickDelete}
           problemScope={problemScopeTab}
           onOpenTriage={(chl) => (problemScopeTab === 'small' ? handleOpenAssignBlock(chl) : handleOpenTriage(chl))}
@@ -109,7 +119,7 @@ export const NodalChallenges = ({ initialStatusFilter = 'All Status', nodalDistr
       ) : (
         <NodalChallengesGrid
           loading={loading} challenges={filteredChallenges} deletingId={deletingId}
-          onOpenDossier={setSelectedDossierChallenge} onOpenChat={setChatChallenge}
+          onOpenDossier={handleOpenDossier} onOpenChat={setChatChallenge}
           onQuickReject={handleQuickReject} onQuickDelete={handleQuickDelete}
           problemScope={problemScopeTab}
           onOpenTriage={(chl) => (problemScopeTab === 'small' ? handleOpenAssignWard(chl) : handleOpenTriage(chl))}

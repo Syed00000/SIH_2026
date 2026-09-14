@@ -1,5 +1,5 @@
 import React from 'react';
-import { AlertCircle } from 'lucide-react';
+import { AlertCircle, Sparkles } from 'lucide-react';
 import { useNodalAssignForm } from './assign/hooks/useNodalAssignForm.js';
 import { AssignModalHeader } from './assign/AssignModalHeader.jsx';
 import { ChallengeSelectorCard } from './assign/ChallengeSelectorCard.jsx';
@@ -81,6 +81,48 @@ export const NodalAssignModal = ({
                 />
               )}
 
+              {activeChallenge?.aiIntelligence?.recommendedDepartment?.name && (
+                <div className="bg-gradient-to-r from-emerald-50/90 via-white to-slate-50 text-slate-900 border border-emerald-200/90 rounded-xl p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs">
+                  <div className="flex items-start space-x-2.5">
+                    <div className="p-1.5 bg-[#007A61] text-white rounded-md shrink-0 mt-0.5 shadow-2xs">
+                      <Sparkles className="w-3.5 h-3.5 text-emerald-100" />
+                    </div>
+                    <div>
+                      <div className="text-[11.5px] font-bold flex items-center space-x-1.5 flex-wrap">
+                        <span className="text-slate-900">AI Routing: {activeChallenge.aiIntelligence.recommendedDepartment.name}</span>
+                        <span className="px-1.5 py-0.2 bg-emerald-100 text-emerald-800 border border-emerald-300 rounded-full font-mono text-[10px] font-bold">
+                          {activeChallenge.aiIntelligence.recommendedDepartment.confidence || 88}% Match
+                        </span>
+                      </div>
+                      <p className="text-[10.5px] text-slate-600 mt-0.5 line-clamp-2 leading-relaxed">
+                        {activeChallenge.aiIntelligence.recommendedDepartment.reasoning}
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const aiDeptName = (activeChallenge.aiIntelligence.recommendedDepartment.name || '').toLowerCase();
+                      const matched = departments.find(
+                        (d) =>
+                          (d.name || '').toLowerCase().includes(aiDeptName) ||
+                          aiDeptName.includes((d.name || '').toLowerCase())
+                      );
+                      if (matched) setSelectedDeptId(matched._id || matched.id);
+                      if (activeChallenge.aiIntelligence.classifiedDomain) {
+                        setSelectedDomain(activeChallenge.aiIntelligence.classifiedDomain);
+                      }
+                      if (activeChallenge.aiIntelligence.priorityAssessment?.priority) {
+                        setSelectedPriority(activeChallenge.aiIntelligence.priorityAssessment.priority);
+                      }
+                    }}
+                    className="px-3 py-1.5 bg-[#007A61] hover:bg-[#00634f] text-white rounded-lg text-[11px] font-bold shrink-0 transition-colors cursor-pointer shadow-xs self-start sm:self-auto"
+                  >
+                    Apply AI Routing
+                  </button>
+                </div>
+              )}
+
               <TriageVerificationCard
                 selectedDomain={selectedDomain}
                 setSelectedDomain={setSelectedDomain}
@@ -94,6 +136,7 @@ export const NodalAssignModal = ({
                 setDepartmentLevel={setDepartmentLevel}
                 selectedDeptId={selectedDeptId}
                 setSelectedDeptId={setSelectedDeptId}
+                aiRecommendedDept={activeChallenge?.aiIntelligence?.recommendedDepartment}
               />
 
               <NodalNotesAndClarificationCard

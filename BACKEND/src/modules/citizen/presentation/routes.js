@@ -26,6 +26,13 @@ const optionalAuth = (req, res, next) => {
   next();
 };
 
+// AI Intelligence & Triage Routes
+router.post('/challenges/ai-batch-sync', optionalAuth, (req, res, next) => citizenController.batchSyncAi(req, res, next));
+router.post('/challenges/:id/ai-analyze', optionalAuth, (req, res, next) => citizenController.analyzeChallenge(req, res, next));
+router.post('/challenges/:id/ai-apply', optionalAuth, (req, res, next) => citizenController.applyAiRecommendation(req, res, next));
+router.post('/challenges/:id/mark-duplicate', optionalAuth, (req, res, next) => citizenController.markDuplicate(req, res, next));
+router.post('/ai-chat', (req, res, next) => citizenController.handleAiChat(req, res, next));
+
 // Citizen Routes
 router.post('/challenges', optionalAuth, (req, res, next) => citizenController.submitChallenge(req, res, next));
 router.get('/challenges', optionalAuth, (req, res, next) => citizenController.getChallenges(req, res, next));

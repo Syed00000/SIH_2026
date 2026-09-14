@@ -141,6 +141,7 @@ export const useNodalChallenges = ({ initialStatusFilter = 'All Status', nodalDi
     challenges,
     loading,
     selectedChallenge,
+    setSelectedChallenge,
     isAssignModalOpen,
     setIsAssignModalOpen,
     selectedDossierChallenge,

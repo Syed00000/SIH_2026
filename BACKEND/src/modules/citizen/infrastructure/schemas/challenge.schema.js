@@ -136,6 +136,10 @@ export const citizenChallengeSchema = new mongoose.Schema(
       type: impactMetricsSchema,
       default: () => ({})
     },
+    aiIntelligence: {
+      type: mongoose.Schema.Types.Mixed,
+      default: null
+    },
     submittedAt: {
       type: Date,
       default: Date.now,
