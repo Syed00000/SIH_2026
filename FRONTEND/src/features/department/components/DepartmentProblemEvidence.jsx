@@ -1,6 +1,26 @@
 import React from 'react';
 import { MapPin, User } from 'lucide-react';
 
+const formatEvidenceLevel = (ev, idx, allList) => {
+  const raw = (ev?.level || '').toUpperCase().trim();
+  if (raw === 'MINISTRY' || raw.includes('MINISTR') || raw === 'APEX') return 'Ministry Level Verification';
+  if (raw === 'STATE') return 'State Level Verification';
+  if (raw === 'DISTRICT') return 'District Level Verification';
+  if (raw === 'BLOCK') return 'Block Level Verification';
+
+  // Fallback for legacy evidence items that were all labeled WARD due to previous escalation bug
+  const allSavedAsWard = allList && allList.length > 1 && allList.every(e => !e.level || e.level.toUpperCase() === 'WARD');
+  if (allSavedAsWard) {
+    const tName = (ev?.technicianName || '').toLowerCase();
+    if (tName.includes('immu2') || idx === 2) return 'State Level Verification';
+    if (tName.includes('immu') || idx === 1) return 'Block Level Verification';
+    return 'Ward Level Verification';
+  }
+
+  if (raw === 'WARD') return 'Ward Level Verification';
+  return `${ev?.level || 'Authority'} Level Verification`;
+};
+
 export const DepartmentProblemEvidence = ({ problem, submitter, fullAddress, techUrls, tech }) => {
   const escalatedUrls = (problem.escalationEvidence || []).flatMap(e => e.mediaUrls || []);
   const currentTechUrls = techUrls.filter(url => !escalatedUrls.includes(url));
@@ -99,7 +119,9 @@ export const DepartmentProblemEvidence = ({ problem, submitter, fullAddress, tec
                   </a>
                 )}
                 <div>
-                  <span className="text-[10px] font-extrabold text-blue-800 uppercase tracking-wide block mb-0.5">{ev.level} Level Verification</span>
+                  <span className="text-[10px] font-extrabold text-blue-800 uppercase tracking-wide block mb-0.5">
+                    {formatEvidenceLevel(ev, idx, problem.escalationEvidence)}
+                  </span>
                   <p className="text-xs text-blue-950 leading-relaxed font-medium mb-1">{ev.remarks || 'No remarks provided.'}</p>
                   <p className="text-[10px] text-blue-600 font-medium">Verified by: {ev.technicianName} ({new Date(ev.date).toLocaleDateString()})</p>
                 </div>
