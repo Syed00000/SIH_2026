@@ -1,121 +1,146 @@
 export function getChallengeMilestones(challenge = {}) {
+  const steps = [];
   const isResolved = challenge.status === 'Resolved' || challenge.status === 'Deployed';
-  const assignedDept = challenge.assignedDepartment;
-  const isBlockAssigned = Boolean(
-    assignedDept?.name || assignedDept?.deptId || assignedDept?.block || challenge.assignedBlock
+  let stepIndex = 1;
+
+  // Step 1: Submission
+  steps.push({
+    step: stepIndex++,
+    title: 'Problem Submitted',
+    description: 'Filed with citizen location & category classification.',
+    status: 'COMPLETED'
+  });
+
+  // Step 2: Nodal Review
+  const hasFurtherAssignment = Boolean(
+    challenge.assignedUniversity?.name || challenge.assignedUniversity?.universityName ||
+    challenge.assignedDepartment?.name || challenge.assignedDepartment?.deptId ||
+    challenge.assignedBlock?.name || challenge.assignedBlock ||
+    challenge.assignedWard?.name || challenge.assignedWard
   );
-  const assignedTech = challenge.assignedTechnician;
-  const hasTechnician = Boolean(assignedTech?.name || assignedTech?.technicianId || assignedTech?.phone);
-  const assignedUni = challenge.assignedUniversity || {};
-  const isUniAssigned = Boolean(assignedUni?.name || assignedUni?.universityName);
 
-  if (isBlockAssigned) {
-    const steps = [];
-    
-    steps.push({
-      step: steps.length + 1,
-      title: 'Problem Submitted',
-      description: 'Filed with citizen geo-location & grievance verification.',
-      status: 'COMPLETED'
-    });
+  steps.push({
+    step: stepIndex++,
+    title: 'State Nodal Review',
+    description: 'State Nodal team evaluating and routing the problem.',
+    status: hasFurtherAssignment ? 'COMPLETED' : (isResolved ? 'COMPLETED' : 'CURRENT')
+  });
 
-    if (challenge.assignedWard?.name) {
-      steps.push({
-        step: steps.length + 1,
-        title: 'Ward Commissioner Assigned',
-        description: `Triage assigned to ${challenge.assignedWard.name}.`,
-        status: 'COMPLETED'
-      });
-    }
-
-    if (challenge.assignedBlock?.name || typeof challenge.assignedBlock === 'string') {
-      const bName = typeof challenge.assignedBlock === 'string' ? challenge.assignedBlock : challenge.assignedBlock.name;
-      steps.push({
-        step: steps.length + 1,
-        title: 'Block / Tehsil Assigned',
-        description: `Problem routed to ${bName}.`,
-        status: 'COMPLETED'
-      });
-    }
-
-    if (assignedDept?.name) {
-      const isState = assignedDept.category === 'State Ministry';
-      steps.push({
-        step: steps.length + 1,
-        title: isState ? 'State Ministry Assigned' : 'District Department Assigned',
-        description: `Problem escalated to ${assignedDept.name}.`,
-        status: 'COMPLETED'
-      });
-    }
-
-    steps.push({
-      step: steps.length + 1,
-      title: (hasTechnician && (assignedTech.status === 'Accepted' || assignedTech.status === 'Completed'))
-        ? 'Field Technician Accepted' : 'Field Technician Dispatched',
-      description: (hasTechnician && (assignedTech.status === 'Accepted' || assignedTech.status === 'Completed'))
-        ? `${assignedTech.name} (${assignedTech.specialization || 'Field Tech'}) accepted • Ph: ${assignedTech.phone}`
-        : (hasTechnician ? `Assigned to ${assignedTech.name}. Awaiting technician acceptance.` : 'Authority reviewing problem for technician allocation.'),
-      status: (hasTechnician && (assignedTech.status === 'Accepted' || assignedTech.status === 'Completed'))
-        ? 'COMPLETED' : (hasTechnician ? 'CURRENT' : (isResolved ? 'COMPLETED' : 'PENDING'))
-    });
-
-    steps.push({
-      step: steps.length + 1,
-      title: 'Field Remediation in Progress',
-      description: isResolved
-        ? 'On-ground maintenance and repair work completed.'
-        : ((hasTechnician && (assignedTech.status === 'Accepted' || assignedTech.status === 'In Progress'))
-          ? 'Technician active on ground for site repair.' : 'Pending technician acceptance & site work.'),
-      status: isResolved ? 'COMPLETED' : ((hasTechnician && (assignedTech.status === 'Accepted' || assignedTech.status === 'In Progress')) ? 'CURRENT' : 'PENDING')
-    });
-
-    steps.push({
-      step: steps.length + 1,
-      title: 'Civic Problem Resolved',
-      description: isResolved ? 'Ground remediation verified and closed.' : 'Awaiting completion verification.',
-      status: isResolved ? 'COMPLETED' : 'PENDING'
-    });
-
+  if (!hasFurtherAssignment && !isResolved) {
     return steps;
   }
 
-  // University / R&D Lifecycle
-  return [
-    {
-      step: 1,
-      title: 'Problem Submitted',
-      description: 'Filed with citizen location & category classification.',
-      status: 'COMPLETED'
-    },
-    {
-      step: 2,
-      title: 'State Nodal Review',
-      description: 'State Nodal team evaluating societal innovation scope.',
-      status: (challenge.status === 'Submitted' && !isUniAssigned) ? 'CURRENT' : 'COMPLETED'
-    },
-    {
-      step: 3,
+  // 3. Assignments
+  if (challenge.assignedUniversity?.name || challenge.assignedUniversity?.universityName) {
+    const uniName = challenge.assignedUniversity.name || challenge.assignedUniversity.universityName;
+    steps.push({
+      step: stepIndex++,
       title: 'University Lab Assigned',
-      description: isUniAssigned
-        ? `Allocated to ${assignedUni.name || 'University Lab'} for R&D.`
-        : 'Matching with university research departments & faculty mentors.',
-      status: isUniAssigned ? 'COMPLETED' : 'PENDING'
-    },
-    {
-      step: 4,
-      title: 'Prototype Solution Development',
-      description: isResolved
-        ? 'Operational prototype tested and certified.'
-        : (isUniAssigned ? 'Faculty & student researchers building working prototype.' : 'Awaiting lab allocation.'),
-      status: isResolved ? 'COMPLETED' : (isUniAssigned ? 'CURRENT' : 'PENDING')
-    },
-    {
-      step: 5,
-      title: 'Field Deployment & Resolved',
-      description: isResolved ? 'Certified prototype deployed on ground for societal impact.' : 'Pending field testing rollout.',
-      status: isResolved ? 'COMPLETED' : 'PENDING'
+      description: `Allocated to ${uniName} for R&D.`,
+      status: 'COMPLETED'
+    });
+
+    if (challenge.assignedFaculty?.name) {
+      steps.push({
+        step: stepIndex++,
+        title: 'Prototype Solution Development',
+        description: `Faculty & student researchers building working prototype under ${challenge.assignedFaculty.name}.`,
+        status: isResolved ? 'COMPLETED' : 'CURRENT'
+      });
+    } else if (!isResolved) {
+      steps.push({
+        step: stepIndex++,
+        title: 'Prototype Solution Development',
+        description: 'Awaiting lab allocation and faculty assignment.',
+        status: 'CURRENT'
+      });
     }
-  ];
+  }
+
+  if (challenge.assignedWard?.name) {
+    steps.push({
+      step: stepIndex++,
+      title: 'Ward Commissioner Assigned',
+      description: `Triage assigned to ${challenge.assignedWard.name}.`,
+      status: 'COMPLETED'
+    });
+  }
+
+  if (challenge.assignedBlock?.name || typeof challenge.assignedBlock === 'string') {
+    const bName = typeof challenge.assignedBlock === 'string' ? challenge.assignedBlock : challenge.assignedBlock.name;
+    steps.push({
+      step: stepIndex++,
+      title: 'Block / Tehsil Assigned',
+      description: `Problem routed to ${bName}.`,
+      status: 'COMPLETED'
+    });
+  }
+
+  if (challenge.assignedDepartment?.name) {
+    const deptName = challenge.assignedDepartment.name;
+    steps.push({
+      step: stepIndex++,
+      title: 'Department Assigned',
+      description: `Problem escalated to ${deptName}.`,
+      status: 'COMPLETED'
+    });
+  }
+
+  // 4. Escalation Chain
+  if (challenge.escalationEvidence && challenge.escalationEvidence.length > 0) {
+    challenge.escalationEvidence.forEach(esc => {
+      steps.push({
+        step: stepIndex++,
+        title: esc.level === 'Department' ? `Forwarded to ${esc.authorityName || 'Department'}` : `Escalated: ${esc.authorityName || 'Higher Authority'}`,
+        description: esc.remarks || 'Problem routed to further department for action.',
+        status: 'COMPLETED'
+      });
+    });
+  }
+
+  // 5. Technician
+  const assignedTech = challenge.assignedTechnician;
+  const hasTechnician = Boolean(assignedTech?.name || assignedTech?.technicianId || assignedTech?.phone);
+
+  if (hasTechnician) {
+    const techAccepted = assignedTech.status === 'Accepted' || assignedTech.status === 'Completed';
+    steps.push({
+      step: stepIndex++,
+      title: techAccepted ? 'Field Technician Accepted' : 'Field Technician Dispatched',
+      description: techAccepted
+        ? `${assignedTech.name} accepted • Ph: ${assignedTech.phone}`
+        : `Assigned to ${assignedTech.name}. Awaiting technician acceptance.`,
+      status: techAccepted ? 'COMPLETED' : 'CURRENT'
+    });
+
+    if (techAccepted || assignedTech.status === 'In Progress' || isResolved) {
+      steps.push({
+        step: stepIndex++,
+        title: 'Field Remediation in Progress',
+        description: isResolved ? 'On-ground maintenance and repair work completed.' : 'Technician active on ground for site repair.',
+        status: isResolved ? 'COMPLETED' : 'CURRENT'
+      });
+    }
+  }
+
+  // 6. Resolution
+  if (isResolved) {
+    steps.push({
+      step: stepIndex++,
+      title: challenge.status === 'Deployed' ? 'Field Deployment & Resolved' : 'Civic Problem Resolved',
+      description: challenge.status === 'Deployed' ? 'Certified prototype deployed on ground for societal impact.' : 'Resolution verified and closed with evidence.',
+      status: 'COMPLETED'
+    });
+  } else if (hasFurtherAssignment && !steps.some(s => s.status === 'CURRENT')) {
+    steps.push({
+      step: stepIndex++,
+      title: 'Resolution in Progress',
+      description: 'Awaiting completion verification.',
+      status: 'CURRENT'
+    });
+  }
+
+  return steps;
 }
 
 export default getChallengeMilestones;
