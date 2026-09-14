@@ -10,7 +10,12 @@ import { RegisterStepAccount } from './RegisterStepAccount.jsx';
 import { RegisterStepRoleDetails } from './RegisterStepRoleDetails.jsx';
 import { RegisterStepReview } from './RegisterStepReview.jsx';
 import { RegisterStepTerms } from './RegisterStepTerms.jsx';
-import { INITIAL_FORM_DATA, getPasswordStrength } from './registerConstants.js';
+import {
+  INITIAL_FORM_DATA,
+  getPasswordStrength,
+  validateRegisterStep,
+  buildRegistrationProfile
+} from './registerConstants.js';
 
 export const RegisterForm = ({ onNavigate }) => {
   const { register } = useAuth();
@@ -40,33 +45,12 @@ export const RegisterForm = ({ onNavigate }) => {
 
   const handleNext = () => {
     setErrorMessage('');
-    if (step === 1) {
-      if (!formData.role) {
-        setErrorMessage('Please select a registration role.');
-        return;
-      }
-      setStep(2);
-    } else if (step === 2) {
-      if (!formData.fullName.trim()) return setErrorMessage('Full Name is required.');
-      if (!/^[6-9]\d{9}$/.test(formData.mobileNumber)) return setErrorMessage('Invalid 10-digit Indian mobile number.');
-      if (!formData.email.trim() || !formData.email.includes('@')) return setErrorMessage('Invalid email address.');
-      if (formData.password.length < 8) return setErrorMessage('Password must be at least 8 characters long.');
-      if (formData.password !== formData.confirmPassword) return setErrorMessage('Passwords do not match.');
-      setStep(3);
-    } else if (step === 3) {
-      if (formData.role === 'CITIZEN') {
-        if (!formData.district) return setErrorMessage('Please select your District.');
-        if (!formData.blockOrULB) return setErrorMessage('Please select your Block/ULB.');
-      } else if (formData.role === 'UNIVERSITY') {
-        if (!formData.institutionName.trim()) return setErrorMessage('Institution Name is required.');
-        if (!formData.aisheCode.trim()) return setErrorMessage('AISHE Code is required.');
-      } else if (formData.role === 'INDUSTRY') {
-        if (!formData.organizationName.trim()) return setErrorMessage('Organization Name is required.');
-      }
-      setStep(4);
-    } else if (step === 4) {
-      setStep(5);
+    const error = validateRegisterStep(step, formData);
+    if (error) {
+      setErrorMessage(error);
+      return;
     }
+    if (step < 5) setStep((prev) => prev + 1);
   };
 
   const handleBack = () => {
@@ -85,30 +69,7 @@ export const RegisterForm = ({ onNavigate }) => {
     setErrorMessage('');
 
     try {
-      const payloadProfile = {
-        preferredLanguage: formData.preferredLanguage,
-        location:
-          formData.role === 'CITIZEN'
-            ? {
-                district: formData.district,
-                blockOrULB: formData.blockOrULB,
-                panchayatOrWard: formData.panchayatOrWard
-              }
-            : null,
-        institutionName: formData.role === 'UNIVERSITY' ? formData.institutionName : null,
-        aisheCode: formData.role === 'UNIVERSITY' ? formData.aisheCode : null,
-        registrationNumber: formData.role === 'UNIVERSITY' ? formData.registrationNumber : null,
-        institutionType: formData.role === 'UNIVERSITY' ? formData.institutionType : null,
-        nodalOfficerDesignation: formData.role === 'UNIVERSITY' ? formData.nodalOfficerDesignation : null,
-        academicFocusDomains: formData.role === 'UNIVERSITY' ? formData.academicFocusDomains : [],
-        organizationName: formData.role === 'INDUSTRY' ? formData.organizationName : null,
-        entityType: formData.role === 'INDUSTRY' ? formData.entityType : null,
-        cin: formData.role === 'INDUSTRY' ? formData.cin : null,
-        gstin: formData.role === 'INDUSTRY' ? formData.gstin : null,
-        ngoDarpanId: formData.role === 'INDUSTRY' ? formData.ngoDarpanId : null,
-        primaryContactDesignation: formData.role === 'INDUSTRY' ? formData.primaryContactDesignation : null,
-        supportSectors: formData.role === 'INDUSTRY' ? formData.supportSectors : []
-      };
+      const payloadProfile = buildRegistrationProfile(formData);
 
       await register({
         fullName: formData.fullName,
@@ -148,95 +109,95 @@ export const RegisterForm = ({ onNavigate }) => {
         style={{ backgroundImage: `url(${registerBg})` }}
       >
         <div className="absolute inset-0 bg-white/40 backdrop-blur-sm z-0"></div>
-        <Card className="w-full max-w-xl bg-white/95 border border-white/50 shadow-2xl rounded-2xl relative z-10 my-8">
-        {/* Compact Header with Smaller Logo */}
-        <CardHeader className="text-center pb-2.5 pt-4 px-4 border-b border-slate-100 bg-slate-50/50">
-          <div className="flex justify-center mb-1">
-            <img
-              src="https://www.jharkhand.gov.in/images/jhlogo55.PNG"
-              alt="Government of Jharkhand"
-              className="w-9 h-9 object-contain drop-shadow-xs"
-            />
-          </div>
-          <CardTitle className="text-lg sm:text-xl font-bold tracking-tight text-slate-900">
-            JoharSetu Registration Portal
-          </CardTitle>
-          <CardDescription className="text-slate-500 text-[11px] mt-0.5 font-medium">
-            Department of Higher & Technical Education, Government of Jharkhand
-          </CardDescription>
-        </CardHeader>
+        <Card className="w-full max-w-xl bg-white/95 border border-white/50 shadow-2xl rounded-2xl relative z-10 my-8 overflow-hidden">
+          {/* Compact Header with Smaller Logo */}
+          <CardHeader className="text-center pb-2.5 pt-4 px-4 border-b border-slate-100 bg-slate-50/50">
+            <div className="flex justify-center mb-1">
+              <img
+                src="https://www.jharkhand.gov.in/images/jhlogo55.PNG"
+                alt="Government of Jharkhand"
+                className="w-9 h-9 object-contain drop-shadow-xs"
+              />
+            </div>
+            <CardTitle className="text-lg sm:text-xl font-bold tracking-tight text-slate-900">
+              JoharSetu Registration Portal
+            </CardTitle>
+            <CardDescription className="text-slate-500 text-[11px] mt-0.5 font-medium">
+              Department of Higher & Technical Education, Government of Jharkhand
+            </CardDescription>
+          </CardHeader>
 
-        {/* Scrollable Card Content */}
-        <CardContent className="space-y-4 px-5 pt-4 pb-5 overflow-y-auto max-h-[calc(100vh-180px)]">
-          <RegisterStepper step={step} totalSteps={5} />
+          {/* Scrollable Card Content without visible scrollbar */}
+          <CardContent className="space-y-4 px-5 pt-4 pb-5 overflow-y-auto max-h-[calc(100vh-180px)] no-scrollbar [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+            <RegisterStepper step={step} totalSteps={5} />
 
-          {errorMessage && (
-            <Alert variant="error" title="Error">
-              {errorMessage}
-            </Alert>
-          )}
+            {errorMessage && (
+              <Alert variant="error" title="Error">
+                {errorMessage}
+              </Alert>
+            )}
 
-          {step === 1 && (
-            <RegisterStepRole
-              role={formData.role}
-              onRoleSelect={handleRoleSelect}
-              onNext={handleNext}
-              onNavigate={onNavigate}
-            />
-          )}
+            {step === 1 && (
+              <RegisterStepRole
+                role={formData.role}
+                onRoleSelect={handleRoleSelect}
+                onNext={handleNext}
+                onNavigate={onNavigate}
+              />
+            )}
 
-          {step === 2 && (
-            <RegisterStepAccount
-              formData={formData}
-              onChange={handleInputChange}
-              showPassword={showPassword}
-              onToggleShowPassword={() => setShowPassword(!showPassword)}
-              passwordStrength={passwordStrength}
-              onBack={handleBack}
-              onNext={handleNext}
-            />
-          )}
+            {step === 2 && (
+              <RegisterStepAccount
+                formData={formData}
+                onChange={handleInputChange}
+                showPassword={showPassword}
+                onToggleShowPassword={() => setShowPassword(!showPassword)}
+                passwordStrength={passwordStrength}
+                onBack={handleBack}
+                onNext={handleNext}
+              />
+            )}
 
-          {step === 3 && (
-            <RegisterStepRoleDetails
-              formData={formData}
-              onChange={handleInputChange}
-              onCheckboxListChange={handleCheckboxListChange}
-              onBack={handleBack}
-              onNext={handleNext}
-            />
-          )}
+            {step === 3 && (
+              <RegisterStepRoleDetails
+                formData={formData}
+                onChange={handleInputChange}
+                onCheckboxListChange={handleCheckboxListChange}
+                onBack={handleBack}
+                onNext={handleNext}
+              />
+            )}
 
-          {step === 4 && (
-            <RegisterStepReview
-              formData={formData}
-              onBack={handleBack}
-              onNext={handleNext}
-            />
-          )}
+            {step === 4 && (
+              <RegisterStepReview
+                formData={formData}
+                onBack={handleBack}
+                onNext={handleNext}
+              />
+            )}
 
-          {step === 5 && (
-            <RegisterStepTerms
-              termsAccepted={formData.termsAccepted}
-              onChange={handleInputChange}
-              isSubmitting={isSubmitting}
-              onBack={handleBack}
-              onSubmit={handleSubmit}
-            />
-          )}
+            {step === 5 && (
+              <RegisterStepTerms
+                termsAccepted={formData.termsAccepted}
+                onChange={handleInputChange}
+                isSubmitting={isSubmitting}
+                onBack={handleBack}
+                onSubmit={handleSubmit}
+              />
+            )}
 
-          <div className="text-center text-[11.5px] text-slate-500 font-medium pt-2.5 border-t border-slate-100">
-            Already have an account?{' '}
-            <button
-              type="button"
-              onClick={() => (onNavigate ? onNavigate('/login') : (window.location.href = '/login'))}
-              className="font-bold text-[#007A61] hover:text-[#005a47] hover:underline ml-1 cursor-pointer"
-            >
-              Sign In
-            </button>
-          </div>
-        </CardContent>
-      </Card>
+            <div className="text-center text-[11.5px] text-slate-500 font-medium pt-2.5 border-t border-slate-100">
+              Already have an account?{' '}
+              <button
+                type="button"
+                onClick={() => (onNavigate ? onNavigate('/login') : (window.location.href = '/login'))}
+                className="font-bold text-[#007A61] hover:text-[#005a47] hover:underline ml-1 cursor-pointer"
+              >
+                Sign In
+              </button>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </LandingLayout>
   );

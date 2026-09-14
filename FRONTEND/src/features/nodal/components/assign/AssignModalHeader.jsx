@@ -2,6 +2,7 @@ import React from 'react';
 import { X, Layers } from 'lucide-react';
 
 export const AssignModalHeader = ({
+  isUniversityTargetMode,
   activeChallenge,
   onClose
 }) => {
@@ -10,7 +11,7 @@ export const AssignModalHeader = ({
       <div className="flex items-center space-x-2">
         <Layers className="w-4 h-4 text-[#047857]" />
         <h3 className="text-sm font-bold text-slate-900">
-          Triage & Department Allocation
+          {isUniversityTargetMode ? 'Triage & University Allocation' : 'Triage & Institutional Allocation'}
         </h3>
         {activeChallenge && (
           <span className="font-mono text-xs font-bold text-[#047857]">

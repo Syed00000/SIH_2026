@@ -9,7 +9,6 @@ export const WardList = ({
   onEditWard,
   onDeleteWard,
   onAllocateProblem,
-  onOpenDashboard,
   onAddWard
 }) => {
   if (!wards || wards.length === 0) {
@@ -67,7 +66,6 @@ export const WardList = ({
               onEditWard={onEditWard}
               onDeleteWard={onDeleteWard}
               onAllocateProblem={onAllocateProblem}
-              onOpenDashboard={onOpenDashboard}
             />
           );
         })}

@@ -14,8 +14,14 @@ export const DepartmentCsrKpis = ({
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 text-left select-none">
       <div className="bg-white p-3.5 rounded-2xl border border-slate-200/90 shadow-2xs flex items-center justify-between">
         <div className="min-w-0 pr-2">
-          <span className="text-[10px] font-bold text-slate-400 block uppercase tracking-wider truncate">Available Balance</span>
-          <div className="text-base sm:text-lg font-black text-emerald-700 mt-0.5 truncate">₹ {availableBalance.toLocaleString('en-IN')}</div>
+          <div className={`text-base sm:text-lg font-black mt-0.5 truncate ${availableBalance <= 0 ? 'text-rose-600' : 'text-emerald-700'}`}>
+            ₹ {availableBalance.toLocaleString('en-IN')}
+          </div>
+          {availableBalance <= 0 && (
+            <span className="inline-block px-1.5 py-0.2 rounded text-[9px] font-bold bg-rose-50 text-rose-700 border border-rose-200">
+              ₹0 Fund (Allocation Locked)
+            </span>
+          )}
           {onOpenAllocateFund ? (
             <button
               type="button"

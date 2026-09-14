@@ -4,7 +4,7 @@ import { NodalAssignModal } from './NodalAssignModal.jsx';
 import { useNodalOverviewData } from './overview/hooks/useNodalOverviewData.js';
 import { NodalWelcomeBanner } from './overview/NodalWelcomeBanner.jsx';
 import { NodalUnassignedQueueCard } from './overview/NodalUnassignedQueueCard.jsx';
-import { NodalInstitutionalAllocationCard } from './overview/NodalInstitutionalAllocationCard.jsx';
+import { NodalProblemDomainAnalyticsCard } from './overview/NodalProblemDomainAnalyticsCard.jsx';
 import { NodalProcessWorkflowCard } from './overview/NodalProcessWorkflowCard.jsx';
 import { SkeletonStatCards, SkeletonOverviewPanels } from './common/NodalSkeletonLoaders.jsx';
 
@@ -50,10 +50,9 @@ export const NodalOverview = ({ onNavigateChallenges, onNavigateUniversities, no
             onOpenAssign={handleOpenAssignModal}
           />
 
-          <NodalInstitutionalAllocationCard
-            universities={universities}
+          <NodalProblemDomainAnalyticsCard
             challenges={allChallenges}
-            onNavigateUniversities={onNavigateUniversities}
+            onNavigateChallenges={onNavigateChallenges}
           />
         </div>
       )}

@@ -17,7 +17,7 @@ export const RegisterStepTerms = ({
         </span>
       </div>
 
-      <div className="bg-slate-50/80 border border-slate-300 rounded-xl p-4 text-xs text-slate-700 max-h-48 overflow-y-auto space-y-2.5 leading-relaxed shadow-2xs">
+      <div className="bg-slate-50/80 border border-slate-300 rounded-xl p-4 text-xs text-slate-700 max-h-48 overflow-y-auto no-scrollbar space-y-2.5 leading-relaxed shadow-2xs">
         <div className="flex items-center gap-2 font-bold text-slate-900 text-sm">
           <Shield className="w-4 h-4 text-slate-700" />
           <span>JoharSetu Societal Innovation Platform Terms</span>

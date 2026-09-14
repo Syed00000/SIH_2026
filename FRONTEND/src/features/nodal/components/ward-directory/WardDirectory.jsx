@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Landmark, RefreshCw, Plus, Search, Filter, Building2, ArrowLeft } from 'lucide-react';
+import { Landmark, RefreshCw, Plus, Search, Filter, Building2 } from 'lucide-react';
 import { wardService } from '../../../government/services/wardService.js';
 import { departmentService } from '../../../government/services/departmentService.js';
 import { blockService } from '../../../government/services/blockService.js';
@@ -7,7 +7,6 @@ import { citizenService } from '../../../citizen/services/citizenService.js';
 import { WardList } from './WardList.jsx';
 import { WardDirectoryModals } from './WardDirectoryModals.jsx';
 import { WardDirectoryStats } from './WardDirectoryStats.jsx';
-import { WardCommissionerDashboard } from './WardCommissionerDashboard.jsx';
 
 export const WardDirectory = ({ nodalDistrict = 'Ranchi' }) => {
   const [wards, setWards] = useState([]);
@@ -16,7 +15,6 @@ export const WardDirectory = ({ nodalDistrict = 'Ranchi' }) => {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [selectedBlock, setSelectedBlock] = useState('All');
-  const [selectedWardForDashboard, setSelectedWardForDashboard] = useState(null);
 
   // Modals state
   const [isAddWardOpen, setIsAddWardOpen] = useState(false);
@@ -50,10 +48,8 @@ export const WardDirectory = ({ nodalDistrict = 'Ranchi' }) => {
           councillorEmail: d.headEmail || d.credentials?.loginEmail || 'ward133@gmail.com',
           councillorPhone: d.headPhone || '8888888',
           credentials: d.credentials || {
-            loginId: d.headEmail || 'ward133@gmail.com',
-            loginEmail: d.headEmail || 'ward133@gmail.com',
-            password: 'ward@133',
-            generatedPassword: 'ward@133'
+            loginId: d.headEmail || 'ward133@gmail.com', loginEmail: d.headEmail || 'ward133@gmail.com',
+            password: 'ward@133', generatedPassword: 'ward@133'
           }
         }));
 
@@ -77,21 +73,6 @@ export const WardDirectory = ({ nodalDistrict = 'Ranchi' }) => {
 
   useEffect(() => { loadData(); }, [districtName]);
 
-  if (selectedWardForDashboard) {
-    return (
-      <div className="space-y-3 animate-in fade-in duration-150">
-        <button
-          type="button"
-          onClick={() => setSelectedWardForDashboard(null)}
-          className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition cursor-pointer"
-        >
-          <ArrowLeft className="w-3.5 h-3.5" />
-          <span>Back to Ward Directory</span>
-        </button>
-        <WardCommissionerDashboard onOpenDirectory={() => setSelectedWardForDashboard(null)} />
-      </div>
-    );
-  }
 
   const handleWardUpdated = (upd) => {
     setWards((prev) => prev.map((w) => ((w.wardId || w._id) === (upd.wardId || upd._id) ? upd : w)));
@@ -195,30 +176,19 @@ export const WardDirectory = ({ nodalDistrict = 'Ranchi' }) => {
       </div>
 
       <WardList
-        wards={filteredWards}
-        challenges={challenges}
-        onViewWard={(w) => setViewWard(w)}
-        onEditWard={(w) => setEditingWard(w)}
-        onDeleteWard={handleDeleteWard}
-        onAllocateProblem={(w) => setAllocatingWard(w)}
-        onOpenDashboard={(w) => setSelectedWardForDashboard(w)}
+        wards={filteredWards} challenges={challenges}
+        onViewWard={(w) => setViewWard(w)} onEditWard={(w) => setEditingWard(w)}
+        onDeleteWard={handleDeleteWard} onAllocateProblem={(w) => setAllocatingWard(w)}
         onAddWard={() => setIsAddWardOpen(true)}
       />
 
       <WardDirectoryModals
-        isAddWardOpen={isAddWardOpen}
-        setIsAddWardOpen={setIsAddWardOpen}
+        isAddWardOpen={isAddWardOpen} setIsAddWardOpen={setIsAddWardOpen}
         onWardCreated={(newWard) => { setWards((prev) => [newWard, ...prev]); setIsAddWardOpen(false); }}
-        districtName={districtName}
-        editingWard={editingWard}
-        setEditingWard={setEditingWard}
-        onWardUpdated={handleWardUpdated}
-        viewWard={viewWard}
-        setViewWard={setViewWard}
-        allocatingWard={allocatingWard}
-        setAllocatingWard={setAllocatingWard}
-        challenges={challenges}
-        onProblemAllocated={handleProblemAllocated}
+        districtName={districtName} editingWard={editingWard} setEditingWard={setEditingWard}
+        onWardUpdated={handleWardUpdated} viewWard={viewWard} setViewWard={setViewWard}
+        allocatingWard={allocatingWard} setAllocatingWard={setAllocatingWard}
+        challenges={challenges} onProblemAllocated={handleProblemAllocated}
       />
     </div>
   );

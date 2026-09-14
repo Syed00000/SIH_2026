@@ -1,6 +1,7 @@
 import { grantRequestRepository } from './grant-request.repository.js';
 import { GovernmentGrantPayment } from './model.js';
 import departmentRepository from '../departments/infrastructure/department.repository.js';
+import { processGrantFulfillment } from './grant-fulfillment.helper.js';
 
 export class GrantRequestService {
   constructor(repo = grantRequestRepository) {
@@ -83,7 +84,51 @@ export class GrantRequestService {
   }
 
   async getRequests(filter = {}, options = {}) {
-    return this.repo.find(filter, options);
+    const finalFilter = { ...filter };
+    if (finalFilter.targetDeptId) {
+      const idVal = finalFilter.targetDeptId;
+      const dept = await departmentRepository.findById(idVal);
+      const possibleIds = [idVal];
+      if (dept) {
+        if (dept.deptId) possibleIds.push(dept.deptId);
+        if (dept._id) possibleIds.push(String(dept._id));
+        if (dept.code) possibleIds.push(dept.code);
+        
+        const cat = (dept.category || '').toLowerCase();
+        if (dept.deptId === 'DEPT-JH-STATE' || cat.includes('state') || cat.includes('ministry')) {
+          delete finalFilter.targetDeptId;
+          finalFilter.$or = [
+            { targetDeptId: { $in: [...new Set(possibleIds)] } },
+            { tier: 'DISTRICT_TO_STATE' },
+            { targetCategory: 'State Ministry' }
+          ];
+        } else if (dept.deptId?.includes('DIST') || cat.includes('district')) {
+          delete finalFilter.targetDeptId;
+          const dName = dept.district || 'Ranchi';
+          finalFilter.$or = [
+            { targetDeptId: { $in: [...new Set(possibleIds)] } },
+            { tier: 'BLOCK_TO_DISTRICT', district: new RegExp(dName, 'i') },
+            { targetCategory: 'District Department' }
+          ];
+        } else {
+          finalFilter.targetDeptId = { $in: [...new Set(possibleIds)] };
+        }
+      } else {
+        finalFilter.targetDeptId = { $in: [...new Set(possibleIds)] };
+      }
+    }
+    if (finalFilter.requesterDeptId) {
+      const idVal = finalFilter.requesterDeptId;
+      const dept = await departmentRepository.findById(idVal);
+      const possibleIds = [idVal];
+      if (dept) {
+        if (dept.deptId) possibleIds.push(dept.deptId);
+        if (dept._id) possibleIds.push(String(dept._id));
+        if (dept.code) possibleIds.push(dept.code);
+      }
+      finalFilter.requesterDeptId = { $in: [...new Set(possibleIds)] };
+    }
+    return this.repo.find(finalFilter, options);
   }
 
   async getById(id) {
@@ -98,8 +143,7 @@ export class GrantRequestService {
       throw new Error(`Cannot grant request with status '${existing.status}'`);
     }
 
-    const sanctionedAmount = Number(grantData.sanctionedAmount) || existing.requestedAmount;
-    const utrNumber = grantData.utrNumber || `UTR-JH-CSR-${Date.now().toString().slice(-8)}`;
+    const { sanctionedAmount, utrNumber } = await processGrantFulfillment(existing, grantData);
 
     const updated = await this.repo.update(id, {
       status: 'Granted',
@@ -109,65 +153,6 @@ export class GrantRequestService {
       grantedBy: grantData.grantedBy || existing.targetName,
       grantRemarks: grantData.remarks || 'Sanctioned & Disbursed via CSR Pool'
     });
-
-    // Atomically credit requester department pool balance
-    let targetDept = null;
-    try {
-      targetDept = await departmentRepository.findById(existing.requesterDeptId);
-      if (!targetDept) {
-        const { Department } = await import('../departments/infrastructure/department.schema.js');
-        targetDept = await Department.findOne({ deptId: existing.requesterDeptId });
-      }
-      if (targetDept) {
-        const currentPool = Number(targetDept.allocatedFundPool) || 0;
-        await departmentRepository.update(targetDept.deptId || targetDept._id, { allocatedFundPool: currentPool + sanctionedAmount });
-      }
-    } catch (deptErr) {
-      console.warn('Could not update requester department pool balance:', deptErr.message);
-    }
-
-    try {
-      const { GovernmentGrantFund } = await import('./model.js');
-      await GovernmentGrantFund.create({
-        fundId: `GGF-REQ-${Date.now().toString().slice(-5)}`,
-        title: `Grant Approved: ${existing.purpose}`,
-        scheme: existing.sector || 'State Innovation Grant for Department Civic Works',
-        department: targetDept?.name || existing.requesterName,
-        departmentId: targetDept?.deptId || existing.requesterDeptId,
-        departmentCategory: targetDept?.category || existing.requesterCategory,
-        targetDeptCode: targetDept?.code || '',
-        fundType: 'DEPARTMENT_ALLOCATION',
-        amount: sanctionedAmount,
-        sanctionOrderNo: `JH-SANCTION-REQ-${Date.now().toString().slice(-6)}`,
-        financialYear: '2026-2027',
-        allocationDate: new Date(),
-        allocatedBy: grantData.grantedBy || 'Super Admin, Govt of Jharkhand',
-        description: `Sanctioned grant for department request (${existing.requestId}): ${existing.purpose}`,
-        status: 'Active'
-      });
-    } catch (e) {
-      console.warn('Could not record grant fund entry for request:', e.message);
-    }
-
-    try {
-      await GovernmentGrantPayment.create({
-        paymentId: `PAY-GR-${Date.now().toString().slice(-6)}`,
-        payer: existing.targetName || 'Govt State Treasury (PFMS Escrow)',
-        payee: `${existing.requesterName} (${existing.requesterDeptId})`,
-        amount: `₹ ${sanctionedAmount.toLocaleString('en-IN')}`,
-        rawAmount: sanctionedAmount,
-        disbursedAmount: `₹ ${sanctionedAmount.toLocaleString('en-IN')}`,
-        utrNumber,
-        makerCheckerStatus: 'Approved',
-        bankStatus: 'success',
-        scheme: 'CSR Municipal Development Grant',
-        projectRef: existing.requestId,
-        projectTitle: existing.purpose,
-        purpose: `Inter-tier Grant Disbursal (${existing.tier})`
-      });
-    } catch (e) {
-      console.warn('Could not record payment ledger entry:', e.message);
-    }
 
     return updated;
   }

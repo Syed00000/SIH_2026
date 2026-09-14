@@ -1,5 +1,5 @@
 import React from 'react';
-import { Landmark, Eye, Trash2, Mail, Phone, MapPin, Send, Edit2, Building2, Key, ExternalLink } from 'lucide-react';
+import { Landmark, Eye, Trash2, Mail, Phone, MapPin, Send, Edit2, Building2 } from 'lucide-react';
 
 export const WardCard = ({
   ward,
@@ -7,13 +7,8 @@ export const WardCard = ({
   onViewWard,
   onEditWard,
   onDeleteWard,
-  onAllocateProblem,
-  onOpenDashboard
+  onAllocateProblem
 }) => {
-  const wardId = ward.deptId || ward.code || ward.wardId || ward.id || ward._id;
-  const loginEmail = ward.credentials?.loginEmail || ward.credentials?.loginId || ward.headEmail || ward.councillorEmail;
-  const password = ward.credentials?.password || ward.credentials?.generatedPassword;
-
   return (
     <div className="bg-white p-4 rounded-2xl border border-slate-200/90 shadow-2xs hover:border-[#007A61]/40 transition-all flex flex-col md:flex-row md:items-center justify-between gap-3 text-left">
       <div className="flex items-start gap-3 min-w-0">
@@ -51,37 +46,17 @@ export const WardCard = ({
             )}
             {(ward.headEmail || ward.councillorEmail) && (
               <span className="flex items-center gap-1 text-slate-500">
-                <Mail className="w-3 h-3 text-slate-400" />
+                <Mail className="w-3.5 h-3.5 text-slate-400" />
                 {ward.headEmail || ward.councillorEmail}
               </span>
             )}
             {(ward.headPhone || ward.councillorPhone) && (
               <span className="flex items-center gap-1 text-slate-500">
-                <Phone className="w-3 h-3 text-slate-400" />
+                <Phone className="w-3.5 h-3.5 text-slate-400" />
                 {ward.headPhone || ward.councillorPhone}
               </span>
             )}
           </div>
-
-          {/* Credentials Display for Nodal Officer */}
-          {loginEmail && (
-            <div className="flex items-center gap-2 mt-1.5 px-2.5 py-1 rounded-lg bg-amber-50/90 border border-amber-200/90 text-[11px] text-amber-900 flex-wrap">
-              <span className="font-bold flex items-center gap-1 text-amber-800">
-                <Key className="w-3 h-3 text-amber-600" />
-                <span>Login:</span>
-              </span>
-              <span className="font-mono font-bold text-slate-800 select-all">{loginEmail}</span>
-              {password && (
-                <>
-                  <span className="text-amber-300">•</span>
-                  <span className="font-bold text-amber-800">Password:</span>
-                  <span className="font-mono font-bold bg-white px-1.5 py-0.5 rounded border border-amber-200 text-slate-800 select-all">
-                    {password}
-                  </span>
-                </>
-              )}
-            </div>
-          )}
 
           {ward.localities && ward.localities.length > 0 && (
             <div className="flex items-center gap-1.5 flex-wrap pt-0.5">
@@ -101,18 +76,6 @@ export const WardCard = ({
           <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
           {assignedCount} Assigned
         </span>
-
-        {onOpenDashboard && (
-          <button
-            type="button"
-            onClick={() => onOpenDashboard(ward)}
-            className="flex items-center gap-1 px-2.5 py-1 text-xs font-bold bg-emerald-50 text-[#007A61] hover:bg-emerald-100 rounded-lg transition-colors cursor-pointer border border-emerald-200 shadow-2xs"
-            title="Open Ward Commissioner Dashboard"
-          >
-            <ExternalLink className="w-3 h-3" />
-            <span>Dashboard</span>
-          </button>
-        )}
 
         {onAllocateProblem && (
           <button

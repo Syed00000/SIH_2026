@@ -69,20 +69,7 @@ export const DossierActionFooter = ({
           </>
         ) : (
           <>
-            {/* Small Problems ONLY: Assign to Administrative Block */}
-            {problemScope === 'small' && onOpenAssignBlock && (
-              <button
-                type="button"
-                onClick={onOpenAssignBlock}
-                className="flex items-center space-x-1.5 px-4 py-2 rounded-xl bg-[#007A61] hover:bg-[#006651] text-white text-xs font-bold cursor-pointer shadow-xs transition-all"
-              >
-                <Building2 className="w-3.5 h-3.5 text-emerald-200" />
-                <span>Assign to Block</span>
-              </button>
-            )}
-
-            {/* Big Problems ONLY: Allocate to University */}
-            {problemScope !== 'small' && onOpenTriage && (
+            {onOpenTriage && (
               challenge?.status === 'Withdrawn' ? (
                 <span className="text-xs font-bold text-slate-400 bg-slate-100 px-3 py-2 rounded-md border border-slate-200 cursor-not-allowed">
                   Withdrawn (Cannot Allocate)
@@ -94,9 +81,23 @@ export const DossierActionFooter = ({
                   className="flex items-center space-x-1.5 px-4 py-2 rounded-md bg-[#047857] hover:bg-[#064e3b] text-white text-xs font-bold cursor-pointer shadow-xs transition-all"
                 >
                   <Send className="w-3.5 h-3.5 text-emerald-200" />
-                  <span>{challenge?.assignedUniversity?.id ? 'Reassign Problem' : 'Allocate to University'}</span>
+                  <span>
+                    {challenge?.assignedUniversity?.id || challenge?.assignedDepartment?.deptId || challenge?.assignedWard?.wardId
+                      ? 'Reassign Problem'
+                      : 'Allocate Problem'}
+                  </span>
                 </button>
               )
+            )}
+            {onOpenAssignBlock && (
+              <button
+                type="button"
+                onClick={onOpenAssignBlock}
+                className="flex items-center space-x-1.5 px-4 py-2 rounded-xl bg-[#007A61] hover:bg-[#006651] text-white text-xs font-bold cursor-pointer shadow-xs transition-all"
+              >
+                <Building2 className="w-3.5 h-3.5 text-emerald-200" />
+                <span>Assign to Ward</span>
+              </button>
             )}
           </>
         )}
