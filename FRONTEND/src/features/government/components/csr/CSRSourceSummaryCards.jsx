@@ -51,8 +51,8 @@ export const CSRSourceSummaryCards = ({
               </div>
               {src.hasDisbursed && (
                 <div className="text-[10px] text-slate-500 font-semibold pt-1 border-t border-slate-100 flex items-center justify-between">
-                  <span>Total: {src.allocatedFormatted}</span>
-                  <span className="text-rose-600 font-bold font-mono">Disbursed: - {src.disbursedFormatted}</span>
+                  <span>Committed: {src.allocatedFormatted}</span>
+                  <span className="text-slate-800 font-bold font-mono">Transferred to Depts: - {src.disbursedFormatted}</span>
                 </div>
               )}
             </div>
@@ -66,14 +66,10 @@ export const CSRSourceSummaryCards = ({
                   e.stopPropagation();
                   onOpenAddModal();
                 }}
-                className={`w-full py-2 text-xs font-extrabold rounded-xl flex items-center justify-center space-x-1.5 transition-all cursor-pointer shadow-2xs ${
-                  src.isLowFund
-                    ? 'bg-rose-600 hover:bg-rose-700 text-white shadow-rose-200 animate-pulse'
-                    : 'bg-emerald-50 hover:bg-[#007A61] hover:text-white border border-emerald-200 text-[#007A61]'
-                }`}
+                className="w-full py-2 text-xs font-extrabold rounded-xl flex items-center justify-center space-x-1.5 transition-all cursor-pointer shadow-2xs bg-slate-900 hover:bg-[#007A61] text-white"
               >
                 <Plus className="w-3.5 h-3.5" />
-                <span>+ Add State Grant Fund</span>
+                <span>Add State Grant Fund</span>
               </button>
             )}
           </div>

@@ -1,13 +1,11 @@
 import React from 'react';
-import { Landmark, Building2, MapPin, ShieldCheck, Menu, ChevronDown } from 'lucide-react';
+import { Landmark, Building2, MapPin, ShieldCheck, Menu } from 'lucide-react';
 
 export const DepartmentHeader = ({
   department,
   activeTab,
   onNavigateTab,
-  onToggleSidebar,
-  allDepartments = [],
-  onSelectDepartment
+  onToggleSidebar
 }) => {
   const isGramPanchayat = department?.category === 'Gram Panchayat' || department?.category === 'Ward Commissioner';
   const name = department?.name || 'Department Authority';
@@ -34,7 +32,7 @@ export const DepartmentHeader = ({
           )}
 
           <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-[#007A61]/10 text-[#007A61] flex items-center justify-center shrink-0 border border-[#007A61]/20">
-            {isGramPanchayat ? <Building2 className="w-5 h-5 text-amber-700" /> : <Landmark className="w-5 h-5 text-[#007A61]" />}
+            {isGramPanchayat ? <Building2 className="w-5 h-5 text-slate-900" /> : <Landmark className="w-5 h-5 text-[#007A61]" />}
           </div>
 
           <div className="min-w-0 text-left">
@@ -43,7 +41,7 @@ export const DepartmentHeader = ({
                 {name}
               </h1>
               <span className={`px-1.5 sm:px-2 py-0.2 rounded-full text-[9px] sm:text-[10px] font-extrabold border shrink-0 ${
-                isGramPanchayat ? 'bg-amber-50 text-amber-700 border-amber-200' : 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                isGramPanchayat ? 'bg-slate-100 text-slate-800 border-slate-200' : 'bg-emerald-50 text-emerald-800 border-emerald-200'
               }`}>
                 {department?.category || 'State Ministry'}
               </span>
@@ -55,35 +53,12 @@ export const DepartmentHeader = ({
               </span>
               <span>•</span>
               <span className="flex items-center gap-1 text-slate-500">
-                <MapPin className="w-3 h-3 text-rose-500 shrink-0" />
+                <MapPin className="w-3 h-3 text-slate-400 shrink-0" />
                 <span className="truncate">{locationStr}</span>
               </span>
             </div>
           </div>
         </div>
-
-        {allDepartments.length > 1 && onSelectDepartment && (
-          <div className="flex items-center gap-1.5 shrink-0">
-            <span className="hidden lg:inline text-[10px] font-bold text-slate-400 uppercase tracking-wider">Switch Tier:</span>
-            <div className="relative">
-              <select
-                value={department?.deptId || department?.id || ''}
-                onChange={(e) => {
-                  const target = allDepartments.find((d) => (d.deptId || d.id || d._id) === e.target.value);
-                  if (target) onSelectDepartment(target);
-                }}
-                className="appearance-none pl-2.5 pr-7 py-1 bg-slate-50 hover:bg-emerald-50/50 border border-slate-200 hover:border-emerald-300 rounded-xl text-xs font-bold text-slate-800 cursor-pointer transition focus:outline-none shadow-2xs"
-              >
-                {allDepartments.map((d) => (
-                  <option key={d.deptId || d.id || d._id} value={d.deptId || d.id || d._id}>
-                    {d.name} ({d.category || d.deptId})
-                  </option>
-                ))}
-              </select>
-              <ChevronDown className="w-3.5 h-3.5 text-slate-400 absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none" />
-            </div>
-          </div>
-        )}
       </div>
     </header>
   );

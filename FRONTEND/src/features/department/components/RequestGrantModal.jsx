@@ -19,28 +19,35 @@ export const RequestGrantModal = ({ department, isOpen, onClose, onCreated, pref
   const isState = catLower.includes('state') || catLower.includes('ministry');
   const isDistrict = catLower.includes('district');
   const isBlock = catLower.includes('block') || catLower.includes('tehsil');
+  const isWard = !isState && !isDistrict && !isBlock;
 
   useEffect(() => {
     if (!isOpen) return;
+    if (isState) {
+      setAvailableTargets([]);
+      setTargetDeptId('STATE_GOV');
+      return;
+    }
     const fetchTargets = async () => {
       setFetchingTargets(true);
       try {
         const res = await departmentService.getDepartments({ limit: 100 });
         const all = res?.data || (Array.isArray(res) ? res : []) || [];
         let targets = [];
-        if (isBlock) {
-          targets = all.filter((d) => (d.category || '').toLowerCase().includes('district'));
-        } else if (isDistrict) {
+        if (isDistrict) {
           targets = all.filter((d) => (d.category || '').toLowerCase().includes('state') || (d.category || '').toLowerCase().includes('ministry'));
+        } else if (isBlock) {
+          targets = all.filter((d) => (d.category || '').toLowerCase().includes('district'));
         } else {
-          targets = all.filter((d) => (d.category || '').toLowerCase().includes('block'));
+          // Ward requests Block
+          targets = all.filter((d) => (d.category || '').toLowerCase().includes('block') || (d.category || '').toLowerCase().includes('tehsil'));
         }
         setAvailableTargets(targets);
         if (targets.length > 0) setTargetDeptId(targets[0].deptId || targets[0].id || targets[0]._id);
       } catch { /* ignore fallback */ } finally { setFetchingTargets(false); }
     };
     fetchTargets();
-  }, [isOpen, catLower, isBlock, isDistrict]);
+  }, [isOpen, isState, isDistrict, isBlock, isWard]);
 
   useEffect(() => {
     if (prefilledAmount) setAmount(String(prefilledAmount));
@@ -55,7 +62,10 @@ export const RequestGrantModal = ({ department, isOpen, onClose, onCreated, pref
   if (!isOpen) return null;
 
   const selectedTarget = availableTargets.find((t) => (t.deptId || t.id || t._id) === targetDeptId) || availableTargets[0];
-  const targetAuthorityName = selectedTarget ? `${selectedTarget.name} (${selectedTarget.category || 'Authority'})` : (isDistrict ? 'State Secretariat' : isBlock ? 'District Department' : 'Block Development Office');
+  const targetAuthorityName = isState
+    ? 'Government of Jharkhand (Main State Innovation & CSR Pool)'
+    : selectedTarget ? `${selectedTarget.name} (${selectedTarget.category || 'Authority'})`
+    : (isDistrict ? 'State Ministry' : isBlock ? 'District Department' : 'Block / Tehsil Office');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -69,10 +79,10 @@ export const RequestGrantModal = ({ department, isOpen, onClose, onCreated, pref
       const payload = {
         requesterDeptId: department?.deptId || department?.id || department?._id || 'DEPT-CURRENT',
         requesterName: department?.name || 'Local Authority',
-        requesterCategory: department?.category || (isDistrict ? 'District Department' : isBlock ? 'Block / Tehsil Office' : 'Ward Commissioner'),
-        targetDeptId: selectedTarget?.deptId || targetDeptId || (isDistrict ? 'DEPT-JH-STATE' : 'DEPT-JH-DIST-RNC'),
-        targetName: selectedTarget?.name || targetAuthorityName,
-        targetCategory: selectedTarget?.category || (isDistrict ? 'State Ministry' : 'District Department'),
+        requesterCategory: department?.category || (isState ? 'State Ministry' : isDistrict ? 'District Department' : isBlock ? 'Block / Tehsil Office' : 'Ward Commissioner'),
+        targetDeptId: isState ? 'STATE_GOV' : (selectedTarget?.deptId || targetDeptId || (isDistrict ? 'DEPT-JH-STATE' : 'DEPT-JH-DIST-RNC')),
+        targetName: targetAuthorityName,
+        targetCategory: isState ? 'Apex Government' : (selectedTarget?.category || (isDistrict ? 'State Ministry' : isBlock ? 'District Department' : 'Block / Tehsil Office')),
         district: department?.district || 'Ranchi',
         block: department?.block || '',
         wardId: department?.wardId || '',
@@ -93,12 +103,12 @@ export const RequestGrantModal = ({ department, isOpen, onClose, onCreated, pref
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs select-none">
       <div className="bg-white w-full max-w-lg rounded-2xl shadow-2xl border border-slate-200 overflow-hidden text-left flex flex-col max-h-[92vh]">
-        <div className="flex items-center justify-between px-5 py-3.5 bg-gradient-to-r from-emerald-800 to-teal-800 text-white">
+        <div className="flex items-center justify-between px-5 py-3.5 bg-slate-900 text-white">
           <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-xl bg-white/10 text-emerald-300"><HandCoins className="w-5 h-5" /></div>
+            <div className="p-2 rounded-xl bg-white/10 text-emerald-400"><HandCoins className="w-5 h-5" /></div>
             <div>
               <h3 className="text-sm font-black">Submit Grant Fund Requisition</h3>
-              <p className="text-[11px] text-emerald-200">Request allocation for civic problem resolution</p>
+              <p className="text-[11px] text-slate-300">Request allocation through statutory hierarchy</p>
             </div>
           </div>
           <button type="button" onClick={onClose} className="p-1 rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition cursor-pointer"><X className="w-5 h-5" /></button>
@@ -107,18 +117,23 @@ export const RequestGrantModal = ({ department, isOpen, onClose, onCreated, pref
         <form onSubmit={handleSubmit} className="p-5 overflow-y-auto space-y-3.5 custom-scrollbar text-xs">
           {error && <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl text-rose-700 flex items-center gap-2 font-medium"><AlertCircle className="w-4 h-4 shrink-0" /><span>{error}</span></div>}
 
-          <div className="p-3 bg-emerald-50/70 border border-emerald-200/80 rounded-xl space-y-1.5">
-            <span className="text-[10px] font-bold text-emerald-800 uppercase tracking-wider block">Approving Authority / Target Department *</span>
-            {fetchingTargets ? (
+          <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-1.5">
+            <span className="text-[10px] font-bold text-slate-700 uppercase tracking-wider block">Approving Authority / Target Tier *</span>
+            {isState ? (
+              <div className="text-xs font-black text-slate-900 flex items-center gap-1.5">
+                <Landmark className="w-3.5 h-3.5 text-[#007A61]" />
+                <span>Government of Jharkhand (Main State Innovation & CSR Pool)</span>
+              </div>
+            ) : fetchingTargets ? (
               <div className="flex items-center gap-2 text-slate-500 text-xs"><Loader2 className="w-3.5 h-3.5 animate-spin text-emerald-600" /><span>Fetching approving authorities...</span></div>
             ) : availableTargets.length > 0 ? (
-              <select value={targetDeptId} onChange={(e) => setTargetDeptId(e.target.value)} className="w-full px-3 py-1.5 bg-white border border-emerald-300 rounded-xl text-xs font-bold text-slate-900 focus:outline-none">
+              <select value={targetDeptId} onChange={(e) => setTargetDeptId(e.target.value)} className="w-full px-3 py-1.5 bg-white border border-slate-300 rounded-xl text-xs font-bold text-slate-900 focus:outline-none">
                 {availableTargets.map((t) => (
                   <option key={t.deptId || t._id} value={t.deptId || t._id}>{t.name} ({t.category || t.deptId})</option>
                 ))}
               </select>
             ) : (
-              <div className="text-xs font-black text-emerald-950 flex items-center gap-1.5"><Landmark className="w-3.5 h-3.5 text-emerald-700" /><span>{targetAuthorityName}</span></div>
+              <div className="text-xs font-black text-slate-900 flex items-center gap-1.5"><Landmark className="w-3.5 h-3.5 text-[#007A61]" /><span>{targetAuthorityName}</span></div>
             )}
           </div>
 

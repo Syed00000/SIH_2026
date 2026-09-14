@@ -14,14 +14,9 @@ export const DepartmentCsrKpis = ({
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 text-left select-none">
       <div className="bg-white p-3.5 rounded-2xl border border-slate-200/90 shadow-2xs flex items-center justify-between">
         <div className="min-w-0 pr-2">
-          <div className={`text-base sm:text-lg font-black mt-0.5 truncate ${availableBalance <= 0 ? 'text-rose-600' : 'text-emerald-700'}`}>
+          <div className="text-base sm:text-lg font-black text-slate-900 mt-0.5 truncate">
             ₹ {availableBalance.toLocaleString('en-IN')}
           </div>
-          {availableBalance <= 0 && (
-            <span className="inline-block px-1.5 py-0.2 rounded text-[9px] font-bold bg-rose-50 text-rose-700 border border-rose-200">
-              ₹0 Fund (Allocation Locked)
-            </span>
-          )}
           {onOpenAllocateFund ? (
             <button
               type="button"
@@ -32,37 +27,47 @@ export const DepartmentCsrKpis = ({
               <span>{allocateLabel}</span>
             </button>
           ) : (
-            <span className="text-[10px] text-slate-500 font-medium block truncate mt-0.5">{isWard ? 'Available for civic works' : 'Ready for hierarchy transfer'}</span>
+            <span className="text-[10px] text-slate-500 font-medium block truncate mt-0.5">
+              {isWard ? 'Available for civic works' : 'Ready for hierarchy transfer'}
+            </span>
           )}
         </div>
-        <div className="w-9 h-9 rounded-xl bg-emerald-50 flex items-center justify-center shrink-0"><IndianRupee className="w-4 h-4 text-emerald-700" /></div>
+        <div className="w-9 h-9 rounded-xl bg-emerald-50 flex items-center justify-center shrink-0">
+          <IndianRupee className="w-4 h-4 text-[#007A61]" />
+        </div>
       </div>
 
       <div className="bg-white p-3.5 rounded-2xl border border-slate-200/90 shadow-2xs flex items-center justify-between">
         <div className="min-w-0 pr-2">
           <span className="text-[10px] font-bold text-slate-400 block uppercase tracking-wider truncate">Utilized on Problems</span>
-          <div className="text-base sm:text-lg font-black text-blue-700 mt-0.5 truncate">₹ {totalSpentOnProblems.toLocaleString('en-IN')}</div>
+          <div className="text-base sm:text-lg font-black text-slate-900 mt-0.5 truncate">₹ {totalSpentOnProblems.toLocaleString('en-IN')}</div>
           <span className="text-[10px] text-slate-500 font-medium block truncate mt-0.5">Disbursed to ground issues</span>
         </div>
-        <div className="w-9 h-9 rounded-xl bg-blue-50 flex items-center justify-center shrink-0"><CheckCircle2 className="w-4 h-4 text-blue-700" /></div>
+        <div className="w-9 h-9 rounded-xl bg-slate-100 flex items-center justify-center shrink-0">
+          <CheckCircle2 className="w-4 h-4 text-slate-700" />
+        </div>
       </div>
 
       <div className="bg-white p-3.5 rounded-2xl border border-slate-200/90 shadow-2xs flex items-center justify-between">
         <div className="min-w-0 pr-2">
           <span className="text-[10px] font-bold text-slate-400 block uppercase tracking-wider truncate">Total Sanctioned Pool</span>
-          <div className="text-base sm:text-lg font-black text-purple-700 mt-0.5 truncate">₹ {totalAllocated.toLocaleString('en-IN')}</div>
+          <div className="text-base sm:text-lg font-black text-slate-900 mt-0.5 truncate">₹ {totalAllocated.toLocaleString('en-IN')}</div>
           <span className="text-[10px] text-slate-500 font-medium block truncate mt-0.5">Hierarchically Sanctioned Grant</span>
         </div>
-        <div className="w-9 h-9 rounded-xl bg-purple-50 flex items-center justify-center shrink-0"><ShieldCheck className="w-4 h-4 text-purple-700" /></div>
+        <div className="w-9 h-9 rounded-xl bg-slate-100 flex items-center justify-center shrink-0">
+          <ShieldCheck className="w-4 h-4 text-slate-700" />
+        </div>
       </div>
 
       <div className="bg-white p-3.5 rounded-2xl border border-slate-200/90 shadow-2xs flex items-center justify-between">
         <div className="min-w-0 pr-2">
           <span className="text-[10px] font-bold text-slate-400 block uppercase tracking-wider truncate">Pending Requisitions</span>
-          <div className="text-base sm:text-lg font-black text-amber-700 mt-0.5 truncate">{pendingCount}</div>
+          <div className="text-base sm:text-lg font-black text-slate-900 mt-0.5 truncate">{pendingCount}</div>
           <span className="text-[10px] text-slate-500 font-medium block truncate mt-0.5">{!isWard ? 'Awaiting your approval' : 'Under parent review'}</span>
         </div>
-        <div className="w-9 h-9 rounded-xl bg-amber-50 flex items-center justify-center shrink-0"><Clock className="w-4 h-4 text-amber-700" /></div>
+        <div className="w-9 h-9 rounded-xl bg-slate-100 flex items-center justify-center shrink-0">
+          <Clock className="w-4 h-4 text-slate-700" />
+        </div>
       </div>
     </div>
   );

@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import {
-  Sparkles,
   AlertTriangle,
   Building2,
   GraduationCap,
@@ -108,20 +107,20 @@ export const AiDossierSection = ({ challenge, onApplySuccess, onOpenDuplicateMod
       <div className="bg-gradient-to-r from-emerald-50/90 via-white to-slate-50 rounded-xl p-4 shadow-xs border border-emerald-200/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="flex items-center space-x-3">
           <div className="p-2.5 bg-[#007A61] text-white rounded-lg shadow-xs shrink-0">
-            <Sparkles className="w-5 h-5 text-emerald-100" />
+            <ShieldCheck className="w-5 h-5 text-emerald-100" />
           </div>
           <div>
             <div className="flex items-center space-x-2">
               <h3 className="text-sm font-bold text-slate-900 tracking-wide">
-                Jharkhand State AI Governance & Triage Engine
+                Technical Verification & Assessment Engine
               </h3>
               <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-100 text-emerald-800 border border-emerald-300 flex items-center space-x-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse" />
-                <span>Neural Triage Active</span>
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-600" />
+                <span>Verified Assessment</span>
               </span>
             </div>
             <p className="text-xs text-slate-600 mt-0.5">
-              Automated civic domain classification, high-precision vector deduplication radar, and statutory departmental routing
+              Civic domain verification, duplicate grievance screening, and statutory departmental allocation
             </p>
           </div>
         </div>
@@ -133,7 +132,7 @@ export const AiDossierSection = ({ challenge, onApplySuccess, onOpenDuplicateMod
           className="px-3.5 py-1.5 bg-white hover:bg-slate-50 text-slate-800 border border-slate-300 rounded-lg text-xs font-bold transition-all shadow-xs flex items-center space-x-1.5 shrink-0 self-start sm:self-auto cursor-pointer disabled:opacity-50 hover:border-slate-400"
         >
           <RefreshCw className={`w-3.5 h-3.5 text-[#007A61] ${analyzing ? 'animate-spin' : ''}`} />
-          <span>{analyzing ? 'Processing Triage...' : aiData ? 'Re-Analyze Problem' : 'Run Live AI Triage'}</span>
+          <span>{analyzing ? 'Processing Verification...' : aiData ? 'Re-Assess Problem' : 'Run Technical Assessment'}</span>
         </button>
       </div>
 
@@ -147,17 +146,17 @@ export const AiDossierSection = ({ challenge, onApplySuccess, onOpenDuplicateMod
       {/* If No AI Data Yet */}
       {!aiData && !analyzing && (
         <div className="bg-white border border-dashed border-slate-300 rounded-xl p-8 text-center space-y-3">
-          <Cpu className="w-10 h-10 text-slate-400 mx-auto" />
-          <h4 className="text-sm font-bold text-slate-800">AI Triage Not Yet Initiated</h4>
+          <ShieldCheck className="w-10 h-10 text-slate-400 mx-auto" />
+          <h4 className="text-sm font-bold text-slate-800">Technical Assessment Pending</h4>
           <p className="text-xs text-slate-500 max-w-md mx-auto">
-            Click &quot;Run Live AI Triage&quot; to vectorize this challenge, perform semantic deduplication against the state database, and identify the responsible Line Department.
+            Initiate assessment to verify problem domain, perform duplicate screening against the state registry, and determine administrative departmental routing.
           </p>
           <button
             type="button"
             onClick={handleRunAiAnalysis}
             className="px-4 py-2 bg-[#007A61] hover:bg-[#00634f] text-white text-xs font-bold rounded-lg transition-colors cursor-pointer shadow-xs"
           >
-            Start Live AI Triage
+            Start Assessment
           </button>
         </div>
       )}
@@ -167,7 +166,7 @@ export const AiDossierSection = ({ challenge, onApplySuccess, onOpenDuplicateMod
           {/* Quick Metrics Strip */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div className="bg-white border border-slate-200 p-3 rounded-xl shadow-2xs">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Classified Domain</span>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Problem Domain</span>
               <div className="text-sm font-bold text-slate-900 mt-1 flex items-center space-x-1.5">
                 <span className="w-2 h-2 rounded-full bg-emerald-500" />
                 <span>{aiData.classifiedDomain || challenge.domain || 'Civic Infrastructure'}</span>
@@ -178,7 +177,7 @@ export const AiDossierSection = ({ challenge, onApplySuccess, onOpenDuplicateMod
             </div>
 
             <div className="bg-white border border-slate-200 p-3 rounded-xl shadow-2xs">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Priority & Severity</span>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Priority Level</span>
               <div className="text-sm font-bold text-slate-900 mt-1 flex items-center space-x-1.5">
                 <Zap className="w-3.5 h-3.5 text-amber-500" />
                 <span>{aiData.priorityAssessment?.priority || 'Medium'} Priority</span>
@@ -192,9 +191,9 @@ export const AiDossierSection = ({ challenge, onApplySuccess, onOpenDuplicateMod
             </div>
 
             <div className="bg-white border border-slate-200 p-3 rounded-xl shadow-2xs">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Affected Population</span>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Impact Scope</span>
               <div className="text-sm font-bold text-slate-900 mt-1 flex items-center space-x-1.5">
-                <TrendingUp className="w-3.5 h-3.5 text-blue-600" />
+                <TrendingUp className="w-3.5 h-3.5 text-[#007A61]" />
                 <span>{aiData.priorityAssessment?.affectedEstimate || 'Local Ward'}</span>
               </div>
               <span className="text-[10.5px] text-slate-500 mt-0.5 block">Estimated civic impact footprint</span>
@@ -219,18 +218,18 @@ export const AiDossierSection = ({ challenge, onApplySuccess, onOpenDuplicateMod
                 <div>
                   <div className="flex items-center space-x-2">
                     <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wide">
-                      {isDuplicate ? 'Deduplication Radar: Potential Duplicate Issue Flagged' : 'Deduplication Radar: Verified Unique Problem'}
+                      {isDuplicate ? 'Duplicate Grievance Check: Potential Duplicate Found' : 'Duplicate Check: Verified Unique Grievance'}
                     </h4>
                     {isDuplicate && (
                       <span className="px-2 py-0.5 rounded-full text-[10.5px] font-bold bg-amber-200 text-amber-950 font-mono border border-amber-300">
-                        {simScore}% Vector Overlap
+                        {simScore}% Match Similarity
                       </span>
                     )}
                   </div>
                   <p className="text-xs text-slate-700 mt-1 leading-relaxed">
                     {isDuplicate
                       ? deduplication.duplicateReason || `Identical issue exists in ${challenge.district || 'district'}.`
-                      : 'Verified unique. No duplicate or conflicting problem statements detected across state vector indices.'}
+                      : 'Verified unique. No conflicting or duplicate problem statements detected in state records.'}
                   </p>
                   {isDuplicate && deduplication?.matchedChallengeId && (
                     <div className="mt-2 text-xs font-medium text-slate-800 flex items-center space-x-2 flex-wrap gap-y-1">
@@ -251,7 +250,7 @@ export const AiDossierSection = ({ challenge, onApplySuccess, onOpenDuplicateMod
                   className="px-3.5 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-lg text-xs font-bold transition-colors shrink-0 shadow-xs cursor-pointer flex items-center space-x-1.5"
                 >
                   <AlertTriangle className="w-3.5 h-3.5" />
-                  <span>Review & Reject Duplicate</span>
+                  <span>Review Duplicate Grievance</span>
                 </button>
               )}
             </div>
@@ -261,13 +260,13 @@ export const AiDossierSection = ({ challenge, onApplySuccess, onOpenDuplicateMod
           <div
             className={`border rounded-xl p-3.5 shadow-2xs flex items-start space-x-3 ${
               isMacro
-                ? 'bg-blue-50/80 border-blue-200 text-blue-950'
+                ? 'bg-slate-100 border-slate-300 text-slate-900'
                 : 'bg-emerald-50/80 border-emerald-200 text-emerald-950'
             }`}
           >
             <div
               className={`p-2 rounded-lg text-white shrink-0 mt-0.5 ${
-                isMacro ? 'bg-blue-600' : 'bg-[#007A61]'
+                isMacro ? 'bg-slate-900' : 'bg-[#007A61]'
               }`}
             >
               {isMacro ? <Landmark className="w-4 h-4" /> : <MapPin className="w-4 h-4 text-emerald-100" />}
@@ -280,7 +279,7 @@ export const AiDossierSection = ({ challenge, onApplySuccess, onOpenDuplicateMod
                 <span
                   className={`px-2.5 py-0.5 rounded-full font-bold text-[10.5px] border ${
                     isMacro
-                      ? 'bg-blue-100 text-blue-900 border-blue-300'
+                      ? 'bg-slate-200 text-slate-900 border-slate-300'
                       : 'bg-emerald-100 text-emerald-900 border-emerald-300'
                   }`}
                 >
@@ -323,7 +322,7 @@ export const AiDossierSection = ({ challenge, onApplySuccess, onOpenDuplicateMod
                 )}
               </div>
               <div className="flex items-center space-x-2">
-                <span className="text-xs font-bold text-slate-700">AI Fit Score:</span>
+                <span className="text-xs font-bold text-slate-700">Fit Alignment:</span>
                 <span className="text-xs font-bold font-mono px-2 py-0.5 bg-emerald-50 text-emerald-800 border border-emerald-200 rounded-full">
                   {deptConfidence}% Match
                 </span>
@@ -386,14 +385,14 @@ export const AiDossierSection = ({ challenge, onApplySuccess, onOpenDuplicateMod
             <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-2xs space-y-3">
               <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
                 <div className="flex items-center space-x-2">
-                  <GraduationCap className="w-4 h-4 text-blue-600" />
+                  <GraduationCap className="w-4 h-4 text-slate-900" />
                   <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
                     Academic Innovation & University Lab Matching
                   </h4>
                 </div>
                 <div className="flex items-center space-x-2">
                   <span className="text-xs font-bold text-slate-700">R&D Match:</span>
-                  <span className="text-xs font-bold font-mono px-2 py-0.5 bg-blue-50 text-blue-800 border border-blue-200 rounded-full">
+                  <span className="text-xs font-bold font-mono px-2 py-0.5 bg-slate-100 text-slate-800 border border-slate-200 rounded-full">
                     {heiConfidence}% Confidence
                   </span>
                 </div>
@@ -402,7 +401,7 @@ export const AiDossierSection = ({ challenge, onApplySuccess, onOpenDuplicateMod
               {/* Confidence Progress Bar */}
               <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
                 <div
-                  className="bg-blue-600 h-full rounded-full transition-all duration-500"
+                  className="bg-slate-900 h-full rounded-full transition-all duration-500"
                   style={{ width: `${heiConfidence}%` }}
                 />
               </div>

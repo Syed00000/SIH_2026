@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, AlertTriangle, GitMerge, Check, Loader2, Send, ShieldAlert, Sparkles } from 'lucide-react';
+import { X, AlertTriangle, GitMerge, Check, Loader2, Send, ShieldAlert, FileText } from 'lucide-react';
 import { apiClient } from '../../../../infrastructure/api/client.js';
 
 export const AiDuplicateModal = ({
@@ -160,7 +160,7 @@ export const AiDuplicateModal = ({
             {/* Quick Templates */}
             <div className="space-y-1">
               <div className="text-[10.5px] font-semibold text-slate-500 flex items-center space-x-1">
-                <Sparkles className="w-3 h-3 text-[#007A61]" />
+                <FileText className="w-3 h-3 text-[#007A61]" />
                 <span>Quick Notice Templates:</span>
               </div>
               <div className="flex flex-wrap gap-1.5">

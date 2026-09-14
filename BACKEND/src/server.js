@@ -119,6 +119,13 @@ const start = async () => {
       } catch (adminInitErr) {
         logger.warn('Admin bootstrap notice: ' + adminInitErr.message);
       }
+
+      try {
+        const { initFundAllocationWatcher } = await import('./modules/government/departments/infrastructure/fund-allocation-watcher.js');
+        initFundAllocationWatcher();
+      } catch (watcherErr) {
+        logger.warn('Fund allocation watcher notice: ' + watcherErr.message);
+      }
     } catch (dbErr) {
       logger.error('Failed to initialize MongoDB connection:', dbErr);
     }

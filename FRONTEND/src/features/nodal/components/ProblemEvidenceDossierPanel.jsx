@@ -6,12 +6,12 @@ import { DossierLocationTab } from './dossier/DossierLocationTab.jsx';
 import { DossierTrackingTab } from './dossier/DossierTrackingTab.jsx';
 import { DossierActionFooter } from './dossier/DossierActionFooter.jsx';
 import { FullPageDetailPanel } from '../../../shared/components/layout/FullPageDetailPanel.jsx';
-import { FileText, Image, MapPin, Download, Lock, Activity, Sparkles } from 'lucide-react';
+import { FileText, Image, MapPin, Download, Lock, Activity, ClipboardCheck } from 'lucide-react';
 import { AiDossierSection, AiDuplicateModal } from './ai/index.js';
 
 const DOSSIER_TABS = [
-  { id: 'ai-triage', label: 'AI Intelligence & Triage', icon: Sparkles },
   { id: 'dossier', label: 'Problem Dossier & Vetting', icon: FileText },
+  { id: 'ai-triage', label: 'Technical Assessment & Triage', icon: ClipboardCheck },
   { id: 'media', label: 'Ground Truth Media & Evidence', icon: Image },
   { id: 'location', label: 'Location & Demographics', icon: MapPin },
   { id: 'tracking', label: 'Tracking', icon: Activity }
@@ -30,7 +30,7 @@ export const ProblemEvidenceDossierPanel = ({
   onOpenChat,
   onOpenAssignBlock,
   problemScope = 'big',
-  initialTab = 'ai-triage',
+  initialTab = 'dossier',
   onTriageSuccess
 }) => {
   const [activeTab, setActiveTab] = useState(initialTab);

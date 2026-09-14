@@ -8,8 +8,15 @@ export class GrantFundService {
       MongooseIndustry.aggregate([{ $group: { _id: null, totalCsrCr: { $sum: '$financials.csrCommittedCr' } } }])
     ]);
 
-    const inflows = fundList.filter((f) => f.fundType === 'CORPUS_INFLOW' || f.fundId === 'GGF-122380' || (!f.departmentId && f.department === 'State Department'));
-    const allocations = fundList.filter((f) => f.fundType === 'DEPARTMENT_ALLOCATION' || (f.fundId !== 'GGF-122380' && (f.departmentId || f.department !== 'State Department')));
+    const inflows = fundList.filter((f) =>
+      f.fundType === 'CORPUS_INFLOW' ||
+      f.departmentId === 'STATE_GOV' ||
+      f.department === 'Government of Jharkhand State Innovation Pool'
+    );
+    const allocations = fundList.filter((f) =>
+      f.fundType === 'DEPARTMENT_ALLOCATION' ||
+      (f.fundType !== 'CORPUS_INFLOW' && f.departmentId && f.departmentId !== 'STATE_GOV' && f.department !== 'Government of Jharkhand State Innovation Pool')
+    );
 
     const totalCommittedInflows = inflows.reduce((sum, f) => sum + (Number(f.amount) || 0), 0);
     const totalAllocatedToDepts = allocations.reduce((sum, f) => sum + (Number(f.amount) || 0), 0);
@@ -26,7 +33,8 @@ export class GrantFundService {
       corporateCsrTotal,
       corporateCsrTotalCr,
       totalJointCorpus,
-      fundEntries: allocations.length > 0 ? allocations : fundList
+      fundEntries: allocations,
+      inflowEntries: inflows
     };
   }
 
@@ -38,7 +46,8 @@ export class GrantFundService {
       throw new Error('A valid grant allocation amount greater than ₹0 is required.');
     }
 
-    const isCorpusInflow = fundType === 'CORPUS_INFLOW' || data.isCorpusInflow;
+    const isCorpusInflow = fundType === 'CORPUS_INFLOW' || data.isCorpusInflow || data.action === 'add' || data.departmentId === 'STATE_GOV' || data.department === 'Government of Jharkhand State Innovation Pool' || !data.departmentId;
+
     if (!isCorpusInflow) {
       const currentOverview = await this.getFundsOverview();
       if (currentOverview.stateGrantsTotal < parsedAmount) {
@@ -46,37 +55,34 @@ export class GrantFundService {
       }
     }
 
-    // Atomically synchronize State Department pool balance
     let targetDept = null;
-    try {
-      const { Department } = await import('../departments/infrastructure/department.schema.js');
-      if (data.departmentId) {
-        targetDept = await Department.findOne({ deptId: data.departmentId });
-        if (!targetDept && /^[0-9a-fA-F]{24}$/.test(data.departmentId)) {
-          targetDept = await Department.findById(data.departmentId);
-        }
-      }
-      if (!targetDept && data.department) {
-        targetDept = await Department.findOne({ name: data.department });
-      }
-      if (!targetDept) {
-        targetDept = await Department.findOne({ category: 'State Ministry' }) || await Department.findOne({ deptId: 'DEPT-JH-STATE' });
-      }
-      if (targetDept) {
-        const cur = Number(targetDept.allocatedFundPool) || 0;
-        targetDept.allocatedFundPool = cur + parsedAmount;
-        await targetDept.save();
-
-        if (targetDept.deptId !== 'DEPT-JH-STATE') {
-          const apex = await Department.findOne({ deptId: 'DEPT-JH-STATE' });
-          if (apex) {
-            apex.allocatedFundPool = Math.max(0, (Number(apex.allocatedFundPool) || 0) - parsedAmount);
-            await apex.save();
+    if (!isCorpusInflow) {
+      try {
+        const { Department } = await import('../departments/infrastructure/department.schema.js');
+        if (data.departmentId) {
+          targetDept = await Department.findOne({ deptId: data.departmentId });
+          if (!targetDept && /^[0-9a-fA-F]{24}$/.test(data.departmentId)) {
+            targetDept = await Department.findById(data.departmentId);
           }
         }
+        if (!targetDept && data.department) {
+          targetDept = await Department.findOne({ name: data.department });
+        }
+        if (targetDept) {
+          const cur = Number(targetDept.allocatedFundPool) || 0;
+          targetDept.allocatedFundPool = cur + parsedAmount;
+          await targetDept.save();
+          const { recordDepartmentAllocation } = await import('../departments/application/helpers/record-fund-allocation.helper.js');
+          await recordDepartmentAllocation({
+            deptId: targetDept.deptId, departmentName: targetDept.name, departmentCategory: targetDept.category,
+            amount: parsedAmount, allocationType: 'STATE_GRANT', sourceDeptId: 'STATE_GOV',
+            sourceDeptName: 'Government of Jharkhand (State Treasury)', previousBalance: cur,
+            newBalance: targetDept.allocatedFundPool, sanctionOrderNo, scheme, purpose: description, allocatedBy
+          });
+        }
+      } catch (deptErr) {
+        console.warn('Could not update department pool:', deptErr.message);
       }
-    } catch (deptErr) {
-      console.warn('Could not update state department pool:', deptErr.message);
     }
 
     const fundId = `GGF-${Date.now().toString().slice(-6)}`;
@@ -158,6 +164,10 @@ export class GrantFundService {
         if (targetDept) {
           targetDept.allocatedFundPool = Math.max(0, (Number(targetDept.allocatedFundPool) || 0) - (Number(fund.amount) || 0));
           await targetDept.save();
+        }
+        const { DepartmentFundAllocation } = await import('../departments/infrastructure/department-fund-allocation.schema.js');
+        if (fund.sanctionOrderNo) {
+          await DepartmentFundAllocation.findOneAndDelete({ sanctionOrderNo: fund.sanctionOrderNo });
         }
       } catch (deptErr) {
         console.warn('Could not deduct on delete:', deptErr.message);

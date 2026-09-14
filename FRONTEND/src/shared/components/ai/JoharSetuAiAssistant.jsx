@@ -4,7 +4,6 @@ import {
   MessageSquare,
   X,
   Send,
-  Sparkles,
   ShieldCheck,
   RotateCcw,
   User,
@@ -108,8 +107,8 @@ export const JoharSetuAiAssistant = () => {
           onClick={() => setIsOpen(true)}
           className="flex items-center space-x-2.5 px-4 py-3 bg-[#007A61] hover:bg-[#00634f] text-white rounded-full shadow-xl hover:shadow-2xl transition-all cursor-pointer border border-emerald-400/40 group"
         >
-          <div className="p-1 bg-white/20 rounded-full group-hover:rotate-12 transition-transform">
-            <Sparkles className="w-4 h-4 text-emerald-100" />
+          <div className="p-1 bg-white/20 rounded-full group-hover:scale-110 transition-transform">
+            <MessageSquare className="w-4 h-4 text-emerald-100" />
           </div>
           <span className="text-xs font-bold tracking-wide">JoharSetu AI Sahayak</span>
           <span className="w-2 h-2 rounded-full bg-emerald-300 animate-ping" />

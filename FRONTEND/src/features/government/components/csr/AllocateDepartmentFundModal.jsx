@@ -64,6 +64,7 @@ export const AllocateDepartmentFundModal = ({ isOpen, onClose, onFundAllocated }
     try {
       const payload = {
         amount: numAmount,
+        fundType: 'DEPARTMENT_ALLOCATION',
         title: `State Innovation Grant to ${selectedDept?.name || 'Department'}`,
         scheme: scheme.trim() || 'Jharkhand State Innovation Council R&D Allocation',
         department: selectedDept?.name || 'State Department',

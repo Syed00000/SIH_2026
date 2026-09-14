@@ -1,5 +1,5 @@
 import React from 'react';
-import { Sparkles, AlertTriangle, Building, CheckCircle2 } from 'lucide-react';
+import { AlertTriangle, Building, CheckCircle2 } from 'lucide-react';
 
 export const AiIntelligenceBadge = ({ aiIntelligence, onClick, compact = false }) => {
   if (!aiIntelligence) return null;
@@ -35,10 +35,10 @@ export const AiIntelligenceBadge = ({ aiIntelligence, onClick, compact = false }
           onClick?.();
         }}
         className="inline-flex items-center space-x-1.5 px-2.5 py-0.5 rounded-full text-[10.5px] font-semibold bg-emerald-50 text-emerald-900 border border-emerald-300 hover:bg-emerald-100 transition-all cursor-pointer shadow-2xs group"
-        title={`AI Routing: ${deptName} (${deptConf || 88}% confidence)`}
+        title={`Routing Recommendation: ${deptName} (${deptConf || 88}% confidence)`}
       >
-        <Sparkles className="w-3 h-3 text-emerald-700 shrink-0 group-hover:rotate-12 transition-transform" />
-        <span className="truncate max-w-[135px] font-medium text-slate-800">{compact ? deptName : `AI: ${deptName}`}</span>
+        <Building className="w-3 h-3 text-emerald-700 shrink-0 group-hover:scale-105 transition-transform" />
+        <span className="truncate max-w-[135px] font-medium text-slate-800">{compact ? deptName : `${deptName}`}</span>
         {deptConf ? <span className="text-[10px] text-emerald-700 font-mono font-bold">({deptConf}%)</span> : null}
       </button>
     );
@@ -46,8 +46,8 @@ export const AiIntelligenceBadge = ({ aiIntelligence, onClick, compact = false }
 
   return (
     <span className="inline-flex items-center space-x-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-slate-100 text-slate-600 border border-slate-200">
-      <Sparkles className="w-2.5 h-2.5 text-slate-400" />
-      <span>AI Analyzed</span>
+      <CheckCircle2 className="w-2.5 h-2.5 text-slate-400" />
+      <span>Analyzed</span>
     </span>
   );
 };

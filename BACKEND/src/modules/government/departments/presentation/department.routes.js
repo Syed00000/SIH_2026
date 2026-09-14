@@ -3,7 +3,11 @@ import { departmentController } from './department.controller.js';
 
 const router = Router();
 
-// Department CRUD Routes: /api/v1/government/departments
+// Department Fund Allocation collection endpoints
+router.get('/fund-allocations', (req, res, next) => departmentController.getFundAllocations(req, res, next));
+router.delete('/fund-allocations/:id', (req, res, next) => departmentController.deleteFundAllocation(req, res, next));
+
+// Department Operations & CRUD
 router.post('/allocate-fund', (req, res, next) => departmentController.allocateFund(req, res, next));
 router.get('/', (req, res, next) => departmentController.getDepartments(req, res, next));
 router.post('/', (req, res, next) => departmentController.createDepartment(req, res, next));

@@ -16,12 +16,13 @@ export class GrantRequestController {
 
   async getRequests(req, res, next) {
     try {
-      const { requesterDeptId, targetDeptId, status, tier, district, block } = req.query;
+      const { requesterDeptId, targetDeptId, status, tier, district, block, forGovernment } = req.query;
       const filter = {};
       if (requesterDeptId) filter.requesterDeptId = requesterDeptId;
       if (targetDeptId) filter.targetDeptId = targetDeptId;
       if (status) filter.status = status;
       if (tier) filter.tier = tier;
+      if (forGovernment === 'true' || forGovernment === true) filter.forGovernment = true;
       if (district) filter.district = new RegExp(district, 'i');
       if (block) filter.block = new RegExp(block, 'i');
 
