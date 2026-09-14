@@ -1,13 +1,11 @@
 import React from 'react';
-import { Landmark, Building2, MapPin, ShieldCheck, Menu, ChevronDown } from 'lucide-react';
+import { Landmark, Building2, MapPin, ShieldCheck, Menu } from 'lucide-react';
 
 export const DepartmentHeader = ({
   department,
   activeTab,
   onNavigateTab,
-  onToggleSidebar,
-  allDepartments = [],
-  onSelectDepartment
+  onToggleSidebar
 }) => {
   const isGramPanchayat = department?.category === 'Gram Panchayat' || department?.category === 'Ward Commissioner';
   const name = department?.name || 'Department Authority';
@@ -61,29 +59,6 @@ export const DepartmentHeader = ({
             </div>
           </div>
         </div>
-
-        {allDepartments.length > 1 && onSelectDepartment && (
-          <div className="flex items-center gap-1.5 shrink-0">
-            <span className="hidden lg:inline text-[10px] font-bold text-slate-400 uppercase tracking-wider">Switch Tier:</span>
-            <div className="relative">
-              <select
-                value={department?.deptId || department?.id || ''}
-                onChange={(e) => {
-                  const target = allDepartments.find((d) => (d.deptId || d.id || d._id) === e.target.value);
-                  if (target) onSelectDepartment(target);
-                }}
-                className="appearance-none pl-2.5 pr-7 py-1 bg-slate-50 hover:bg-emerald-50/50 border border-slate-200 hover:border-emerald-300 rounded-xl text-xs font-bold text-slate-800 cursor-pointer transition focus:outline-none shadow-2xs"
-              >
-                {allDepartments.map((d) => (
-                  <option key={d.deptId || d.id || d._id} value={d.deptId || d.id || d._id}>
-                    {d.name} ({d.category || d.deptId})
-                  </option>
-                ))}
-              </select>
-              <ChevronDown className="w-3.5 h-3.5 text-slate-400 absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none" />
-            </div>
-          </div>
-        )}
       </div>
     </header>
   );
