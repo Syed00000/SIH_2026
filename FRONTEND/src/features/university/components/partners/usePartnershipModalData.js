@@ -29,7 +29,7 @@ export const usePartnershipModalData = (isOpen, initialPartner, initialProblem) 
           problemStatement: p.problemStatement || p.title,
           domain: p.domain || 'University R&D',
           location: 'Jharkhand',
-          facultyName: p.leadMentor || p.facultyMentor?.name || 'Dr. Binod Kumar',
+          facultyName: p.leadMentor || p.facultyMentor?.name || 'Faculty Mentor',
           studentTeam: p.studentTeam || 'Student Research Squad',
           studentLead: p.studentLead || 'Student Team Leader',
           prototypeData: p.prototypeData,

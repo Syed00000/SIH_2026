@@ -79,8 +79,8 @@ export const FacultyLayout = ({ user, onLogout }) => {
     return () => window.removeEventListener('popstate', handlePopState);
   }, []);
 
-  const facultyEmail = user?.email || 'binod@ru.ac.in';
-  const universityCode = user?.profile?.universityCode || user?.profile?.aisheCode || user?.profile?.code || 'RU001';
+  const facultyEmail = user?.email || '';
+  const universityCode = user?.profile?.universityCode || user?.profile?.aisheCode || user?.profile?.code || 'CUJ-099';
 
   const loadData = async (isBackground = false) => {
     if (!isBackground) setLoading(true);
@@ -105,10 +105,10 @@ export const FacultyLayout = ({ user, onLogout }) => {
     };
   }, [facultyEmail, universityCode]);
 
-  const facultyName = data.faculty?.name || user?.fullName || 'Dr. Binod Kumar';
-  const facultyRole = data.faculty?.designation || user?.profile?.designation || 'Senior Research Scientist';
-  const facultyDept = data.faculty?.department || user?.profile?.department || 'Electrical & Electronics';
-  const uniName = data.faculty?.universityName || 'Ranchi University';
+  const facultyName = data.faculty?.name || user?.fullName || 'Faculty Mentor';
+  const facultyRole = data.faculty?.designation || user?.profile?.designation || 'Associate Professor';
+  const facultyDept = data.faculty?.department || user?.profile?.department || 'Water Resources Engineering';
+  const uniName = data.faculty?.universityName || user?.profile?.institutionName || 'Ranchi University';
 
   return (
     <div className="min-h-screen bg-white flex flex-col h-screen overflow-hidden text-slate-900 font-sans select-none">

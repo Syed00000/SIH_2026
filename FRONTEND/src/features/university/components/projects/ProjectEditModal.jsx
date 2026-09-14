@@ -88,7 +88,7 @@ export const ProjectEditModal = ({ isOpen, onClose, project, onUpdate }) => {
               type="text"
               value={leadMentor}
               onChange={(e) => setLeadMentor(e.target.value)}
-              placeholder="e.g. Dr. Binod Kumar (or leave blank if unassigned)"
+              placeholder="e.g. Faculty Mentor (or leave blank if unassigned)"
               className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:ring-1 focus:ring-[#007A61] focus:bg-white transition-all shadow-2xs"
             />
           </div>

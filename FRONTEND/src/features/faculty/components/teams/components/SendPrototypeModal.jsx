@@ -56,9 +56,8 @@ export const SendPrototypeModal = ({ team, project, faculty, isOpen, onClose, on
         content: defaultPhases.labDesign,
         timeline,
         pdfUrl: pdfUrl || team?.pdfUrl || project?.prototypeData?.pdfUrl || '',
-        pdfName: pdfName || team?.pdfName || project?.prototypeData?.pdfName || 'Prototype_Report.pdf',
-        facultyEmail: faculty?.email || 'binod@ru.ac.in',
-        facultyName: faculty?.name || 'Dr. Binod Kumar',
+        facultyEmail: faculty?.email || '',
+        facultyName: faculty?.name || 'Faculty Mentor',
         teamName: team.name,
         teamLead: team.studentLead,
         teamMembersCount: team.membersCount || team.members?.length || 3

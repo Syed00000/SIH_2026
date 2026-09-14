@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import {
   FlaskConical, CheckCircle2, ChevronRight, ChevronLeft, ArrowRight,
-  Check, Activity, Zap, FileCheck2, FileText
+  Check, Activity, Zap, FileCheck2, FileText, Building2
 } from 'lucide-react';
 import { getStageDetails } from './prototypeStages.helper.js';
 import { openPdf } from '../../../../shared/utils/openPdf.js';
 
-export const PrototypeInteractiveCard = ({ project, onInspect, onAdvanceTrl }) => {
+export const PrototypeInteractiveCard = ({ project, onInspect, onAdvanceTrl, onOpenDeployTerms }) => {
   const curTrlNum = parseInt(String(project.trlLevel || '4').replace('TRL-', ''), 10) || 4;
   const defaultStage = curTrlNum <= 3 ? 1 : curTrlNum <= 6 ? 2 : curTrlNum <= 8 ? 3 : 4;
   const [selectedStageTab, setSelectedStageTab] = useState(defaultStage);
@@ -160,28 +160,40 @@ export const PrototypeInteractiveCard = ({ project, onInspect, onAdvanceTrl }) =
           </button>
         </div>
 
-        <div className="flex items-center justify-between text-xs pt-1 border-t border-slate-100">
+        <div className="flex items-center justify-between text-xs pt-1 border-t border-slate-100 gap-2">
           <button
             type="button"
             onClick={() => onInspect(project)}
-            className="px-3 py-1.5 bg-white hover:bg-slate-50 text-slate-800 font-bold border border-slate-300 rounded-xs transition-colors cursor-pointer flex items-center space-x-1 shadow-xs hover:border-[#007A61] hover:text-[#007A61]"
+            className="px-2.5 py-1.5 bg-white hover:bg-slate-50 text-slate-800 font-bold border border-slate-300 rounded-xs transition-colors cursor-pointer flex items-center space-x-1 shadow-xs hover:border-[#007A61] hover:text-[#007A61]"
           >
             <FlaskConical className="w-3.5 h-3.5 text-slate-500" />
-            <span>Inspect Specs</span>
+            <span>Specs</span>
           </button>
           {isDeployed ? (
-            <span className="px-3 py-1.5 bg-[#007A61]/10 border border-[#007A61]/30 text-[#007A61] rounded-xs font-bold text-xs flex items-center space-x-1 shadow-xs">
+            <span className="px-2.5 py-1.5 bg-[#007A61]/10 border border-[#007A61]/30 text-[#007A61] rounded-xs font-bold text-[11px] flex items-center space-x-1 shadow-xs">
               <span>🔒 Deployed Statewide</span>
             </span>
           ) : (
-            <button
-              type="button"
-              onClick={() => onAdvanceTrl(project.id)}
-              className="px-3 py-1.5 bg-slate-900 hover:bg-black text-white rounded-xs font-bold transition-colors cursor-pointer flex items-center space-x-1 shadow-xs"
-            >
-              <span>Advance Stage (+1 TRL)</span>
-              <ArrowRight className="w-3 h-3 text-emerald-400" />
-            </button>
+            <div className="flex items-center space-x-1.5">
+              <button
+                type="button"
+                onClick={() => onAdvanceTrl(project.id)}
+                className="px-2.5 py-1.5 bg-slate-900 hover:bg-black text-white rounded-xs font-bold transition-colors cursor-pointer flex items-center space-x-1 shadow-xs"
+                title="Advance TRL Level"
+              >
+                <span>+1 TRL</span>
+                <ArrowRight className="w-3 h-3 text-emerald-400" />
+              </button>
+              <button
+                type="button"
+                onClick={() => onOpenDeployTerms ? onOpenDeployTerms(project) : onInspect(project)}
+                className="px-2.5 py-1.5 bg-[#007A61] hover:bg-[#00604c] text-white rounded-xs font-bold transition-colors cursor-pointer flex items-center space-x-1 shadow-xs"
+                title="Move / Handover Solution to State Department"
+              >
+                <Building2 className="w-3.5 h-3.5 text-emerald-200" />
+                <span>Move to Dept</span>
+              </button>
+            </div>
           )}
         </div>
       </div>

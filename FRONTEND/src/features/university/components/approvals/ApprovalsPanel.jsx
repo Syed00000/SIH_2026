@@ -7,9 +7,8 @@ import { ApprovalDetailPanel } from './ApprovalDetailPanel.jsx';
 import { ProblemEvidenceDossierPanel } from '../../../nodal/components/ProblemEvidenceDossierPanel.jsx';
 import { universityApiService } from '../../services/universityApiService.js';
 
-const UNIVERSITY_CODE = 'RU001';
-
-export const ApprovalsPanel = () => {
+export const ApprovalsPanel = ({ universityCode = 'CUJ-099' }) => {
+  const targetCode = universityCode || 'CUJ-099';
   const [approvals, setApprovals] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState(null);
@@ -24,8 +23,8 @@ export const ApprovalsPanel = () => {
     setLoading(true);
     try {
       const [data, projData] = await Promise.all([
-        universityApiService.getApprovals(UNIVERSITY_CODE),
-        universityApiService.getProjects(UNIVERSITY_CODE)
+        universityApiService.getApprovals(targetCode),
+        universityApiService.getProjects(targetCode)
       ]);
       const appData = Array.isArray(data) ? data : [];
       const pList = Array.isArray(projData) ? projData : [];
@@ -48,7 +47,7 @@ export const ApprovalsPanel = () => {
     }
   };
 
-  useEffect(() => { fetchApprovals(); }, []);
+  useEffect(() => { fetchApprovals(); }, [targetCode]);
 
   const handleUpdateStatus = async (approval, newStatus, remarks = '', extraData = {}) => {
     try {
@@ -58,7 +57,7 @@ export const ApprovalsPanel = () => {
         ...(isApproved ? { sentToGovernment: true, governmentStatus: 'Under State Evaluation', ...(approval.type === 'Prototype Approval' ? { prototypeStatus: 'Approved' } : { budgetStatus: 'Forwarded to CSR Grants Pipeline' }) } : {}),
         ...extraData
       };
-      await universityApiService.updateApprovalStatus(id, UNIVERSITY_CODE, newStatus, remarks, payloadExtra);
+      await universityApiService.updateApprovalStatus(id, targetCode, newStatus, remarks, payloadExtra);
       setApprovals((prev) => prev.map((a) => (a.approvalId || a._id) === id ? { ...a, status: newStatus, adminRemarks: remarks, ...payloadExtra } : a));
     } catch (err) {
       console.error('updateApprovalStatus error:', err.message);

@@ -68,7 +68,7 @@ export const Gfr12AModal = ({ isOpen, onClose }) => {
               </div>
               <div className="p-2 bg-slate-50 rounded-md border border-slate-100">
                 <span className="text-slate-500 block text-[10px]">Lead Mentor Sign:</span>
-                <span className="font-bold text-slate-900">Dr. Binod Kumar (RU001)</span>
+                <span className="font-bold text-slate-900">Lead Faculty Mentor (CUJ-099)</span>
                 <span className="text-slate-400 block text-[9.5px]">Lab Milestone Audited</span>
               </div>
             </div>
