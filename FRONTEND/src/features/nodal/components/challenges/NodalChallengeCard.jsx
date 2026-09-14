@@ -1,5 +1,6 @@
 import React from 'react';
-import { MapPin, User, Building, Eye, MessageSquare, Trash2, Send, CheckCircle2 } from 'lucide-react';
+import { MapPin, User, Building, Eye, MessageSquare, Trash2, Send, CheckCircle2, Sparkles } from 'lucide-react';
+import { AiIntelligenceBadge } from '../ai/index.js';
 
 export const NodalChallengeCard = ({
   chl,
@@ -58,6 +59,14 @@ export const NodalChallengeCard = ({
           <p className="text-xs text-slate-500 line-clamp-2 mt-1 leading-relaxed">
             {chl.description}
           </p>
+          {chl.aiIntelligence && (
+            <div className="mt-2">
+              <AiIntelligenceBadge
+                aiIntelligence={chl.aiIntelligence}
+                onClick={() => onOpenDossier(chl, 'ai-triage')}
+              />
+            </div>
+          )}
         </div>
 
         {/* Metadata Grid */}
@@ -86,6 +95,18 @@ export const NodalChallengeCard = ({
       {/* Action Toolbar */}
       <div className="pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
         <div className="flex items-center space-x-1">
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onOpenDossier(chl, 'ai-triage');
+            }}
+            className="px-2 py-1 rounded-md border border-emerald-300 bg-emerald-50 text-emerald-900 hover:bg-emerald-100 transition-colors flex items-center space-x-1 cursor-pointer"
+            title="Open AI Intelligence & Triage"
+          >
+            <Sparkles className="w-3.5 h-3.5 text-[#007A61]" />
+            <span className="text-[10px] font-bold text-emerald-950 pr-0.5">AI</span>
+          </button>
+
           <button
             onClick={(e) => {
               e.stopPropagation();

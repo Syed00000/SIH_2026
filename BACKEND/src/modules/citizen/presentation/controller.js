@@ -4,6 +4,8 @@ import { createQueryHandler } from './handlers/query.handler.js';
 import { createAnalyticsHandler } from './handlers/analytics.handler.js';
 import { createTriageHandler } from './handlers/triage.handler.js';
 import { createMediaHandler } from './handlers/media.handler.js';
+import { createAiTriageHandler } from './handlers/ai-triage.handler.js';
+import { createAiChatHandler } from './handlers/ai-chat.handler.js';
 
 export class CitizenController {
   constructor(service = citizenService) {
@@ -13,6 +15,8 @@ export class CitizenController {
     this.analyticsHandler = createAnalyticsHandler(service);
     this.triageHandler = createTriageHandler(service);
     this.mediaHandler = createMediaHandler();
+    this.aiHandler = createAiTriageHandler(service);
+    this.chatHandler = createAiChatHandler();
   }
 
   submitChallenge(req, res, next) {
@@ -69,6 +73,26 @@ export class CitizenController {
 
   deleteMedia(req, res, next) {
     return this.mediaHandler.deleteMedia(req, res, next);
+  }
+
+  analyzeChallenge(req, res, next) {
+    return this.aiHandler.analyzeChallenge(req, res, next);
+  }
+
+  applyAiRecommendation(req, res, next) {
+    return this.aiHandler.applyRecommendation(req, res, next);
+  }
+
+  markDuplicate(req, res, next) {
+    return this.aiHandler.markDuplicate(req, res, next);
+  }
+
+  batchSyncAi(req, res, next) {
+    return this.aiHandler.batchSync(req, res, next);
+  }
+
+  handleAiChat(req, res, next) {
+    return this.chatHandler.handleChat(req, res, next);
   }
 }
 

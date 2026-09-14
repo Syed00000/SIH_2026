@@ -14,6 +14,7 @@ export const NodalChallenges = ({ initialStatusFilter = 'All Status', nodalDistr
   const [viewMode, setViewMode] = useState('table');
   const [isAssignWardOpen, setIsAssignWardOpen] = useState(false);
   const [wardAssignChallenge, setWardAssignChallenge] = useState(null);
+  const [dossierInitialTab, setDossierInitialTab] = useState('dossier');
 
   const {
     searchTerm, setSearchTerm, statusFilter, setStatusFilter, domainFilter, setDomainFilter,
@@ -23,6 +24,11 @@ export const NodalChallenges = ({ initialStatusFilter = 'All Status', nodalDistr
     toastMsg, deletingId, loadChallenges, handleOpenTriage, handleQuickReject, handleQuickDelete,
     handleTriageSuccess, filteredChallenges
   } = useNodalChallenges({ initialStatusFilter, nodalDistrict });
+
+  const handleOpenDossier = (chl, tab = 'dossier') => {
+    setDossierInitialTab(tab);
+    setSelectedDossierChallenge(chl);
+  };
 
   const handleOpenAssignWard = (chl) => {
     setWardAssignChallenge(chl);
@@ -41,6 +47,11 @@ export const NodalChallenges = ({ initialStatusFilter = 'All Status', nodalDistr
       <div className="space-y-4 select-none text-left animate-in fade-in duration-150">
         <ProblemEvidenceDossierPanel
           challenge={selectedDossierChallenge}
+          initialTab={dossierInitialTab}
+          onTriageSuccess={(updated) => {
+            handleTriageSuccess(updated);
+            setSelectedDossierChallenge(updated);
+          }}
           onClose={() => setSelectedDossierChallenge(null)}
           onOpenTriage={() => {
             setSelectedChallenge(selectedDossierChallenge);
@@ -99,14 +110,14 @@ export const NodalChallenges = ({ initialStatusFilter = 'All Status', nodalDistr
       {viewMode === 'table' ? (
         <NodalChallengesTable
           loading={loading} challenges={filteredChallenges} deletingId={deletingId}
-          onOpenDossier={setSelectedDossierChallenge} onOpenChat={setChatChallenge}
+          onOpenDossier={handleOpenDossier} onOpenChat={setChatChallenge}
           onQuickReject={handleQuickReject} onQuickDelete={handleQuickDelete}
           onOpenTriage={handleOpenTriage}
         />
       ) : (
         <NodalChallengesGrid
           loading={loading} challenges={filteredChallenges} deletingId={deletingId}
-          onOpenDossier={setSelectedDossierChallenge} onOpenChat={setChatChallenge}
+          onOpenDossier={handleOpenDossier} onOpenChat={setChatChallenge}
           onQuickReject={handleQuickReject} onQuickDelete={handleQuickDelete}
           onOpenTriage={handleOpenTriage}
         />

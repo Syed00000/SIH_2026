@@ -6,9 +6,11 @@ import { DossierLocationTab } from './dossier/DossierLocationTab.jsx';
 import { DossierTrackingTab } from './dossier/DossierTrackingTab.jsx';
 import { DossierActionFooter } from './dossier/DossierActionFooter.jsx';
 import { FullPageDetailPanel } from '../../../shared/components/layout/FullPageDetailPanel.jsx';
-import { FileText, Image, MapPin, Download, Lock, Activity } from 'lucide-react';
+import { FileText, Image, MapPin, Download, Lock, Activity, Sparkles } from 'lucide-react';
+import { AiDossierSection, AiDuplicateModal } from './ai/index.js';
 
 const DOSSIER_TABS = [
+  { id: 'ai-triage', label: 'AI Intelligence & Triage', icon: Sparkles },
   { id: 'dossier', label: 'Problem Dossier & Vetting', icon: FileText },
   { id: 'media', label: 'Ground Truth Media & Evidence', icon: Image },
   { id: 'location', label: 'Location & Demographics', icon: MapPin },
@@ -27,9 +29,13 @@ export const ProblemEvidenceDossierPanel = ({
   onAssignFaculty,
   onOpenChat,
   onOpenAssignBlock,
-  problemScope = 'big'
+  problemScope = 'big',
+  initialTab = 'ai-triage',
+  onTriageSuccess
 }) => {
-  const [activeTab, setActiveTab] = useState('dossier');
+  const [activeTab, setActiveTab] = useState(initialTab);
+  const [isDuplicateModalOpen, setIsDuplicateModalOpen] = useState(false);
+  const [duplicateInfo, setDuplicateInfo] = useState(null);
 
   if (!challenge) return null;
 
@@ -120,6 +126,16 @@ export const ProblemEvidenceDossierPanel = ({
       }
     >
       <div className="space-y-4">
+        {activeTab === 'ai-triage' && (
+          <AiDossierSection
+            challenge={challenge}
+            onApplySuccess={(updated) => onTriageSuccess?.(updated)}
+            onOpenDuplicateModal={(dup) => {
+              setDuplicateInfo(dup);
+              setIsDuplicateModalOpen(true);
+            }}
+          />
+        )}
         {activeTab === 'dossier' && (
           <DossierOverviewTab
             challenge={challenge}
@@ -145,6 +161,23 @@ export const ProblemEvidenceDossierPanel = ({
         )}
         {activeTab === 'tracking' && <DossierTrackingTab challenge={challenge} />}
       </div>
+
+      {isDuplicateModalOpen && (
+        <AiDuplicateModal
+          isOpen={isDuplicateModalOpen}
+          onClose={() => {
+            setIsDuplicateModalOpen(false);
+            setDuplicateInfo(null);
+          }}
+          challenge={challenge}
+          duplicateInfo={duplicateInfo}
+          onSuccess={(updated) => {
+            onTriageSuccess?.(updated);
+            setIsDuplicateModalOpen(false);
+            setDuplicateInfo(null);
+          }}
+        />
+      )}
     </FullPageDetailPanel>
   );
 };

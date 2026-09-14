@@ -25,6 +25,7 @@ import { ImpactPage } from '../features/landing/components/ImpactPage.jsx';
 import { IndustryLandingPage } from '../features/landing/components/IndustryLandingPage.jsx';
 import { InstitutionsPage } from '../features/landing/components/InstitutionsPage.jsx';
 import { ContactPage } from '../features/landing/components/ContactPage.jsx';
+import { JoharSetuAiAssistant } from '../shared/components/ai/JoharSetuAiAssistant.jsx';
 
 export function Router() {
   const { user, isAuthenticated, loading, logout } = useAuth();
@@ -192,7 +193,25 @@ export function Router() {
     );
   };
 
-  return <RootLayout>{renderComponent()}</RootLayout>;
+  const isPublicPage = [
+    '/',
+    '/landing',
+    '/about',
+    '/about-jharkhand',
+    '/impact',
+    '/industry',
+    '/institutions',
+    '/contact',
+    '/login',
+    '/register'
+  ].includes(currentPath);
+
+  return (
+    <RootLayout>
+      {renderComponent()}
+      {isPublicPage && <JoharSetuAiAssistant />}
+    </RootLayout>
+  );
 }
 
 export default Router;
