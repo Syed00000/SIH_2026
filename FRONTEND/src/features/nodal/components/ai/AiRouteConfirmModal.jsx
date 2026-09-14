@@ -87,7 +87,7 @@ export const AiRouteConfirmModal = ({
                   : 'bg-slate-50 border-slate-200'
                 : isRoutineMaintenance
                 ? 'bg-amber-50 border-amber-200'
-                : 'bg-blue-50 border-blue-200'
+                : 'bg-slate-50 border-slate-200'
             }`}
           >
             <div className="flex items-center space-x-3">
@@ -99,7 +99,7 @@ export const AiRouteConfirmModal = ({
                       : 'bg-slate-800'
                     : isRoutineMaintenance
                     ? 'bg-amber-600'
-                    : 'bg-blue-600'
+                    : 'bg-slate-900'
                 }`}
               >
                 {isDept ? (

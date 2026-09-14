@@ -13,10 +13,13 @@ export const CSRFundingSources = ({ onFilterBySource, selectedSourceFilter }) =>
   const [editingFund, setEditingFund] = useState(null);
   const [fundsData, setFundsData] = useState({
     stateGrantsTotal: 0,
+    totalCommittedInflows: 0,
+    totalAllocatedToDepts: 0,
     corporateCsrTotal: 0,
     corporateCsrTotalCr: 0,
     totalJointCorpus: 0,
-    fundEntries: []
+    fundEntries: [],
+    inflowEntries: []
   });
 
   const fetchLiveFunds = async () => {
@@ -25,10 +28,13 @@ export const CSRFundingSources = ({ onFilterBySource, selectedSourceFilter }) =>
       const data = res?.data?.data || res?.data || {};
       setFundsData({
         stateGrantsTotal: data.stateGrantsTotal || 0,
+        totalCommittedInflows: data.totalCommittedInflows || 0,
+        totalAllocatedToDepts: data.totalAllocatedToDepts || 0,
         corporateCsrTotal: data.corporateCsrTotal || 0,
         corporateCsrTotalCr: data.corporateCsrTotalCr || 0,
         totalJointCorpus: data.totalJointCorpus || 0,
-        fundEntries: data.fundEntries || []
+        fundEntries: data.fundEntries || [],
+        inflowEntries: data.inflowEntries || []
       });
     } catch (err) {
       console.warn('Failed to load government funds:', err);
@@ -44,10 +50,7 @@ export const CSRFundingSources = ({ onFilterBySource, selectedSourceFilter }) =>
       setFinancials(projectCsrSyncService.getFinancials());
     });
     const interval = setInterval(fetchLiveFunds, 4000);
-    return () => {
-      clearInterval(interval);
-      unsub();
-    };
+    return () => { clearInterval(interval); unsub(); };
   }, []);
 
   const handleFundChange = () => {
@@ -63,9 +66,9 @@ export const CSRFundingSources = ({ onFilterBySource, selectedSourceFilter }) =>
     return n > 0 ? `₹ ${(n / 1000).toFixed(1)} K` : '₹ 0.00';
   };
 
-  const totalDisbursed = financials?.totalDisbursed || 0;
-  const remainingStateGrants = Math.max(0, (fundsData.stateGrantsTotal || 0) - totalDisbursed);
-  const remainingTotalCorpus = Math.max(0, (fundsData.totalJointCorpus || 0) - totalDisbursed);
+  const stateCommitted = Number(fundsData.totalCommittedInflows) || 0;
+  const stateAllocatedToDepts = Number(fundsData.totalAllocatedToDepts) || 0;
+  const stateAvailablePool = Math.max(0, stateCommitted - stateAllocatedToDepts);
 
   const sourcesConfig = [
     {
@@ -73,9 +76,9 @@ export const CSRFundingSources = ({ onFilterBySource, selectedSourceFilter }) =>
       title: 'Corporate CSR Funds (Sec 135)',
       description: 'Dedicated industry CSR innovation corpus for university problem-solving.',
       tag: 'Industry Committed',
-      amount: fundsData.corporateCsrTotal,
-      amountFormatted: formatAmountINR(fundsData.corporateCsrTotal),
-      amountSub: formatLakhsCrSubtitle(fundsData.corporateCsrTotal),
+      amount: fundsData.corporateCsrTotal || 0,
+      amountFormatted: formatAmountINR(fundsData.corporateCsrTotal || 0),
+      amountSub: formatLakhsCrSubtitle(fundsData.corporateCsrTotal || 0),
       iconColor: 'text-[#007A61] bg-emerald-50 border-emerald-100',
       badgeColor: 'text-[#007A61] bg-emerald-50 border-emerald-200',
       canAdd: false
@@ -83,30 +86,30 @@ export const CSRFundingSources = ({ onFilterBySource, selectedSourceFilter }) =>
     {
       id: 'govt_grants',
       title: 'Government State Grants',
-      description: remainingStateGrants <= 0 ? '⚠️ State grant pool has ₹ 0. Please add funds.' : 'Jharkhand State Innovation Council & Higher Education Dept R&D allocation.',
-      tag: remainingStateGrants <= 0 ? '⚠️ Low Budget Pool' : `${fundsData.fundEntries.length} Active Allocations`,
-      amount: remainingStateGrants,
-      amountFormatted: formatAmountINR(remainingStateGrants),
-      amountSub: formatLakhsCrSubtitle(remainingStateGrants),
-      allocatedFormatted: formatAmountINR(fundsData.stateGrantsTotal),
-      disbursedFormatted: formatAmountINR(totalDisbursed),
-      hasDisbursed: totalDisbursed > 0,
-      iconColor: remainingStateGrants <= 0 ? 'text-rose-600 bg-rose-50 border-rose-200' : 'text-emerald-600 bg-emerald-50 border-emerald-100',
-      badgeColor: remainingStateGrants <= 0 ? 'text-rose-700 bg-rose-100 border-rose-300 font-black animate-pulse' : 'text-[#007A61] bg-emerald-50 border-emerald-200',
+      description: 'Jharkhand State Innovation Council & Higher Education Dept R&D allocation.',
+      tag: `${fundsData.inflowEntries?.length || 0} Treasury Inflows`,
+      amount: stateAllocatedToDepts > 0 ? stateAvailablePool : stateCommitted,
+      amountFormatted: formatAmountINR(stateAllocatedToDepts > 0 ? stateAvailablePool : stateCommitted),
+      amountSub: formatLakhsCrSubtitle(stateAllocatedToDepts > 0 ? stateAvailablePool : stateCommitted),
+      allocatedFormatted: formatAmountINR(stateCommitted),
+      disbursedFormatted: formatAmountINR(stateAllocatedToDepts),
+      hasDisbursed: stateAllocatedToDepts > 0,
+      iconColor: 'text-[#007A61] bg-emerald-50 border-emerald-100',
+      badgeColor: 'text-[#007A61] bg-emerald-50 border-emerald-200',
       canAdd: true,
-      isLowFund: remainingStateGrants <= 0
+      isLowFund: false
     },
     {
       id: 'joint_funding',
       title: 'Joint Co-Funding (PPP Model)',
       description: 'Matched Corporate-State Escrow Pool for rapid field scale-up and district rollout.',
       tag: 'Total Combined Corpus',
-      amount: remainingTotalCorpus,
-      amountFormatted: formatAmountINR(remainingTotalCorpus),
-      amountSub: formatLakhsCrSubtitle(remainingTotalCorpus),
-      allocatedFormatted: formatAmountINR(fundsData.totalJointCorpus),
-      disbursedFormatted: formatAmountINR(totalDisbursed),
-      hasDisbursed: totalDisbursed > 0,
+      amount: 0,
+      amountFormatted: '₹ 0',
+      amountSub: '₹ 0.00',
+      allocatedFormatted: '₹ 0',
+      disbursedFormatted: '₹ 0',
+      hasDisbursed: false,
       iconColor: 'text-slate-700 bg-slate-100 border-slate-200',
       badgeColor: 'text-slate-700 bg-slate-100 border-slate-200',
       canAdd: false
@@ -129,10 +132,10 @@ export const CSRFundingSources = ({ onFilterBySource, selectedSourceFilter }) =>
             <p className="text-xs text-slate-500 font-medium mt-0.5">
               Live Combined Innovation Pool:{' '}
               <strong className="text-slate-900 font-black text-sm">
-                {formatLakhsCrSubtitle(fundsData.totalJointCorpus)}
+                {formatLakhsCrSubtitle(stateAvailablePool + (Number(fundsData.corporateCsrTotal) || 0))}
               </strong>{' '}
               <span className="text-[11px] text-slate-400">
-                (State R&D Grants: {formatLakhsCrSubtitle(fundsData.stateGrantsTotal)} + Corporate CSR: {formatLakhsCrSubtitle(fundsData.corporateCsrTotal)})
+                (State Treasury Pool: {formatLakhsCrSubtitle(stateAvailablePool)} + Corporate CSR: {formatLakhsCrSubtitle(fundsData.corporateCsrTotal || 0)})
               </span>
             </p>
           </div>
@@ -158,7 +161,7 @@ export const CSRFundingSources = ({ onFilterBySource, selectedSourceFilter }) =>
         />
 
         <AllocatedGrantsLedgerTable
-          fundEntries={fundsData.fundEntries}
+          fundEntries={fundsData.inflowEntries?.length > 0 ? fundsData.inflowEntries : fundsData.fundEntries}
           formatLakhsCrSubtitle={formatLakhsCrSubtitle}
           onOpenAddModal={() => setIsAddGrantModalOpen(true)}
           onEditFund={(f) => setEditingFund(f)}
@@ -166,29 +169,13 @@ export const CSRFundingSources = ({ onFilterBySource, selectedSourceFilter }) =>
       </div>
 
       {selectedSourceData && (
-        <SourceDetailsModal
-          isOpen={!!selectedSourceData}
-          onClose={() => setSelectedSourceData(null)}
-          sourceData={selectedSourceData}
-        />
+        <SourceDetailsModal isOpen={!!selectedSourceData} onClose={() => setSelectedSourceData(null)} sourceData={selectedSourceData} />
       )}
-
       {isAddGrantModalOpen && (
-        <AddStateGrantModal
-          isOpen={isAddGrantModalOpen}
-          onClose={() => setIsAddGrantModalOpen(false)}
-          onFundAdded={handleFundChange}
-        />
+        <AddStateGrantModal isOpen={isAddGrantModalOpen} onClose={() => setIsAddGrantModalOpen(false)} onFundAdded={handleFundChange} />
       )}
-
       {editingFund && (
-        <EditStateGrantModal
-          isOpen={!!editingFund}
-          fund={editingFund}
-          onClose={() => setEditingFund(null)}
-          onFundUpdated={handleFundChange}
-          onFundDeleted={handleFundChange}
-        />
+        <EditStateGrantModal isOpen={!!editingFund} fund={editingFund} onClose={() => setEditingFund(null)} onFundUpdated={handleFundChange} onFundDeleted={handleFundChange} />
       )}
     </>
   );

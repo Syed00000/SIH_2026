@@ -19,31 +19,38 @@ export class GrantRequestService {
     }
 
     const requesterDept = await departmentRepository.findById(data.requesterDeptId);
-    const requesterCategory = requesterDept?.category || data.requesterCategory;
+    const requesterCategory = requesterDept?.category || data.requesterCategory || 'Ward Commissioner';
+    const catLower = requesterCategory.toLowerCase();
+
     let tier = 'WARD_TO_BLOCK';
     let targetCategory = 'Block / Tehsil Office';
 
-    if (data.isEmergency) {
-      if (requesterCategory === 'Ward Commissioner' || requesterCategory === 'Ward') {
-        tier = data.emergencyTargetTier === 'STATE' ? 'WARD_TO_STATE' : 'WARD_TO_DISTRICT';
-        targetCategory = data.emergencyTargetTier === 'STATE' ? 'State Ministry' : 'District Department';
-      } else {
-        tier = requesterCategory === 'Block / Tehsil Office' ? 'BLOCK_TO_STATE' : 'DISTRICT_TO_STATE';
-        targetCategory = 'State Ministry';
-      }
-    } else if (requesterCategory === 'District Department' || requesterCategory === 'State Ministry') {
+    if (catLower.includes('state') || catLower.includes('ministry')) {
+      tier = 'STATE_TO_GOVERNMENT';
+      targetCategory = 'Apex Government';
+    } else if (catLower.includes('district')) {
       tier = 'DISTRICT_TO_STATE';
       targetCategory = 'State Ministry';
-    } else if (requesterCategory === 'Block / Tehsil Office') {
+    } else if (catLower.includes('block') || catLower.includes('tehsil')) {
       tier = 'BLOCK_TO_DISTRICT';
       targetCategory = 'District Department';
+    } else {
+      tier = 'WARD_TO_BLOCK';
+      targetCategory = 'Block / Tehsil Office';
     }
 
     let targetDept = null;
-    if (data.targetDeptId) {
+    if (tier === 'STATE_TO_GOVERNMENT') {
+      targetDept = {
+        deptId: 'STATE_GOV',
+        name: 'Government of Jharkhand (Main State Innovation & CSR Pool)',
+        category: 'Apex Government'
+      };
+    } else if (data.targetDeptId && data.targetDeptId !== 'STATE_GOV') {
       targetDept = await departmentRepository.findById(data.targetDeptId);
     }
-    if (!targetDept) {
+
+    if (!targetDept && tier !== 'STATE_TO_GOVERNMENT') {
       const candidates = await departmentRepository.find({ category: targetCategory });
       if (targetCategory === 'District Department') {
         const rawDist = data.district || requesterDept?.district;
@@ -85,6 +92,15 @@ export class GrantRequestService {
 
   async getRequests(filter = {}, options = {}) {
     const finalFilter = { ...filter };
+    if (finalFilter.forGovernment) {
+      delete finalFilter.forGovernment;
+      finalFilter.$or = [
+        { requesterCategory: 'State Ministry' },
+        { tier: 'STATE_TO_GOVERNMENT' },
+        { targetCategory: 'Apex Government' },
+        { targetDeptId: 'STATE_GOV' }
+      ];
+    }
     if (finalFilter.targetDeptId) {
       const idVal = finalFilter.targetDeptId;
       const dept = await departmentRepository.findById(idVal);

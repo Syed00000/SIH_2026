@@ -6,14 +6,14 @@ export const WardCommissionerHeader = ({ wardDept, loading, onReload, onOpenDire
     <div className="bg-white p-3.5 sm:p-4 rounded-2xl border border-slate-200/90 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-left">
       <div className="flex items-center gap-3">
         <div className="w-10 h-10 rounded-2xl bg-[#007A61]/10 text-[#007A61] flex items-center justify-center shrink-0 border border-[#007A61]/20">
-          <Building2 className="w-5 h-5 text-amber-700" />
+          <Building2 className="w-5 h-5 text-slate-900" />
         </div>
         <div>
           <div className="flex items-center gap-2 flex-wrap">
             <h1 className="text-base sm:text-lg font-black text-slate-900 leading-none">
               {wardDept?.name || 'ward commissioner'}
             </h1>
-            <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-amber-50 text-amber-700 border border-amber-200">
+            <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-slate-100 text-slate-800 border border-slate-200">
               {wardDept?.category || 'Ward Commissioner'}
             </span>
           </div>
@@ -24,7 +24,7 @@ export const WardCommissionerHeader = ({ wardDept, loading, onReload, onOpenDire
             </span>
             <span>•</span>
             <span className="flex items-center gap-1 text-slate-500">
-              <MapPin className="w-3.5 h-3.5 text-rose-500 shrink-0" />
+              <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0" />
               <span>{wardDept?.district || '133'}</span>
             </span>
           </div>

@@ -22,10 +22,7 @@ export class DepartmentController {
   async getDepartmentById(req, res, next) {
     try {
       const dept = await this.service.getDepartment(req.params.id);
-      return res.status(200).json({
-        success: true,
-        data: dept
-      });
+      return res.status(200).json({ success: true, data: dept });
     } catch (err) {
       next(err);
     }
@@ -95,6 +92,34 @@ export class DepartmentController {
       if (err.message.includes('Insufficient funds') || err.message.includes('valid allocation amount') || err.message.includes('not found')) {
         return res.status(400).json({ success: false, message: err.message });
       }
+      next(err);
+    }
+  }
+
+  async getFundAllocations(req, res, next) {
+    try {
+      const { deptId } = req.query;
+      const filter = deptId ? { deptId } : {};
+      const allocations = await this.service.listFundAllocations(filter);
+      return res.status(200).json({
+        success: true,
+        data: allocations,
+        count: allocations.length
+      });
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  async deleteFundAllocation(req, res, next) {
+    try {
+      const result = await this.service.deleteFundAllocation(req.params.id);
+      return res.status(200).json({
+        success: true,
+        message: result.message,
+        data: result.deletedRecord
+      });
+    } catch (err) {
       next(err);
     }
   }

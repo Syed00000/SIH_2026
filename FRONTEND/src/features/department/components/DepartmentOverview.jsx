@@ -13,10 +13,10 @@ export const DepartmentOverview = ({
   const critical = problems.filter((p) => p.priority === 'Critical' || p.priority === 'High').length;
 
   const kpis = [
-    { label: 'Assigned Problems', value: total, sub: 'Total civic directives received', icon: AlertCircle, color: 'text-slate-800', bg: 'bg-slate-100', iconColor: 'text-slate-600' },
-    { label: 'Work In Progress', value: inProgress, sub: 'Active field investigation/work', icon: Clock, color: 'text-blue-700', bg: 'bg-blue-50', iconColor: 'text-blue-600' },
-    { label: 'Resolved & Closed', value: resolved, sub: 'Ground issues resolved', icon: CheckCircle2, color: 'text-emerald-700', bg: 'bg-emerald-50', iconColor: 'text-emerald-600' },
-    { label: 'Critical / High Priority', value: critical, sub: 'Requires immediate attention', icon: Flame, color: 'text-rose-700', bg: 'bg-rose-50', iconColor: 'text-rose-600' }
+    { label: 'Assigned Problems', value: total, sub: 'Total civic directives received', icon: AlertCircle, color: 'text-slate-900', bg: 'bg-slate-100', iconColor: 'text-slate-900' },
+    { label: 'Work In Progress', value: inProgress, sub: 'Active field investigation/work', icon: Clock, color: 'text-slate-900', bg: 'bg-slate-100', iconColor: 'text-slate-900' },
+    { label: 'Resolved & Closed', value: resolved, sub: 'Ground issues resolved', icon: CheckCircle2, color: 'text-[#007A61]', bg: 'bg-emerald-50', iconColor: 'text-[#007A61]' },
+    { label: 'Critical / High Priority', value: critical, sub: 'Requires immediate attention', icon: Flame, color: 'text-slate-900', bg: 'bg-slate-100', iconColor: 'text-slate-900' }
   ];
 
   const recentProblems = problems.slice(0, 5);
@@ -70,7 +70,7 @@ export const DepartmentOverview = ({
             <button
               onClick={() => setActiveTab('Active')}
               className={`px-3 py-1.5 rounded-lg text-[10px] font-extrabold uppercase tracking-wider transition-all ${
-                activeTab === 'Active' ? 'bg-white text-blue-700 shadow-xs' : 'text-slate-500 hover:text-slate-700'
+                activeTab === 'Active' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-500 hover:text-slate-700'
               }`}
             >
               Active / Upcoming
@@ -78,7 +78,7 @@ export const DepartmentOverview = ({
             <button
               onClick={() => setActiveTab('Forwarded')}
               className={`px-3 py-1.5 rounded-lg text-[10px] font-extrabold uppercase tracking-wider transition-all ${
-                activeTab === 'Forwarded' ? 'bg-white text-amber-700 shadow-xs' : 'text-slate-500 hover:text-slate-700'
+                activeTab === 'Forwarded' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-500 hover:text-slate-700'
               }`}
             >
               Forwarded
@@ -86,7 +86,7 @@ export const DepartmentOverview = ({
             <button
               onClick={() => setActiveTab('Resolved')}
               className={`px-3 py-1.5 rounded-lg text-[10px] font-extrabold uppercase tracking-wider transition-all ${
-                activeTab === 'Resolved' ? 'bg-white text-emerald-700 shadow-xs' : 'text-slate-500 hover:text-slate-700'
+                activeTab === 'Resolved' ? 'bg-[#007A61] text-white shadow-xs' : 'text-slate-500 hover:text-slate-700'
               }`}
             >
               Resolved
@@ -134,17 +134,17 @@ export const DepartmentOverview = ({
                       <td className="py-2.5 px-2 text-slate-600 truncate">{locStr}</td>
                       <td className="py-2.5 px-2 text-center whitespace-nowrap">
                         <span className={`px-2 py-0.5 rounded-full text-[9.5px] font-extrabold border ${
-                          p.priority === 'Critical' ? 'bg-rose-50 text-rose-700 border-rose-200' :
-                          p.priority === 'High' ? 'bg-amber-50 text-amber-700 border-amber-200' :
-                          'bg-blue-50 text-blue-700 border-blue-200'
+                          p.priority === 'Critical' ? 'bg-slate-900 text-white border-slate-900' :
+                          p.priority === 'High' ? 'bg-slate-100 text-slate-900 border-slate-300' :
+                          'bg-slate-50 text-slate-700 border-slate-200'
                         }`}>
                           {p.priority || 'Medium'}
                         </span>
                       </td>
                       <td className="py-2.5 px-2 text-center whitespace-nowrap">
                         <span className={`px-2 py-0.5 rounded-full text-[9.5px] font-extrabold border ${
-                          p.status === 'Resolved' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
-                          'bg-blue-50 text-blue-700 border-blue-200'
+                          p.status === 'Resolved' ? 'bg-emerald-50 text-emerald-800 border-emerald-200' :
+                          'bg-slate-100 text-slate-800 border-slate-200'
                         }`}>
                           {p.status || 'Assigned'}
                         </span>
@@ -153,7 +153,7 @@ export const DepartmentOverview = ({
                         <button
                           type="button"
                           onClick={() => onSelectProblem && onSelectProblem(p)}
-                          className="px-2.5 py-1 bg-[#007A61]/10 text-[#007A61] hover:bg-[#007A61] hover:text-white rounded-lg font-bold text-xs transition-colors cursor-pointer"
+                          className="px-2.5 py-1 bg-slate-900 hover:bg-[#007A61] text-white rounded-lg font-bold text-xs transition-colors cursor-pointer"
                         >
                           Take Action
                         </button>

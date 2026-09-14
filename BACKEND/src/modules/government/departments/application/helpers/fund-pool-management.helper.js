@@ -26,6 +26,21 @@ export async function manageFundPool(repo, dept, fundData = {}) {
   }
 
   const updated = await repo.update(dept.deptId || dept.id || dept._id, { allocatedFundPool: newPool });
+  if (action === 'add') {
+    try {
+      const { recordDepartmentAllocation } = await import('./record-fund-allocation.helper.js');
+      await recordDepartmentAllocation({
+        deptId: dept.deptId, departmentName: dept.name, departmentCategory: dept.category,
+        amount: recordedAmount, allocationType: 'DIRECT_TOPUP', previousBalance: currentPool,
+        newBalance: newPool, sanctionOrderNo: fundData.sanctionOrderNo,
+        scheme: fundData.scheme || 'Direct Department Pool Top-up',
+        purpose: fundData.description || `${dept.name} Pool Top-up`,
+        allocatedBy: fundData.allocatedBy || dept.headName || 'Department Authority'
+      });
+    } catch (e) {
+      console.warn('Could not record fund allocation entry:', e.message);
+    }
+  }
   try {
     await GovernmentGrantFund.create({
       fundId: `GGF-${Date.now().toString().slice(-6)}`,

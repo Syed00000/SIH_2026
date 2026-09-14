@@ -65,10 +65,29 @@ export async function executeFundAllocation(repo, { fromDeptId, toDeptId, amount
     recipientName = `Technician ${technician.name} (${technician.specialization})`;
     recipientId = technician.technicianId;
   } else {
-    updatedToBalance = (Number(toDept.allocatedFundPool) || 0) + parsedAmount;
+    const prevToBal = Number(toDept.allocatedFundPool) || 0;
+    updatedToBalance = prevToBal + parsedAmount;
     await repo.update(toDept.deptId || toDept._id, { allocatedFundPool: updatedToBalance });
     recipientName = toDept.name;
     recipientId = toDept.deptId;
+
+    const { recordDepartmentAllocation } = await import('./record-fund-allocation.helper.js');
+    await recordDepartmentAllocation({
+      deptId: toDept.deptId,
+      departmentName: toDept.name,
+      departmentCategory: toDept.category,
+      amount: parsedAmount,
+      allocationType: 'INTER_DEPT_TRANSFER',
+      sourceDeptId: fromDept.deptId,
+      sourceDeptName: fromDept.name,
+      sourceDeptCategory: fromDept.category,
+      previousBalance: prevToBal,
+      newBalance: updatedToBalance,
+      sanctionOrderNo: sanctionOrderNo || `JH-ALLOC-${Date.now().toString().slice(-6)}`,
+      scheme: scheme || 'Inter-Departmental Subordinate Fund Allocation',
+      purpose: description || `Fund disbursal from ${fromDept.name} to ${recipientName}`,
+      allocatedBy: allocatedBy || fromDept.headName || fromDept.name
+    });
   }
 
   // 5. Record audit ledger entry

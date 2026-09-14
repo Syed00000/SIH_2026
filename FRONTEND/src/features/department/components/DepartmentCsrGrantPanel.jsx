@@ -117,13 +117,13 @@ export const DepartmentCsrGrantPanel = ({ department }) => {
         </div>
       </div>
 
-      {availableBalance <= 0 && (
-        <div className="p-3 bg-rose-50 border border-rose-300 rounded-2xl flex items-center justify-between gap-2 text-rose-900 text-xs font-semibold">
+      {!isWard && availableBalance <= 0 && (
+        <div className="p-3 bg-slate-100 border border-slate-300 rounded-2xl flex items-center justify-between gap-2 text-slate-800 text-xs font-semibold">
           <div className="flex items-center gap-2">
-            <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
+            <AlertCircle className="w-4 h-4 text-slate-600 shrink-0" />
             <span>Yeh department fund allocate nahi kar sakta kyunki iske paas ₹0 fund hai (Sufficient fund nahi hai).</span>
           </div>
-          <button type="button" onClick={() => setIsRequestModalOpen(true)} className="px-3 py-1 bg-rose-700 hover:bg-rose-800 text-white rounded-xl text-[11px] font-bold shrink-0 cursor-pointer">
+          <button type="button" onClick={() => setIsRequestModalOpen(true)} className="px-3 py-1 bg-[#007A61] hover:bg-[#006650] text-white rounded-xl text-[11px] font-bold shrink-0 cursor-pointer">
             Request Grant
           </button>
         </div>

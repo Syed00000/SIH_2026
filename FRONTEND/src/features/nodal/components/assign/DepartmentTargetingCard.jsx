@@ -1,5 +1,5 @@
 import React from 'react';
-import { Landmark, CheckCircle2, Info, Sparkles } from 'lucide-react';
+import { Landmark, CheckCircle2, Info } from 'lucide-react';
 
 export const DepartmentTargetingCard = ({
   departments = [],
@@ -33,8 +33,8 @@ export const DepartmentTargetingCard = ({
         </div>
         {aiRecommendedDept?.name && (
           <span className="text-[10px] font-semibold text-emerald-800 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full flex items-center space-x-1">
-            <Sparkles className="w-2.5 h-2.5 text-emerald-600" />
-            <span>AI Suggested: {aiRecommendedDept.name}</span>
+            <CheckCircle2 className="w-2.5 h-2.5 text-emerald-600" />
+            <span>Recommended: {aiRecommendedDept.name}</span>
           </span>
         )}
       </div>
@@ -84,10 +84,10 @@ export const DepartmentTargetingCard = ({
               : filteredDepartments.map((d) => {
                   const id = d.deptId || d.id || d._id;
                   const location = d.district ? `(${d.district})` : '';
-                  const isAiMatch = aiDeptName && (d.name || '').toLowerCase().includes(aiDeptName);
+                  const isRecommended = aiDeptName && (d.name || '').toLowerCase().includes(aiDeptName);
                   return (
                     <option key={id} value={id}>
-                      {isAiMatch ? '✨ [AI Match] ' : ''}{d.name} {location}
+                      {isRecommended ? '[Recommended] ' : ''}{d.name} {location}
                     </option>
                   );
                 })}

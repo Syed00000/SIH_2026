@@ -4,9 +4,10 @@ import { departmentRepository } from '../infrastructure/department.repository.js
 import { Admin } from '../../admins/infrastructure/model.js';
 import { CitizenChallenge } from '../../../citizen/infrastructure/model.js';
 import { ensureDefaultAdminDepartments } from './helpers/default-admin-departments.helper.js';
-import { GovernmentGrantFund } from '../../grants/model.js';
+import { matchOfficersAndProblems } from './helpers/department-matching.helper.js';
 import { executeFundAllocation } from './helpers/fund-allocation.helper.js';
 import { manageFundPool } from './helpers/fund-pool-management.helper.js';
+import { DepartmentFundAllocation } from '../infrastructure/department-fund-allocation.schema.js';
 
 export class DepartmentService {
   constructor(repo = departmentRepository) {
@@ -14,8 +15,7 @@ export class DepartmentService {
   }
 
   async generateDeptId() {
-    const randomHex = Math.floor(1000 + Math.random() * 9000);
-    const candidate = `DEPT-JH-${randomHex}`;
+    const candidate = `DEPT-JH-${Math.floor(1000 + Math.random() * 9000)}`;
     const existing = await this.repo.findById(candidate);
     if (existing) return this.generateDeptId();
     return candidate;
@@ -23,7 +23,6 @@ export class DepartmentService {
 
   async listDepartments(filters = {}) {
     await ensureDefaultAdminDepartments(this.repo);
-
     const mongoFilter = {};
     if (filters.district && filters.district !== 'all' && filters.district !== 'All Districts') {
       mongoFilter.district = new RegExp(`^${filters.district.trim()}$`, 'i');
@@ -31,12 +30,8 @@ export class DepartmentService {
     if (filters.block && filters.block !== 'all') {
       mongoFilter.block = new RegExp(`^${filters.block.trim()}$`, 'i');
     }
-    if (filters.category && filters.category !== 'all') {
-      mongoFilter.category = filters.category;
-    }
-    if (filters.status && filters.status !== 'all') {
-      mongoFilter.status = filters.status;
-    }
+    if (filters.category && filters.category !== 'all') mongoFilter.category = filters.category;
+    if (filters.status && filters.status !== 'all') mongoFilter.status = filters.status;
 
     const departments = await this.repo.find(mongoFilter);
     const [allAdmins, allChallenges] = await Promise.all([
@@ -44,38 +39,7 @@ export class DepartmentService {
       CitizenChallenge.find({ isDeleted: { $ne: true } }).select('challengeId title description district domain priority status location isDeployed assignedDepartment submitter submittedAt mediaUrls media').lean()
     ]);
 
-    return departments.map((dept) => {
-      const deptNameLower = dept.name.toLowerCase().replace(/department of |dept\. of /i, '').replace(/&/g, 'and').trim();
-      const deptCodeLower = (dept.code || '').toLowerCase();
-
-      const matchedOfficers = allAdmins.filter((a) => {
-        const adminDept = (a.assignedDepartment || '').toLowerCase().replace(/&/g, 'and').trim();
-        return adminDept && (adminDept.includes(deptCodeLower) || deptNameLower.includes(adminDept) || adminDept.includes(deptNameLower));
-      });
-
-      const matchedChallenges = allChallenges.filter((c) => {
-        const assignedDeptId = c.assignedDepartment?.deptId || c.assignedDepartment?.id;
-        if (assignedDeptId && (assignedDeptId === dept.deptId || assignedDeptId === dept.id || assignedDeptId === dept._id?.toString())) {
-          return true;
-        }
-        if (c.assignedDepartment?.name && c.assignedDepartment.name.toLowerCase() === dept.name.toLowerCase()) {
-          return true;
-        }
-        const domainClean = (c.domain || '').toLowerCase().replace(/&/g, 'and').trim();
-        return domainClean && (domainClean.includes(deptCodeLower) || deptNameLower.includes(domainClean) || domainClean.includes(deptNameLower));
-      });
-
-      const raw = typeof dept?.toJSON === 'function' ? dept.toJSON() : dept;
-      return {
-        ...raw,
-        id: raw._id?.toString() || raw.id || raw.deptId,
-        officers: matchedOfficers,
-        problems: matchedChallenges,
-        officersCount: matchedOfficers.length,
-        problemsCount: matchedChallenges.length,
-        activeProjectsCount: matchedChallenges.filter((p) => p.status === 'Deployed' || p.status === 'In Progress').length
-      };
-    });
+    return departments.map((dept) => matchOfficersAndProblems(dept, allAdmins, allChallenges));
   }
 
   async createDepartment(data) {
@@ -83,60 +47,30 @@ export class DepartmentService {
     const deptId = data.deptId?.trim() || (await this.generateDeptId());
     const code = data.code?.trim() || data.name.split(' ').map((w) => w[0] || '').join('').toUpperCase();
     const digits = deptId.replace(/\D/g, '') || '2026';
-    
     const rawPassword = data.credentials?.password?.trim() || data.password?.trim() || `Dept@JH${digits}!`;
     const passwordHash = await bcrypt.hash(rawPassword, 10);
     const loginEmail = (data.credentials?.loginEmail?.trim() || data.headEmail?.trim() || `${deptId.toLowerCase()}@jharkhand.gov.in`).toLowerCase();
     const loginId = data.credentials?.loginId?.trim() || data.loginId?.trim() || deptId;
 
     const payload = {
-      deptId,
-      name: data.name.trim(),
-      code,
-      category: data.category || 'District Department',
-      headName: data.headName?.trim() || null,
-      headRole: data.headRole?.trim() || 'Department Officer',
-      headEmail: data.headEmail?.trim() || null,
-      headPhone: data.headPhone?.trim() || null,
-      district: data.district?.trim() || 'Ranchi',
-      block: data.block?.trim() || '',
-      panchayat: data.panchayat?.trim() || '',
+      deptId, name: data.name.trim(), code, category: data.category || 'District Department',
+      headName: data.headName?.trim() || null, headRole: data.headRole?.trim() || 'Department Officer',
+      headEmail: data.headEmail?.trim() || null, headPhone: data.headPhone?.trim() || null,
+      district: data.district?.trim() || 'Ranchi', block: data.block?.trim() || '', panchayat: data.panchayat?.trim() || '',
       description: data.description?.trim() || '',
-      credentials: {
-        loginId,
-        loginEmail,
-        password: rawPassword,
-        passwordHash,
-        generatedPassword: rawPassword
-      },
-      status: data.status || 'Active',
-      hierarchyConfig: data.hierarchyConfig || undefined,
-      escalationRules: data.escalationRules || undefined,
-      mandate: data.mandate || undefined,
-      departmentType: data.departmentType || undefined,
-      parentAuthority: data.parentAuthority || undefined,
-      officialWebsite: data.officialWebsite || undefined,
-      officeAddress: data.officeAddress || undefined,
-      applicableJurisdiction: data.applicableJurisdiction || undefined,
-      headquartersLocation: data.headquartersLocation || undefined,
-      operationalDistrictsType: data.operationalDistrictsType || undefined,
-      involvedLowerLevels: data.involvedLowerLevels || undefined,
-      nodalOfficerName: data.nodalOfficerName || undefined,
-      nodalOfficerDesignation: data.nodalOfficerDesignation || undefined,
-      nodalOfficerEmail: data.nodalOfficerEmail || undefined,
-      nodalOfficerPhone: data.nodalOfficerPhone || undefined,
-      officeSecretariatLocation: data.officeSecretariatLocation || undefined,
-      effectiveFrom: data.effectiveFrom || undefined,
-      remarks: data.remarks || undefined,
-      keyFunctions: data.keyFunctions || undefined,
-      powersApprovalAuthority: data.powersApprovalAuthority || undefined,
-      schemesManaged: data.schemesManaged || undefined,
-      departmentsCoordinated: data.departmentsCoordinated || undefined,
-      problemCategoriesHandled: data.problemCategoriesHandled || undefined,
-      goNumber: data.goNumber || undefined,
-      goDate: data.goDate || undefined,
-      verificationStatus: data.verificationStatus || undefined,
-      approvalRequired: data.approvalRequired !== undefined ? data.approvalRequired : undefined
+      credentials: { loginId, loginEmail, password: rawPassword, passwordHash, generatedPassword: rawPassword },
+      status: data.status || 'Active', hierarchyConfig: data.hierarchyConfig, escalationRules: data.escalationRules,
+      mandate: data.mandate, departmentType: data.departmentType, parentAuthority: data.parentAuthority,
+      officialWebsite: data.officialWebsite, helplineNumber: data.helplineNumber, officeAddress: data.officeAddress,
+      applicableJurisdiction: data.applicableJurisdiction, headquartersLocation: data.headquartersLocation,
+      operationalDistrictsType: data.operationalDistrictsType, involvedLowerLevels: data.involvedLowerLevels,
+      nodalOfficerName: data.nodalOfficerName, nodalOfficerDesignation: data.nodalOfficerDesignation,
+      nodalOfficerEmail: data.nodalOfficerEmail, nodalOfficerPhone: data.nodalOfficerPhone,
+      officeSecretariatLocation: data.officeSecretariatLocation, effectiveFrom: data.effectiveFrom,
+      remarks: data.remarks, keyFunctions: data.keyFunctions, powersApprovalAuthority: data.powersApprovalAuthority,
+      schemesManaged: data.schemesManaged, departmentsCoordinated: data.departmentsCoordinated,
+      problemCategoriesHandled: data.problemCategoriesHandled, goNumber: data.goNumber, goDate: data.goDate,
+      verificationStatus: data.verificationStatus, approvalRequired: data.approvalRequired
     };
 
     const created = await this.repo.create(payload);
@@ -146,15 +80,12 @@ export class DepartmentService {
         { email: loginEmail },
         {
           fullName: data.name.trim(), email: loginEmail, mobileNumber: cleanPhone, passwordHash,
-          role: 'DEPARTMENT', accountStatus: 'ACTIVE',
-          emailVerification: { verified: true, verifiedAt: new Date() },
+          role: 'DEPARTMENT', accountStatus: 'ACTIVE', emailVerification: { verified: true, verifiedAt: new Date() },
           profile: { deptId, department: data.name.trim(), category: data.category || 'District Department', district: data.district || 'Ranchi' }
         },
         { upsert: true, new: true }
       );
-    } catch (userErr) {
-      console.warn('MongooseUser creation error for dept:', userErr.message);
-    }
+    } catch (userErr) { console.warn('MongooseUser creation error for dept:', userErr.message); }
     return created;
   }
 
@@ -174,28 +105,16 @@ export class DepartmentService {
       const newPass = updates.credentials?.password?.trim() || updates.password?.trim() || prevCreds.password || prevCreds.generatedPassword || 'Dept@JH2026!';
       const passwordHash = await bcrypt.hash(newPass, 10);
       const loginEmail = (updates.credentials?.loginEmail?.trim() || updates.headEmail?.trim() || prevCreds.loginEmail || existing?.headEmail || `${(existing?.deptId || id).toLowerCase()}@jharkhand.gov.in`).toLowerCase();
-
       updates.credentials = {
         loginId: updates.credentials?.loginId?.trim() || updates.loginId?.trim() || prevCreds.loginId || existing?.deptId || id,
-        loginEmail,
-        password: newPass,
-        passwordHash,
-        generatedPassword: newPass
+        loginEmail, password: newPass, passwordHash, generatedPassword: newPass
       };
-
       try {
         await MongooseUser.findOneAndUpdate(
           { $or: [{ email: loginEmail }, { 'profile.deptId': existing?.deptId || id }] },
-          {
-            passwordHash,
-            role: 'DEPARTMENT',
-            accountStatus: 'ACTIVE',
-            emailVerification: { verified: true, verifiedAt: new Date() }
-          }
+          { passwordHash, role: 'DEPARTMENT', accountStatus: 'ACTIVE', emailVerification: { verified: true, verifiedAt: new Date() } }
         );
-      } catch (err) {
-        console.warn('MongooseUser update on dept update error:', err.message);
-      }
+      } catch (err) { console.warn('MongooseUser update on dept update error:', err.message); }
     }
     const dept = await this.repo.update(id, updates);
     if (!dept) throw new Error('Department not found for update');
@@ -215,6 +134,22 @@ export class DepartmentService {
     const dept = await this.repo.delete(id);
     if (!dept) throw new Error('Department not found for deletion');
     return { success: true, message: `Department ${id} deleted successfully` };
+  }
+
+  async listFundAllocations(filter = {}) {
+    return DepartmentFundAllocation.find(filter).sort({ createdAt: -1 }).lean();
+  }
+
+  async deleteFundAllocation(id) {
+    const query = id.startsWith('DFA-') ? { allocationId: id } : { _id: id };
+    const doc = await DepartmentFundAllocation.findOne(query);
+    if (!doc) throw new Error('Fund allocation record not found in database');
+    await DepartmentFundAllocation.findOneAndDelete(query);
+    return {
+      success: true,
+      message: `Fund allocation ${id} deleted and ₹${doc.amount} reverted from ${doc.departmentName || doc.deptId}.`,
+      deletedRecord: doc
+    };
   }
 }
 

@@ -39,8 +39,25 @@ export async function processGrantFulfillment(existing, grantData = {}) {
     }
     if (targetDept) {
       const currentPool = Number(targetDept.allocatedFundPool) || 0;
+      const newPool = currentPool + sanctionedAmount;
       await departmentRepository.update(targetDept.deptId || targetDept._id, {
-        allocatedFundPool: currentPool + sanctionedAmount
+        allocatedFundPool: newPool
+      });
+      const { recordDepartmentAllocation } = await import('../departments/application/helpers/record-fund-allocation.helper.js');
+      await recordDepartmentAllocation({
+        deptId: targetDept.deptId,
+        departmentName: targetDept.name,
+        departmentCategory: targetDept.category,
+        amount: sanctionedAmount,
+        allocationType: 'GRANT_REQUISITION',
+        sourceDeptId: sourceDeptIdentifier || 'STATE_GOV',
+        sourceDeptName: existing.targetName || 'Higher Department Authority',
+        previousBalance: currentPool,
+        newBalance: newPool,
+        sanctionOrderNo: `JH-SANCTION-REQ-${Date.now().toString().slice(-6)}`,
+        scheme: existing.sector || 'State Innovation Grant for Department Civic Works',
+        purpose: existing.purpose,
+        allocatedBy: grantData.grantedBy || existing.targetName || 'Higher Department Authority'
       });
     }
   } catch (deptErr) {

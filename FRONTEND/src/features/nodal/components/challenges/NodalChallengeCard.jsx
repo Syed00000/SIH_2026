@@ -1,5 +1,5 @@
 import React from 'react';
-import { MapPin, User, Building, Eye, MessageSquare, Trash2, Send, CheckCircle2, Sparkles } from 'lucide-react';
+import { MapPin, User, Building, Eye, MessageSquare, Trash2, Send, CheckCircle2 } from 'lucide-react';
 import { AiIntelligenceBadge } from '../ai/index.js';
 
 export const NodalChallengeCard = ({
@@ -100,11 +100,10 @@ export const NodalChallengeCard = ({
               e.stopPropagation();
               onOpenDossier(chl, 'ai-triage');
             }}
-            className="px-2 py-1 rounded-md border border-emerald-300 bg-emerald-50 text-emerald-900 hover:bg-emerald-100 transition-colors flex items-center space-x-1 cursor-pointer"
+            className="px-2 py-1 rounded-md border border-emerald-300 bg-emerald-50 text-emerald-900 hover:bg-emerald-100 transition-colors flex items-center cursor-pointer"
             title="Open AI Intelligence & Triage"
           >
-            <Sparkles className="w-3.5 h-3.5 text-[#007A61]" />
-            <span className="text-[10px] font-bold text-emerald-950 pr-0.5">AI</span>
+            <span className="text-[10px] font-bold text-emerald-950 px-0.5">AI Triage</span>
           </button>
 
           <button

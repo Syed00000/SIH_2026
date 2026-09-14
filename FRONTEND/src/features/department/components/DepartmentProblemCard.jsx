@@ -30,16 +30,16 @@ export const DepartmentProblemCard = ({
         </div>
         <div className="flex items-center gap-1 shrink-0">
           <span className={`px-1.5 py-0.2 rounded-full text-[9px] font-extrabold border ${
-            problem.priority === 'Critical' ? 'bg-rose-50 text-rose-700 border-rose-200' :
-            problem.priority === 'High' ? 'bg-amber-50 text-amber-700 border-amber-200' :
-            'bg-blue-50 text-blue-700 border-blue-200'
+            problem.priority === 'Critical' ? 'bg-slate-900 text-white border-slate-900' :
+            problem.priority === 'High' ? 'bg-slate-100 text-slate-900 border-slate-300' :
+            'bg-slate-50 text-slate-700 border-slate-200'
           }`}>
             {problem.priority || 'Medium'}
           </span>
           <span className={`px-1.5 py-0.2 rounded-full text-[9px] font-extrabold border ${
-            problem.status === 'Resolved' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
-            problem.status === 'Escalated' ? 'bg-rose-50 text-rose-700 border-rose-200' :
-            'bg-blue-50 text-blue-700 border-blue-200'
+            problem.status === 'Resolved' ? 'bg-emerald-50 text-emerald-800 border-emerald-200' :
+            problem.status === 'Escalated' ? 'bg-slate-900 text-white border-slate-900' :
+            'bg-slate-100 text-slate-800 border-slate-200'
           }`}>
             {problem.status || 'Assigned'}
           </span>
@@ -48,7 +48,7 @@ export const DepartmentProblemCard = ({
 
       <div className="flex items-center justify-between text-[11px] text-slate-500 pt-1 border-t border-slate-100">
         <div className="flex items-center gap-1 truncate max-w-[200px]">
-          <MapPin className="w-3 h-3 text-rose-500 shrink-0" />
+          <MapPin className="w-3 h-3 text-slate-400 shrink-0" />
           <span className="truncate">{locStr}</span>
         </div>
         <span className="text-[10.5px] text-slate-700 font-medium">{submitterName}</span>

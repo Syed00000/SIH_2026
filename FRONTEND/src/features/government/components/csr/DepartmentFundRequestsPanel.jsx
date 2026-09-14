@@ -19,9 +19,15 @@ export const DepartmentFundRequestsPanel = () => {
   const fetchRequests = async () => {
     setLoading(true);
     try {
-      const res = await apiClient.get('government/grant-requests');
-      const list = res?.data?.data || res?.data || [];
-      setRequests(list);
+      const res = await apiClient.get('government/grant-requests?forGovernment=true');
+      const rawList = res?.data?.data || res?.data || [];
+      const stateOnly = rawList.filter((r) =>
+        r.requesterCategory === 'State Ministry' ||
+        r.tier === 'STATE_TO_GOVERNMENT' ||
+        r.targetCategory === 'Apex Government' ||
+        r.targetDeptId === 'STATE_GOV'
+      );
+      setRequests(stateOnly);
     } catch (err) {
       console.warn('Failed to load grant requests:', err);
     } finally {
@@ -82,7 +88,7 @@ export const DepartmentFundRequestsPanel = () => {
             STATE DEPARTMENT FUND REQUISITIONS & CLEARANCE
           </h1>
           <p className="text-xs md:text-sm text-slate-500 font-medium mt-0.5">
-            Receive, review, and clear grant requisitions submitted by state & district departments with direct pool transfer.
+            Receive, review, and clear grant requisitions submitted by state ministries with direct state pool transfer.
           </p>
         </div>
       </div>
@@ -92,7 +98,7 @@ export const DepartmentFundRequestsPanel = () => {
         <div className="bg-white border border-slate-200 rounded-xs p-3.5 shadow-xs">
           <span className="text-[10px] font-bold uppercase text-slate-500 tracking-wider block">Total Received</span>
           <div className="text-xl font-black font-mono text-slate-900 mt-1">{totalReqs} Requisitions</div>
-          <span className="text-[11px] text-slate-400">All Tiers Combined</span>
+          <span className="text-[11px] text-slate-400">State Ministries Only</span>
         </div>
         <div className="bg-white border border-amber-200 bg-amber-50/40 rounded-xs p-3.5 shadow-xs">
           <span className="text-[10px] font-bold uppercase text-amber-800 tracking-wider block">Pending Review</span>

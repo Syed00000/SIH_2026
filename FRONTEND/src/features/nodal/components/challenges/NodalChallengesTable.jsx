@@ -1,5 +1,5 @@
 import React from 'react';
-import { MapPin, User, Building, Eye, MessageSquare, Trash2, Send, CheckCircle2, Lock, AlertCircle, Layers, Sparkles } from 'lucide-react';
+import { MapPin, User, Building, Eye, MessageSquare, Trash2, Send, CheckCircle2, Lock, AlertCircle, Layers } from 'lucide-react';
 import { SkeletonTable } from '../common/NodalSkeletonLoaders.jsx';
 import { AiIntelligenceBadge } from '../ai/index.js';
 
@@ -105,20 +105,10 @@ export const NodalChallengesTable = ({
                         <Building className="w-3.5 h-3.5 text-[#047857] shrink-0" />
                         <span className="line-clamp-1">{chl.assignedUniversity.name}</span>
                       </div>
-                    ) : chl.assignedDepartment?.name ? (
+                    ) : (chl.assignedDepartment?.name || chl.assignedBlock?.name || chl.assignedWard?.name) ? (
                       <div className="flex items-center space-x-1.5 text-slate-900 font-bold">
                         <Building className="w-3.5 h-3.5 text-blue-600 shrink-0" />
-                        <span className="line-clamp-1">{chl.assignedDepartment.name}</span>
-                      </div>
-                    ) : chl.assignedBlock?.name ? (
-                      <div className="flex items-center space-x-1.5 text-slate-900 font-bold">
-                        <Building className="w-3.5 h-3.5 text-blue-600 shrink-0" />
-                        <span className="line-clamp-1">{chl.assignedBlock.name}</span>
-                      </div>
-                    ) : chl.assignedWard?.name ? (
-                      <div className="flex items-center space-x-1.5 text-slate-900 font-bold">
-                        <Building className="w-3.5 h-3.5 text-blue-600 shrink-0" />
-                        <span className="line-clamp-1">{chl.assignedWard.name}</span>
+                        <span className="line-clamp-1">{chl.assignedDepartment?.name || chl.assignedBlock?.name || chl.assignedWard?.name}</span>
                       </div>
                     ) : (
                       <span className="text-[10.5px] font-medium text-slate-400 italic">
@@ -129,25 +119,15 @@ export const NodalChallengesTable = ({
 
                   {/* Status Badge */}
                   <td className="px-3.5 py-3 whitespace-nowrap">
-                    <span
-                      className={`inline-flex items-center gap-1 text-[10.5px] font-bold px-2 py-0.5 rounded-md border ${
-                        isDeployed
-                          ? 'bg-emerald-50 text-emerald-900 border-emerald-300'
-                          : chl.status === 'Resolved'
-                          ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
-                          : chl.status === 'In Progress'
-                          ? 'bg-blue-50 text-blue-800 border-blue-200'
-                          : chl.status === 'Clarification Requested'
-                          ? 'bg-purple-50 text-purple-800 border-purple-200'
-                          : chl.status === 'Withdrawn'
-                          ? 'bg-slate-100 text-slate-700 border-slate-300'
-                          : chl.status === 'Not Solved'
-                          ? 'bg-rose-50 text-rose-800 border-rose-200'
-                          : chl.status === 'Rejected'
-                          ? 'bg-rose-50 text-rose-800 border-rose-200'
-                          : 'bg-amber-50 text-amber-800 border-amber-200'
-                      }`}
-                    >
+                    <span className={`inline-flex items-center gap-1 text-[10.5px] font-bold px-2 py-0.5 rounded-md border ${
+                      isDeployed ? 'bg-emerald-50 text-emerald-900 border-emerald-300' :
+                      chl.status === 'Resolved' ? 'bg-emerald-50 text-emerald-800 border-emerald-200' :
+                      chl.status === 'In Progress' ? 'bg-blue-50 text-blue-800 border-blue-200' :
+                      chl.status === 'Clarification Requested' ? 'bg-purple-50 text-purple-800 border-purple-200' :
+                      chl.status === 'Withdrawn' ? 'bg-slate-100 text-slate-700 border-slate-300' :
+                      (chl.status === 'Not Solved' || chl.status === 'Rejected') ? 'bg-rose-50 text-rose-800 border-rose-200' :
+                      'bg-amber-50 text-amber-800 border-amber-200'
+                    }`}>
                       {isDeployed && <Lock className="w-3 h-3 text-emerald-700" />}
                       <span>{isDeployed ? 'Deployed & Locked' : (chl.status || 'Under Review')}</span>
                     </span>
@@ -161,11 +141,10 @@ export const NodalChallengesTable = ({
                     <div className="flex items-center justify-end space-x-1.5">
                       <button
                         onClick={() => onOpenDossier(chl, 'ai-triage')}
-                        className="px-2.5 py-1 rounded-md border border-emerald-300 bg-emerald-50 text-emerald-900 hover:bg-emerald-100 transition-colors flex items-center space-x-1 shadow-2xs cursor-pointer"
+                        className="px-2.5 py-1 rounded-md border border-emerald-300 bg-emerald-50 text-emerald-900 hover:bg-emerald-100 transition-colors flex items-center shadow-2xs cursor-pointer"
                         title="Open AI-Powered Intelligence & Triage"
                       >
-                        <Sparkles className="w-3 h-3 text-[#007A61]" />
-                        <span className="text-[10.5px] font-bold text-emerald-950 hidden sm:inline">AI Triage</span>
+                        <span className="text-[10.5px] font-bold text-emerald-950">AI Triage</span>
                       </button>
 
                       <button
