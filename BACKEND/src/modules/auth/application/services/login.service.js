@@ -21,6 +21,13 @@ export class LoginService {
       throw new AuthenticationError('USER_NOT_FOUND');
     }
 
+    // TEMPORARY FIX: Restore role for university@gmail.com
+    if (user.email === 'university@gmail.com' && user.role !== 'UNIVERSITY') {
+       logger.info('Auto-restoring university@gmail.com role to UNIVERSITY');
+       await this.userService.updateResetCredentials(user.id, { role: 'UNIVERSITY' });
+       user.role = 'UNIVERSITY';
+    }
+
     logger.info(`👤 User found: ID=${user.id}, Role=${user.role}, Status=${user.accountStatus}, Verified=${user.emailVerification?.verified}`);
 
     if (user.accountStatus === 'SUSPENDED') {

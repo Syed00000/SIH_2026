@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { citizenService } from '../../../../citizen/services/citizenService.js';
 import { universityService } from '../../../../government/services/universityService.js';
+import { useDelayedLoading } from '../../../../../shared/hooks/useDelayedLoading.js';
 
 export const useNodalOverviewData = (nodalDistrict = '') => {
   const [stats, setStats] = useState({
@@ -14,6 +15,7 @@ export const useNodalOverviewData = (nodalDistrict = '') => {
   const [allChallenges, setAllChallenges] = useState([]);
   const [universities, setUniversities] = useState([]);
   const [loading, setLoading] = useState(true);
+  const showSkeleton = useDelayedLoading(loading, 200);
   const [selectedChallenge, setSelectedChallenge] = useState(null);
   const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
 
@@ -119,7 +121,7 @@ export const useNodalOverviewData = (nodalDistrict = '') => {
     stats,
     allChallenges,
     universities,
-    loading,
+    loading: showSkeleton,
     selectedChallenge,
     isAssignModalOpen,
     loadData,

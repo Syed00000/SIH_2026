@@ -128,6 +128,7 @@ export class ChallengeRepository {
         {
           $set: {
             status: 'In Progress',
+            assignedFaculty: resolvedFaculty,
             'assignedUniversity.id': universityCode,
             'assignedUniversity.name': resolvedUniName,
             'assignedUniversity.department': resolvedFaculty.department || 'Engineering & Technology',

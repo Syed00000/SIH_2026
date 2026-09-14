@@ -62,6 +62,7 @@ export const assignedUniversitySchema = new mongoose.Schema(
     name: { type: String, default: '' },
     department: { type: String, default: '' },
     mentorName: { type: String, default: '' },
+    mentorEmail: { type: String, default: '' },
     assignedAt: { type: Date, default: null },
     acceptanceStatus: {
       type: String,

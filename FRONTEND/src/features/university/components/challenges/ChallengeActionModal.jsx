@@ -57,7 +57,7 @@ export const ChallengeActionModal = ({
     else if (type === 'decline') onSubmit({ type: 'decline', challengeId: cid, reason: declineReason, remarks });
     else if (type === 'assign') {
       const fac = facultyList.find((f) => f.name === selectedFaculty) || facultyList[0] || { name: selectedFaculty, department: 'Applied Sciences' };
-      onSubmit({ type: 'assign', challengeId: cid, facultyName: fac.name, department: fac.department || 'Applied Sciences' });
+      onSubmit({ type: 'assign', challengeId: cid, facultyName: fac.name, department: fac.department || 'Applied Sciences', facultyEmail: fac.email || '' });
     }
     onClose();
   };
@@ -140,9 +140,9 @@ export const ChallengeActionModal = ({
             </button>
             <button
               type="submit"
-              disabled={(type === 'decline' && !remarks.trim()) || (type === 'clarify' && !remarks.trim())}
+              disabled={(type === 'decline' && !remarks.trim()) || (type === 'clarify' && !remarks.trim()) || (type === 'assign' && (!facultyList || facultyList.length === 0))}
               className={`px-4 py-2 text-xs font-extrabold rounded-xl shadow-2xs transition-colors cursor-pointer ${
-                (type === 'decline' && !remarks.trim()) || (type === 'clarify' && !remarks.trim())
+                (type === 'decline' && !remarks.trim()) || (type === 'clarify' && !remarks.trim()) || (type === 'assign' && (!facultyList || facultyList.length === 0))
                   ? 'bg-slate-200 text-slate-400 cursor-not-allowed border border-slate-300'
                   : 'bg-[#007A61] hover:bg-[#006650] text-white'
               }`}

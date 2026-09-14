@@ -113,6 +113,7 @@ export const citizenChallengeSchema = new mongoose.Schema(
       default: getDefaultMilestones
     },
     assignedUniversity: { type: assignedUniversitySchema, default: () => ({}) },
+    assignedFaculty: { type: mongoose.Schema.Types.Mixed, default: null },
     assignedDepartment: { type: mongoose.Schema.Types.Mixed, default: null },
     assignedWard: { type: mongoose.Schema.Types.Mixed, default: null },
     assignedBlock: { type: mongoose.Schema.Types.Mixed, default: null },

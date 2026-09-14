@@ -5,7 +5,7 @@ import { FacultyOnboardHeader } from './onboard/FacultyOnboardHeader.jsx';
 import { FacultyOnboardFormFields } from './onboard/FacultyOnboardFormFields.jsx';
 import { FacultyOnboardPreviewCard } from './onboard/FacultyOnboardPreviewCard.jsx';
 
-export const OnboardFacultyPanel = ({ onBack, onSuccess }) => {
+export const OnboardFacultyPanel = ({ onBack, onSuccess, universityCode = 'RU001' }) => {
   const [loading, setLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -54,7 +54,7 @@ export const OnboardFacultyPanel = ({ onBack, onSuccess }) => {
         completedProjects: 0
       };
 
-      await universityApiService.createFaculty(payload);
+      await universityApiService.createFaculty(payload, universityCode);
       setSuccessMessage(`Faculty mentor "${formData.name}" successfully registered and onboarded into Ranchi University node!`);
       setTimeout(() => {
         if (onSuccess) onSuccess();

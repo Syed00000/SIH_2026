@@ -3,8 +3,10 @@ import apiClient from '../../../infrastructure/api/client.js';
 
 export const facultyApiService = {
   // Fetch all data for this faculty
-  async getFacultyData(facultyEmail, universityCode = 'RU001') {
-    const cleanEmail = (facultyEmail || '').toLowerCase().trim();
+  async getFacultyData(userOrEmail, universityCode = 'RU001') {
+    const cleanEmail = (typeof userOrEmail === 'string' ? userOrEmail : (userOrEmail?.email || '')).toLowerCase().trim();
+    const userName = (typeof userOrEmail === 'object' ? (userOrEmail?.fullName || userOrEmail?.name || '') : '').toLowerCase().trim();
+
     const [allChallenges, allProjects, allFaculty, allApprovals, allActivities, allTeamsRes] = await Promise.all([
       universityApiService.getAssignedChallenges(universityCode),
       universityApiService.getProjects(universityCode),
@@ -21,39 +23,82 @@ export const facultyApiService = {
     const teamsList = Array.isArray(allTeamsRes) ? allTeamsRes : [];
 
     // Find current faculty profile
-    const currentFaculty = facultyList.find(
-      (f) => f.email?.toLowerCase() === cleanEmail || f.name?.toLowerCase().includes(cleanEmail.split('@')[0])
-    ) || {
-      name: 'Faculty Mentor',
+    const currentFaculty = facultyList.find((f) => {
+      const fEmail = (f.email || '').toLowerCase().trim();
+      const fName = (f.name || '').toLowerCase().trim();
+      if (cleanEmail && fEmail === cleanEmail) return true;
+      if (userName && (fName === userName || fName.includes(userName) || userName.includes(fName))) return true;
+      if (cleanEmail && fName.includes(cleanEmail.split('@')[0])) return true;
+      return false;
+    }) || {
+      name: (typeof userOrEmail === 'object' && (userOrEmail?.fullName || userOrEmail?.name)) || 'Faculty Mentor',
       email: cleanEmail,
-      designation: 'Faculty Mentor',
-      department: 'Engineering & Technology',
+      designation: (typeof userOrEmail === 'object' && userOrEmail?.profile?.designation) || 'Associate Professor',
+      department: (typeof userOrEmail === 'object' && userOrEmail?.profile?.department) || 'Electrical & Electronics Engineering',
       universityCode
     };
 
-    const facultyNameLower = (currentFaculty.name || '').toLowerCase();
+    const candidateNames = [
+      currentFaculty.name?.toLowerCase().trim(),
+      userName,
+      cleanEmail ? cleanEmail.split('@')[0] : ''
+    ].filter(Boolean);
+
+    const isMentorMatch = (mentorName, mentorEmail) => {
+      const mEmail = (mentorEmail || '').toLowerCase().trim();
+      const mName = (mentorName || '').toLowerCase().trim();
+      if (cleanEmail && mEmail && mEmail === cleanEmail) return true;
+      if (mName && candidateNames.some((cn) => cn && (mName === cn || mName.includes(cn) || cn.includes(mName)))) return true;
+      return false;
+    };
 
     // Filter challenges assigned to this faculty mentor
     const myChallenges = challengesList.filter((c) => {
-      const mentorEmail = c.assignedFaculty?.email?.toLowerCase() || '';
-      const mentorName = (c.assignedFaculty?.name || c.assignedUniversity?.mentorName || '').toLowerCase();
-      return (
-        mentorEmail === cleanEmail ||
-        (facultyNameLower && mentorName && (mentorName.includes(facultyNameLower) || facultyNameLower.includes(mentorName)))
-      );
+      const mentorEmail = c.assignedFaculty?.email || c.assignedUniversity?.mentorEmail || '';
+      const mentorName = c.assignedFaculty?.name || c.assignedUniversity?.mentorName || '';
+      return isMentorMatch(mentorName, mentorEmail);
     });
 
     // Filter projects mentored by this faculty
     const filteredProjects = projectsList.filter((p) => {
-      const mentorEmail = p.facultyMentor?.email?.toLowerCase() || '';
-      const mentorName = (p.facultyMentor?.name || p.leadMentor || '').toLowerCase();
-      return (
-        mentorEmail === cleanEmail ||
-        (facultyNameLower && mentorName && (mentorName.includes(facultyNameLower) || facultyNameLower.includes(mentorName)))
-      );
+      const mentorEmail = p.facultyMentor?.email || '';
+      const mentorName = p.facultyMentor?.name || p.leadMentor || '';
+      return isMentorMatch(mentorName, mentorEmail);
     });
 
-    const activeProjectList = filteredProjects;
+    // Ensure every assigned challenge appears as an active project card on the faculty dashboard
+    const projectChallengeIds = new Set(filteredProjects.map((p) => p.challengeId || p.projectId).filter(Boolean));
+    const activeProjectList = [...filteredProjects];
+
+    myChallenges.forEach((c) => {
+      const cid = c.challengeId || c.id || c._id;
+      if (cid && !projectChallengeIds.has(cid)) {
+        projectChallengeIds.add(cid);
+        activeProjectList.push({
+          projectId: String(cid).startsWith('CHL-JH-2026-') ? String(cid).replace('CHL-JH-2026-', 'PRJ-') : `PRJ-${cid}`,
+          challengeId: cid,
+          title: c.title || 'Ground Problem Statement',
+          problemStatement: c.problemStatement || c.description || c.title,
+          domain: c.domain || c.category || 'Technology',
+          status: c.status === 'Accepted' ? 'Proposal Stage' : (c.status || 'Proposal Stage'),
+          priority: c.priority || 'Medium',
+          location: c.location || { district: c.district || 'Ranchi' },
+          leadMentor: currentFaculty.name || (typeof userOrEmail === 'object' && userOrEmail?.fullName) || 'Lead Faculty Mentor',
+          facultyMentor: currentFaculty,
+          universityCode,
+          sanctionedBudget: null,
+          disbursedAmount: '0',
+          prototypeStatus: 'Not Started',
+          governmentStatus: 'Pending',
+          teamMembers: [],
+          studentTeam: '',
+          milestones: c.milestones || [],
+          mediaUrls: c.mediaUrls || [],
+          allocatedBy: c.allocatedBy || c.nodalOfficer || null,
+          submitter: c.submitter || null
+        });
+      }
+    });
 
     // Cross-link latest remarks and feedback from university approvals onto project objects
     const enrichedProjects = activeProjectList.map((p) => {
@@ -85,7 +130,7 @@ export const facultyApiService = {
 
     return {
       faculty: currentFaculty,
-      challenges: myChallenges.length > 0 ? myChallenges : challengesList,
+      challenges: myChallenges,
       allChallenges: challengesList,
       projects: enrichedProjects,
       allProjects: projectsList,
