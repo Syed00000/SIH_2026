@@ -1,5 +1,5 @@
 import React from 'react';
-import { MapPin, User } from 'lucide-react';
+import { MapPin, User, ExternalLink, Image as ImageIcon, CheckCircle2, Clock } from 'lucide-react';
 
 export const DepartmentProblemEvidence = ({ problem, submitter, fullAddress, techUrls, tech }) => {
   const escalatedUrls = (problem.escalationEvidence || []).flatMap(e => e.mediaUrls || []);
@@ -7,72 +7,129 @@ export const DepartmentProblemEvidence = ({ problem, submitter, fullAddress, tec
 
   return (
     <>
+      {/* Problem Header Info Card */}
       <div className="bg-white rounded-2xl border border-slate-200/90 shadow-2xs p-4 space-y-2.5">
         <h2 className="text-base font-black text-slate-900">{problem.title}</h2>
         <div className="p-3 bg-slate-50 rounded-xl border border-slate-100 text-xs text-slate-700 leading-relaxed whitespace-pre-wrap">
           {problem.description || 'No detailed problem description.'}
         </div>
         <div className="flex flex-wrap items-center gap-4 text-[11px] text-slate-500 pt-1">
-          <span className="flex items-center gap-1">
+          <span className="flex items-center gap-1.5 font-medium">
             <User className="w-3.5 h-3.5 text-slate-400" />
-            <span>Citizen: <strong>{submitter.fullName || submitter.name || 'Citizen'}</strong></span>
+            <span>Citizen: <strong className="text-slate-800">{submitter.fullName || submitter.name || 'Citizen'}</strong></span>
           </span>
           <span>•</span>
-          <span className="flex items-center gap-1">
+          <span className="flex items-center gap-1.5 font-medium">
             <MapPin className="w-3.5 h-3.5 text-rose-500" />
-            <span>{fullAddress}</span>
+            <span className="text-slate-700">{fullAddress}</span>
           </span>
         </div>
       </div>
 
+      {/* Side-by-Side Evidence Comparison */}
       <div className="bg-white rounded-2xl border border-slate-200/90 shadow-2xs p-4 space-y-3">
-        <h3 className="text-xs font-black text-slate-900 uppercase tracking-wide border-b border-slate-100 pb-2">
-          Evidence Comparison
-        </h3>
+        <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+          <h3 className="text-xs font-black text-slate-900 uppercase tracking-wide flex items-center gap-2">
+            <ImageIcon className="w-4 h-4 text-[#007A61]" />
+            <span>Evidence Comparison</span>
+          </h3>
+          <span className="text-[10px] text-slate-400 font-semibold">Before &amp; After Remediation Proof</span>
+        </div>
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-1">
-          <div className="space-y-2">
-            <h4 className="text-[11px] font-bold text-slate-600 bg-slate-50 px-2 py-1 rounded">Reported Problem (Citizen)</h4>
-            <div className="grid grid-cols-2 gap-2">
-              {problem.media?.length > 0 ? problem.media.map((m, i) => (
-                <a key={i} href={m.url} target="_blank" rel="noreferrer" className="aspect-video md:aspect-square rounded-lg border border-slate-200 overflow-hidden hover:border-[#007A61] transition-colors block bg-slate-50">
-                  <img src={m.url} alt="Citizen Evidence" className="w-full h-full object-cover" />
-                </a>
-              )) : (
-                <div className="col-span-2 p-4 text-center text-[10px] text-slate-400 border border-dashed border-slate-200 rounded-xl bg-slate-50">
-                  No images uploaded by citizen.
+          {/* 1. Citizen Uploaded Evidence */}
+          <div className="space-y-2 flex flex-col">
+            <div className="flex items-center justify-between bg-slate-50 px-2.5 py-1.5 rounded-lg border border-slate-200/80">
+              <span className="text-[11px] font-bold text-slate-700">1. Reported Problem (Citizen)</span>
+              <span className="text-[10px] font-semibold text-slate-500">{problem.media?.length || 0} File(s)</span>
+            </div>
+            
+            <div className="flex-1 min-h-[180px] bg-slate-50/60 rounded-xl border border-slate-200/80 p-2 flex flex-col justify-center">
+              {problem.media?.length > 0 ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  {problem.media.map((m, i) => (
+                    <a 
+                      key={i} 
+                      href={m.url} 
+                      target="_blank" 
+                      rel="noreferrer" 
+                      className="group relative rounded-lg border border-slate-200 overflow-hidden hover:border-[#007A61] transition-all block bg-white shadow-2xs max-h-52"
+                      title="Click to view full image"
+                    >
+                      <img src={m.url} alt="Citizen Evidence" className="w-full h-44 object-contain bg-slate-900/5 group-hover:scale-102 transition-transform duration-200" />
+                      <div className="absolute inset-0 bg-slate-900/40 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white text-xs font-bold transition-opacity gap-1">
+                        <ExternalLink className="w-3.5 h-3.5" />
+                        <span>View Full</span>
+                      </div>
+                    </a>
+                  ))}
+                </div>
+              ) : (
+                <div className="p-6 text-center text-[11px] text-slate-400 font-medium flex flex-col items-center justify-center gap-1.5">
+                  <ImageIcon className="w-6 h-6 text-slate-300" />
+                  <span>No images uploaded by citizen.</span>
                 </div>
               )}
             </div>
           </div>
 
-          <div className="space-y-2">
-            <h4 className="text-[11px] font-bold text-[#007A61] bg-[#007A61]/10 px-2 py-1 rounded">Field Resolution Proof (Technician)</h4>
-            <div className="grid grid-cols-2 gap-2">
-              {currentTechUrls.length > 0 ? currentTechUrls.map((url, i) => (
-                <a key={i} href={url} target="_blank" rel="noreferrer" className="aspect-video md:aspect-square rounded-lg border border-slate-200 overflow-hidden hover:border-[#007A61] transition-colors block bg-slate-50">
-                  <img src={url} alt="Technician Proof" className="w-full h-full object-cover" />
-                </a>
-              )) : (
-                <div className="col-span-2 p-4 text-center text-[10px] text-amber-600 border border-dashed border-amber-200 rounded-xl bg-amber-50">
-                  Pending resolution proof from field worker.
+          {/* 2. Technician Resolution Proof */}
+          <div className="space-y-2 flex flex-col">
+            <div className="flex items-center justify-between bg-emerald-50/80 px-2.5 py-1.5 rounded-lg border border-emerald-200/80">
+              <span className="text-[11px] font-bold text-[#007A61]">2. Field Resolution Proof (Technician)</span>
+              <span className="text-[10px] font-semibold text-emerald-800">{currentTechUrls.length} File(s)</span>
+            </div>
+
+            <div className="flex-1 min-h-[180px] bg-emerald-50/20 rounded-xl border border-dashed border-emerald-200 p-2 flex flex-col justify-center">
+              {currentTechUrls.length > 0 ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  {currentTechUrls.map((url, i) => (
+                    <a 
+                      key={i} 
+                      href={url} 
+                      target="_blank" 
+                      rel="noreferrer" 
+                      className="group relative rounded-lg border border-emerald-200 overflow-hidden hover:border-[#007A61] transition-all block bg-white shadow-2xs max-h-52"
+                      title="Click to view full image"
+                    >
+                      <img src={url} alt="Technician Proof" className="w-full h-44 object-contain bg-slate-900/5 group-hover:scale-102 transition-transform duration-200" />
+                      <div className="absolute inset-0 bg-slate-900/40 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white text-xs font-bold transition-opacity gap-1">
+                        <ExternalLink className="w-3.5 h-3.5" />
+                        <span>View Full</span>
+                      </div>
+                    </a>
+                  ))}
+                </div>
+              ) : (
+                <div className="p-6 text-center text-amber-700 bg-amber-50/60 rounded-lg border border-amber-200/80 flex flex-col items-center justify-center gap-1.5 m-1">
+                  <Clock className="w-5 h-5 text-amber-600 animate-pulse" />
+                  <span className="text-xs font-bold text-amber-900">Pending Resolution Proof</span>
+                  <span className="text-[10.5px] text-amber-700 font-medium max-w-xs leading-tight">
+                    Field technician has not uploaded post-repair verification photos yet.
+                  </span>
                 </div>
               )}
             </div>
           </div>
         </div>
 
+        {/* Technician Work Summary (if available) */}
         {tech?.completionRemarks && (
-          <div className="mt-4 p-3 bg-emerald-50/50 rounded-xl border border-emerald-100">
-            <span className="text-[10px] font-extrabold text-emerald-800 uppercase tracking-wide block mb-1">Technician Work Summary</span>
-            <p className="text-xs text-emerald-950 leading-relaxed font-medium">{tech.completionRemarks}</p>
+          <div className="mt-3 p-3.5 bg-emerald-50/80 rounded-xl border border-emerald-200/90 space-y-1">
+            <span className="text-[10px] font-extrabold text-emerald-900 uppercase tracking-wide flex items-center gap-1.5">
+              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+              <span>Technician Work Summary &amp; Remarks</span>
+            </span>
+            <p className="text-xs text-emerald-950 leading-relaxed font-medium pl-5">{tech.completionRemarks}</p>
           </div>
         )}
 
+        {/* Previous Rejected Attempts */}
         {tech?.workHistory?.length > 0 && (
-          <div className="mt-4 space-y-3">
+          <div className="mt-3 space-y-2.5">
             <h4 className="text-[11px] font-bold text-slate-500 uppercase tracking-wide border-b border-slate-100 pb-1">Previous Rejected Attempts</h4>
             {tech.workHistory.map((hw, idx) => (
-              <div key={idx} className="p-3 bg-rose-50/50 rounded-xl border border-rose-100 flex gap-3">
+              <div key={idx} className="p-3 bg-rose-50/60 rounded-xl border border-rose-200 flex gap-3">
                 {hw.mediaUrl && (
                   <a href={hw.mediaUrl} target="_blank" rel="noreferrer" className="w-16 h-16 shrink-0 rounded-lg overflow-hidden border border-rose-200 hover:border-rose-300 block bg-white">
                     <img src={hw.mediaUrl} alt="Old Proof" className="w-full h-full object-cover" />
@@ -88,11 +145,12 @@ export const DepartmentProblemEvidence = ({ problem, submitter, fullAddress, tec
           </div>
         )}
 
+        {/* Escalation Evidence */}
         {problem.escalationEvidence?.length > 0 && (
-          <div className="mt-4 space-y-3">
+          <div className="mt-3 space-y-2.5">
             <h4 className="text-[11px] font-bold text-slate-500 uppercase tracking-wide border-b border-slate-100 pb-1">Previous Authority Evidence (Escalated)</h4>
             {problem.escalationEvidence.map((ev, idx) => (
-              <div key={idx} className="p-3 bg-blue-50/50 rounded-xl border border-blue-100 flex gap-3">
+              <div key={idx} className="p-3 bg-blue-50/60 rounded-xl border border-blue-200 flex gap-3">
                 {ev.mediaUrls && ev.mediaUrls.length > 0 && (
                   <a href={ev.mediaUrls[0]} target="_blank" rel="noreferrer" className="w-16 h-16 shrink-0 rounded-lg overflow-hidden border border-blue-200 hover:border-blue-300 block bg-white">
                     <img src={ev.mediaUrls[0]} alt="Escalated Proof" className="w-full h-full object-cover" />
