@@ -35,6 +35,10 @@ export async function syncFacultyUserAccount({ cleanEmail, cleanName, cleanPhone
         }
       });
     } else {
+      if (userAccount.role !== 'FACULTY' && userAccount.role !== 'CITIZEN' && userAccount.role !== 'USER') {
+         throw new Error(`Email ${cleanEmail} is already registered as a ${userAccount.role}. Cannot overwrite role to FACULTY.`);
+      }
+      
       await User.findByIdAndUpdate(userAccount._id, {
         $set: {
           fullName: cleanName,

@@ -7,11 +7,16 @@ import { syncFacultyUserAccount } from '../helpers/faculty-user-sync.helper.js';
 export class FacultyTeamRepository {
   async getFacultyByUniversity(universityCode) {
     const identity = await findUniversityIdentity(universityCode);
-    if (!identity) return [];
+    const validIds = identity?.validIdentifiers || [(universityCode || 'RU001').toUpperCase().trim()];
+    const cleanCode = (universityCode || 'RU001').trim();
 
     try {
       const faculty = await UniversityFaculty.find({
-        universityCode: { $in: identity.validIdentifiers },
+        $or: [
+          { universityCode: { $in: validIds } },
+          { universityCode: cleanCode.toUpperCase() },
+          { universityCode: cleanCode }
+        ],
         status: { $ne: 'Removed' }
       }).sort({ name: 1 }).lean();
       return faculty || [];

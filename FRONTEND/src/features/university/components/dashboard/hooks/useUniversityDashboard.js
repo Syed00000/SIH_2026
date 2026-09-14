@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { universityApiService } from '../../../services/universityApiService.js';
+import { useDelayedLoading } from '../../../../../shared/hooks/useDelayedLoading.js';
 
 export const useUniversityDashboard = ({
   initialData,
@@ -11,6 +12,7 @@ export const useUniversityDashboard = ({
   const [dossierChallenge, setDossierChallenge] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [loading, setLoading] = useState(!initialData);
+  const showSkeleton = useDelayedLoading(loading, 200);
 
   const loadLiveDashboard = async () => {
     setLoading(true);
@@ -69,7 +71,7 @@ export const useUniversityDashboard = ({
     setDossierChallenge,
     isModalOpen,
     setIsModalOpen,
-    loading,
+    loading: showSkeleton,
     handleAcceptChallenge,
     handleDeclineChallenge,
     handleAssignFaculty,

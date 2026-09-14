@@ -59,6 +59,7 @@ export const UniversityTabContent = ({
   if (activeTab === 'faculty') {
     return (
       <FacultyMentorsPanel
+        universityCode={universityCode}
         onNavigateTab={(tab) => setActiveTab(tab)}
         onSelectFacultyDetail={(faculty, projects, challenges) => {
           setSelectedFacultyForDetail(faculty);
@@ -103,6 +104,7 @@ export const UniversityTabContent = ({
     return (
       <EditFacultyPanel
         faculty={selectedFacultyForEdit || selectedFacultyForDetail}
+        universityCode={universityCode}
         onBack={() => setActiveTab(selectedFacultyForDetail ? 'faculty-detail' : 'faculty')}
         onSuccess={(updated) => {
           if (updated) {
@@ -118,6 +120,7 @@ export const UniversityTabContent = ({
   if (activeTab === 'onboard-faculty') {
     return (
       <OnboardFacultyPanel
+        universityCode={universityCode}
         onBack={() => setActiveTab('faculty')}
         onSuccess={() => setActiveTab('faculty')}
       />

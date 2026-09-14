@@ -72,6 +72,7 @@ const start = async () => {
     // 1. Initialize Database
     try {
       await connectMongo();
+      
       // Ensure primary government nodal administrator & super admin exist for administrative login
       try {
         const { Admin } = await import('./modules/government/admins/infrastructure/model.js');

@@ -86,8 +86,8 @@ export class TeamRepository {
         leader: teamData.leader || teamData.studentLead || 'Unassigned',
         membersCount: (teamData.members || teamData.teamMembers || []).length,
         members: teamData.members || teamData.teamMembers || [],
-        projectId: teamData.project || teamData.projectId || '',
-        projectTitle: teamData.projectTitle || '',
+        projectId: teamData.projectId || teamData.project || '',
+        projectTitle: teamData.projectTitle || teamData.project || '',
         mentor: teamData.mentor || 'Faculty Mentor',
         facultyMentorName: teamData.mentor || 'Faculty Mentor',
         status: teamData.status || 'Active'

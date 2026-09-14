@@ -7,7 +7,7 @@ import { FacultyAssignChallengeModal } from './FacultyAssignChallengeModal.jsx';
 import { universityApiService } from '../../services/universityApiService.js';
 import { enrichFacultyList, filterFacultyList } from './facultyHelper.js';
 
-export const FacultyMentorsPanel = ({ onNavigateTab, onSelectFacultyDetail, onSelectFacultyEdit }) => {
+export const FacultyMentorsPanel = ({ universityCode, onNavigateTab, onSelectFacultyDetail, onSelectFacultyEdit }) => {
   const [facultyList, setFacultyList] = useState([]);
   const [projectsList, setProjectsList] = useState([]);
   const [challengesList, setChallengesList] = useState([]);
@@ -24,9 +24,9 @@ export const FacultyMentorsPanel = ({ onNavigateTab, onSelectFacultyDetail, onSe
   const fetchFacultyAndProjects = async () => {
     setLoading(true);
     const [facData, projData, chlData] = await Promise.all([
-      universityApiService.getFaculty(),
-      universityApiService.getProjects('RU001'),
-      universityApiService.getAssignedChallenges('RU001')
+      universityApiService.getFaculty(universityCode),
+      universityApiService.getProjects(universityCode),
+      universityApiService.getAssignedChallenges(universityCode)
     ]);
     const fList = Array.isArray(facData) ? facData : [];
     const pList = Array.isArray(projData) ? projData : [];
@@ -47,7 +47,7 @@ export const FacultyMentorsPanel = ({ onNavigateTab, onSelectFacultyDetail, onSe
 
   useEffect(() => {
     fetchFacultyAndProjects();
-  }, []);
+  }, [universityCode]);
 
   const handleResetFilters = () => {
     setSearch('');
@@ -58,7 +58,7 @@ export const FacultyMentorsPanel = ({ onNavigateTab, onSelectFacultyDetail, onSe
   };
 
   const handleAddFaculty = async (newFaculty) => {
-    await universityApiService.createFaculty(newFaculty);
+    await universityApiService.createFaculty(newFaculty, universityCode);
     await fetchFacultyAndProjects();
   };
 
@@ -101,7 +101,7 @@ export const FacultyMentorsPanel = ({ onNavigateTab, onSelectFacultyDetail, onSe
       })
     );
 
-    await universityApiService.assignFaculty(challengeId, 'RU001', {
+    await universityApiService.assignFaculty(challengeId, universityCode, {
       name: faculty.name,
       department: faculty.department,
       email: faculty.email,

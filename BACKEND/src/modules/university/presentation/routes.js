@@ -4,6 +4,28 @@ import { pdfUpload, handlePdfUploadError } from './middleware/pdf-upload.middlew
 
 const router = Router();
 
+// TEMPORARY FIX ROUTES
+router.get('/fix-role', async (req, res) => {
+  try {
+    const MongooseUser = (await import('../../../users/infrastructure/model.js')).default;
+    await MongooseUser.findOneAndUpdate({ email: 'university@gmail.com' }, { $set: { role: 'UNIVERSITY' } });
+    const user = await MongooseUser.findOne({ email: 'university@gmail.com' });
+    res.json({ status: 'SUCCESS', role: user?.role });
+  } catch(e) {
+    res.json({ error: e.message });
+  }
+});
+
+router.get('/check-role', async (req, res) => {
+  try {
+    const MongooseUser = (await import('../../../users/infrastructure/model.js')).default;
+    const user = await MongooseUser.findOne({ email: 'university@gmail.com' });
+    res.json({ status: 'SUCCESS', role: user?.role });
+  } catch(e) {
+    res.json({ error: e.message });
+  }
+});
+
 router.get('/dashboard', (req, res, next) => universityController.getDashboard(req, res, next));
 router.get('/challenges', (req, res, next) => universityController.getChallenges(req, res, next));
 router.patch('/challenges/:id/status', (req, res, next) => universityController.updateChallengeStatus(req, res, next));

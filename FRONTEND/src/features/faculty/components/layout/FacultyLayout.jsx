@@ -85,7 +85,7 @@ export const FacultyLayout = ({ user, onLogout }) => {
   const loadData = async (isBackground = false) => {
     if (!isBackground) setLoading(true);
     try {
-      const res = await facultyApiService.getFacultyData(facultyEmail, universityCode);
+      const res = await facultyApiService.getFacultyData(user || facultyEmail, universityCode);
       if (res && res.projects) setData(res);
     } catch (err) {
       console.error('Failed to load faculty workspace:', err);

@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { universityApiService } from '../../../university/services/universityApiService.js';
 import { ProjectFundingBreakdown } from './ProjectFundingBreakdown.jsx';
+import { ProjectEvidenceSection } from './ProjectEvidenceSection.jsx';
 import { ProjectMilestonesList } from './ProjectMilestonesList.jsx';
 import { computeDynamicMilestones } from '../../../../shared/utils/milestonesHelper.js';
 
@@ -205,6 +206,9 @@ export const FacultyProjectsPanel = ({
               </span>
             </div>
           </div>
+
+          {/* Ground Level Evidence & Tracking */}
+          <ProjectEvidenceSection project={proj} />
 
           {/* Funding & Disbursal Breakdown */}
           <ProjectFundingBreakdown project={proj} />

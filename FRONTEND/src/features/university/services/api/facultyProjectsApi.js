@@ -6,7 +6,8 @@ export const facultyProjectsApi = {
   async getFaculty(universityCode = DEFAULT_UNIVERSITY_CODE) {
     try {
       const res = await apiClient.get(`university/faculty?universityCode=${encodeURIComponent(universityCode)}`);
-      if (res?.data && Array.isArray(res.data)) return res.data;
+      const list = Array.isArray(res?.data?.data) ? res.data.data : (Array.isArray(res?.data) ? res.data : (Array.isArray(res) ? res : []));
+      return list;
     } catch (err) { console.error('API getFaculty error:', err.message); }
     return [];
   },
@@ -38,7 +39,8 @@ export const facultyProjectsApi = {
   async getTeams(universityCode = DEFAULT_UNIVERSITY_CODE) {
     try {
       const res = await apiClient.get(`university/teams?universityCode=${encodeURIComponent(universityCode)}`);
-      if (res?.data && Array.isArray(res.data)) return res.data;
+      const list = Array.isArray(res?.data?.data) ? res.data.data : (Array.isArray(res?.data) ? res.data : (Array.isArray(res) ? res : []));
+      return list;
     } catch (err) { console.error('API getTeams error:', err.message); }
     return [];
   },
@@ -70,7 +72,8 @@ export const facultyProjectsApi = {
   async getProjects(universityCode = DEFAULT_UNIVERSITY_CODE) {
     try {
       const res = await apiClient.get(`university/projects?universityCode=${encodeURIComponent(universityCode)}`);
-      if (res?.data && Array.isArray(res.data)) return res.data;
+      const list = Array.isArray(res?.data?.data) ? res.data.data : (Array.isArray(res?.data) ? res.data : (Array.isArray(res) ? res : []));
+      return list;
     } catch (err) { console.error('API getProjects error:', err.message); }
     return [];
   },
