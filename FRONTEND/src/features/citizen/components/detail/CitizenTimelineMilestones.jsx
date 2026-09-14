@@ -20,12 +20,6 @@ export const CitizenTimelineMilestones = ({ milestones, challenge = null }) => {
           <span className="text-xs font-bold text-slate-900 uppercase tracking-wider">
             Resolution Progress Timeline
           </span>
-          <span className={`inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full border ${
-            isBlockTrack ? 'bg-blue-50 text-blue-800 border-blue-200' : 'bg-emerald-50 text-emerald-800 border-emerald-200'
-          }`}>
-            {isBlockTrack ? <Wrench className="w-3 h-3 text-blue-600" /> : <GraduationCap className="w-3 h-3 text-emerald-600" />}
-            <span>{isBlockTrack ? 'Block & Civic Remediation' : 'University R&D Track'}</span>
-          </span>
         </div>
         <span className="text-[11px] font-semibold text-slate-400">{activeMilestones.length} Stages</span>
       </div>

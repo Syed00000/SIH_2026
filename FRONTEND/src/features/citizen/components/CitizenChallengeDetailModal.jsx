@@ -66,9 +66,9 @@ export const CitizenChallengeDetailModal = ({ challenge = null, isOpen, onClose,
         {/* Header */}
         <div className="p-4 sm:px-6 sm:py-4 border-b border-slate-100 flex items-center justify-between">
           <div className="flex items-center space-x-2.5">
-            <span className="font-mono text-xs font-bold text-slate-800 bg-slate-100 px-2 py-1 rounded-md">{challenge.challengeId || 'CHL'}</span>
+            <span className="font-mono text-xs font-bold text-slate-800">{challenge.challengeId || 'CHL'}</span>
             <span className="text-xs font-bold text-slate-500">• {challenge.domain || 'Community'}</span>
-            <span className="text-xs font-bold text-emerald-800 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">{localStatus}</span>
+            <span className="text-xs font-bold text-emerald-800">{localStatus}</span>
           </div>
           <button onClick={onClose} className="p-1 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer">
             <X className="w-5 h-5" />
@@ -154,7 +154,7 @@ export const CitizenChallengeDetailModal = ({ challenge = null, isOpen, onClose,
               <span>Download Receipt</span>
             </button>
             {canWithdraw && (
-              <button type="button" onClick={() => setShowWithdrawConfirm(true)} className="px-3 py-1.5 border border-amber-200 text-amber-800 hover:bg-amber-50 font-bold rounded-lg flex items-center space-x-1.5 text-[11px] cursor-pointer">
+              <button type="button" onClick={() => setShowWithdrawConfirm(true)} className="text-amber-800 hover:text-amber-900 font-bold flex items-center space-x-1.5 text-[11px] cursor-pointer">
                 <RotateCcw className="w-3.5 h-3.5 text-amber-700" />
                 <span>Withdraw</span>
               </button>
