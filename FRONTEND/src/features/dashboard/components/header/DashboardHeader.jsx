@@ -129,7 +129,7 @@ export const DashboardHeader = ({
           onClick={() => onNavigateTab('profile')}
           className="flex items-center space-x-2 border border-slate-200 rounded-md px-2.5 py-1 cursor-pointer hover:bg-slate-50 transition-all bg-white shadow-2xs"
         >
-          <div className="w-6 h-6 rounded bg-slate-900 text-white font-bold text-[10px] flex items-center justify-center">
+          <div className="w-6 h-6 rounded bg-[#007A61] text-white font-bold text-[10px] flex items-center justify-center">
             {initials}
           </div>
           <div className="hidden md:block text-left truncate max-w-[110px]">

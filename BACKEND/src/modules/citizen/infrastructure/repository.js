@@ -93,6 +93,13 @@ export class CitizenRepository {
       oldUniId.toUpperCase() !== triageData.assignedUniversity.id.toUpperCase();
 
     applyTriageChanges(challenge, triageData, user);
+    if (typeof challenge.markModified === 'function') {
+      challenge.markModified('assignedWard');
+      challenge.markModified('assignedBlock');
+      challenge.markModified('assignedDepartment');
+      challenge.markModified('assignedTechnician');
+      challenge.markModified('escalationEvidence');
+    }
     await challenge.save();
 
     if (isReassignment) {

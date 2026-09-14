@@ -17,112 +17,47 @@ export const DossierTrackingTab = ({ challenge }) => {
     color: 'bg-blue-100 text-blue-700 border-blue-200'
   });
 
-  const wardEv = challenge.escalationEvidence?.find(e => e.level === 'WARD');
-  const hasWard = isValidObj(challenge.assignedWard) || wardEv;
+  const isCurrentlyDistrict = challenge.assignedDepartment && !challenge.assignedDepartment.category?.includes('State') && !challenge.assignedDepartment.level?.includes('State');
+  const isCurrentlyState = challenge.assignedDepartment && (challenge.assignedDepartment.level === 'State Department' || challenge.assignedDepartment.category === 'State Department');
+  const isCurrentlyMinistry = challenge.assignedDepartment && (challenge.assignedDepartment.level === 'State Ministry' || challenge.assignedDepartment.category === 'State Ministry' || challenge.assignedDepartment.category === 'Apex Government');
 
-  // 2. Ward Assignment
-  if (hasWard) {
-    timeline.push({
-      id: 'ward-assigned',
-      title: 'Assigned to Ward Commissioner',
-      description: `Routed to ${challenge.assignedWard?.name || 'Local Ward Commissioner'}`,
-      date: challenge.assignedWard?.assignedAt || null,
-      icon: MapPin,
-      color: 'bg-amber-100 text-amber-700 border-amber-200'
-    });
-  }
+  const TIERS = [
+    { key: 'WARD', name: 'Ward Commissioner', label: 'Ward', obj: challenge.assignedWard, ev: challenge.escalationEvidence?.find(e => e.level === 'WARD'), color: 'bg-amber-100 text-amber-700 border-amber-200', icon: MapPin },
+    { key: 'BLOCK', name: 'Block Office', label: 'Block', obj: challenge.assignedBlock, ev: challenge.escalationEvidence?.find(e => e.level === 'BLOCK'), color: 'bg-amber-100 text-amber-700 border-amber-200', icon: Building },
+    { key: 'DISTRICT', name: 'District Department', label: 'District', obj: isCurrentlyDistrict ? challenge.assignedDepartment : null, ev: challenge.escalationEvidence?.find(e => e.level === 'DISTRICT'), color: 'bg-amber-100 text-amber-700 border-amber-200', icon: Building },
+    { key: 'STATE', name: 'State Department', label: 'State', obj: isCurrentlyState ? challenge.assignedDepartment : null, ev: challenge.escalationEvidence?.find(e => e.level === 'STATE'), color: 'bg-amber-100 text-amber-700 border-amber-200', icon: Building },
+    { key: 'MINISTRY', name: 'State Ministry / Apex', label: 'Ministry', obj: isCurrentlyMinistry ? challenge.assignedDepartment : null, ev: challenge.escalationEvidence?.find(e => e.level === 'MINISTRY'), color: 'bg-rose-100 text-rose-700 border-rose-200', icon: Building }
+  ];
 
-  // Ward Evidence
-  if (wardEv) {
-    timeline.push({
-      id: 'ward-ev',
-      title: 'Ward Level Verification',
-      description: `Verified by ${wardEv.technicianName || 'Authority'}. Remarks: ${wardEv.remarks}`,
-      date: wardEv.date,
-      icon: Shield,
-      color: 'bg-emerald-100 text-emerald-700 border-emerald-200',
-      media: wardEv.mediaUrls
-    });
-  }
-
-  const blockEv = challenge.escalationEvidence?.find(e => e.level === 'BLOCK');
-  const hasBlock = isValidObj(challenge.assignedBlock) || blockEv;
-
-  // 3. Block Assignment
-  if (hasBlock) {
-    timeline.push({
-      id: 'block-assigned',
-      title: 'Escalated to Block Office',
-      description: `Routed to ${challenge.assignedBlock?.name || 'Block Office'}`,
-      date: challenge.assignedBlock?.assignedAt || null,
-      icon: Building,
-      color: 'bg-amber-100 text-amber-700 border-amber-200'
-    });
-  }
-
-  // Block Evidence
-  if (blockEv) {
-    timeline.push({
-      id: 'block-ev',
-      title: 'Block Level Verification',
-      description: `Verified by ${blockEv.technicianName || 'Authority'}. Remarks: ${blockEv.remarks}`,
-      date: blockEv.date,
-      icon: Shield,
-      color: 'bg-emerald-100 text-emerald-700 border-emerald-200',
-      media: blockEv.mediaUrls
-    });
-  }
-
-  const distEv = challenge.escalationEvidence?.find(e => e.level === 'DISTRICT');
-  const isCurrentlyDistrict = challenge.assignedDepartment && challenge.assignedDepartment.level !== 'State Ministry' && challenge.assignedDepartment.category !== 'State Ministry';
-  const hasDistrict = distEv || isCurrentlyDistrict;
-
-  // 4. District Assignment
-  if (hasDistrict) {
-    const distDate = isCurrentlyDistrict ? challenge.assignedDepartment?.assignedAt : null;
-    timeline.push({
-      id: 'dist-assigned',
-      title: 'Escalated to District Department',
-      description: `Routed to ${isCurrentlyDistrict ? challenge.assignedDepartment?.name : 'District Department'}`,
-      date: distDate,
-      icon: Building,
-      color: 'bg-amber-100 text-amber-700 border-amber-200'
-    });
-  }
-
-  // District Evidence
-  if (distEv) {
-    timeline.push({
-      id: 'dist-ev',
-      title: 'District Level Verification',
-      description: `Verified by ${distEv.technicianName || 'Authority'}. Remarks: ${distEv.remarks}`,
-      date: distEv.date,
-      icon: Shield,
-      color: 'bg-emerald-100 text-emerald-700 border-emerald-200',
-      media: distEv.mediaUrls
-    });
-  }
-
-  const isCurrentlyState = challenge.assignedDepartment && (challenge.assignedDepartment.level === 'State Ministry' || challenge.assignedDepartment.category === 'State Ministry');
-  const stateEv = challenge.escalationEvidence?.find(e => e.level === 'STATE');
-  const hasState = isCurrentlyState || stateEv;
-
-  // 5. State Assignment
-  if (hasState) {
-    timeline.push({
-      id: 'state-assigned',
-      title: 'Escalated to State Ministry',
-      description: `Routed to ${challenge.assignedDepartment?.name || 'State Ministry'}`,
-      date: challenge.assignedDepartment?.assignedAt || null,
-      icon: Building,
-      color: 'bg-rose-100 text-rose-700 border-rose-200'
-    });
-  }
+  TIERS.forEach(({ key, name, label, obj, ev, color, icon }) => {
+    if (isValidObj(obj) || ev) {
+      timeline.push({
+        id: `${key.toLowerCase()}-assigned`,
+        title: key === 'WARD' ? `Assigned to ${name}` : `Escalated to ${name}`,
+        description: `Routed to ${obj?.name || name}`,
+        date: obj?.assignedAt || null,
+        icon,
+        color
+      });
+    }
+    if (ev) {
+      timeline.push({
+        id: `${key.toLowerCase()}-ev`,
+        title: `${label} Level Verification`,
+        description: `Verified by ${ev.technicianName || 'Authority'}. Remarks: ${ev.remarks}`,
+        date: ev.date,
+        icon: Shield,
+        color: 'bg-emerald-100 text-emerald-700 border-emerald-200',
+        media: ev.mediaUrls
+      });
+    }
+  });
 
   // Current Technician (if completed but not escalated)
   if (challenge.assignedTechnician && challenge.assignedTechnician.status === 'Completed') {
     let currentLevelName = 'Current Level';
-    if (isCurrentlyState) currentLevelName = 'State Level';
+    if (isCurrentlyMinistry) currentLevelName = 'Ministry Level';
+    else if (isCurrentlyState) currentLevelName = 'State Level';
     else if (isCurrentlyDistrict) currentLevelName = 'District Level';
     else if (isValidObj(challenge.assignedBlock)) currentLevelName = 'Block Level';
     else if (isValidObj(challenge.assignedWard)) currentLevelName = 'Ward Level';

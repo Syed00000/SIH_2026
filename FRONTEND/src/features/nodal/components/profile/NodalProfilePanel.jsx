@@ -54,7 +54,7 @@ export const NodalProfilePanel = ({
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-5 pb-5 border-b border-slate-100">
           <div className="flex items-start sm:items-center space-x-4">
             {/* Officer Avatar Initials */}
-            <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-xl bg-slate-900 text-white font-extrabold text-xl sm:text-2xl flex items-center justify-center shrink-0 shadow-2xs">
+            <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-xl bg-[#007A61] text-white font-extrabold text-xl sm:text-2xl flex items-center justify-center shrink-0 shadow-2xs">
               {avatarInitials}
             </div>
 
