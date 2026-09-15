@@ -1,5 +1,5 @@
 import React from 'react';
-import { Home, Layers, ChevronLeft, ChevronRight, LogOut, Wrench, Users, HandCoins, X, Building2 } from 'lucide-react';
+import { Home, Layers, ChevronLeft, ChevronRight, LogOut, Wrench, Users, HandCoins, X, Building2, Beaker } from 'lucide-react';
 
 export const DepartmentSidebar = ({
   activeTab = 'overview',
@@ -23,7 +23,10 @@ export const DepartmentSidebar = ({
   const NAV_ITEMS = [
     { id: 'overview', label: 'Department Overview', icon: Home },
     { id: 'problems', label: 'Assigned Civic Problems', icon: Layers },
+    { id: 'prototypes', label: 'Deployed Solutions', icon: Beaker },
     { id: 'technicians', label: 'Technicians', icon: Wrench },
+    { id: 'budget-officers', label: 'Budget Officers', icon: Users },
+    { id: 'budget-approvals', label: 'Budget Approvals', icon: HandCoins },
     ...(!isWardDept ? [{ id: 'districts', label: tabLabel, icon: Building2 }] : []),
     { id: 'csr-grant', label: 'CSR Grant', icon: HandCoins }
   ];

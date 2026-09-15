@@ -9,7 +9,7 @@ import { ActiveProjectCard } from './ActiveProjectCard.jsx';
 import { ProjectsInProgressTable } from './ProjectsInProgressTable.jsx';
 import { projectCsrSyncService } from '../../services/projectCsrSyncService.js';
 
-export const ActiveProjectsPanel = () => {
+export const ActiveProjectsPanel = ({ initialProjectId, onNavigateTab }) => {
   const [projects, setProjects] = useState(() => projectCsrSyncService.getActiveProjects());
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedSector, setSelectedSector] = useState('All Sectors');
@@ -29,6 +29,23 @@ export const ActiveProjectsPanel = () => {
     });
     return unsubscribe;
   }, []);
+
+  useEffect(() => {
+    try {
+      const pId = initialProjectId || new URLSearchParams(window.location.search).get('projectId') || localStorage.getItem('joharsetu_selected_project_id');
+      if (pId && projects.length > 0) {
+        const clean = String(pId).replace(/^(PROP-|PRJ-)/, '');
+        const found = projects.find((p) => {
+          const idStr = String(p.id || p.projectId || '');
+          return idStr === pId || (clean && idStr.includes(clean)) || String(p.title || '').toLowerCase() === String(pId).toLowerCase();
+        });
+        if (found) {
+          setViewingProject(found);
+          localStorage.removeItem('joharsetu_selected_project_id');
+        }
+      }
+    } catch {}
+  }, [projects, initialProjectId]);
 
   const showToast = (msg, type = 'success') => {
     setNotification({ msg, type });
@@ -141,16 +158,11 @@ export const ActiveProjectsPanel = () => {
       <ActiveProjectsStatsCards stats={projectExecutionStats} />
 
       <ActiveProjectsToolbar
-        selectedStatusTab={selectedStatusTab}
-        setSelectedStatusTab={setSelectedStatusTab}
-        viewMode={viewMode}
-        setViewMode={setViewMode}
-        searchQuery={searchQuery}
-        setSearchQuery={setSearchQuery}
-        selectedSector={selectedSector}
-        setSelectedSector={setSelectedSector}
-        selectedDistrict={selectedDistrict}
-        setSelectedDistrict={setSelectedDistrict}
+        selectedStatusTab={selectedStatusTab} setSelectedStatusTab={setSelectedStatusTab}
+        viewMode={viewMode} setViewMode={setViewMode}
+        searchQuery={searchQuery} setSearchQuery={setSearchQuery}
+        selectedSector={selectedSector} setSelectedSector={setSelectedSector}
+        selectedDistrict={selectedDistrict} setSelectedDistrict={setSelectedDistrict}
       />
 
       {viewMode === 'table' ? (

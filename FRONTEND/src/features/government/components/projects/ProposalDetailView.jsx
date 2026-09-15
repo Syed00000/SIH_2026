@@ -30,7 +30,7 @@ export const ProposalDetailView = ({
   onApproveGrant,
   onRejectProposal,
   onDeleteProposal,
-  onNavigateToCsr
+  onNavigateTab
 }) => {
   const [activeTab, setActiveTab] = useState('dpr'); // 'dpr' | 'methodology' | 'budget' | 'review'
   const [reviewerRemarks, setReviewerRemarks] = useState('');
@@ -105,13 +105,27 @@ export const ProposalDetailView = ({
                 <CheckCircle2 className="w-4 h-4 text-emerald-600" />
                 <span>Grant Disbursed ({disbursedFormatted} Paid) - Active in Execution ✓</span>
               </span>
-              <a
-                href="?tab=projects_active"
+              <button
+                type="button"
+                onClick={() => {
+                  const targetId = proposal.projectId || proposal.id;
+                  try {
+                    localStorage.setItem('joharsetu_gov_active_tab', 'projects_active');
+                    if (targetId) localStorage.setItem('joharsetu_selected_project_id', targetId);
+                  } catch {}
+                  if (onNavigateTab) onNavigateTab('projects_active');
+                  else {
+                    const url = new URL(window.location.href);
+                    url.searchParams.set('tab', 'projects_active');
+                    if (targetId) url.searchParams.set('projectId', targetId);
+                    window.location.href = url.toString();
+                  }
+                }}
                 className="px-3.5 py-1.5 bg-[#007A61] hover:bg-[#00624e] text-white rounded-lg text-xs font-bold transition-colors cursor-pointer flex items-center space-x-1.5 shadow-2xs"
               >
                 <span>View in Active Projects</span>
                 <ChevronRight className="w-3.5 h-3.5 text-slate-300" />
-              </a>
+              </button>
             </div>
           ) : (
             <div className="flex items-center space-x-2">

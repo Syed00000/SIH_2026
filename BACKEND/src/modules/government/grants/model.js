@@ -11,7 +11,7 @@ const governmentGrantFundSchema = new mongoose.Schema(
     targetDeptCode: { type: String, default: '' },
     fundType: {
       type: String,
-      enum: ['CORPUS_INFLOW', 'DEPARTMENT_ALLOCATION'],
+      enum: ['CORPUS_INFLOW', 'CORPUS_DEDUCTION', 'DEPARTMENT_ALLOCATION'],
       default: 'DEPARTMENT_ALLOCATION',
       index: true
     },

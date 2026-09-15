@@ -17,8 +17,16 @@ export function filterDepartmentChallenges(allChls = [], matched = null) {
     if (checkAssignment(c.assignedWard)) return true;
     if (checkAssignment(c.assignedBlock)) return true;
 
-    const resDept = (c.resolutionDossier?.department || '').toLowerCase();
-    if (resDept && (resDept === targetName || targetName.includes(resDept) || resDept.includes(targetName))) return true;
+    const isDeptNameMatch = (dept1, dept2) => {
+      if (!dept1 || !dept2) return false;
+      const clean1 = String(dept1).toLowerCase().replace(/\([^)]*\)/g, '').replace(/department/g, '').trim();
+      const clean2 = String(dept2).toLowerCase().replace(/\([^)]*\)/g, '').replace(/department/g, '').trim();
+      if (!clean1 || !clean2) return false;
+      return clean1.includes(clean2) || clean2.includes(clean1);
+    };
+
+    const resDept = (c.resolutionDossier?.department || c.handoverDepartment || '').toLowerCase();
+    if (resDept && (resDept === targetName || targetName.includes(resDept) || resDept.includes(targetName) || isDeptNameMatch(resDept, targetName))) return true;
 
     const domainClean = (c.domain || '').toLowerCase().replace(/&/g, 'and').trim();
     const targetNameClean = targetName.replace(/&/g, 'and');

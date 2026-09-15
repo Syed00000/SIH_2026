@@ -11,6 +11,7 @@ import {
   PrototypesEvaluationPanel,
   DeploymentTelemetryPanel
 } from '../projects/index.js';
+import { DepartmentBudgetsPanel } from '../projects/DepartmentBudgetsPanel.jsx';
 import { GovernmentGisDashboard } from '../gis/GovernmentGisDashboard.jsx';
 import { AdminManagement, DepartmentsManagementPanel } from '../governance/index.js';
 import { StateDepartmentsManagementPanel } from '../state-departments/StateDepartmentsManagementPanel.jsx';
@@ -36,6 +37,7 @@ export const GovernmentTabRouter = ({
   handleApproveTriage,
   handleRejectTriage,
   handleSetActiveTab,
+  onNavigateTab = handleSetActiveTab,
   getTabTitle
 }) => {
   if (activeTab === 'overview') {
@@ -73,12 +75,15 @@ export const GovernmentTabRouter = ({
     return <ManageUpdatesDashboard />;
   }
 
+  const navFn = onNavigateTab || handleSetActiveTab;
+
   if (['projects_solutions', 'projects_overview', 'projects_active'].includes(activeTab)) {
-    return <ActiveProjectsPanel />;
+    return <ActiveProjectsPanel onNavigateTab={navFn} />;
   }
-  if (activeTab === 'projects_proposals') return <SolutionProposalsPanel />;
+  if (activeTab === 'projects_proposals') return <SolutionProposalsPanel onNavigateTab={navFn} />;
   if (activeTab === 'projects_milestones') return <MilestonesMonitoringPanel />;
   if (activeTab === 'projects_prototypes') return <PrototypesEvaluationPanel />;
+  if (activeTab === 'dept-budgets') return <DepartmentBudgetsPanel />;
   if (activeTab === 'projects_deployment') return <DeploymentTelemetryPanel />;
   if (activeTab === 'heis') {
     return <HeiHubPanel selectedDistrict={selectedDistrict} onSelectDistrict={setSelectedDistrict} />;

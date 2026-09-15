@@ -2,7 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { Search, RotateCcw, ArrowRight, MapPin, Wrench } from 'lucide-react';
 import { DepartmentProblemCard } from './DepartmentProblemCard.jsx';
 
-export const DepartmentProblemsPanel = ({ problems = [], onSelectProblem, onAssignToTech }) => {
+export const DepartmentProblemsPanel = ({ problems = [], onSelectProblem, onAssignToTech, onAssignToBudgetOfficer }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('All Status');
   const [priorityFilter, setPriorityFilter] = useState('All Priority');

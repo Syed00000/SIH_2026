@@ -18,6 +18,7 @@ import { DepartmentPortal } from '../features/department/DepartmentPortal.jsx';
 import { BlockPortal } from '../features/block/BlockPortal.jsx';
 import { WardPortal } from '../features/ward/WardPortal.jsx';
 import { TechnicianPortal } from '../features/technician/TechnicianPortal.jsx';
+import { BudgetOfficerPortal } from '../features/budgetOfficer/BudgetOfficerPortal.jsx';
 import { LandingPage } from '../features/landing/components/LandingPage.jsx';
 import { AboutPage } from '../features/landing/components/AboutPage.jsx';
 import { AboutJharkhandPage } from '../features/landing/components/AboutJharkhandPage.jsx';
@@ -106,39 +107,39 @@ export function Router() {
       }
     }
 
-    if (currentPath === '/citizen' || currentPath === '/citizen-portal') {
+    if (currentPath.startsWith('/citizen')) {
       return (
-        <ProtectedRoute allowedRoles={['CITIZEN', 'GOVERNMENT', 'ADMIN']} onNavigate={navigate}>
+        <ProtectedRoute allowedRoles={['CITIZEN', 'GOVERNMENT', 'ADMIN', 'SUPER_ADMIN']} onNavigate={navigate}>
           <CitizenPortal user={user} onLogout={handleLogout} />
         </ProtectedRoute>
       );
     }
 
-    if (currentPath === '/nodal' || currentPath === '/nodal-portal') {
+    if (currentPath.startsWith('/nodal')) {
       return (
-        <ProtectedRoute allowedRoles={['NODAL', 'GOVERNMENT', 'ADMIN']} onNavigate={navigate}>
+        <ProtectedRoute allowedRoles={['NODAL', 'GOVERNMENT', 'ADMIN', 'SUPER_ADMIN']} onNavigate={navigate}>
           <NodalPortal user={user} onLogout={handleLogout} onNavigate={navigate} />
         </ProtectedRoute>
       );
     }
 
-    if (currentPath === '/faculty' || currentPath === '/faculty-portal') {
+    if (currentPath.startsWith('/faculty')) {
       return (
-        <ProtectedRoute allowedRoles={['FACULTY', 'UNIVERSITY', 'GOVERNMENT', 'ADMIN']} onNavigate={navigate}>
+        <ProtectedRoute allowedRoles={['FACULTY', 'UNIVERSITY', 'GOVERNMENT', 'ADMIN', 'SUPER_ADMIN']} onNavigate={navigate}>
           <FacultyLayout user={user} onLogout={handleLogout} />
         </ProtectedRoute>
       );
     }
 
-    if (currentPath === '/university' || currentPath === '/hei' || currentPath === '/university-portal') {
+    if (currentPath.startsWith('/university')) {
       return (
-        <ProtectedRoute allowedRoles={['UNIVERSITY', 'HEI', 'GOVERNMENT', 'ADMIN']} onNavigate={navigate}>
+        <ProtectedRoute allowedRoles={['UNIVERSITY', 'HEI', 'GOVERNMENT', 'ADMIN', 'SUPER_ADMIN']} onNavigate={navigate}>
           <UniversityLayout user={user} onLogout={handleLogout} />
         </ProtectedRoute>
       );
     }
 
-    if (currentPath === '/government' || currentPath === '/admin' || currentPath === '/admin-portal') {
+    if (currentPath.startsWith('/government')) {
       return (
         <ProtectedRoute allowedRoles={['GOVERNMENT', 'ADMIN', 'SUPER_ADMIN']} onNavigate={navigate}>
           <GovernmentLayout onLogout={handleLogout} />
@@ -146,41 +147,49 @@ export function Router() {
       );
     }
 
-    if (currentPath === '/department' || currentPath === '/department-portal' || currentPath.startsWith('/department/')) {
+    if (currentPath.startsWith('/department')) {
       return (
-        <ProtectedRoute allowedRoles={['DEPARTMENT', 'GOVERNMENT', 'ADMIN', 'NODAL', 'CITIZEN']} onNavigate={navigate}>
+        <ProtectedRoute allowedRoles={['DEPARTMENT', 'GOVERNMENT', 'ADMIN', 'SUPER_ADMIN']} onNavigate={navigate}>
           <DepartmentPortal user={user} onLogout={handleLogout} />
         </ProtectedRoute>
       );
     }
 
-    if (currentPath === '/ward' || currentPath === '/ward-portal') {
+    if (currentPath.startsWith('/ward')) {
       return (
-        <ProtectedRoute allowedRoles={['GOVERNMENT', 'ADMIN', 'NODAL', 'DEPARTMENT', 'CITIZEN', 'WARD', 'BLOCK']} onNavigate={navigate}>
+        <ProtectedRoute allowedRoles={['WARD', 'GOVERNMENT', 'ADMIN', 'SUPER_ADMIN', 'BLOCK']} onNavigate={navigate}>
           <WardPortal user={user} onLogout={handleLogout} onNavigate={navigate} />
         </ProtectedRoute>
       );
     }
 
-    if (currentPath === '/block' || currentPath === '/block-portal') {
+    if (currentPath.startsWith('/block')) {
       return (
-        <ProtectedRoute allowedRoles={['GOVERNMENT', 'ADMIN', 'NODAL', 'DEPARTMENT', 'CITIZEN', 'BLOCK', 'WARD']} onNavigate={navigate}>
+        <ProtectedRoute allowedRoles={['BLOCK', 'GOVERNMENT', 'ADMIN', 'SUPER_ADMIN']} onNavigate={navigate}>
           <BlockPortal user={user} onLogout={handleLogout} />
         </ProtectedRoute>
       );
     }
 
-    if (currentPath === '/technician' || currentPath === '/technician-portal') {
+    if (currentPath.startsWith('/technician')) {
       return (
-        <ProtectedRoute allowedRoles={['TECHNICIAN', 'GOVERNMENT', 'ADMIN', 'DEPARTMENT']} onNavigate={navigate}>
+        <ProtectedRoute allowedRoles={['TECHNICIAN', 'GOVERNMENT', 'ADMIN', 'SUPER_ADMIN']} onNavigate={navigate}>
           <TechnicianPortal user={user} onLogout={handleLogout} />
         </ProtectedRoute>
       );
     }
 
-    if (currentPath === '/industry-portal' || currentPath === '/industry-dashboard') {
+    if (currentPath.startsWith('/budget-officer')) {
       return (
-        <ProtectedRoute allowedRoles={['INDUSTRY', 'GOVERNMENT', 'ADMIN']} onNavigate={navigate}>
+        <ProtectedRoute allowedRoles={['BUDGET_OFFICER', 'GOVERNMENT', 'ADMIN', 'SUPER_ADMIN']} onNavigate={navigate}>
+          <BudgetOfficerPortal user={user} onLogout={handleLogout} />
+        </ProtectedRoute>
+      );
+    }
+
+    if (currentPath.startsWith('/industry-portal')) {
+      return (
+        <ProtectedRoute allowedRoles={['INDUSTRY', 'GOVERNMENT', 'ADMIN', 'SUPER_ADMIN']} onNavigate={navigate}>
           <DashboardContainer onNavigate={navigate} />
         </ProtectedRoute>
       );

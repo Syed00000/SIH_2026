@@ -20,6 +20,11 @@ import {
   findWardByIdentifier,
   toWardUserEntity
 } from '../../auth/application/services/ward-auth.helper.js';
+import {
+  findBudgetOfficerById,
+  findBudgetOfficerByIdentifier,
+  toBudgetOfficerUserEntity
+} from '../../auth/application/services/budget-officer-auth.helper.js';
 
 export class UserService {
   constructor(userRepository) {
@@ -47,6 +52,9 @@ export class UserService {
       const tech = await findTechnicianById(id);
       if (tech) return toTechnicianUserEntity(tech);
 
+      const bo = await findBudgetOfficerById(id);
+      if (bo) return toBudgetOfficerUserEntity(bo);
+
       throw new NotFoundError('User not found');
     }
     return user;
@@ -66,6 +74,9 @@ export class UserService {
 
       const tech = await findTechnicianByIdentifier(email);
       if (tech) return toTechnicianUserEntity(tech);
+
+      const bo = await findBudgetOfficerByIdentifier(email);
+      if (bo) return toBudgetOfficerUserEntity(bo);
     }
     return user;
   }
@@ -90,6 +101,9 @@ export class UserService {
 
       const tech = await findTechnicianByIdentifier(identifier);
       if (tech) return toTechnicianUserEntity(tech);
+
+      const bo = await findBudgetOfficerByIdentifier(identifier);
+      if (bo) return toBudgetOfficerUserEntity(bo);
     }
 
     return user;

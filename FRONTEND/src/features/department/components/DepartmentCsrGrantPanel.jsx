@@ -9,7 +9,7 @@ import { GrantRequestsTable } from './GrantRequestsTable.jsx';
 import { DepartmentCsrKpis } from './DepartmentCsrKpis.jsx';
 import { AllocateFundModal } from './AllocateFundModal.jsx';
 
-export const DepartmentCsrGrantPanel = ({ department }) => {
+export const DepartmentCsrGrantPanel = ({ department, problems = [] }) => {
   const [deptData, setDeptData] = useState(department);
   const deptId = department?.deptId || deptData?.deptId || department?.id || deptData?.id || '';
   const category = deptData?.category || department?.category || 'Administrative Tier';
@@ -59,7 +59,7 @@ export const DepartmentCsrGrantPanel = ({ department }) => {
         const out = await grantRequestService.getRequests({ requesterDeptId: queryId });
         setOutboundReqs(Array.isArray(out) ? out : []);
       }
-    } catch (err) { console.warn('Error loading requests:', err); } finally { setLoading(false); }
+    } catch {} finally { setLoading(false); }
   };
 
   useEffect(() => {
@@ -69,12 +69,32 @@ export const DepartmentCsrGrantPanel = ({ department }) => {
     return () => clearInterval(timer);
   }, [deptId]);
 
-  const availableBalance = Number(deptData?.allocatedFundPool || 0);
+  const sanctionedBudgetsFromGovt = (problems || [])
+    .filter(p => p.assignedBudgetOfficer?.status === 'Approved' || p.budgetStatus === 'Sanctioned')
+    .reduce((sum, p) => sum + (Number(p.actualBudget?.amount || p.sanctionedAmount || p.sanctionedBudget || 0)), 0);
+
+  const basePool = Number(deptData?.allocatedFundPool || 0);
+  const availableBalance = Math.max(basePool, sanctionedBudgetsFromGovt);
   const totalAllocated = outboundReqs.filter((r) => r.status === 'Granted').reduce((sum, r) => sum + (r.sanctionedAmount || r.requestedAmount || 0), availableBalance);
   const totalDisbursedInbound = inboundReqs.filter((r) => r.status === 'Granted').reduce((sum, r) => sum + (r.sanctionedAmount || r.requestedAmount || 0), 0);
   const pendingInbound = inboundReqs.filter((r) => r.status === 'Pending').length;
 
-  const inboundWithDir = inboundReqs.map((r) => ({ ...r, direction: 'inbound' }));
+  const govtApprovedReqs = (problems || [])
+    .filter(p => p.assignedBudgetOfficer?.status === 'Approved' || p.budgetStatus === 'Sanctioned')
+    .map(p => ({
+      _id: p._id || p.id || p.challengeId, requestId: p.challengeId || `SANC-${p.id || 'PRJ'}`,
+      tier: 'DISTRICT_TO_STATE', status: 'Granted', direction: 'inbound',
+      requestedAmount: Number(p.actualBudget?.amount || p.sanctionedAmount || 0),
+      sanctionedAmount: Number(p.actualBudget?.amount || p.sanctionedAmount || 0),
+      utrNumber: 'PFMS-STATE-GRANTS-SANCTIONED',
+      purpose: `${p.title || 'Project'}: ${p.actualBudget?.details || 'Department project execution allocation.'}`,
+      targetDeptName: deptData?.name || department?.name || 'Department',
+      requesterDeptName: 'Govt State Grants',
+      createdAt: p.assignedBudgetOfficer?.approvedAt || p.updatedAt || new Date().toISOString()
+    }));
+
+  const allInbound = [...govtApprovedReqs, ...inboundReqs];
+  const inboundWithDir = allInbound.map((r) => ({ ...r, direction: 'inbound' }));
   const outboundWithDir = outboundReqs.map((r) => ({ ...r, direction: 'outbound' }));
   const displayedRequests = subTab === 'all' ? [...inboundWithDir, ...outboundWithDir] : subTab === 'inbound' ? inboundWithDir : outboundWithDir;
 
@@ -141,7 +161,7 @@ export const DepartmentCsrGrantPanel = ({ department }) => {
           <button type="button" onClick={() => setSubTab('inbound')} className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer ${subTab === 'inbound' ? 'bg-emerald-700 text-white shadow-xs' : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'}`}>
             <Inbox className="w-3.5 h-3.5" /><span>Incoming Requisitions</span>
             {pendingInbound > 0 && <span className="px-1.5 py-0.2 rounded-full text-[9px] font-black bg-amber-400 text-amber-950">{pendingInbound}</span>}
-            <span className="text-[10px] opacity-80">({inboundReqs.length})</span>
+            <span className="text-[10px] opacity-80">({allInbound.length})</span>
           </button>
         )}
         <button type="button" onClick={() => setSubTab('outbound')} className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer ${subTab === 'outbound' ? 'bg-emerald-700 text-white shadow-xs' : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'}`}>
@@ -152,19 +172,8 @@ export const DepartmentCsrGrantPanel = ({ department }) => {
       <GrantRequestsTable requests={displayedRequests} type={subTab} onReviewRequest={setReviewingReq} />
       <RequestGrantModal department={deptData} isOpen={isRequestModalOpen} onClose={() => setIsRequestModalOpen(false)} onCreated={(req) => { setOutboundReqs((p) => [req, ...p]); setSubTab('outbound'); }} />
       <EmergencyGrantModal department={deptData} isOpen={isEmergencyModalOpen} onClose={() => setIsEmergencyModalOpen(false)} onCreated={(req) => { setOutboundReqs((p) => [req, ...p]); setSubTab('outbound'); }} />
-      <GrantFundsModal
-        request={reviewingReq} currentDepartment={deptData || department} availableBalance={availableBalance}
-        isOpen={Boolean(reviewingReq)} onClose={() => setReviewingReq(null)}
-        onGranted={() => { loadRequests(); loadDepartment(); }} onRejected={() => { loadRequests(); loadDepartment(); }}
-      />
-      <AllocateFundModal
-        currentDepartment={{ ...(deptData || department), allocatedFundPool: availableBalance }}
-        isOpen={isAllocateModalOpen} onClose={() => setIsAllocateModalOpen(false)}
-        onFundAllocated={(res) => {
-          if (res?.fromDepartment?.newBalance !== undefined) setDeptData((prev) => ({ ...prev, allocatedFundPool: res.fromDepartment.newBalance }));
-          loadDepartment(); loadRequests();
-        }}
-      />
+      <GrantFundsModal request={reviewingReq} currentDepartment={deptData || department} availableBalance={availableBalance} isOpen={Boolean(reviewingReq)} onClose={() => setReviewingReq(null)} onGranted={() => { loadRequests(); loadDepartment(); }} onRejected={() => { loadRequests(); loadDepartment(); }} />
+      <AllocateFundModal currentDepartment={{ ...(deptData || department), allocatedFundPool: availableBalance }} isOpen={isAllocateModalOpen} onClose={() => setIsAllocateModalOpen(false)} onFundAllocated={(res) => { if (res?.fromDepartment?.newBalance !== undefined) setDeptData((prev) => ({ ...prev, allocatedFundPool: res.fromDepartment.newBalance })); loadDepartment(); loadRequests(); }} />
     </div>
   );
 };

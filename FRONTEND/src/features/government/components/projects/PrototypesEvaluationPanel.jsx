@@ -5,6 +5,7 @@ import { InspectPrototypeDetailPanel } from './InspectPrototypeDetailPanel.jsx';
 import { PrototypeInteractiveCard } from './PrototypeInteractiveCard.jsx';
 import { PrototypeListingTable } from './PrototypeListingTable.jsx';
 import { PrototypeDeploymentTermsModal } from './PrototypeDeploymentTermsModal.jsx';
+import { PrototypeHandoverModal } from './PrototypeHandoverModal.jsx';
 import { universityApiService } from '../../../university/services/universityApiService.js';
 
 export const PrototypesEvaluationPanel = () => {
@@ -14,6 +15,7 @@ export const PrototypesEvaluationPanel = () => {
   const [viewMode, setViewMode] = useState('list');
   const [selectedProjectForModal, setSelectedProjectForModal] = useState(null);
   const [selectedProjectForTermsModal, setSelectedProjectForTermsModal] = useState(null);
+  const [selectedProjectForHandoverModal, setSelectedProjectForHandoverModal] = useState(null);
   const [notification, setNotification] = useState(null);
 
   useEffect(() => {
@@ -40,6 +42,16 @@ export const PrototypesEvaluationPanel = () => {
       if (found) setSelectedProjectForModal(found);
     }
     showToast('Prototype Handed Over to Department & Deployed Statewide!');
+  };
+
+  const handleHandoverSuccess = (pId, deptName) => {
+    const updated = projectCsrSyncService.deployPrototype(pId, deptName);
+    setProjects(updated);
+    if (selectedProjectForModal) {
+      const found = updated.find(x => x.id === pId || x.projectId === pId || x.challengeId === pId);
+      if (found) setSelectedProjectForModal(found);
+    }
+    showToast(`Prototype successfully allocated to ${deptName}!`);
   };
 
   const handleAdvanceTrl = async (projectId) => {
@@ -168,6 +180,7 @@ export const PrototypesEvaluationPanel = () => {
           onInspect={(p) => setSelectedProjectForModal(p)}
           onAdvanceTrl={handleAdvanceTrl}
           onOpenDeployTerms={(p) => setSelectedProjectForTermsModal(p)}
+          onOpenHandoverModal={(p) => setSelectedProjectForHandoverModal(p)}
         />
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
@@ -181,6 +194,7 @@ export const PrototypesEvaluationPanel = () => {
                 onInspect={(p) => setSelectedProjectForModal(p)}
                 onAdvanceTrl={handleAdvanceTrl}
                 onOpenDeployTerms={(p) => setSelectedProjectForTermsModal(p)}
+                onOpenHandoverModal={(p) => setSelectedProjectForHandoverModal(p)}
               />
             ))
           )}
@@ -192,6 +206,13 @@ export const PrototypesEvaluationPanel = () => {
         onClose={() => setSelectedProjectForTermsModal(null)}
         project={selectedProjectForTermsModal}
         onDeploySuccess={handleDeploySuccess}
+      />
+
+      <PrototypeHandoverModal
+        isOpen={Boolean(selectedProjectForHandoverModal)}
+        onClose={() => setSelectedProjectForHandoverModal(null)}
+        project={selectedProjectForHandoverModal}
+        onHandoverSuccess={handleHandoverSuccess}
       />
     </div>
   );

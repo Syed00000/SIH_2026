@@ -1,5 +1,5 @@
 import React from 'react';
-import { Home, Layers, Wrench, Building2, HandCoins, Users } from 'lucide-react';
+import { Home, Layers, Wrench, Building2, HandCoins, Users, Beaker } from 'lucide-react';
 
 export const DepartmentMobileNav = ({
   activeTab = 'overview',
@@ -12,7 +12,10 @@ export const DepartmentMobileNav = ({
   const tabs = [
     { id: 'overview', label: 'Overview', icon: Home },
     { id: 'problems', label: 'Problems', icon: Layers, badge: problemCount > 0 ? problemCount : null },
+    { id: 'prototypes', label: 'Solutions', icon: Beaker },
     { id: 'technicians', label: 'Technicians', icon: Wrench, badge: techCount > 0 ? techCount : null },
+    { id: 'budget-officers', label: 'B-Officers', icon: Users },
+    { id: 'budget-approvals', label: 'Budgets', icon: HandCoins },
     ...(isWard
       ? [{ id: 'csr-grant', label: 'CSR Grant', icon: HandCoins }]
       : [{ id: 'districts', label: 'Districts', icon: Building2, badge: districtCount > 0 ? districtCount : null }])

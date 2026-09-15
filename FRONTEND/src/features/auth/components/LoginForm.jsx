@@ -85,6 +85,9 @@ export const LoginForm = ({ onNavigate }) => {
         const targetId = loggedUser.technicianId || loggedUser.id || '';
         return goTo('/technician', { techId: targetId });
       }
+      if (userRole === 'BUDGET_OFFICER' || userRole.includes('BUDGET')) {
+        return goTo('/budget-officer');
+      }
       if (userRole === 'FACULTY' || userRole.includes('FACULTY')) {
         return goTo('/faculty');
       }

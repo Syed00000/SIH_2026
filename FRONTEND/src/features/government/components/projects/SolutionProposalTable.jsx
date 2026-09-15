@@ -5,7 +5,8 @@ import { parseGrantRupees } from './GrantPaymentModal.jsx';
 export const SolutionProposalTable = ({
   proposals = [],
   onViewDetails,
-  onDelete
+  onDelete,
+  onNavigateTab
 }) => {
   return (
     <div className="bg-white border border-slate-200 overflow-hidden shadow-xs rounded-xs">
@@ -75,13 +76,27 @@ export const SolutionProposalTable = ({
                     <td className="py-3 px-4 text-right">
                       <div className="flex items-center justify-end space-x-1.5">
                         {isFunded ? (
-                          <a
-                            href="?tab=projects_active"
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const targetId = proposal.projectId || proposal.id;
+                              try {
+                                localStorage.setItem('joharsetu_gov_active_tab', 'projects_active');
+                                if (targetId) localStorage.setItem('joharsetu_selected_project_id', targetId);
+                              } catch {}
+                              if (onNavigateTab) onNavigateTab('projects_active');
+                              else {
+                                const url = new URL(window.location.href);
+                                url.searchParams.set('tab', 'projects_active');
+                                if (targetId) url.searchParams.set('projectId', targetId);
+                                window.location.href = url.toString();
+                              }
+                            }}
                             className="px-2.5 py-1 text-[11px] font-bold text-white bg-slate-900 hover:bg-black rounded-xs transition-colors cursor-pointer inline-flex items-center space-x-1 shadow-xs"
                           >
                             <CheckCircle2 className="w-3 h-3 text-emerald-400" />
                             <span>Active</span>
-                          </a>
+                          </button>
                         ) : (
                           <button
                             type="button"

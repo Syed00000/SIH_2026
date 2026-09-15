@@ -7,6 +7,7 @@ export const PrototypeListingTable = ({
   onInspect,
   onOpenDeployWizard,
   onOpenDeployTerms,
+  onOpenHandoverModal,
   onAdvanceTrl
 }) => {
   if (projects.length === 0) {
@@ -135,9 +136,14 @@ export const PrototypeListingTable = ({
                       </button>
 
                       {isDeployed ? (
-                        <span className="text-[10px] font-bold text-emerald-800 bg-emerald-50 px-2 py-1 rounded-xs border border-emerald-300">
-                          ✓ Handed Over to Dept
-                        </span>
+                        <button
+                          type="button"
+                          onClick={() => onOpenHandoverModal && onOpenHandoverModal(p)}
+                          className="px-2 py-1 text-[10px] font-bold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 hover:text-emerald-900 border border-emerald-300 rounded-xs transition-colors cursor-pointer inline-flex items-center space-x-1 shadow-xs"
+                          title="Allocate to Department"
+                        >
+                          <span>{p.handoverDepartment ? `✓ Handed Over to Dept` : '✓ Handed Over to Dept'}</span>
+                        </button>
                       ) : (
                         <button
                           type="button"

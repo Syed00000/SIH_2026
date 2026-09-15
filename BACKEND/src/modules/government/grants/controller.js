@@ -18,7 +18,7 @@ export const createFund = async (req, res, next) => {
       data
     });
   } catch (error) {
-    if (error.message.includes('valid grant allocation amount')) {
+    if (error.message.includes('valid grant allocation amount') || error.message.includes('Insufficient State')) {
       return res.status(400).json({ status: 'ERROR', message: error.message });
     }
     next(error);

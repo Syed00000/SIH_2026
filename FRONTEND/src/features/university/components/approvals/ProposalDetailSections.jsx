@@ -1,9 +1,55 @@
 import React from 'react';
-import { FileText, Layers } from 'lucide-react';
+import { FileText, Layers, Users, Crown } from 'lucide-react';
 
 export const ProposalDetailSections = ({ approval, totalFormatted, effectiveExtraNum }) => {
+  const teamResearchers = (Array.isArray(approval.teamMembers) && approval.teamMembers.length)
+    ? approval.teamMembers
+    : (Array.isArray(approval.team?.members) && approval.team.members.length)
+    ? approval.team.members
+    : [];
+
+  const teamName = approval.studentTeam || approval.teamName || approval.team?.name || 'Student Research Team';
+
   return (
     <>
+      {/* Student Research Team Roster */}
+      <div className="bg-white border border-slate-200/90 rounded-xl p-4 shadow-2xs space-y-2.5">
+        <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+          <div className="flex items-center space-x-2">
+            <Users className="w-4 h-4 text-[#007A61]" />
+            <h3 className="text-xs font-extrabold text-slate-900 uppercase tracking-wider">
+              Assigned Student Research Team: <span className="text-[#007A61]">{teamName}</span>
+            </h3>
+          </div>
+          <span className="text-[10px] font-bold text-slate-600 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">
+            {teamResearchers.length} Student Researchers
+          </span>
+        </div>
+        {teamResearchers.length > 0 ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
+            {teamResearchers.map((m, idx) => (
+              <div key={idx} className="p-2.5 bg-slate-50/80 rounded-lg border border-slate-200/90 space-y-0.5 text-xs">
+                <div className="font-extrabold text-slate-900 flex items-center justify-between">
+                  <span className="truncate">{m.name}</span>
+                  {m.isLead && (
+                    <span className="text-[9px] font-black bg-amber-100 text-amber-900 px-1 py-0.2 rounded border border-amber-300 flex items-center space-x-0.5">
+                      <Crown className="w-2.5 h-2.5" />
+                      <span>LEAD</span>
+                    </span>
+                  )}
+                </div>
+                <div className="text-[11px] text-slate-600 truncate">{m.department || 'Engineering'}</div>
+                {m.rollNo && <div className="text-[10px] text-slate-400 font-mono">Roll: {m.rollNo}</div>}
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="text-xs text-slate-500 font-medium bg-slate-50 p-3 rounded-lg border border-slate-100">
+            Squad "{teamName}" configured and assigned by Faculty Mentor.
+          </div>
+        )}
+      </div>
+
       {/* Technical Methodology & Research Plan */}
       <div className="bg-white border border-slate-200/90 rounded-xl p-4 shadow-2xs space-y-2">
         <div className="flex items-center space-x-2 pb-2 border-b border-slate-100">
