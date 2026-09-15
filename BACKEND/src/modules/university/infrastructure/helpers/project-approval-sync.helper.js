@@ -19,7 +19,16 @@ export async function syncProjectApprovalRequest({ res, updateData, projectId, u
         dateTime: new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }),
         status: 'Pending', adminRemarks: '', universityRemarks: '',
         faculty: { name: res?.leadMentor || res?.facultyMentor?.name || 'Faculty Mentor', department: res?.facultyMentor?.department || 'Engineering' },
-        team: { name: res?.studentTeam || 'Student Research Team', membersCount: res?.teamMembers?.length || 4 },
+        team: {
+          name: updateData.studentTeam || res?.studentTeam || 'Student Research Team',
+          membersCount: updateData.teamMembers?.length || res?.teamMembers?.length || 0,
+          studentLead: updateData.studentLead || res?.studentLead || '',
+          members: updateData.teamMembers || res?.teamMembers || []
+        },
+        studentTeam: updateData.studentTeam || res?.studentTeam || 'Student Research Team',
+        teamMembers: updateData.teamMembers || res?.teamMembers || [],
+        studentLead: updateData.studentLead || res?.studentLead || '',
+        teamCode: updateData.teamCode || res?.teamCode || '',
         startDate: res?.startDate || '20 May 2026', estimatedBudget: updateData.proposedBudget || updateData.budget || '₹ 80,000',
         proposedBudget: updateData.proposedBudget || updateData.budget || '₹ 80,000',
         additionalAmount: updateData.additionalAmount || 0, baselineBudget: updateData.baselineBudget || '₹ 80,000',

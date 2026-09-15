@@ -26,7 +26,7 @@ export const AddStateGrantModal = ({ isOpen, onClose, onFundAdded }) => {
     if (!window.confirm('Are you sure you want to reset the State R&D Grant Pool to ₹0?')) return;
     setLoading(true);
     try {
-      await apiClient.post('government/funds', { amount: 1, action: 'reset', fundType: 'CORPUS_INFLOW', title: 'State Pool Reset to ₹0' });
+      await apiClient.post('government/funds', { action: 'reset' });
       setSuccess(true);
       if (onFundAdded) onFundAdded();
       setTimeout(() => { setSuccess(false); onClose(); }, 700);
@@ -41,12 +41,13 @@ export const AddStateGrantModal = ({ isOpen, onClose, onFundAdded }) => {
     setLoading(true);
     setError('');
     try {
+      const isDeduct = mode === 'deduct';
       const res = await apiClient.post('government/funds', {
         action: mode,
-        fundType: 'CORPUS_INFLOW',
-        isCorpusInflow: true,
+        fundType: isDeduct ? 'CORPUS_DEDUCTION' : 'CORPUS_INFLOW',
+        isCorpusInflow: !isDeduct,
         amount: numAmount,
-        title: mode === 'deduct' ? `Deduction: ${title}` : title,
+        title: isDeduct ? (title.startsWith('Deduction') ? title : `Deduction: ${title}`) : title,
         scheme,
         departmentId: 'STATE_GOV',
         department: 'Government of Jharkhand State Innovation Pool',

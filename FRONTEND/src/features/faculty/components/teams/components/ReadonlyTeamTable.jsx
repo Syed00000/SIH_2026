@@ -1,5 +1,6 @@
 import React from 'react';
-import { Users, Crown, Mail, ChevronDown, Table as TableIcon, CheckCircle2 } from 'lucide-react';
+import { Users, Crown, Mail, Table as TableIcon, CheckCircle2 } from 'lucide-react';
+import { AvailableTeamsSection } from './AvailableTeamsSection.jsx';
 
 export const ReadonlyTeamTable = ({
   teamName,
@@ -8,34 +9,42 @@ export const ReadonlyTeamTable = ({
   studentLead,
   faculty,
   allTeams = [],
+  projectId,
   onAssignTeam
 }) => {
   const leader = studentLead || teamMembers.find((m) => m.isLead)?.name;
+  const isTeamAssigned = Boolean(teamName && teamName !== 'No Team Assigned' && (teamMembers.length > 0 || teamCode));
 
   return (
-    <div className="w-full bg-white border border-slate-200/90 rounded-2xl shadow-2xs overflow-hidden select-none space-y-0">
-      {/* Spreadsheet Title Bar */}
+    <div className="w-full bg-white border border-slate-300 rounded-md shadow-2xs overflow-hidden select-none text-left">
+      {/* 1. Unified Card Header */}
       <div className="px-5 py-4 bg-gradient-to-r from-slate-50 via-white to-slate-50 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="flex items-center space-x-3">
-          <div className="w-9 h-9 rounded-xl bg-emerald-50 border border-emerald-200 text-[#007A61] flex items-center justify-center shrink-0 shadow-2xs">
+          <div className="w-9 h-9 rounded-md bg-emerald-50 border border-emerald-200 text-[#007A61] flex items-center justify-center shrink-0 shadow-2xs">
             <TableIcon className="w-4.5 h-4.5" />
           </div>
           <div>
             <div className="flex items-center space-x-2">
               <h3 className="text-sm font-black text-slate-900 tracking-tight">
-                Assigned Student Research Team Roster
+                Student Research Team & Challenge Assignment
               </h3>
               {teamCode && (
-                <span className="text-[10px] font-mono font-bold bg-slate-100 text-slate-700 px-2 py-0.5 rounded border border-slate-200">
+                <span className="text-[10px] font-mono font-bold bg-slate-100 text-slate-700 px-2 py-0.5 rounded-xs border border-slate-200">
                   {teamCode}
                 </span>
               )}
-              <span className="text-[10px] font-extrabold px-2.5 py-0.5 bg-emerald-100 text-[#007A61] rounded-full">
-                Active Squad
-              </span>
+              {isTeamAssigned ? (
+                <span className="text-[10px] font-extrabold px-2.5 py-0.5 bg-emerald-100 text-[#007A61] rounded-full border border-emerald-200">
+                  Active Squad
+                </span>
+              ) : (
+                <span className="text-[10px] font-extrabold px-2.5 py-0.5 bg-amber-50 text-amber-800 rounded-full border border-amber-200">
+                  Pending Assignment
+                </span>
+              )}
             </div>
             <p className="text-[11px] text-slate-500 mt-0.5 flex items-center flex-wrap gap-2">
-              <span>Team: <strong className="text-slate-800">{teamName || 'Innovation Lab'}</strong></span>
+              <span>Assigned Team: <strong className="text-slate-800">{teamName || 'None'}</strong></span>
               {leader && (
                 <span className="text-amber-800 font-bold flex items-center space-x-1">
                   <Crown className="w-3 h-3 text-amber-600" />
@@ -48,38 +57,41 @@ export const ReadonlyTeamTable = ({
         </div>
 
         <div className="flex items-center space-x-2 shrink-0">
-          {allTeams.length > 1 && onAssignTeam && (
-            <div className="relative">
-              <select
-                onChange={(e) => {
-                  const found = allTeams.find((t) => (t.teamCode || t.id) === e.target.value);
-                  if (found) onAssignTeam(found);
-                }}
-                defaultValue={teamCode || ''}
-                className="text-[11px] font-bold bg-white border border-slate-200 text-slate-700 px-3 py-1.5 rounded-xl appearance-none pr-7 cursor-pointer focus:outline-none shadow-2xs"
-              >
-                {allTeams.map((t) => (
-                  <option key={t.id || t.teamCode} value={t.teamCode || t.id}>
-                    {t.name} ({t.membersCount || t.members?.length || 0} members)
-                  </option>
-                ))}
-              </select>
-              <ChevronDown className="w-3.5 h-3.5 text-slate-400 absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none" />
-            </div>
-          )}
-          <div className="text-xs font-black bg-emerald-50 text-emerald-800 border border-emerald-300 px-3 py-1.5 rounded-xl flex items-center space-x-1.5">
+          <div className="text-xs font-black bg-emerald-50 text-emerald-800 border border-emerald-300 px-3 py-1.5 rounded-md flex items-center space-x-1.5">
             <Users className="w-3.5 h-3.5 text-[#007A61]" />
             <span>{teamMembers.length} Members</span>
           </div>
         </div>
       </div>
 
-      {/* Horizontal Spreadsheet View */}
+      {/* 2. Embedded Available Teams Listing Inside the Same Box */}
+      <AvailableTeamsSection
+        allTeams={allTeams}
+        currentTeamCode={teamCode}
+        currentProjectId={projectId}
+        onAssignTeam={onAssignTeam}
+      />
+
+      {/* 3. Sub-header for Roster Table */}
+      <div className="px-5 py-2.5 bg-slate-100/70 border-b border-slate-200 flex items-center justify-between">
+        <div className="flex items-center space-x-2">
+          <h4 className="text-[11.5px] font-black text-slate-800 uppercase tracking-wider">
+            Assigned Squad Roster Details {teamCode ? `(${teamName})` : ''}
+          </h4>
+        </div>
+        <span className="text-[10.5px] text-slate-500 font-medium">
+          {teamMembers.length} Active Researcher{teamMembers.length === 1 ? '' : 's'}
+        </span>
+      </div>
+
+      {/* 4. Horizontal Spreadsheet View */}
       {teamMembers.length === 0 ? (
         <div className="py-12 text-center text-slate-400 space-y-2">
           <Users className="w-10 h-10 mx-auto text-slate-300" />
-          <p className="text-xs font-bold text-slate-700">No student team roster assigned yet.</p>
-          <p className="text-[11px] text-slate-400">Use the 'Student Teams' sidebar option to recruit and configure research members.</p>
+          <p className="text-xs font-bold text-slate-700">No student research squad assigned yet.</p>
+          <p className="text-[11px] text-slate-400">
+            Select an available squad from the roster pool above and click &quot;Assign to this Challenge&quot;.
+          </p>
         </div>
       ) : (
         <div className="w-full overflow-x-auto">
@@ -141,7 +153,7 @@ export const ReadonlyTeamTable = ({
                   </td>
                   <td className="px-3 py-3 text-center whitespace-nowrap">
                     <span className="inline-flex items-center space-x-1 px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-100 text-emerald-800">
-                      <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
                       <span>Active</span>
                     </span>
                   </td>
@@ -152,7 +164,7 @@ export const ReadonlyTeamTable = ({
         </div>
       )}
 
-      {/* Spreadsheet Footer Summary Bar */}
+      {/* 5. Spreadsheet Footer Summary Bar */}
       {teamMembers.length > 0 && (
         <div className="px-5 py-2.5 bg-slate-50 border-t border-slate-200 flex items-center justify-between text-[11px] text-slate-500 font-medium">
           <div className="flex items-center space-x-3">

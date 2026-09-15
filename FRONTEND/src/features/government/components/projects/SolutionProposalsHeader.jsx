@@ -1,5 +1,5 @@
 import React from 'react';
-import { FileText, PlayCircle } from 'lucide-react';
+import { FileText } from 'lucide-react';
 
 export const SolutionProposalsHeader = () => {
   return (
@@ -19,16 +19,6 @@ export const SolutionProposalsHeader = () => {
         <p className="text-xs md:text-sm text-slate-500 font-medium mt-0.5">
           Review institutional project proposals, scrutinize sanctioned budgets, and grant clearance for field execution across Jharkhand.
         </p>
-      </div>
-
-      <div className="flex items-center space-x-2.5">
-        <a
-          href="?tab=projects_active"
-          className="px-4 py-2 text-xs font-bold text-white bg-[#007A61] hover:bg-[#00624e] rounded-xs transition-colors cursor-pointer flex items-center space-x-1.5 shadow-xs"
-        >
-          <PlayCircle className="w-4 h-4 text-emerald-100" />
-          <span>View Active Projects</span>
-        </a>
       </div>
     </div>
   );

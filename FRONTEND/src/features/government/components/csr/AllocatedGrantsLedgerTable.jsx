@@ -53,12 +53,21 @@ export const AllocatedGrantsLedgerTable = ({
             <tbody className="divide-y divide-slate-100 bg-white">
               {fundEntries.map((f) => {
                 const amtNumber = Number(f.amount) || 0;
+                const isDeduction = amtNumber < 0 || f.fundType === 'CORPUS_DEDUCTION';
+                const absAmount = Math.abs(amtNumber);
                 return (
-                  <tr key={f.fundId || f._id} className="hover:bg-slate-50/80 transition-colors">
+                  <tr key={f.fundId || f._id} className={`transition-colors ${isDeduction ? 'bg-rose-50/30 hover:bg-rose-50/60' : 'hover:bg-slate-50/80'}`}>
                     <td className="py-2.5 px-3">
-                      <span className="font-mono font-bold text-slate-900 bg-slate-100 px-2 py-0.5 rounded border border-slate-200/70">
-                        {f.fundId || 'GGF-001'}
-                      </span>
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <span className="font-mono font-bold text-slate-900 bg-slate-100 px-2 py-0.5 rounded border border-slate-200/70">
+                          {f.fundId || 'GGF-001'}
+                        </span>
+                        {isDeduction && (
+                          <span className="px-1.5 py-0.5 bg-rose-100 text-rose-700 border border-rose-200 rounded text-[9.5px] font-bold">
+                            Deduction
+                          </span>
+                        )}
+                      </div>
                       {f.sanctionOrderNo && (
                         <div className="text-[10px] font-mono text-slate-500 mt-0.5">
                           {f.sanctionOrderNo}
@@ -66,7 +75,7 @@ export const AllocatedGrantsLedgerTable = ({
                       )}
                     </td>
                     <td className="py-2.5 px-3">
-                      <div className="font-bold text-slate-900">{f.title}</div>
+                      <div className={`font-bold ${isDeduction ? 'text-rose-900' : 'text-slate-900'}`}>{f.title}</div>
                       <div className="text-[10.5px] text-slate-500 line-clamp-1">{f.scheme}</div>
                     </td>
                     <td className="py-2.5 px-3 text-slate-700 font-medium">
@@ -76,11 +85,11 @@ export const AllocatedGrantsLedgerTable = ({
                       {f.allocationDate ? new Date(f.allocationDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : 'N/A'}
                     </td>
                     <td className="py-2.5 px-3 text-right whitespace-nowrap">
-                      <div className="font-black font-mono text-slate-900 text-sm">
-                        ₹ {amtNumber.toLocaleString('en-IN')}
+                      <div className={`font-black font-mono text-sm ${isDeduction ? 'text-rose-600' : 'text-slate-900'}`}>
+                        {isDeduction ? '- ' : ''}₹ {absAmount.toLocaleString('en-IN')}
                       </div>
-                      <div className="text-[10px] font-bold text-[#007A61]">
-                        {formatLakhsCrSubtitle(amtNumber)}
+                      <div className={`text-[10px] font-bold ${isDeduction ? 'text-rose-500' : 'text-[#007A61]'}`}>
+                        {isDeduction ? `(Deducted ${formatLakhsCrSubtitle(absAmount)})` : formatLakhsCrSubtitle(absAmount)}
                       </div>
                     </td>
                     <td className="py-2.5 px-3 text-center">
