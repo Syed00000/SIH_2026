@@ -29,6 +29,7 @@ import departmentRoutes from './modules/government/departments/presentation/depa
 import blockRoutes from './modules/government/blocks/presentation/block.routes.js';
 import wardRoutes from './modules/government/wards/presentation/ward.routes.js';
 import technicianRoutes from './modules/government/technicians/presentation/technician.routes.js';
+import budgetOfficerRoutes from './modules/government/budget-officers/presentation/budgetOfficer.routes.js';
 import noticesRoutes from './modules/notices/presentation/notices.routes.js';
 import { publicUpdatesRouter, adminUpdatesRouter } from './modules/updates/presentation/updates.routes.js';
 
@@ -95,6 +96,7 @@ app.use('/api/v1/government/industries', industryRoutes);
 
 app.use('/api/v1/government/departments', departmentRoutes);
 app.use('/api/v1/government/technicians', technicianRoutes);
+app.use('/api/v1/government/budget-officers', budgetOfficerRoutes);
 app.use('/api/v1/technicians', technicianRoutes);
 app.use('/api/v1/government/blocks', blockRoutes);
 app.use('/api/v1/blocks', blockRoutes);
@@ -123,4 +125,5 @@ app.use((req, res, next) => {
 app.use(errorHandler);
 
 export default app;
+// Trigger nodemon restart 3
 export { app };

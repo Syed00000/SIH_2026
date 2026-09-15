@@ -1,11 +1,11 @@
 import apiClient from '../../../infrastructure/api/client.js';
 
 const formatBudget = (b) => {
-  if (!b) return '₹ 0';
-  if (typeof b === 'number') return `₹ ${b.toLocaleString('en-IN')}`;
+  if (!b) return 'â‚¹ 0';
+  if (typeof b === 'number') return `â‚¹ ${b.toLocaleString('en-IN')}`;
   if (typeof b === 'object') {
     const amt = b.total || b.amount || b.sanctioned || 0;
-    return `₹ ${Number(amt).toLocaleString('en-IN')}`;
+    return `â‚¹ ${Number(amt).toLocaleString('en-IN')}`;
   }
   return String(b);
 };
@@ -62,7 +62,7 @@ class ProjectCsrSyncService {
         const bSanct = Number(String(p.sanctionedBudget || '0').replace(/[^\d]/g, '')) || 0;
         const bBase = Number(String(p.budget || '0').replace(/[^\d]/g, '')) || 0;
         const effectiveBudgetNum = bBreakdownSum > 0 ? bBreakdownSum : Math.max(bProp, bSanct, bBase, 80000);
-        const effectiveBudgetStr = `₹ ${effectiveBudgetNum.toLocaleString('en-IN')}`;
+        const effectiveBudgetStr = `â‚¹ ${effectiveBudgetNum.toLocaleString('en-IN')}`;
         const effectiveAdditional = Math.max(0, effectiveBudgetNum - 80000);
 
         const uniCode = p.universityCode || 'RU001';
@@ -76,10 +76,10 @@ class ProjectCsrSyncService {
 
         const backendDisbursed = p.disbursedAmount ? (Number(String(p.disbursedAmount).replace(/[^\d.]/g, '')) || 0) : 0;
         const testingFeeNum = Number(String(p.testingLabFee || '0').replace(/[^\d]/g, '')) || 0;
-        const rawGovtGrant = p.originalGovernmentGrant || '₹ 80,000';
+        const rawGovtGrant = p.originalGovernmentGrant || 'â‚¹ 80,000';
         const govtGrantNum = Number(String(rawGovtGrant).replace(/[^\d]/g, '')) || 80000;
         const finalDisbursedNum = testingFeeNum > 0 ? Math.max(0, govtGrantNum - testingFeeNum) : Math.max(ledgerDisbursed, backendDisbursed);
-        const finalDisbursedStr = finalDisbursedNum > 0 ? `₹ ${finalDisbursedNum.toLocaleString('en-IN')}` : '₹ 0';
+        const finalDisbursedStr = finalDisbursedNum > 0 ? `â‚¹ ${finalDisbursedNum.toLocaleString('en-IN')}` : 'â‚¹ 0';
 
         const isFunded = finalDisbursedNum > 0 || p.budgetStatus === 'Grant Sanctioned by Government' || p.budgetStatus === 'Grant Disbursed';
         const isApproved = isFunded || p.budgetStatus === 'Forwarded to CSR Grants Pipeline' || Boolean(p.sentToGovernment);
@@ -87,8 +87,13 @@ class ProjectCsrSyncService {
         return {
           id: `PROP-${pId || idx + 1}`,
           projectId: pId,
+          challengeId: p.challengeId || '',
+          handoverDepartment: p.handoverDepartment || '',
+          actualBudget: p.actualBudget || null,
           title: p.title || 'Grassroots Innovation Solution',
           projectTitle: p.title || 'Grassroots Innovation Solution',
+          problemStatement: p.problemStatement || p.description || '',
+          description: p.description || p.problemStatement || '',
           sector: p.domain || p.sector || 'Engineering & Technology',
           district: p.district || 'Ranchi',
           hei: uniName,
@@ -126,9 +131,10 @@ class ProjectCsrSyncService {
           milestones: p.milestones || [],
           budgetBreakdown: p.budgetBreakdown || [],
           disbursedAmount: finalDisbursedStr,
-          originalGovernmentGrant: p.originalGovernmentGrant || (govtGrantNum > 0 ? `₹ ${govtGrantNum.toLocaleString('en-IN')}` : '₹ 80,000'),
-          testingLabFee: p.testingLabFee || (testingFeeNum > 0 ? `₹ ${testingFeeNum.toLocaleString('en-IN')}` : ''),
+          originalGovernmentGrant: p.originalGovernmentGrant || (govtGrantNum > 0 ? `â‚¹ ${govtGrantNum.toLocaleString('en-IN')}` : 'â‚¹ 80,000'),
+          testingLabFee: p.testingLabFee || (testingFeeNum > 0 ? `â‚¹ ${testingFeeNum.toLocaleString('en-IN')}` : ''),
           trancheRequest: p.trancheRequest || null,
+          assignedBudgetOfficer: p.assignedBudgetOfficer || null,
           createdAt: p.createdAt || new Date()
         };
       });
@@ -169,6 +175,8 @@ class ProjectCsrSyncService {
             isDeployed,
             prototypeSentToGovernment: isProtoSent,
             handoverDepartment: p.handoverDepartment || '',
+            actualBudget: p.actualBudget || null,
+            description: p.description || p.problemStatement || '',
             testingCompleted: p.testingCompleted,
             testingReportPdfUrl: p.testingReportPdfUrl,
             testingReportPdfName: p.testingReportPdfName,
@@ -195,7 +203,8 @@ class ProjectCsrSyncService {
             testingStages: p.testingStages || [],
             testingPartner: p.testingPartner || p.partnerName || 'Ariba Research Labs',
             partnerName: p.partnerName || p.testingPartner || 'Ariba Research Labs',
-            milestones: p.milestones || []
+            milestones: p.milestones || [],
+            assignedBudgetOfficer: p.assignedBudgetOfficer || null
           };
         });
 
@@ -376,7 +385,7 @@ class ProjectCsrSyncService {
 
   async recordDisbursal(payment) {
     const rawVal = Number(payment.rawAmount) || Number(String(payment.amount || payment.disbursedAmount || '0').replace(/[^\d]/g, '')) || 75000;
-    const formattedAmt = `₹ ${rawVal.toLocaleString('en-IN')}`;
+    const formattedAmt = `â‚¹ ${rawVal.toLocaleString('en-IN')}`;
     const pId = payment.projectId || (payment.projectRef ? payment.projectRef.replace('PROP-', '') : '');
 
     const newEntry = {
@@ -417,7 +426,7 @@ class ProjectCsrSyncService {
       if (p.projectId === pId || p.id === payment.projectRef || p.id === `PROP-${pId}`) {
         const currDisb = Number(String(p.disbursedAmount || '0').replace(/[^\d]/g, '')) || 0;
         const newTotalDisb = currDisb + rawVal;
-        cumulativeDisbursedStr = `₹ ${newTotalDisb.toLocaleString('en-IN')}`;
+        cumulativeDisbursedStr = `â‚¹ ${newTotalDisb.toLocaleString('en-IN')}`;
         return {
           ...p,
           disbursedAmount: cumulativeDisbursedStr,
@@ -459,7 +468,7 @@ class ProjectCsrSyncService {
             status: 'In Progress',
             stage: 'Prototype Development & Field Testing (TRL-4)',
             trlLevel: sol.trlLevel || 'TRL-4',
-            sanctionedGrant: sol.allocatedAmount || sol.requestedGrant || '₹ 80,000',
+            sanctionedGrant: sol.allocatedAmount || sol.requestedGrant || 'â‚¹ 80,000',
             disbursedGrant: cumulativeDisbursedStr,
             disbursedAmount: cumulativeDisbursedStr,
             budgetStatus: 'Grant Disbursed',
@@ -543,7 +552,7 @@ class ProjectCsrSyncService {
   getActiveProjects() {
     return this.activeProjects.map((proj) => {
       const disbursedVal = this.getProjectDisbursed(proj.id);
-      const formattedDisb = disbursedVal > 0 ? formatBudget(disbursedVal) : (proj.disbursedAmount || '₹ 0');
+      const formattedDisb = disbursedVal > 0 ? formatBudget(disbursedVal) : (proj.disbursedAmount || 'â‚¹ 0');
       return {
         ...proj,
         disbursedGrant: formattedDisb,
@@ -584,6 +593,233 @@ class ProjectCsrSyncService {
     );
     this.notify('LEDGER_UPDATED', { updatedCsrLedger: this.csrLedger });
     return this.csrLedger;
+  }
+
+  deployPrototype(projectId, dept = 'Urban Development & Housing Department') {
+    const markDeployed = (p) => {
+      if (p.id === projectId || p.projectId === projectId || p.challengeId === projectId) {
+        return {
+          ...p,
+          status: 'Completed',
+          governmentStatus: 'Approved',
+          prototypeStatus: 'Approved',
+          isDeployed: true,
+          trlLevel: 'TRL-9',
+          handoverDepartment: dept,
+          deployedAt: new Date()
+        };
+      }
+      return p;
+    };
+    this.activeProjects = this.activeProjects.map(markDeployed);
+    this.solutionProposals = this.solutionProposals.map(markDeployed);
+    this.csrProposals = this.csrProposals.map(markDeployed);
+    this.notify('DATA_SYNCED', {
+      updatedProjects: this.getActiveProjects(),
+      updatedSolProposals: this.solutionProposals,
+      updatedCsrProposals: this.csrProposals,
+      updatedCsrLedger: this.csrLedger
+    });
+    return this.getActiveProjects();
+  }
+
+  advancePrototypeTrl(projectId) {
+    return this.deployPrototype(projectId);
+  }
+
+  addCsrPayment(payment) {
+    return this.recordDisbursal(payment);
+  }
+
+  getActiveProjects() {
+    return this.activeProjects.map((proj) => {
+      const disbursedVal = this.getProjectDisbursed(proj.id);
+      const formattedDisb = disbursedVal > 0 ? formatBudget(disbursedVal) : (proj.disbursedAmount || 'â‚¹ 0');
+      return {
+        ...proj,
+        disbursedGrant: formattedDisb,
+        disbursedAmount: formattedDisb
+      };
+    });
+  }
+
+  getSolutionProposals() { return this.solutionProposals; }
+  getCsrProposals() { return this.csrProposals; }
+  getCsrLedger() { return this.csrLedger; }
+
+  addOrUpdateCsrProposal(proposal) {
+    const idx = this.csrProposals.findIndex((p) => p.id === proposal.id);
+    if (idx >= 0) {
+      this.csrProposals[idx] = { ...this.csrProposals[idx], ...proposal };
+    } else {
+      this.csrProposals = [proposal, ...this.csrProposals];
+    }
+    this.notify('PROPOSALS_UPDATED', { updatedCsrProposals: this.csrProposals });
+    return this.csrProposals;
+  }
+
+  deleteCsrProposal(id) {
+    this.csrProposals = this.csrProposals.filter((p) => p.id !== id);
+    this.notify('PROPOSALS_UPDATED', { updatedCsrProposals: this.csrProposals });
+    return this.csrProposals;
+  }
+
+  async authorizePayment(ledgerId) {
+    try {
+      apiClient.put(`government/funds/ledger/${ledgerId}/authorize`).catch(() => {});
+    } catch {}
+    this.csrLedger = this.csrLedger.map((item) =>
+      item.id === ledgerId || item.paymentId === ledgerId
+        ? { ...item, makerCheckerStatus: 'Approved', makerCheckerSign: 'Verified & Approved' }
+        : item
+    );
+    this.notify('LEDGER_UPDATED', { updatedCsrLedger: this.csrLedger });
+    return this.csrLedger;
+  }
+
+  // --- Budget Workflow Methods ---
+
+  assignToBudgetOfficer(projectId, officer) {
+    const update = (p) => {
+      if (p.id === projectId || p.projectId === projectId || p.challengeId === projectId) {
+        return {
+          ...p,
+          assignedBudgetOfficer: {
+            officerId: officer._id || officer.id || officer.officerId,
+            name: officer.fullName || officer.name,
+            status: 'Assigned',
+            assignedAt: new Date().toISOString()
+          }
+        };
+      }
+      return p;
+    };
+    this.activeProjects = this.activeProjects.map(update);
+    this.solutionProposals = this.solutionProposals.map(update);
+    this.csrProposals = this.csrProposals.map(update);
+    this.notify('DATA_SYNCED', { updatedProjects: this.getActiveProjects() });
+    
+    // Persist to backend so it doesn't get wiped on refresh
+    try {
+      const cleanId = String(projectId || '').replace('PROP-', '');
+      if (cleanId) {
+        apiClient.put(`university/projects/${cleanId}?universityCode=ALL`, {
+          assignedBudgetOfficer: {
+            officerId: officer._id || officer.id || officer.officerId,
+            name: officer.fullName || officer.name,
+            status: 'Assigned',
+            assignedAt: new Date().toISOString()
+          }
+        }).catch(() => {});
+      }
+    } catch (e) {
+      console.warn("Failed to save assignment to DB", e);
+    }
+  }
+
+  submitActualBudget(projectId, budgetData) {
+    const update = (p) => {
+      if (p.id === projectId || p.projectId === projectId || p.challengeId === projectId) {
+        return {
+          ...p,
+          actualBudget: budgetData,
+          assignedBudgetOfficer: {
+            ...(p.assignedBudgetOfficer || {}),
+            status: 'Submitted',
+            submittedAt: new Date().toISOString()
+          }
+        };
+      }
+      return p;
+    };
+    this.activeProjects = this.activeProjects.map(update);
+    this.solutionProposals = this.solutionProposals.map(update);
+    this.csrProposals = this.csrProposals.map(update);
+    this.notify('DATA_SYNCED', { updatedProjects: this.getActiveProjects() });
+    
+    // Persist to backend
+    try {
+      const cleanId = String(projectId || '').replace('PROP-', '');
+      if (cleanId) {
+        const p = this.activeProjects.find(pr => pr.id === projectId || pr.challengeId === projectId || pr.projectId === projectId) ||
+                  this.solutionProposals.find(pr => pr.id === projectId || pr.challengeId === projectId || pr.projectId === projectId);
+        if (p) {
+          apiClient.put(`university/projects/${cleanId}?universityCode=ALL`, {
+            actualBudget: p.actualBudget,
+            assignedBudgetOfficer: p.assignedBudgetOfficer
+          }).catch(() => {});
+        }
+      }
+    } catch (e) {}
+  }
+
+  submitBudgetToGovernment(projectId) {
+    const update = (p) => {
+      if (p.id === projectId || p.projectId === projectId || p.challengeId === projectId) {
+        return {
+          ...p,
+          assignedBudgetOfficer: {
+            ...(p.assignedBudgetOfficer || {}),
+            status: 'Forwarded',
+            forwardedAt: new Date().toISOString()
+          }
+        };
+      }
+      return p;
+    };
+    this.activeProjects = this.activeProjects.map(update);
+    this.solutionProposals = this.solutionProposals.map(update);
+    this.csrProposals = this.csrProposals.map(update);
+    this.notify('DATA_SYNCED', { updatedProjects: this.getActiveProjects() });
+    
+    // Persist to backend
+    try {
+      const cleanId = String(projectId || '').replace('PROP-', '');
+      if (cleanId) {
+        const p = this.activeProjects.find(pr => pr.id === projectId || pr.challengeId === projectId || pr.projectId === projectId) ||
+                  this.solutionProposals.find(pr => pr.id === projectId || pr.challengeId === projectId || pr.projectId === projectId);
+        if (p) {
+          apiClient.put(`university/projects/${cleanId}?universityCode=ALL`, {
+            assignedBudgetOfficer: p.assignedBudgetOfficer
+          }).catch(() => {});
+        }
+      }
+    } catch (e) {}
+  }
+
+  approveDepartmentBudget(projectId, remarks) {
+    const update = (p) => {
+      if (p.id === projectId || p.projectId === projectId || p.challengeId === projectId) {
+        return {
+          ...p,
+          assignedBudgetOfficer: {
+            ...(p.assignedBudgetOfficer || {}),
+            status: 'Approved',
+            approvedAt: new Date().toISOString(),
+            governmentRemarks: remarks
+          }
+        };
+      }
+      return p;
+    };
+    this.activeProjects = this.activeProjects.map(update);
+    this.solutionProposals = this.solutionProposals.map(update);
+    this.csrProposals = this.csrProposals.map(update);
+    this.notify('DATA_SYNCED', { updatedProjects: this.getActiveProjects() });
+    
+    // Persist to backend
+    try {
+      const cleanId = String(projectId || '').replace('PROP-', '');
+      if (cleanId) {
+        const p = this.activeProjects.find(pr => pr.id === projectId || pr.challengeId === projectId || pr.projectId === projectId) ||
+                  this.solutionProposals.find(pr => pr.id === projectId || pr.challengeId === projectId || pr.projectId === projectId);
+        if (p) {
+          apiClient.put(`university/projects/${cleanId}?universityCode=ALL`, {
+            assignedBudgetOfficer: p.assignedBudgetOfficer
+          }).catch(() => {});
+        }
+      }
+    } catch (e) {}
   }
 }
 

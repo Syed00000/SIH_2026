@@ -170,9 +170,15 @@ export const PrototypeInteractiveCard = ({ project, onInspect, onAdvanceTrl, onO
             <span>Specs</span>
           </button>
           {isDeployed ? (
-            <span className="px-2.5 py-1.5 bg-[#007A61]/10 border border-[#007A61]/30 text-[#007A61] rounded-xs font-bold text-[11px] flex items-center space-x-1 shadow-xs">
-              <span>🔒 Deployed Statewide</span>
-            </span>
+            <button
+              type="button"
+              onClick={() => onOpenHandoverModal && onOpenHandoverModal(project)}
+              className="px-2.5 py-1.5 bg-[#007A61]/10 hover:bg-[#007A61]/20 border border-[#007A61]/30 hover:border-[#007A61] text-[#007A61] rounded-xs font-bold text-[11px] flex items-center space-x-1 shadow-xs cursor-pointer transition-all"
+              title="Allocate to Department"
+            >
+              <Building2 className="w-3.5 h-3.5" />
+              <span>{project.handoverDepartment ? `Handed Over: ${project.handoverDepartment}` : 'Handover to Dept'}</span>
+            </button>
           ) : (
             <div className="flex items-center space-x-1.5">
               <button
