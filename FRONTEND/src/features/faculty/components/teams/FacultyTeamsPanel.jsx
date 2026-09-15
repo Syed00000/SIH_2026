@@ -9,6 +9,7 @@ import { AddTeamMemberForm } from './components/AddTeamMemberForm.jsx';
 import { TeamGuidelinesCard } from './components/TeamGuidelinesCard.jsx';
 import { ReadonlyTeamTable } from './components/ReadonlyTeamTable.jsx';
 import { facultyApiService } from '../../services/facultyApiService.js';
+import { facultyTeamsStorage } from './hooks/facultyTeamsStorage.js';
 import { ArrowLeft, Sparkles } from 'lucide-react';
 
 export const FacultyTeamsPanel = ({
@@ -21,6 +22,7 @@ export const FacultyTeamsPanel = ({
   hideHeader = false
 }) => {
   const [viewMode, setViewMode] = useState('list');
+  const [assignedTeamOverride, setAssignedTeamOverride] = useState(null);
 
   const {
     editingTeamId, selectedProjectId, setSelectedProjectId, teamName, setTeamName,
@@ -39,23 +41,19 @@ export const FacultyTeamsPanel = ({
   ) || projects[0];
 
   const matchedTeam =
-    allTeams.find((t) => (t.projectId && t.projectId === initialProjectId) || (t.id && t.id === initialProjectId)) ||
-    allTeams.find((t) => currentProject?.title && t.project && t.project.toLowerCase() === currentProject.title.toLowerCase()) ||
+    assignedTeamOverride ||
     (currentProject?.teamMembers?.length > 0 ? {
       name: currentProject.studentTeam || currentProject.teamName || 'Innovation Lab',
       members: currentProject.teamMembers,
       studentLead: currentProject.studentLead,
       teamCode: currentProject.teamCode
     } : null) ||
-    allTeams[0] ||
+    allTeams.find((t) => (t.projectId && t.projectId === initialProjectId) || (t.id && t.id === initialProjectId)) ||
+    allTeams.find((t) => currentProject?.title && t.project && t.project.toLowerCase() === currentProject.title.toLowerCase()) ||
     null;
 
-  const displayTeamName = matchedTeam?.name || currentProject?.studentTeam || currentProject?.teamName || teamName || 'Innovation Lab';
-  const displayMembers = (matchedTeam?.members && matchedTeam.members.length > 0)
-    ? matchedTeam.members
-    : (currentProject?.teamMembers && currentProject.teamMembers.length > 0)
-    ? currentProject.teamMembers
-    : teamMembers;
+  const displayTeamName = matchedTeam?.name || currentProject?.studentTeam || currentProject?.teamName || 'No Team Assigned';
+  const displayMembers = matchedTeam?.members || [];
 
   // Auto-sync matched team to project if not yet linked
   useEffect(() => {
@@ -89,12 +87,27 @@ export const FacultyTeamsPanel = ({
             onAssignTeam={async (teamToAssign) => {
               const pId = initialProjectId || currentProject?.projectId;
               if (!pId || !teamToAssign) return;
+              setAssignedTeamOverride(teamToAssign);
               await facultyApiService.updateProject(pId, {
                 studentTeam: teamToAssign.name,
                 teamMembers: teamToAssign.members,
                 studentLead: teamToAssign.studentLead,
                 teamCode: teamToAssign.teamCode
               }).catch(() => {});
+              if (teamToAssign.teamCode) {
+                await facultyApiService.updateTeam(teamToAssign.teamCode, {
+                  ...teamToAssign,
+                  projectId: pId,
+                  project: currentProject?.title || pId
+                }).catch(() => {});
+              }
+              const localUpdate = allTeams.map((t) => {
+                if ((t.teamCode && t.teamCode === teamToAssign.teamCode) || t.id === teamToAssign.id) {
+                  return { ...t, projectId: pId, project: currentProject?.title || pId };
+                }
+                return t;
+              });
+              facultyTeamsStorage.saveStoredTeams(localUpdate);
               if (onRefresh) onRefresh();
             }}
           />

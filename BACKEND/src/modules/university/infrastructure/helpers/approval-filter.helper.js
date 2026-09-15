@@ -48,10 +48,24 @@ export function formatApprovalRecord(a, proj) {
   const isChanges = proj?.budgetStatus === 'Changes Required by Government' || a.budgetStatus === 'Changes Required by Government' || a.status === 'Changes Required';
   const isRejected = proj?.status === 'Rejected' || proj?.budgetStatus === 'Rejected' || a.status === 'Rejected';
   const realStatus = isSanctioned ? 'Approved' : isChanges ? 'Changes Required' : isRejected ? 'Rejected' : 'Pending';
+  const sTeam = a.studentTeam || proj?.studentTeam || a.team?.name || 'Student Research Team';
+  const tMembers = (Array.isArray(a.teamMembers) && a.teamMembers.length) ? a.teamMembers : (Array.isArray(proj?.teamMembers) && proj.teamMembers.length) ? proj.teamMembers : (Array.isArray(a.team?.members) ? a.team.members : []);
+  const sLead = a.studentLead || proj?.studentLead || a.team?.studentLead || (tMembers.find(m => m.isLead)?.name) || 'Student Team Lead';
 
   return {
     ...a,
     status: realStatus,
+    studentTeam: sTeam,
+    teamName: sTeam,
+    teamMembers: tMembers,
+    teamMembersCount: tMembers.length,
+    studentLead: sLead,
+    team: {
+      name: sTeam,
+      membersCount: tMembers.length,
+      members: tMembers,
+      studentLead: sLead
+    },
     budgetBreakdown: bBreakdown,
     proposedBudget: bTotal,
     estimatedBudget: bTotal,

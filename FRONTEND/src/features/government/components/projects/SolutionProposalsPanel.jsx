@@ -7,7 +7,7 @@ import { SolutionProposalCard } from './SolutionProposalCard.jsx';
 import { SolutionProposalTable } from './SolutionProposalTable.jsx';
 import { projectCsrSyncService } from '../../services/projectCsrSyncService.js';
 
-export const SolutionProposalsPanel = () => {
+export const SolutionProposalsPanel = ({ onNavigateTab }) => {
   const [proposals, setProposals] = useState(() => projectCsrSyncService.getSolutionProposals());
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedSector, setSelectedSector] = useState('All Sectors');
@@ -129,6 +129,7 @@ export const SolutionProposalsPanel = () => {
         onApproveGrant={handleApproveGrant}
         onRejectProposal={handleRejectProposal}
         onDeleteProposal={handleDeleteProposal}
+        onNavigateTab={onNavigateTab}
       />
     );
   }
@@ -170,6 +171,7 @@ export const SolutionProposalsPanel = () => {
                 proposal={proposal}
                 onViewDetails={(p) => setViewingProposal(p)}
                 onDelete={handleDeleteProposal}
+                onNavigateTab={onNavigateTab}
               />
             ))
           )}
@@ -179,6 +181,7 @@ export const SolutionProposalsPanel = () => {
           proposals={filteredProposals}
           onViewDetails={(p) => setViewingProposal(p)}
           onDelete={handleDeleteProposal}
+          onNavigateTab={onNavigateTab}
         />
       )}
     </div>

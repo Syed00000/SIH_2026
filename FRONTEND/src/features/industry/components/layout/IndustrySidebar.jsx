@@ -14,11 +14,12 @@ import {
   Menu,
   LogOut
 } from 'lucide-react';
+import { universityApiService } from '../../../university/services/universityApiService.js';
 
 const NAV_ITEMS = [
   { id: 'dashboard', label: 'Dashboard', icon: Home },
   { id: 'profile', label: 'Profile & Verification', icon: UserCheck },
-  { id: 'collaboration', label: 'Collaboration Requests', icon: Share2, badgeCount: 8 },
+  { id: 'collaboration', label: 'Collaboration Requests', icon: Share2 },
   { id: 'projects', label: 'Active Projects', icon: Briefcase },
   { id: 'funding', label: 'Funding & Support', icon: Rocket },
   { id: 'testing', label: 'Testing & Labs', icon: FlaskConical },
@@ -37,7 +38,22 @@ export const IndustrySidebar = ({
   setIsMobileMenuOpen,
   onLogout,
   companyName = 'Tata Motors R&D',
+  collaborationCount = null
 }) => {
+  const [liveReqCount, setLiveReqCount] = React.useState(0);
+
+  React.useEffect(() => {
+    let isMounted = true;
+    universityApiService.getIndustryRequests('RU001')
+      .then((res) => {
+        if (isMounted && Array.isArray(res)) {
+          const pending = res.filter(r => !r.status || r.status === 'Pending' || r.status === 'Under Review');
+          setLiveReqCount(pending.length);
+        }
+      })
+      .catch(() => {});
+    return () => { isMounted = false; };
+  }, []);
   return (
     <aside
       className={`bg-white border-r border-slate-200/90 px-3 pt-3.5 pb-4 flex flex-col justify-between flex-shrink-0 transition-all duration-200 h-full z-20 shadow-2xs select-none ${
@@ -109,20 +125,18 @@ export const IndustrySidebar = ({
                     } ${isSidebarExpanded ? 'mr-3' : ''}`}
                   />
                   {isSidebarExpanded && (
-                    <span className="truncate">{item.label}</span>
-                  )}
-                </div>
-                {isSidebarExpanded && item.badgeCount && (
-                  <span className="bg-red-500 text-white text-[9px] font-black px-1.5 py-0.5 rounded-full">
-                    {item.badgeCount}
-                  </span>
+                  <span className="truncate">{item.label}</span>
                 )}
-                
-                {/* Mobile Notification Dot when collapsed */}
-                {!isSidebarExpanded && item.badgeCount && (
-                  <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full border border-white"></span>
-                )}
-              </button>
+              </div>
+              {item.id === 'collaboration' && (collaborationCount !== null ? collaborationCount : liveReqCount) > 0 && (
+                <span className="bg-red-500 text-white text-[9px] font-black px-1.5 py-0.5 rounded-full">
+                  {collaborationCount !== null ? collaborationCount : liveReqCount}
+                </span>
+              )}
+              {item.id === 'collaboration' && !isSidebarExpanded && (collaborationCount !== null ? collaborationCount : liveReqCount) > 0 && (
+                <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full border border-white"></span>
+              )}
+            </button>
             );
           })}
         </nav>

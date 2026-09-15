@@ -5,12 +5,29 @@ import { parseGrantRupees } from './GrantPaymentModal.jsx';
 export const SolutionProposalCard = ({
   proposal,
   onViewDetails,
-  onDelete
+  onDelete,
+  onNavigateTab
 }) => {
   const disbNum = parseGrantRupees(proposal.disbursedAmount) || 0;
   const isFunded = disbNum > 0 || proposal.budgetStatus === 'Grant Sanctioned by Government' || proposal.budgetStatus === 'Grant Disbursed';
   const isApproved = isFunded || proposal.status === 'Approved' || proposal.budgetStatus === 'Forwarded to CSR Grants Pipeline';
   const isRejected = proposal.status === 'Rejected';
+
+  const handleViewActive = () => {
+    const targetId = proposal.projectId || proposal.id;
+    try {
+      localStorage.setItem('joharsetu_gov_active_tab', 'projects_active');
+      if (targetId) localStorage.setItem('joharsetu_selected_project_id', targetId);
+    } catch {}
+    if (onNavigateTab) {
+      onNavigateTab('projects_active');
+    } else {
+      const url = new URL(window.location.href);
+      url.searchParams.set('tab', 'projects_active');
+      if (targetId) url.searchParams.set('projectId', targetId);
+      window.location.href = url.toString();
+    }
+  };
 
   return (
     <div className="bg-white border border-slate-200 p-4.5 shadow-xs hover:border-slate-300 transition-all flex flex-col md:flex-row md:items-center justify-between gap-4 rounded-xs">
@@ -58,13 +75,14 @@ export const SolutionProposalCard = ({
 
       <div className="flex items-center space-x-2 shrink-0 self-end md:self-center">
         {isFunded ? (
-          <a
-            href="?tab=projects_active"
+          <button
+            type="button"
+            onClick={handleViewActive}
             className="px-3 py-1.5 text-xs font-bold text-white bg-slate-900 hover:bg-black rounded-xs transition-colors cursor-pointer flex items-center space-x-1.5 shadow-xs"
           >
             <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
             <span>View Active Project</span>
-          </a>
+          </button>
         ) : (
           <button
             type="button"
