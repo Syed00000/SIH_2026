@@ -792,6 +792,9 @@ class ProjectCsrSyncService {
       if (p.id === projectId || p.projectId === projectId || p.challengeId === projectId) {
         return {
           ...p,
+          budgetStatus: 'Sanctioned',
+          sanctionedAmount: p.actualBudget?.amount || p.sanctionedAmount,
+          sanctionedBudget: p.actualBudget?.amount || p.sanctionedBudget,
           assignedBudgetOfficer: {
             ...(p.assignedBudgetOfficer || {}),
             status: 'Approved',
@@ -815,7 +818,10 @@ class ProjectCsrSyncService {
                   this.solutionProposals.find(pr => pr.id === projectId || pr.challengeId === projectId || pr.projectId === projectId);
         if (p) {
           apiClient.put(`university/projects/${cleanId}?universityCode=ALL`, {
-            assignedBudgetOfficer: p.assignedBudgetOfficer
+            assignedBudgetOfficer: p.assignedBudgetOfficer,
+            budgetStatus: 'Sanctioned',
+            sanctionedAmount: p.actualBudget?.amount || p.sanctionedAmount,
+            sanctionedBudget: p.actualBudget?.amount || p.sanctionedBudget
           }).catch(() => {});
         }
       }

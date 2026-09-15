@@ -9,14 +9,10 @@ export class GrantFundService {
     ]);
 
     const inflows = fundList.filter((f) =>
-      f.fundType === 'CORPUS_INFLOW' ||
-      f.fundType === 'CORPUS_DEDUCTION' ||
-      f.departmentId === 'STATE_GOV' ||
-      f.department === 'Government of Jharkhand State Innovation Pool'
+      f.fundType === 'CORPUS_INFLOW' || f.fundType === 'CORPUS_DEDUCTION' || f.departmentId === 'STATE_GOV' || f.department === 'Government of Jharkhand State Innovation Pool'
     );
     const allocations = fundList.filter((f) =>
-      f.fundType === 'DEPARTMENT_ALLOCATION' ||
-      (!['CORPUS_INFLOW', 'CORPUS_DEDUCTION'].includes(f.fundType) && f.departmentId && f.departmentId !== 'STATE_GOV')
+      f.fundType === 'DEPARTMENT_ALLOCATION' || (!['CORPUS_INFLOW', 'CORPUS_DEDUCTION'].includes(f.fundType) && f.departmentId && f.departmentId !== 'STATE_GOV')
     );
 
     const totalCommittedInflows = Math.max(0, inflows.reduce((sum, f) => sum + (Number(f.amount) || 0), 0));
@@ -27,15 +23,9 @@ export class GrantFundService {
     const totalJointCorpus = stateGrantsTotal + corporateCsrTotal;
 
     return {
-      stateGrantsTotal,
-      totalCommittedInflows,
-      totalAllocatedToDepts,
-      corporateCsrTotal,
-      corporateCsrTotalCr,
-      totalJointCorpus,
-      fundEntries: allocations,
-      inflowEntries: inflows,
-      allEntries: fundList
+      stateGrantsTotal, totalCommittedInflows, totalAllocatedToDepts,
+      corporateCsrTotal, corporateCsrTotalCr, totalJointCorpus,
+      fundEntries: allocations, inflowEntries: inflows, allEntries: fundList
     };
   }
 
@@ -58,8 +48,7 @@ export class GrantFundService {
     }
 
     const isDeduction = data.action === 'deduct' || fundType === 'CORPUS_DEDUCTION';
-    const isCorpusInflow = !isDeduction && (fundType === 'CORPUS_INFLOW' || data.isCorpusInflow || data.action === 'add' || data.departmentId === 'STATE_GOV' || !data.departmentId);
-
+    const isCorpusInflow = !isDeduction && fundType !== 'DEPARTMENT_ALLOCATION' && (fundType === 'CORPUS_INFLOW' || data.isCorpusInflow || data.action === 'add' || data.departmentId === 'STATE_GOV' || (!data.departmentId && !data.department));
     const currentOverview = await this.getFundsOverview();
 
     if (isDeduction) {
@@ -69,20 +58,12 @@ export class GrantFundService {
       const fundId = `GGF-${Date.now().toString().slice(-6)}`;
       const cleanTitle = title?.startsWith('Deduction') ? title : `Deduction: ${title || 'State Pool Deduction'}`;
       const newFund = await GovernmentGrantFund.create({
-        fundId,
-        title: cleanTitle,
-        scheme: scheme || 'State Innovation & Problem Resolution Fund',
-        department: 'Government of Jharkhand State Innovation Pool',
-        departmentId: 'STATE_GOV',
-        departmentCategory: 'State Ministry',
-        fundType: 'CORPUS_DEDUCTION',
-        amount: -parsedAmount,
+        fundId, title: cleanTitle, scheme: scheme || 'State Innovation & Problem Resolution Fund',
+        department: 'Government of Jharkhand State Innovation Pool', departmentId: 'STATE_GOV',
+        departmentCategory: 'State Ministry', fundType: 'CORPUS_DEDUCTION', amount: -parsedAmount,
         sanctionOrderNo: sanctionOrderNo || `JH-GOV-DEDUCT-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`,
-        financialYear: financialYear || '2026-2027',
-        allocationDate: new Date(),
-        allocatedBy: allocatedBy || 'Principal Secretary, Govt of Jharkhand',
-        description: description || 'State grant funds deducted from State Innovation Pool.',
-        status: 'Active'
+        financialYear: financialYear || '2026-2027', allocationDate: new Date(), allocatedBy: allocatedBy || 'Principal Secretary, Govt of Jharkhand',
+        description: description || 'State grant funds deducted from State Innovation Pool.', status: 'Active'
       });
       const overview = await this.getFundsOverview();
       return { createdFund: newFund, stateGrantsTotal: overview.stateGrantsTotal, targetDepartment: null };
@@ -99,7 +80,10 @@ export class GrantFundService {
         if (data.departmentId) {
           targetDept = await Department.findOne({ deptId: data.departmentId }) || (/^[0-9a-fA-F]{24}$/.test(data.departmentId) ? await Department.findById(data.departmentId) : null);
         }
-        if (!targetDept && data.department) targetDept = await Department.findOne({ name: data.department });
+        if (!targetDept && data.department) {
+          const cleanName = data.department.replace(/\(.*?\)/g, '').trim();
+          targetDept = await Department.findOne({ name: { $regex: new RegExp(cleanName, 'i') } }) || await Department.findOne({ name: data.department });
+        }
         if (targetDept) {
           const cur = Number(targetDept.allocatedFundPool) || 0;
           targetDept.allocatedFundPool = cur + parsedAmount;
@@ -119,25 +103,22 @@ export class GrantFundService {
 
     const fundId = `GGF-${Date.now().toString().slice(-6)}`;
     const newFund = await GovernmentGrantFund.create({
-      fundId,
-      title: title || (targetDept ? `State Innovation Allocation to ${targetDept.name}` : 'State Innovation Council R&D Grant Allocation'),
+      fundId, title: title || (targetDept ? `State Innovation Allocation to ${targetDept.name}` : 'State Innovation Council R&D Grant Allocation'),
       scheme: scheme || 'Jharkhand State Innovation Council R&D Allocation',
       department: targetDept?.name || department || 'Department of Higher & Technical Education',
       departmentId: targetDept?.deptId || data.departmentId || '',
       departmentCategory: targetDept?.category || data.departmentCategory || 'State Ministry',
-      targetDeptCode: targetDept?.code || '',
-      fundType: isCorpusInflow ? 'CORPUS_INFLOW' : 'DEPARTMENT_ALLOCATION',
-      amount: parsedAmount,
-      sanctionOrderNo: sanctionOrderNo || `JH-GOV-RD-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`,
-      financialYear: financialYear || '2026-2027',
-      allocationDate: new Date(),
-      allocatedBy: allocatedBy || 'Principal Secretary, Govt of Jharkhand',
-      description: description || `State budgetary grant allocation to ${targetDept?.name || department || 'Department'}.`,
-      status: 'Active'
+      targetDeptCode: targetDept?.code || '', fundType: isCorpusInflow ? 'CORPUS_INFLOW' : 'DEPARTMENT_ALLOCATION',
+      amount: parsedAmount, sanctionOrderNo: sanctionOrderNo || `JH-GOV-RD-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`,
+      financialYear: financialYear || '2026-2027', allocationDate: new Date(), allocatedBy: allocatedBy || 'Principal Secretary, Govt of Jharkhand',
+      description: description || `State budgetary grant allocation to ${targetDept?.name || department || 'Department'}.`, status: 'Active'
     });
 
     const overview = await this.getFundsOverview();
-    return { createdFund: newFund, stateGrantsTotal: overview.stateGrantsTotal, targetDepartment: targetDept ? { deptId: targetDept.deptId, name: targetDept.name, category: targetDept.category, newBalance: targetDept.allocatedFundPool } : null };
+    return {
+      createdFund: newFund, stateGrantsTotal: overview.stateGrantsTotal,
+      targetDepartment: targetDept ? { deptId: targetDept.deptId, name: targetDept.name, category: targetDept.category, newBalance: targetDept.allocatedFundPool } : null
+    };
   }
 
   async updateGrantFund(id, data) {
