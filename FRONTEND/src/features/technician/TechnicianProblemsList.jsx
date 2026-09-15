@@ -45,22 +45,22 @@ export const TechnicianProblemsList = ({ tasks, loading, onSelectChallenge }) =>
 
   const getPriorityBadge = (p) => {
     const pr = (p || 'Medium').toLowerCase();
-    if (pr === 'urgent' || pr === 'high') return 'bg-rose-100 text-rose-800 border-rose-200';
-    if (pr === 'medium') return 'bg-amber-100 text-amber-800 border-amber-200';
-    return 'bg-blue-100 text-blue-800 border-blue-200';
+    if (pr === 'urgent' || pr === 'high') return 'text-rose-600 font-black uppercase tracking-wider';
+    if (pr === 'medium') return 'text-amber-600 font-black uppercase tracking-wider';
+    return 'text-blue-600 font-black uppercase tracking-wider';
   };
 
   return (
     <div className="space-y-4 text-left select-none animate-in fade-in duration-150">
       {/* Top Search & Filter Bar */}
-      <div className="p-3 sm:p-4 bg-white rounded-2xl border border-slate-200 shadow-2xs flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+      <div className="p-3 sm:p-4 bg-white rounded-none border border-slate-200 shadow-2xs flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
         <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0">
           {filterTabs.map((tab) => (
             <button
               key={tab.key}
               type="button"
               onClick={() => { setActiveStatus(tab.key); setCurrentPage(1); }}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition cursor-pointer ${
+              className={`px-3 py-1.5 rounded-none text-xs font-bold whitespace-nowrap transition cursor-pointer ${
                 activeStatus === tab.key ? 'bg-[#064e3b] text-white shadow-xs' : 'text-slate-600 hover:bg-slate-100'
               }`}
             >
@@ -76,13 +76,13 @@ export const TechnicianProblemsList = ({ tasks, loading, onSelectChallenge }) =>
             value={searchQuery}
             onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }}
             placeholder="Search problems, IDs..."
-            className="w-full pl-8 pr-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-hidden focus:ring-2 focus:ring-[#007A61]"
+            className="w-full pl-8 pr-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-none focus:outline-hidden focus:ring-2 focus:ring-[#007A61]"
           />
         </div>
       </div>
 
       {/* Proper Problem List / Table View */}
-      <div className="bg-white border border-slate-200 rounded-2xl shadow-2xs overflow-hidden">
+      <div className="bg-white border border-slate-200 rounded-none shadow-2xs overflow-hidden">
         {loading ? (
           <div className="p-12 text-center text-slate-400 text-xs font-semibold">
             Loading assigned problems...
@@ -153,7 +153,7 @@ export const TechnicianProblemsList = ({ tasks, loading, onSelectChallenge }) =>
               type="button"
               onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
               disabled={currentPage === 1}
-              className="p-1.5 rounded-lg border border-slate-200 hover:bg-slate-100 disabled:opacity-40 cursor-pointer"
+              className="p-1.5 rounded-none border border-slate-200 hover:bg-slate-100 disabled:opacity-40 cursor-pointer"
             >
               <ChevronLeft className="w-4 h-4" />
             </button>
@@ -161,7 +161,7 @@ export const TechnicianProblemsList = ({ tasks, loading, onSelectChallenge }) =>
               type="button"
               onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
               disabled={currentPage === totalPages}
-              className="p-1.5 rounded-lg border border-slate-200 hover:bg-slate-100 disabled:opacity-40 cursor-pointer"
+              className="p-1.5 rounded-none border border-slate-200 hover:bg-slate-100 disabled:opacity-40 cursor-pointer"
             >
               <ChevronRight className="w-4 h-4" />
             </button>

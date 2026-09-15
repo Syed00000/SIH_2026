@@ -102,7 +102,7 @@ export const WardPortal = ({ user, onLogout }) => {
         <WardSidebar activeTab={activeTab} setActiveTab={setActiveTab} assignedCount={challenges.length} isSidebarExpanded={isSidebarExpanded} setIsSidebarExpanded={setIsSidebarExpanded} />
 
         <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden bg-slate-50">
-          <main className="flex-1 p-3 sm:p-4 overflow-y-auto min-h-0 custom-scrollbar">
+          <main className="flex-1 p-3 sm:p-4 overflow-y-auto overflow-x-hidden min-h-0 custom-scrollbar pb-20 md:pb-4">
             <div className="max-w-6xl mx-auto w-full">{renderContent()}</div>
           </main>
           <GovernmentFooter />

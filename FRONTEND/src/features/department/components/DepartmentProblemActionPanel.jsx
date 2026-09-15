@@ -126,24 +126,24 @@ export const DepartmentProblemActionPanel = ({ problem, department, onClose, onU
       <DepartmentProblemEvidence problem={problem} submitter={submitter} fullAddress={fullAddress} techUrls={techUrls} tech={tech} />
 
       {/* Field Technician Info & Assignment Card */}
-      <div className="bg-white rounded-2xl border border-slate-200/90 shadow-2xs p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-700 flex items-center justify-center shrink-0 border border-blue-200 shadow-2xs">
-            <Wrench className="w-5 h-5 text-blue-600" />
+      <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex items-center gap-4">
+          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 text-white flex items-center justify-center shrink-0 shadow-inner">
+            <Wrench className="w-6 h-6 text-blue-50" />
           </div>
           <div>
             <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider block">Assigned Field Technician</span>
             {tech?.name ? (
-              <div className="text-xs font-bold text-slate-900 flex items-center flex-wrap gap-2 mt-0.5">
-                <span className="px-2 py-0.5 rounded bg-blue-100 text-blue-800 font-mono text-[10.5px] font-bold border border-blue-200">
+              <div className="text-xs font-bold text-slate-900 flex items-center flex-wrap gap-2 mt-1">
+                <span className="px-2 py-0.5 rounded-md bg-blue-50 text-blue-700 font-mono text-[10.5px] font-bold border border-blue-200/60 shadow-sm">
                   {tech.technicianId || 'TECH'}
                 </span>
-                <span className="text-blue-950 font-extrabold text-[13px]">{formatPersonName(tech.name)}</span>
-                <span className="text-slate-500 font-medium text-[11px]">• {tech.specialization || 'Field Remediation Crew'}</span>
-                {tech.phone && <span className="text-slate-500 font-medium text-[11px]">({tech.phone})</span>}
+                <span className="text-slate-900 font-extrabold text-[14px]">{formatPersonName(tech.name)}</span>
+                <span className="text-slate-500 font-medium text-[11px] bg-slate-50 px-2 py-0.5 rounded-md border border-slate-100">• {tech.specialization || 'Field Remediation Crew'}</span>
+                {tech.phone && <span className="text-slate-500 font-medium text-[11px] bg-slate-50 px-2 py-0.5 rounded-md border border-slate-100">📞 {tech.phone}</span>}
               </div>
             ) : (
-              <span className="text-xs text-amber-700 font-medium italic mt-0.5 block">No field technician assigned yet</span>
+              <span className="text-xs text-amber-600 font-medium italic mt-1 flex items-center gap-1.5"><AlertCircle className="w-3.5 h-3.5" /> No field technician assigned yet</span>
             )}
           </div>
         </div>
@@ -151,53 +151,56 @@ export const DepartmentProblemActionPanel = ({ problem, department, onClose, onU
           <button 
             type="button" 
             onClick={() => onAssignTechnician(problem)} 
-            className="px-4 py-2 rounded-xl text-xs font-bold text-white bg-[#007A61] hover:bg-[#006651] cursor-pointer shadow-sm transition-all shrink-0 flex items-center justify-center gap-1.5"
+            className="px-4 py-2.5 rounded-xl text-xs font-bold text-slate-700 bg-white hover:bg-slate-50 border border-slate-200 shadow-sm hover:shadow-md cursor-pointer transition-all shrink-0 flex items-center justify-center gap-2 group"
           >
-            <Wrench className="w-3.5 h-3.5" />
-            <span>{tech?.name ? 'Reassign Technician' : 'Assign to Technician'}</span>
+            <Wrench className="w-4 h-4 text-slate-400 group-hover:text-blue-500 transition-colors" />
+            <span>{tech?.name ? 'Reassign Technician' : 'Assign Technician'}</span>
           </button>
         )}
       </div>
 
       {/* Authority Actions Bar: 1. Assign Tech, 2. Reject & Back to Nodal, 3. Move to Higher Authority, 4. Approve */}
-      <div className="bg-white rounded-2xl border border-slate-200/90 shadow-2xs p-4 space-y-3.5">
-        <div className="border-b border-slate-100 pb-2.5">
-          <h3 className="text-xs font-black text-slate-900 uppercase tracking-wide">Authority Remediation Actions</h3>
-          <p className="text-[10.5px] text-slate-400 font-medium">Dispatch field technicians, reject back to nodal triage, or escalate to higher hierarchy</p>
+      <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-5 space-y-4">
+        <div className="border-b border-slate-100 pb-3 flex flex-col gap-1">
+          <h3 className="text-sm font-black text-slate-900 uppercase tracking-wide flex items-center gap-2">
+            <ShieldAlert className="w-4 h-4 text-slate-400" />
+            Authority Remediation Actions
+          </h3>
+          <p className="text-[11px] text-slate-500 font-medium">Dispatch field technicians, reject back to nodal triage, or escalate to higher hierarchy</p>
         </div>
 
         {msg.text && (
-          <div className={`p-2.5 rounded-xl border text-xs flex items-center gap-2 ${msg.type === 'success' ? 'bg-emerald-50 border-emerald-200 text-emerald-800 font-bold' : 'bg-rose-50 border-rose-200 text-rose-800'}`}>
-            {msg.type === 'success' ? <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" /> : <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />}
+          <div className={`p-3 rounded-xl border text-xs flex items-center gap-2 shadow-sm ${msg.type === 'success' ? 'bg-emerald-50 border-emerald-200 text-emerald-800 font-bold' : 'bg-rose-50 border-rose-200 text-rose-800'}`}>
+            {msg.type === 'success' ? <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0" /> : <AlertCircle className="w-5 h-5 text-rose-500 shrink-0" />}
             <span>{msg.text}</span>
           </div>
         )}
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-1">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
           {/* Option 1: Assign to Technician */}
-          <button type="button" onClick={() => onAssignTechnician && onAssignTechnician(problem)} className="py-2.5 px-3 bg-[#007A61] hover:bg-[#006651] text-white rounded-xl text-xs font-bold transition-all shadow-xs flex items-center justify-center gap-2 cursor-pointer">
-            <Wrench className="w-4 h-4" />
+          <button type="button" onClick={() => onAssignTechnician && onAssignTechnician(problem)} className="py-3 px-4 bg-gradient-to-b from-[#007A61] to-[#006651] hover:from-[#006651] hover:to-[#005241] text-white rounded-xl text-[13px] font-bold transition-all shadow-sm hover:shadow flex items-center justify-center gap-2 cursor-pointer border border-[#005241]/50">
+            <Wrench className="w-4 h-4 text-white/80" />
             <span>{tech?.name ? 'Reassign Technician' : 'Assign to Technician'}</span>
           </button>
 
           {/* Option 2: Reject & Back to Nodal */}
-          <button type="button" onClick={handleRejectToNodal} disabled={submitting || problem.status === 'Resolved'} className="py-2.5 px-3 bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-800 disabled:opacity-50 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer">
-            <Undo2 className="w-4 h-4 text-amber-600" />
+          <button type="button" onClick={handleRejectToNodal} disabled={submitting || problem.status === 'Resolved'} className="py-3 px-4 bg-white hover:bg-amber-50 border border-slate-200 hover:border-amber-300 text-slate-700 hover:text-amber-800 disabled:opacity-50 disabled:hover:bg-white disabled:hover:border-slate-200 rounded-xl text-[13px] font-bold transition-all flex items-center justify-center gap-2 cursor-pointer shadow-sm hover:shadow">
+            <Undo2 className="w-4 h-4 text-amber-500" />
             <span>Reject &amp; Back to Nodal</span>
           </button>
 
           {/* Option 3: Move to Higher Authority / State Escalation */}
-          <button type="button" onClick={handleEscalate} disabled={submitting || problem.status === 'Resolved'} className="py-2.5 px-3 bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-700 disabled:opacity-50 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer" title={`Escalate hierarchy: ${higherAuthorityLabel}`}>
-            <ShieldAlert className="w-4 h-4 text-rose-600" />
+          <button type="button" onClick={handleEscalate} disabled={submitting || problem.status === 'Resolved'} className="py-3 px-4 bg-white hover:bg-rose-50 border border-slate-200 hover:border-rose-300 text-slate-700 hover:text-rose-700 disabled:opacity-50 disabled:hover:bg-white disabled:hover:border-slate-200 rounded-xl text-[13px] font-bold transition-all flex items-center justify-center gap-2 cursor-pointer shadow-sm hover:shadow" title={`Escalate hierarchy: ${higherAuthorityLabel}`}>
+            <ShieldAlert className="w-4 h-4 text-rose-500" />
             <span>{higherAuthorityLabel}</span>
           </button>
         </div>
 
         {/* Option 4: Approve (Mark as Resolved) when resolution evidence is verified */}
         {tech?.status === 'Completed' && problem.status !== 'Resolved' && (
-          <div className="pt-2 border-t border-slate-100">
-            <button type="button" onClick={handleApprove} disabled={submitting} className="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-extrabold transition-all shadow-xs flex items-center justify-center gap-2 cursor-pointer">
-              <CheckCircle2 className="w-4 h-4" />
+          <div className="pt-3 border-t border-slate-100">
+            <button type="button" onClick={handleApprove} disabled={submitting} className="w-full py-3.5 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white rounded-xl text-[14px] font-extrabold transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2.5 cursor-pointer border border-emerald-700/30">
+              <CheckCircle2 className="w-5 h-5" />
               <span>Verify &amp; Approve (Mark as Resolved)</span>
             </button>
           </div>

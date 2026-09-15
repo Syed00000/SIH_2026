@@ -518,13 +518,19 @@ class ProjectCsrSyncService {
       if (p.id === projectId || p.projectId === projectId || p.challengeId === projectId) {
         return {
           ...p,
-          status: 'Completed',
+          status: 'Deployed',
           governmentStatus: 'Approved',
           prototypeStatus: 'Approved',
           isDeployed: true,
           trlLevel: 'TRL-9',
           handoverDepartment: dept,
-          deployedAt: new Date()
+          deployedAt: new Date(),
+          resolutionDossier: {
+            ...(p.resolutionDossier || {}),
+            department: dept,
+            deployedAt: new Date(),
+            sendToDepartment: true
+          }
         };
       }
       return p;
@@ -552,7 +558,7 @@ class ProjectCsrSyncService {
   getActiveProjects() {
     return this.activeProjects.map((proj) => {
       const disbursedVal = this.getProjectDisbursed(proj.id);
-      const formattedDisb = disbursedVal > 0 ? formatBudget(disbursedVal) : (proj.disbursedAmount || 'â‚¹ 0');
+      const formattedDisb = disbursedVal > 0 ? formatBudget(disbursedVal) : (proj.disbursedAmount || '₹ 0');
       return {
         ...proj,
         disbursedGrant: formattedDisb,
@@ -585,89 +591,7 @@ class ProjectCsrSyncService {
   async authorizePayment(ledgerId) {
     try {
       apiClient.put(`government/funds/ledger/${ledgerId}/authorize`).catch(() => {});
-    } catch {}
-    this.csrLedger = this.csrLedger.map((item) =>
-      item.id === ledgerId || item.paymentId === ledgerId
-        ? { ...item, makerCheckerStatus: 'Approved', makerCheckerSign: 'Verified & Approved' }
-        : item
-    );
-    this.notify('LEDGER_UPDATED', { updatedCsrLedger: this.csrLedger });
-    return this.csrLedger;
-  }
-
-  deployPrototype(projectId, dept = 'Urban Development & Housing Department') {
-    const markDeployed = (p) => {
-      if (p.id === projectId || p.projectId === projectId || p.challengeId === projectId) {
-        return {
-          ...p,
-          status: 'Completed',
-          governmentStatus: 'Approved',
-          prototypeStatus: 'Approved',
-          isDeployed: true,
-          trlLevel: 'TRL-9',
-          handoverDepartment: dept,
-          deployedAt: new Date()
-        };
-      }
-      return p;
-    };
-    this.activeProjects = this.activeProjects.map(markDeployed);
-    this.solutionProposals = this.solutionProposals.map(markDeployed);
-    this.csrProposals = this.csrProposals.map(markDeployed);
-    this.notify('DATA_SYNCED', {
-      updatedProjects: this.getActiveProjects(),
-      updatedSolProposals: this.solutionProposals,
-      updatedCsrProposals: this.csrProposals,
-      updatedCsrLedger: this.csrLedger
-    });
-    return this.getActiveProjects();
-  }
-
-  advancePrototypeTrl(projectId) {
-    return this.deployPrototype(projectId);
-  }
-
-  addCsrPayment(payment) {
-    return this.recordDisbursal(payment);
-  }
-
-  getActiveProjects() {
-    return this.activeProjects.map((proj) => {
-      const disbursedVal = this.getProjectDisbursed(proj.id);
-      const formattedDisb = disbursedVal > 0 ? formatBudget(disbursedVal) : (proj.disbursedAmount || 'â‚¹ 0');
-      return {
-        ...proj,
-        disbursedGrant: formattedDisb,
-        disbursedAmount: formattedDisb
-      };
-    });
-  }
-
-  getSolutionProposals() { return this.solutionProposals; }
-  getCsrProposals() { return this.csrProposals; }
-  getCsrLedger() { return this.csrLedger; }
-
-  addOrUpdateCsrProposal(proposal) {
-    const idx = this.csrProposals.findIndex((p) => p.id === proposal.id);
-    if (idx >= 0) {
-      this.csrProposals[idx] = { ...this.csrProposals[idx], ...proposal };
-    } else {
-      this.csrProposals = [proposal, ...this.csrProposals];
-    }
-    this.notify('PROPOSALS_UPDATED', { updatedCsrProposals: this.csrProposals });
-    return this.csrProposals;
-  }
-
-  deleteCsrProposal(id) {
-    this.csrProposals = this.csrProposals.filter((p) => p.id !== id);
-    this.notify('PROPOSALS_UPDATED', { updatedCsrProposals: this.csrProposals });
-    return this.csrProposals;
-  }
-
-  async authorizePayment(ledgerId) {
-    try {
-      apiClient.put(`government/funds/ledger/${ledgerId}/authorize`).catch(() => {});
-    } catch {}
+    } catch (e) {}
     this.csrLedger = this.csrLedger.map((item) =>
       item.id === ledgerId || item.paymentId === ledgerId
         ? { ...item, makerCheckerStatus: 'Approved', makerCheckerSign: 'Verified & Approved' }

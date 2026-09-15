@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { DepartmentHeader } from './components/DepartmentHeader.jsx';
 import { DepartmentSidebar } from './components/DepartmentSidebar.jsx';
 import { DepartmentOverview } from './components/DepartmentOverview.jsx';
@@ -41,6 +41,18 @@ export const DepartmentPortal = ({ user, onLogout }) => {
   const [loading, setLoading] = useState(true);
   const [selectedProblem, setSelectedProblem] = useState(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  // Refs for stale closures
+  const departmentRef = useRef(department);
+  const budgetOfficersRef = useRef(budgetOfficers);
+
+  useEffect(() => {
+    departmentRef.current = department;
+  }, [department]);
+
+  useEffect(() => {
+    budgetOfficersRef.current = budgetOfficers;
+  }, [budgetOfficers]);
 
   // Modals State
   const [isAddTechOpen, setIsAddTechOpen] = useState(false);
@@ -120,18 +132,30 @@ export const DepartmentPortal = ({ user, onLogout }) => {
       // Sync projects from projectCsrSyncService
       await projectCsrSyncService.initializeFromBackend();
       const allProjects = projectCsrSyncService.getActiveProjects();
-      // Combine with fetched citizen challenges (in a real app, backend handles this unification)
-      // For now, we will merge any project that is assigned to this department
+      const checkDeptMatch = (proj, deptObj, boList = []) => {
+        if (!deptObj || !proj) return false;
+        const targetName = (deptObj.name || '').toLowerCase();
+        const hDept = (proj.handoverDepartment || proj.resolutionDossier?.department || '').toLowerCase();
+        if (hDept) {
+          if (hDept === targetName || hDept.includes(targetName) || targetName.includes(hDept)) return true;
+          const clean1 = hDept.replace(/\([^)]*\)/g, '').replace(/department/g, '').trim();
+          const clean2 = targetName.replace(/\([^)]*\)/g, '').replace(/department/g, '').trim();
+          if (clean1 && clean2 && (clean1.includes(clean2) || clean2.includes(clean1))) return true;
+        }
+        if (proj.assignedBudgetOfficer && boList.some(bo => String(bo.officerId || bo.id || bo._id) === String(proj.assignedBudgetOfficer.officerId))) {
+          return true;
+        }
+        return false;
+      };
+
+      // Combine with fetched citizen challenges
       setProblems(prev => {
         const merged = [...prev];
         allProjects.forEach(proj => {
           const idx = merged.findIndex(p => p.id === proj.id || p.challengeId === proj.challengeId || (proj.projectId && (p.id === proj.projectId || p.projectId === proj.projectId)));
           if (idx >= 0) {
             merged[idx] = { ...merged[idx], ...proj };
-          } else if (
-            (proj.handoverDepartment && matched?.name && proj.handoverDepartment.toLowerCase().trim() === matched.name.toLowerCase().trim()) ||
-            (proj.assignedBudgetOfficer && fetchedBOs.some(bo => String(bo.officerId || bo.id || bo._id) === String(proj.assignedBudgetOfficer.officerId)))
-          ) {
+          } else if (matched && checkDeptMatch(proj, matched, fetchedBOs)) {
             merged.push(proj);
           }
         });
@@ -149,18 +173,34 @@ export const DepartmentPortal = ({ user, onLogout }) => {
     loadData();
     const handlePopState = () => loadData();
     window.addEventListener('popstate', handlePopState);
+
+    const checkDeptMatch = (proj, deptObj, boList = []) => {
+      if (!deptObj || !proj) return false;
+      const targetName = (deptObj.name || '').toLowerCase();
+      const hDept = (proj.handoverDepartment || proj.resolutionDossier?.department || '').toLowerCase();
+      if (hDept) {
+        if (hDept === targetName || hDept.includes(targetName) || targetName.includes(hDept)) return true;
+        const clean1 = hDept.replace(/\([^)]*\)/g, '').replace(/department/g, '').trim();
+        const clean2 = targetName.replace(/\([^)]*\)/g, '').replace(/department/g, '').trim();
+        if (clean1 && clean2 && (clean1.includes(clean2) || clean2.includes(clean1))) return true;
+      }
+      if (proj.assignedBudgetOfficer && boList.some(bo => String(bo.officerId || bo.id || bo._id) === String(proj.assignedBudgetOfficer.officerId))) {
+        return true;
+      }
+      return false;
+    };
+
     const unsub = projectCsrSyncService.subscribe((_, data) => {
       if (data?.updatedProjects) {
         setProblems(prev => {
           const merged = [...prev];
+          const currDept = departmentRef.current;
+          const currBOs = budgetOfficersRef.current;
           data.updatedProjects.forEach(proj => {
             const idx = merged.findIndex(p => p.id === proj.id || p.challengeId === proj.challengeId || (proj.projectId && (p.id === proj.projectId || p.projectId === proj.projectId)));
             if (idx >= 0) {
               merged[idx] = { ...merged[idx], ...proj };
-            } else if (
-              (proj.handoverDepartment && department?.name && proj.handoverDepartment.toLowerCase().trim() === department.name.toLowerCase().trim()) ||
-              (proj.assignedBudgetOfficer && budgetOfficers.some(bo => String(bo.officerId || bo.id || bo._id) === String(proj.assignedBudgetOfficer.officerId)))
-            ) {
+            } else if (currDept && checkDeptMatch(proj, currDept, currBOs)) {
               merged.push(proj);
             }
           });
@@ -285,7 +325,7 @@ export const DepartmentPortal = ({ user, onLogout }) => {
         <DepartmentSidebar activeTab={activeTab} setActiveTab={(t) => { setSelectedProblem(null); setActiveTab(t); setIsMobileMenuOpen(false); }} isSidebarExpanded={isSidebarExpanded} setIsSidebarExpanded={setIsSidebarExpanded} departmentName={department?.name || 'Department Authority'} departmentCategory={department?.category || 'State Ministry'} onLogout={onLogout} isMobileMenuOpen={isMobileMenuOpen} setIsMobileMenuOpen={setIsMobileMenuOpen} />
 
         <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden bg-white">
-          <main className="flex-1 p-3 sm:p-4 overflow-y-auto min-h-0 custom-scrollbar pb-20 md:pb-4">
+          <main className="flex-1 p-3 sm:p-4 overflow-y-auto overflow-x-hidden min-h-0 custom-scrollbar pb-20 md:pb-4">
             <div className="max-w-7xl mx-auto w-full">
               {loading ? <div className="py-20 text-center text-slate-400 font-bold text-xs">Loading Department Dashboard...</div> : renderContent()}
             </div>

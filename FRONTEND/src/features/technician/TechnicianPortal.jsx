@@ -163,7 +163,7 @@ export const TechnicianPortal = ({ user, onLogout }) => {
           onLogout={onLogout} counts={counts}
         />
 
-        <main className="flex-1 overflow-y-auto p-3 sm:p-6 bg-white flex flex-col justify-between pb-24 md:pb-6">
+        <main className="flex-1 overflow-y-auto overflow-x-hidden p-3 sm:p-6 bg-white flex flex-col justify-between pb-24 md:pb-6">
           <div className="w-full max-w-[1500px] space-y-5">
             {bannerNotice && (
               <div className="p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-bold flex items-center gap-2 shadow-xs">

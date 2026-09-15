@@ -16,22 +16,16 @@ export const TechnicianOverview = ({
 
   const getPriorityBadge = (p) => {
     const pr = (p || 'Medium').toLowerCase();
-    if (pr === 'urgent' || pr === 'high') return 'bg-rose-100 text-rose-800 border-rose-200';
-    if (pr === 'medium') return 'bg-amber-100 text-amber-800 border-amber-200';
-    return 'bg-blue-100 text-blue-800 border-blue-200';
+    if (pr === 'urgent' || pr === 'high') return 'text-rose-600 font-black uppercase tracking-wider';
+    if (pr === 'medium') return 'text-amber-600 font-black uppercase tracking-wider';
+    return 'text-blue-600 font-black uppercase tracking-wider';
   };
 
   return (
     <div className="space-y-6 text-left select-none animate-in fade-in duration-150">
       {/* Welcome Hero Banner */}
-      <div className="p-5 sm:p-6 rounded-2xl bg-gradient-to-r from-[#064e3b] via-[#047857] to-[#007A61] text-white shadow-md relative overflow-hidden flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="p-5 sm:p-6 rounded-none bg-gradient-to-r from-[#064e3b] via-[#047857] to-[#007A61] text-white shadow-md relative overflow-hidden flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="relative z-10 space-y-1">
-          <div className="flex items-center gap-2">
-            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-white/20 text-white backdrop-blur-xs">
-              Field Technician Workspace
-            </span>
-            <span className="text-white/80 text-xs truncate max-w-[250px]">• {dept}</span>
-          </div>
           <h2 className="text-xl font-black tracking-tight text-white">
             Welcome back, {name}
           </h2>
@@ -43,7 +37,7 @@ export const TechnicianOverview = ({
         <button
           type="button"
           onClick={onNavigateTasks}
-          className="relative z-10 px-4 py-2.5 bg-white text-[#064e3b] hover:bg-emerald-50 rounded-xl text-xs font-bold shadow-xs transition flex items-center gap-2 self-start md:self-auto cursor-pointer"
+          className="relative z-10 px-4 py-2.5 bg-white text-[#064e3b] hover:bg-emerald-50 rounded-none text-xs font-bold shadow-xs transition flex items-center gap-2 self-start md:self-auto cursor-pointer"
         >
           <span>View All Assigned Problems</span>
           <ArrowRight className="w-3.5 h-3.5" />
@@ -59,7 +53,7 @@ export const TechnicianOverview = ({
           { label: 'Pending Approval', val: counts.pendingApproval, icon: Clock, color: 'text-purple-700', bg: 'bg-purple-50/40', border: 'border-purple-200' },
           { label: 'Completed / Done', val: counts.completed, icon: CheckCircle2, color: 'text-emerald-700', bg: 'bg-emerald-50/40', border: 'border-emerald-200' },
         ].map((m) => (
-          <div key={m.label} className={`p-4 rounded-2xl border ${m.border} ${m.bg} shadow-2xs`}>
+          <div key={m.label} className={`p-4 rounded-none border ${m.border} ${m.bg} shadow-2xs`}>
             <div className="flex items-center justify-between text-slate-400 mb-1">
               <span className="text-xs font-bold text-slate-600">{m.label}</span>
               <m.icon className="w-4 h-4" />
@@ -88,7 +82,7 @@ export const TechnicianOverview = ({
           )}
         </div>
 
-        <div className="bg-white border border-slate-200 rounded-2xl shadow-2xs overflow-hidden">
+        <div className="bg-white border border-slate-200 rounded-none shadow-2xs overflow-hidden">
           {loading ? (
             <div className="p-10 text-center text-slate-400 text-xs font-semibold">
               Loading assignments...
