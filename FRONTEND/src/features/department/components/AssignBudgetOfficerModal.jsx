@@ -1,22 +1,49 @@
-import React, { useState } from 'react';
-import { X, Search, Calculator, CheckCircle2 } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { X, Search, Calculator, CheckCircle2, Loader2, AlertCircle } from 'lucide-react';
+import { budgetOfficerService } from '../../government/services/budgetOfficerService.js';
 
 export const AssignBudgetOfficerModal = ({ isOpen, onClose, problem, officers = [], onAssign }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedOfficer, setSelectedOfficer] = useState(null);
+  const [liveOfficers, setLiveOfficers] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (isOpen) {
+      setSelectedOfficer(null);
+      setSearchQuery('');
+      if (officers && officers.length > 0) {
+        setLiveOfficers(officers);
+      } else {
+        fetchLiveOfficers();
+      }
+    }
+  }, [isOpen, officers, problem]);
+
+  const fetchLiveOfficers = async () => {
+    try {
+      setLoading(true);
+      const targetDept = problem?.resolutionDossier?.department || problem?.handoverDepartment;
+      const res = await budgetOfficerService.getOfficers(targetDept ? { departmentName: targetDept } : {});
+      const list = res?.data?.data || res?.data || (Array.isArray(res) ? res : []) || [];
+      setLiveOfficers(list);
+    } catch (err) {
+      console.warn('Failed to fetch live budget officers:', err);
+      setLiveOfficers([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   if (!isOpen || !problem) return null;
 
-  // Mock officers if empty
-  const displayOfficers = officers.length > 0 ? officers : [
-    { _id: 'BO-001', fullName: 'Rajiv Kumar', designation: 'Senior Financial Analyst', status: 'Active', tasksCompleted: 14, pendingTasks: 3 },
-    { _id: 'BO-002', fullName: 'Anita Sharma', designation: 'Budget Planner', status: 'Active', tasksCompleted: 8, pendingTasks: 5 }
-  ];
+  const displayOfficers = officers && officers.length > 0 ? officers : liveOfficers;
 
   const filteredOfficers = displayOfficers.filter(o => {
     const officerName = o.fullName || o.name || '';
     const officerIdStr = o.officerId || o.id || o._id || '';
-    return o.status === 'Active' && 
+    const isStatusActive = !o.status || o.status === 'Active';
+    return isStatusActive && 
       (officerName.toLowerCase().includes(searchQuery.toLowerCase()) || 
        officerIdStr.toLowerCase().includes(searchQuery.toLowerCase()));
   });
@@ -42,7 +69,7 @@ export const AssignBudgetOfficerModal = ({ isOpen, onClose, problem, officers = 
               <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Prototype Budgeting</p>
             </div>
           </div>
-          <button onClick={onClose} className="p-2 hover:bg-slate-200 rounded-full transition-colors">
+          <button onClick={onClose} className="p-2 hover:bg-slate-200 rounded-full transition-colors cursor-pointer">
             <X className="w-5 h-5 text-slate-500" />
           </button>
         </div>
@@ -59,10 +86,10 @@ export const AssignBudgetOfficerModal = ({ isOpen, onClose, problem, officers = 
             </div>
             <h3 className="font-bold text-slate-900 text-sm">{problem.title}</h3>
             <p className="text-xs text-slate-500 mt-1 line-clamp-2">{problem.description || problem.problemStatement}</p>
-            {problem.resolutionDossier?.department && (
+            {(problem.resolutionDossier?.department || problem.handoverDepartment) && (
               <p className="text-[11px] font-semibold text-slate-600 mt-3 flex items-center gap-1.5">
                 <span className="text-slate-400">Handed over by:</span> 
-                {problem.resolutionDossier.department}
+                {problem.resolutionDossier?.department || problem.handoverDepartment}
               </p>
             )}
           </div>
@@ -80,45 +107,62 @@ export const AssignBudgetOfficerModal = ({ isOpen, onClose, problem, officers = 
 
           <div className="space-y-1">
             <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2 px-1">Available Officers</div>
-            <ul className="divide-y divide-slate-100 border border-slate-200 rounded-lg overflow-hidden">
-              {filteredOfficers.map(officer => {
-                const isSelected = selectedOfficer?._id === officer._id || selectedOfficer?.officerId === officer.officerId;
-                return (
-                  <li 
-                    key={officer._id}
-                    onClick={() => setSelectedOfficer(officer)}
-                    className={`p-2.5 flex items-center justify-between cursor-pointer transition-all ${
-                      isSelected 
-                        ? 'bg-emerald-50 border-l-4 border-l-[#007A61]' 
-                        : 'bg-white hover:bg-slate-50 border-l-4 border-l-transparent'
-                    }`}
-                  >
-                    <div className="flex items-center space-x-3">
-                      <div className="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center text-slate-600 font-bold text-xs">
-                        {(officer.fullName || officer.name || 'B').charAt(0)}
+            
+            {loading ? (
+              <div className="p-8 text-center text-slate-500 font-medium text-xs flex items-center justify-center space-x-2 border border-slate-200 rounded-lg">
+                <Loader2 className="w-4 h-4 animate-spin text-[#007A61]" />
+                <span>Loading budget officers from database...</span>
+              </div>
+            ) : (
+              <ul className="divide-y divide-slate-100 border border-slate-200 rounded-lg overflow-hidden">
+                {filteredOfficers.map(officer => {
+                  const oId = officer._id || officer.id || officer.officerId;
+                  const isSelected = selectedOfficer?._id === oId || selectedOfficer?.officerId === oId || selectedOfficer?.id === oId;
+                  const name = officer.fullName || officer.name || 'Budget Officer';
+                  const designation = officer.designation || 'Budget Officer';
+                  const pending = typeof officer.pendingTasks === 'number' ? officer.pendingTasks : 0;
+
+                  return (
+                    <li 
+                      key={oId}
+                      onClick={() => setSelectedOfficer(officer)}
+                      className={`p-2.5 flex items-center justify-between cursor-pointer transition-all ${
+                        isSelected 
+                          ? 'bg-emerald-50 border-l-4 border-l-[#007A61]' 
+                          : 'bg-white hover:bg-slate-50 border-l-4 border-l-transparent'
+                      }`}
+                    >
+                      <div className="flex items-center space-x-3">
+                        <div className="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center text-slate-600 font-bold text-xs uppercase">
+                          {name.charAt(0)}
+                        </div>
+                        <div>
+                          <p className={`text-sm font-bold ${isSelected ? 'text-[#007A61]' : 'text-slate-900'}`}>
+                            {name}
+                          </p>
+                          <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">
+                            {designation} <span className="text-slate-300 mx-1">•</span> {pending} Pending
+                          </p>
+                        </div>
                       </div>
-                      <div>
-                        <p className={`text-sm font-bold ${isSelected ? 'text-[#007A61]' : 'text-slate-900'}`}>
-                          {officer.fullName || officer.name}
-                        </p>
-                        <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">
-                          {officer.designation} <span className="text-slate-300 mx-1">•</span> {officer.pendingTasks} Pending
-                        </p>
-                      </div>
-                    </div>
-                    {isSelected && (
-                      <CheckCircle2 className="w-5 h-5 text-[#007A61] mr-2" />
-                    )}
+                      {isSelected && (
+                        <CheckCircle2 className="w-5 h-5 text-[#007A61] mr-2" />
+                      )}
+                    </li>
+                  );
+                })}
+                
+                {filteredOfficers.length === 0 && (
+                  <li className="text-center py-8 text-slate-500 text-xs font-medium bg-white px-4 space-y-2">
+                    <AlertCircle className="w-6 h-6 text-amber-500 mx-auto" />
+                    <p className="font-bold text-slate-700">No registered budget officers found</p>
+                    <p className="text-[11px] text-slate-400">
+                      There are currently no active budget officers in the database for this department. Add a Budget Officer under the 'Budget Officers' menu tab.
+                    </p>
                   </li>
-                );
-              })}
-              
-              {filteredOfficers.length === 0 && (
-                <li className="text-center py-6 text-slate-400 text-sm font-medium bg-white">
-                  No active budget officers match your search.
-                </li>
-              )}
-            </ul>
+                )}
+              </ul>
+            )}
           </div>
         </div>
 

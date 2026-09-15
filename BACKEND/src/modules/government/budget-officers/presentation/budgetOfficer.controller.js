@@ -23,7 +23,12 @@ class BudgetOfficerController {
       const { departmentId, departmentName, district, block, panchayat, status, limit, skip } = req.query;
       const query = {};
       if (departmentId) query.departmentId = departmentId;
-      if (departmentName) query.departmentName = departmentName;
+      if (departmentName) {
+        const cleanName = String(departmentName).replace(/\([^)]*\)/g, '').trim();
+        if (cleanName) {
+          query.departmentName = { $regex: new RegExp(cleanName, 'i') };
+        }
+      }
       if (district) query.district = district;
       if (block) query.block = block;
       if (panchayat) query.panchayat = panchayat;

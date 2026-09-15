@@ -14,7 +14,7 @@ export const TechnicianHeader = ({ user, onLogout, onRefresh, refreshing, onMenu
           <button
             type="button"
             onClick={onMenuClick}
-            className="md:hidden p-1.5 rounded-lg border border-slate-200 text-slate-700 hover:bg-slate-100 transition cursor-pointer"
+            className="md:hidden p-1.5 rounded-none border border-slate-200 text-slate-700 hover:bg-slate-100 transition cursor-pointer"
             title="Open navigation"
           >
             <Menu className="w-4 h-4" />
@@ -33,8 +33,8 @@ export const TechnicianHeader = ({ user, onLogout, onRefresh, refreshing, onMenu
         <div className="leading-tight">
           <h1 className="font-extrabold text-slate-900 text-xs sm:text-sm tracking-tight flex items-center gap-1.5">
             <span>Govt of Jharkhand</span>
-            <span className="font-mono text-[10px] sm:text-[11px] font-bold bg-[#007A61]/10 text-[#007A61] px-1.5 py-0.2 rounded border border-[#007A61]/20">
-              {techId}
+            <span className="text-[10px] sm:text-[11px] font-bold text-[#007A61]">
+              Field Technician
             </span>
           </h1>
           <p className="text-[11px] text-slate-500 font-medium mt-0.5 hidden sm:block">
@@ -60,14 +60,14 @@ export const TechnicianHeader = ({ user, onLogout, onRefresh, refreshing, onMenu
           type="button"
           onClick={onRefresh}
           disabled={refreshing}
-          className="p-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg border border-slate-200 transition cursor-pointer disabled:opacity-50"
+          className="p-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-none border border-slate-200 transition cursor-pointer disabled:opacity-50"
           title="Refresh tasks"
         >
           <RefreshCw className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${refreshing ? 'animate-spin text-emerald-700' : ''}`} />
         </button>
 
         <div className="flex items-center space-x-2 border-l border-slate-200 pl-2 sm:pl-3">
-          <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-emerald-800 text-white font-black text-xs flex items-center justify-center shadow-2xs shrink-0">
+          <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-none bg-emerald-800 text-white font-black text-xs flex items-center justify-center shadow-2xs shrink-0">
             {name ? name.charAt(0).toUpperCase() : 'T'}
           </div>
           <div className="hidden sm:flex flex-col text-left leading-none">
@@ -83,7 +83,7 @@ export const TechnicianHeader = ({ user, onLogout, onRefresh, refreshing, onMenu
         <button
           type="button"
           onClick={onLogout}
-          className="p-1.5 text-rose-600 hover:text-rose-700 hover:bg-rose-50 rounded-lg border border-rose-200 transition cursor-pointer"
+          className="p-1.5 text-rose-600 hover:text-rose-700 hover:bg-rose-50 rounded-none border border-rose-200 transition cursor-pointer"
           title="Sign Out"
         >
           <LogOut className="w-3.5 h-3.5 sm:w-4 sm:h-4" />

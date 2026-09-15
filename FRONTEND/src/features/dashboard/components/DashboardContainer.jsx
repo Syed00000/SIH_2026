@@ -50,18 +50,50 @@ export const DashboardContainer = ({ onNavigate }) => {
     if (onNavigate) onNavigate('/login'); else window.location.href = '/login';
   };
 
-  // 1. Render Dedicated Portals
-  const urlPortal = typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('portal') : null;
-  if (urlPortal === 'citizen' || role === 'CITIZEN' || role === 'USER') return <CitizenPortal user={user} onLogout={handleLogout} />;
-  if (urlPortal === 'nodal' || role.includes('NODAL')) return <NodalPortal user={user} onLogout={handleLogout} onNavigate={onNavigate} />;
-  if (urlPortal === 'faculty' || role.includes('FACULTY')) return <FacultyLayout user={user} onLogout={handleLogout} />;
-  if (urlPortal === 'university' || role === 'UNIVERSITY' || role === 'HEI') return <UniversityLayout user={user} onLogout={handleLogout} />;
-  if (role === 'GOVERNMENT' || role === 'ADMIN' || role === 'SUPER_ADMIN') return <GovernmentLayout onLogout={handleLogout} />;
-  if (urlPortal === 'department' || role === 'DEPARTMENT' || role.includes('DEPT')) return <DepartmentPortal user={user} onLogout={handleLogout} />;
-  if (urlPortal === 'ward' || role === 'WARD') return <WardPortal user={user} onLogout={handleLogout} onNavigate={onNavigate} />;
-  if (urlPortal === 'block' || role === 'BLOCK') return <BlockPortal user={user} onLogout={handleLogout} />;
-  if (urlPortal === 'technician' || role === 'TECHNICIAN' || role.includes('TECH')) return <TechnicianPortal user={user} onLogout={handleLogout} />;
-  if (urlPortal === 'budget-officer' || role === 'BUDGET_OFFICER') return <BudgetOfficerPortal user={user} onLogout={handleLogout} />;
+  // Ensure users with specific roles go to their protected routes instead of rendering them inside the generic dashboard
+  const currentPath = typeof window !== 'undefined' ? window.location.pathname : '/dashboard';
+  if (currentPath === '/dashboard' || currentPath === '/') {
+    if (role === 'DEPARTMENT' || role.includes('DEPT')) {
+      if (onNavigate) onNavigate('/department'); else window.location.href = '/department';
+      return null;
+    }
+    if (role === 'WARD') {
+      if (onNavigate) onNavigate('/ward'); else window.location.href = '/ward';
+      return null;
+    }
+    if (role === 'BLOCK') {
+      if (onNavigate) onNavigate('/block'); else window.location.href = '/block';
+      return null;
+    }
+    if (role === 'TECHNICIAN' || role.includes('TECH')) {
+      if (onNavigate) onNavigate('/technician'); else window.location.href = '/technician';
+      return null;
+    }
+    if (role === 'BUDGET_OFFICER') {
+      if (onNavigate) onNavigate('/budget-officer'); else window.location.href = '/budget-officer';
+      return null;
+    }
+    if (role === 'NODAL' || role.includes('NODAL')) {
+      if (onNavigate) onNavigate('/nodal'); else window.location.href = '/nodal';
+      return null;
+    }
+    if (role === 'FACULTY' || role.includes('FACULTY')) {
+      if (onNavigate) onNavigate('/faculty'); else window.location.href = '/faculty';
+      return null;
+    }
+    if (role === 'UNIVERSITY' || role === 'HEI') {
+      if (onNavigate) onNavigate('/university'); else window.location.href = '/university';
+      return null;
+    }
+    if (role === 'GOVERNMENT' || role === 'ADMIN' || role === 'SUPER_ADMIN') {
+      if (onNavigate) onNavigate('/government'); else window.location.href = '/government';
+      return null;
+    }
+    if (role === 'CITIZEN' || role === 'USER') {
+      if (onNavigate) onNavigate('/citizen'); else window.location.href = '/citizen';
+      return null;
+    }
+  }
 
   return (
     <div
@@ -113,7 +145,7 @@ export const DashboardContainer = ({ onNavigate }) => {
         {/* Content Area With Independent Scrolling & Fixed Bottom Footer */}
         <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden bg-white">
           {/* Scrollable Dashboard Viewport */}
-          <main className="flex-1 p-3.5 md:p-4.5 space-y-3.5 overflow-y-auto min-h-0 bg-white">
+          <main className="flex-1 p-3.5 md:p-4.5 space-y-3.5 overflow-y-auto overflow-x-hidden min-h-0 bg-white">
             {/* Email Verification Alert */}
             {user && !user.emailVerified && !user.emailVerification?.verified && (
               <Alert variant="warning" title="Email Unverified">

@@ -107,7 +107,7 @@ export const NodalPortal = ({ user: propUser, onLogout, onNavigate }) => {
         />
 
         <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden bg-white">
-          <main className="flex-1 p-3 sm:p-4 overflow-y-auto min-h-0 custom-scrollbar">
+          <main className="flex-1 p-3 sm:p-4 overflow-y-auto overflow-x-hidden min-h-0 custom-scrollbar">
             <div className="max-w-7xl mx-auto w-full">{renderContent()}</div>
           </main>
           <GovernmentFooter />

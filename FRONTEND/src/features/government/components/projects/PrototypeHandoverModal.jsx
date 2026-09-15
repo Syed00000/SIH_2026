@@ -3,6 +3,8 @@ import { X, Landmark, Send, Loader2, Building } from 'lucide-react';
 import { departmentService } from '../../../government/services/departmentService.js';
 import { universityApiService } from '../../../university/services/universityApiService.js';
 
+import { projectCsrSyncService } from '../../services/projectCsrSyncService.js';
+
 export const PrototypeHandoverModal = ({ isOpen, onClose, project, onHandoverSuccess }) => {
   const [departments, setDepartments] = useState([]);
   const [departmentLevel, setDepartmentLevel] = useState('State Ministry');
@@ -35,6 +37,7 @@ export const PrototypeHandoverModal = ({ isOpen, onClose, project, onHandoverSuc
   };
 
   const filteredDepartments = departments.filter(d => d.category === departmentLevel);
+  const displayedDepartments = filteredDepartments.length > 0 ? filteredDepartments : departments;
 
   const handleSubmit = async () => {
     if (!selectedDeptId) {
@@ -45,22 +48,31 @@ export const PrototypeHandoverModal = ({ isOpen, onClose, project, onHandoverSuc
     const selectedDeptObj = departments.find(d => (d.deptId || d.id || d._id) === selectedDeptId);
     if (!selectedDeptObj) return;
 
+    const deptName = selectedDeptObj.district ? `${selectedDeptObj.name} (${selectedDeptObj.district})` : selectedDeptObj.name;
+
     setIsSubmitting(true);
     setError('');
 
     try {
-      const pId = project.projectId || project.id || project.challengeId;
+      const pId = project.projectId || project.id || project.challengeId || project._id;
       // Triggers 'Deployed' state internally when status is 'Approved'
-      await universityApiService.updateGovernmentPrototypeStatus(
+      const res = await universityApiService.updateGovernmentPrototypeStatus(
         pId,
         'Approved',
         'TRL-9',
         'Handed over to department by Government Admin.',
         'RU001',
-        { department: selectedDeptObj.name, sendToDepartment: true }
+        { department: deptName, sendToDepartment: true }
       );
       
-      onHandoverSuccess(pId, selectedDeptObj.name);
+      if (res && res.success === false) {
+        throw new Error(res.error || 'Failed to update backend status');
+      }
+
+      // Sync local frontend memory service
+      projectCsrSyncService.deployPrototype(pId, deptName);
+
+      onHandoverSuccess(pId, deptName);
       onClose();
     } catch (err) {
       console.error('Handover error:', err);
@@ -144,7 +156,7 @@ export const PrototypeHandoverModal = ({ isOpen, onClose, project, onHandoverSuc
                   disabled={loading}
                 >
                   <option value="">— Select {departmentLevel} —</option>
-                  {filteredDepartments.map((d) => {
+                  {displayedDepartments.map((d) => {
                     const id = d.deptId || d.id || d._id;
                     const location = d.district ? `(${d.district})` : '';
                     return (
@@ -155,7 +167,7 @@ export const PrototypeHandoverModal = ({ isOpen, onClose, project, onHandoverSuc
                   })}
                 </select>
                 {loading && <p className="text-[10px] text-slate-500 mt-1">Loading departments...</p>}
-                {!loading && filteredDepartments.length === 0 && (
+                {!loading && displayedDepartments.length === 0 && (
                   <p className="text-[10px] text-amber-600 mt-1 font-medium">
                     No departments registered for this level.
                   </p>

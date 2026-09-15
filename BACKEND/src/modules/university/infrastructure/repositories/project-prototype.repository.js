@@ -1,4 +1,4 @@
-import { UniversityProject, UniversityApproval, UniversityActivity, UniversityTeam, UniversityChallenge, UniversityIndustryRequest } from '../model.js';
+import { UniversityProject, UniversityApproval, UniversityActivity, UniversityTeam, UniversityChallenge, UniversityIndustryRequest, UniversityFaculty } from '../model.js';
 import { CitizenChallenge } from '../../../citizen/infrastructure/model.js';
 import { buildPrototypeApprovalDocument } from '../helpers/prototype-approval-builder.helper.js';
 import { uploadProjectPdfDocument, deleteProjectPdfDocument } from '../helpers/project-pdf-upload.helper.js';
@@ -123,8 +123,13 @@ export class ProjectPrototypeRepository {
         updateFields.budgetStatus = 'Prototype Rejected by Government';
       }
 
+      const filterConditions = [{ projectId }, { challengeId: projectId }];
+      if (projectId && typeof projectId === 'string' && projectId.length === 24) {
+        filterConditions.push({ _id: projectId });
+      }
+
       const proj = await UniversityProject.findOneAndUpdate(
-        { $or: [{ projectId }, { challengeId: projectId }] },
+        { $or: filterConditions },
         { $set: updateFields },
         { new: true }
       );

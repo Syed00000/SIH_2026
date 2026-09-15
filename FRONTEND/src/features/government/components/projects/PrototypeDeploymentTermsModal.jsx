@@ -1,19 +1,42 @@
-import React, { useState } from 'react';
-import { X, Rocket, ShieldCheck, Building2, CheckCircle2, FileCheck2 } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { X, Rocket, ShieldCheck, Building2, CheckCircle2, FileCheck2, Loader2 } from 'lucide-react';
 import { universityApiService } from '../../../university/services/universityApiService.js';
 import { projectCsrSyncService } from '../../services/projectCsrSyncService.js';
-
-const DEPARTMENTS = [
-  'Urban Development & Housing Department', 'Department of Higher & Technical Education (DHTE)',
-  'Health, Medical Education & Family Welfare', 'Panchayati Raj & Rural Development',
-  'Drinking Water & Sanitation Department', 'Mines & Geology Department', 'Agriculture, Animal Husbandry & Co-operative'
-];
+import { departmentService } from '../../services/departmentService.js';
 
 export const PrototypeDeploymentTermsModal = ({ isOpen, onClose, project, onDeploySuccess }) => {
-  const [selectedDept, setSelectedDept] = useState(DEPARTMENTS[0]);
+  const [departments, setDepartments] = useState([]);
+  const [selectedDept, setSelectedDept] = useState('');
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [isDeploying, setIsDeploying] = useState(false);
   const [deploySuccess, setDeploySuccess] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    if (isOpen) {
+      fetchDepartments();
+      setAgreedToTerms(false);
+      setDeploySuccess(false);
+    }
+  }, [isOpen]);
+
+  const fetchDepartments = async () => {
+    try {
+      setIsLoading(true);
+      const resDepts = await departmentService.getDepartments({ limit: 100 });
+      const depts = resDepts?.data || (Array.isArray(resDepts) ? resDepts : []) || [];
+      // Prefer districts, else name
+      const formatted = depts.map(d => d.district ? `${d.name} (${d.district})` : d.name);
+      setDepartments(formatted);
+      if (formatted.length > 0) {
+        setSelectedDept(formatted[0]);
+      }
+    } catch (err) {
+      console.error('Error fetching departments:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   if (!isOpen || !project) return null;
 
@@ -82,8 +105,8 @@ export const PrototypeDeploymentTermsModal = ({ isOpen, onClose, project, onDepl
             <label className="text-[10.5px] font-bold text-slate-600 uppercase block">Designated State Handover Department:</label>
             <div className="relative">
               <Building2 className="w-4 h-4 text-slate-400 absolute left-3 top-2.5 pointer-events-none" />
-              <select value={selectedDept} onChange={(e) => setSelectedDept(e.target.value)} className="w-full text-xs font-bold text-slate-800 bg-slate-50 border border-slate-300 rounded-md pl-9 pr-3 py-2 focus:bg-white focus:outline-[#007A61]">
-                {DEPARTMENTS.map((d) => (<option key={d} value={d}>{d}</option>))}
+              <select value={selectedDept} onChange={(e) => setSelectedDept(e.target.value)} disabled={isLoading} className="w-full text-xs font-bold text-slate-800 bg-slate-50 border border-slate-300 rounded-lg pl-9 pr-3 py-2.5 hover:bg-white focus:bg-white focus:outline-hidden focus:border-[#007A61] focus:ring-1 focus:ring-[#007A61] transition-all shadow-xs cursor-pointer">
+                {isLoading ? <option>Loading departments...</option> : departments.map((d) => (<option key={d} value={d}>{d}</option>))}
               </select>
             </div>
           </div>
@@ -118,21 +141,21 @@ export const PrototypeDeploymentTermsModal = ({ isOpen, onClose, project, onDepl
         </div>
 
         {/* Footer with Deploy Button Active only when Checkbox is checked */}
-        <div className="px-6 py-3.5 bg-slate-50 border-t border-slate-200 flex items-center justify-between shrink-0">
-          <button type="button" onClick={onClose} className="px-4 py-2 text-xs font-bold text-slate-600 hover:text-slate-900 cursor-pointer">
+        <div className="px-6 py-4 bg-slate-50 border-t border-slate-200 flex items-center justify-between shrink-0">
+          <button type="button" onClick={onClose} disabled={isDeploying || deploySuccess} className="px-5 py-2 text-xs font-bold text-slate-600 bg-white border border-slate-300 rounded-lg hover:text-slate-900 hover:bg-slate-100 transition-all cursor-pointer shadow-xs disabled:opacity-50">
             Cancel
           </button>
           <button
             type="button"
             onClick={handleConfirmDeploy}
-            disabled={!agreedToTerms || isDeploying || deploySuccess}
-            className={`px-6 py-2.5 text-xs font-black rounded-md flex items-center space-x-2 transition-all ${
-              agreedToTerms && !isDeploying && !deploySuccess
-                ? 'bg-[#007A61] hover:bg-[#00604c] text-white cursor-pointer shadow-md hover:shadow-lg'
-                : 'bg-slate-200 text-slate-400 cursor-not-allowed opacity-60'
+            disabled={!agreedToTerms || isDeploying || deploySuccess || !selectedDept}
+            className={`px-6 py-2.5 text-xs font-black rounded-lg flex items-center space-x-2 transition-all shadow-xs ${
+              agreedToTerms && !isDeploying && !deploySuccess && selectedDept
+                ? 'bg-gradient-to-r from-[#007A61] to-[#005a48] hover:from-[#006b55] hover:to-[#004e3f] text-white cursor-pointer hover:shadow-md'
+                : 'bg-slate-200 text-slate-400 cursor-not-allowed'
             }`}
           >
-            <Building2 className="w-4 h-4" />
+            {isDeploying ? <Loader2 className="w-4 h-4 animate-spin" /> : <Building2 className="w-4 h-4" />}
             <span>
               {deploySuccess ? 'Handed Over Successfully! 🎉' : isDeploying ? 'Processing Handover...' : 'Confirm Handover & Department Deployment'}
             </span>
