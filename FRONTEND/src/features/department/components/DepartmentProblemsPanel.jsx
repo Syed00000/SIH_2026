@@ -118,17 +118,18 @@ export const DepartmentProblemsPanel = ({ problems = [], onSelectProblem, onAssi
                           </div>
                         </td>
                         <td className="py-3 px-3 text-center whitespace-nowrap">
-                          <span className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold border ${
+                          <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-extrabold border ${
                             p.priority === 'Critical' ? 'bg-rose-50 text-rose-700 border-rose-200' :
-                            p.priority === 'High' ? 'bg-amber-50 text-amber-700 border-amber-200' : 'bg-blue-50 text-blue-700 border-blue-200'
+                            p.priority === 'High' ? 'bg-amber-50 text-amber-700 border-amber-200' : 
+                            'bg-emerald-50 text-emerald-800 border-emerald-200'
                           }`}>{p.priority || 'Medium'}</span>
                         </td>
                         <td className="py-3 px-3 text-center whitespace-nowrap">
-                          <span className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold border ${
-                            p.status === 'Resolved' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 
+                          <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-extrabold border ${
+                            p.status === 'Resolved' ? 'bg-emerald-50 text-emerald-800 border-emerald-200' : 
                             p.status === 'Escalated' ? 'bg-rose-50 text-rose-700 border-rose-200' :
-                            'bg-blue-50 text-blue-700 border-blue-200'
-                          }`}>{p.status || 'Assigned'}</span>
+                            'bg-emerald-50 text-emerald-800 border-emerald-200'
+                          }`}>{p.status || 'In Progress'}</span>
                         </td>
                         <td className="py-3 px-3 text-right whitespace-nowrap">
                           <div className="flex items-center justify-end gap-1.5">

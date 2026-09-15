@@ -8,12 +8,18 @@ export const DepartmentHeader = ({
   onToggleSidebar
 }) => {
   const isGramPanchayat = department?.category === 'Gram Panchayat' || department?.category === 'Ward Commissioner';
+  const isStateMinistry = department?.category === 'State Ministry' || department?.category === 'State Department' || (department?.deptId && String(department.deptId).includes('STATE'));
+  const isBlock = department?.category === 'Block / Tehsil Office';
   const name = department?.name || 'Department Authority';
   const headName = department?.headName || 'Officer in Charge';
-  const headRole = department?.headRole || (isGramPanchayat ? 'Mukhiya' : 'Department Head');
+  const headRole = department?.headRole || (isGramPanchayat ? 'Mukhiya' : (isStateMinistry ? 'State Department Head' : 'Department Head'));
   const district = department?.district || 'Ranchi';
-  const locationStr = isGramPanchayat
+  const locationStr = isStateMinistry
+    ? 'Govt of Jharkhand'
+    : isGramPanchayat
     ? [department?.panchayat, department?.block, district].filter(Boolean).join(', ')
+    : isBlock
+    ? `${department?.block || district} Block, ${district}`
     : `${district} District`;
 
   return (

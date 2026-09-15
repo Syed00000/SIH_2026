@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { HandCoins, RefreshCw, Send, Siren, Inbox, SendHorizontal, LayoutList, AlertCircle } from 'lucide-react';
+import { RefreshCw, Send, Siren, Inbox, SendHorizontal, LayoutList, AlertCircle } from 'lucide-react';
 import grantRequestService from '../../government/services/grantRequestService.js';
 import departmentService from '../../government/services/departmentService.js';
 import { RequestGrantModal } from './RequestGrantModal.jsx';
@@ -104,17 +104,12 @@ export const DepartmentCsrGrantPanel = ({ department, problems = [] }) => {
   return (
     <div className="space-y-4 text-left select-none animate-in fade-in duration-150">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-3.5 sm:p-4 rounded-2xl border border-slate-200/80 shadow-xs">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-2xl bg-emerald-600/10 text-emerald-700 flex items-center justify-center shrink-0">
-            <HandCoins className="w-5 h-5" />
+        <div>
+          <div className="flex items-center gap-2">
+            <h2 className="text-sm font-black text-slate-900 leading-tight">CSR &amp; State Grants Fund Management</h2>
+            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">{category}</span>
           </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h2 className="text-sm font-black text-slate-900 leading-tight">CSR & State Grants Fund Management</h2>
-              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">{category}</span>
-            </div>
-            <p className="text-xs text-slate-500">Track inter-tier grant requisitions & manage departmental fund pool</p>
-          </div>
+          <p className="text-xs text-slate-500">Track inter-tier grant requisitions &amp; manage departmental fund pool</p>
         </div>
 
         <div className="flex items-center gap-2">
