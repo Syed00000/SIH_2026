@@ -135,8 +135,8 @@ const start = async () => {
     server = http.createServer(app);
     initializeSocketServer(server);
 
-    // 3. Listen on port with auto-retry if port was lingering from previous reload (dual-stack IPv4 & IPv6)
-    await listenWithRetry(server, config.PORT, undefined, 15, 800);
+    // 3. Listen on port with auto-retry if port was lingering from previous reload
+    await listenWithRetry(server, config.PORT, '0.0.0.0', 15, 800);
 
     // 4. Initialize Background Workers
     initializeWorkers();

@@ -30,7 +30,8 @@ export const GOV_MAIN_NAV_ITEMS = [
       { id: 'projects_proposals', label: 'Solution Proposals', icon: FileCheck },
       { id: 'projects_active', label: 'Active Projects', icon: PlayCircle },
       { id: 'projects_milestones', label: 'Milestones & Monitoring', icon: CheckCircle2 },
-      { id: 'projects_prototypes', label: 'Prototypes & TRL', icon: Cpu }
+      { id: 'projects_prototypes', label: 'Prototypes & TRL', icon: Cpu },
+      { id: 'dept-budgets', label: 'Dept Budgets', icon: Landmark }
     ]
   },
   {

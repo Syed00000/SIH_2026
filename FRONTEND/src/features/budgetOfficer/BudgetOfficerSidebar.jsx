@@ -1,34 +1,24 @@
 import React from 'react';
-import { Home, Layers, ChevronLeft, ChevronRight, LogOut, Wrench, Users, HandCoins, X, Building2, Beaker } from 'lucide-react';
+import { Home, Layers, ChevronLeft, ChevronRight, LogOut, X } from 'lucide-react';
 
-export const DepartmentSidebar = ({
-  activeTab = 'overview',
+export const BudgetOfficerSidebar = ({
+  activeTab = 'home',
   setActiveTab,
   isSidebarExpanded = true,
   setIsSidebarExpanded,
-  departmentName = 'Department Authority',
-  departmentCategory = 'State Ministry',
-  onLogout,
   isMobileMenuOpen = false,
-  setIsMobileMenuOpen
+  setIsMobileMenuOpen,
+  onLogout,
+  counts
 }) => {
-  const isDistrictDept = departmentCategory === 'District Department';
-  const isBlockDept = departmentCategory === 'Block / Tehsil Office';
-  const isWardDept = departmentCategory === 'Ward Commissioner' || departmentCategory === 'Ward' || departmentCategory === 'Ward Office';
-
-  let tabLabel = 'District Departments';
-  if (isDistrictDept) tabLabel = 'Block & Tehsil Offices';
-  if (isBlockDept) tabLabel = 'Ward Commissioners';
-
   const NAV_ITEMS = [
-    { id: 'overview', label: 'Department Overview', icon: Home },
-    { id: 'problems', label: 'Assigned Civic Problems', icon: Layers },
-    { id: 'prototypes', label: 'Deployed Solutions', icon: Beaker },
-    { id: 'technicians', label: 'Technicians', icon: Wrench },
-    { id: 'budget-officers', label: 'Budget Officers', icon: Users },
-    { id: 'budget-approvals', label: 'Budget Approvals', icon: HandCoins },
-    ...(!isWardDept ? [{ id: 'districts', label: tabLabel, icon: Building2 }] : []),
-    { id: 'csr-grant', label: 'CSR Grant', icon: HandCoins }
+    { id: 'home', label: 'Overview', icon: Home },
+    { 
+      id: 'tasks', 
+      label: 'Assigned Budgets', 
+      icon: Layers,
+      badge: counts?.pending > 0 ? counts.pending : null
+    }
   ];
 
   return (
@@ -64,15 +54,15 @@ export const DepartmentSidebar = ({
             {isSidebarExpanded || isMobileMenuOpen ? (
               <div className="min-w-0 pr-1.5">
                 <div className="text-[11.5px] font-extrabold text-slate-900 truncate uppercase tracking-tight">
-                  {departmentName}
+                  BUDGET PORTAL
                 </div>
                 <div className="text-[9.5px] text-[#007A61] font-bold uppercase tracking-wider mt-0.5">
-                  GOVT OF JHARKHAND
+                  DEPT OF FINANCE
                 </div>
               </div>
             ) : (
               <div className="mx-auto text-[10px] font-extrabold text-[#007A61] uppercase tracking-wider text-center py-1">
-                DEPT
+                BO
               </div>
             )}
 
@@ -101,8 +91,8 @@ export const DepartmentSidebar = ({
                     if (setActiveTab) setActiveTab(item.id);
                     if (setIsMobileMenuOpen) setIsMobileMenuOpen(false);
                   }}
-                  className={`w-full flex items-center rounded-md text-xs font-bold transition-all relative cursor-pointer ${
-                    isSidebarExpanded || isMobileMenuOpen ? 'px-2.5 py-2 text-left space-x-2.5' : 'p-2 justify-center'
+                  className={`w-full flex items-center justify-between rounded-md text-xs font-bold transition-all relative cursor-pointer ${
+                    isSidebarExpanded || isMobileMenuOpen ? 'px-2.5 py-2 text-left' : 'p-2 justify-center'
                   } ${
                     isActive
                       ? 'bg-[#007A61] text-white shadow-2xs font-extrabold'
@@ -110,8 +100,17 @@ export const DepartmentSidebar = ({
                   }`}
                   title={item.label}
                 >
-                  <Icon className={`w-4 h-4 shrink-0 ${isActive ? 'text-white' : 'text-slate-500'}`} />
-                  {(isSidebarExpanded || isMobileMenuOpen) && <span className="truncate">{item.label}</span>}
+                  <div className="flex items-center space-x-2.5 min-w-0">
+                    <Icon className={`w-4 h-4 shrink-0 ${isActive ? 'text-white' : 'text-slate-500'}`} />
+                    {(isSidebarExpanded || isMobileMenuOpen) && <span className="truncate">{item.label}</span>}
+                  </div>
+                  {(isSidebarExpanded || isMobileMenuOpen) && item.badge && (
+                    <span className={`px-1.5 py-0.5 text-[9px] rounded-full shrink-0 ${
+                      isActive ? 'bg-white/20 text-white' : 'bg-[#007A61]/10 text-[#007A61]'
+                    }`}>
+                      {item.badge}
+                    </span>
+                  )}
                 </button>
               );
             })}
@@ -139,4 +138,4 @@ export const DepartmentSidebar = ({
   );
 };
 
-export default DepartmentSidebar;
+export default BudgetOfficerSidebar;

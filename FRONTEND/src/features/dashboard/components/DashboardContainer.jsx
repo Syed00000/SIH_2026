@@ -15,6 +15,7 @@ import { DepartmentPortal } from '../../department/DepartmentPortal.jsx';
 import { BlockPortal } from '../../block/BlockPortal.jsx';
 import { WardPortal } from '../../ward/WardPortal.jsx';
 import { TechnicianPortal } from '../../technician/TechnicianPortal.jsx';
+import { BudgetOfficerPortal } from '../../budgetOfficer/BudgetOfficerPortal.jsx';
 import { IndustrySidebar } from '../../industry/components/layout/IndustrySidebar.jsx';
 import { IndustryDashboard } from '../../industry/components/dashboard/IndustryDashboard.jsx';
 import { RoleProfile } from './RoleProfile.jsx';
@@ -60,6 +61,7 @@ export const DashboardContainer = ({ onNavigate }) => {
   if (urlPortal === 'ward' || role === 'WARD') return <WardPortal user={user} onLogout={handleLogout} onNavigate={onNavigate} />;
   if (urlPortal === 'block' || role === 'BLOCK') return <BlockPortal user={user} onLogout={handleLogout} />;
   if (urlPortal === 'technician' || role === 'TECHNICIAN' || role.includes('TECH')) return <TechnicianPortal user={user} onLogout={handleLogout} />;
+  if (urlPortal === 'budget-officer' || role === 'BUDGET_OFFICER') return <BudgetOfficerPortal user={user} onLogout={handleLogout} />;
 
   return (
     <div

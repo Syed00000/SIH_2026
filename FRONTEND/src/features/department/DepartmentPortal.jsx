@@ -7,16 +7,25 @@ import { DepartmentProblemActionPanel } from './components/DepartmentProblemActi
 import { DepartmentTechniciansPanel } from './components/DepartmentTechniciansPanel.jsx';
 import { DepartmentDistrictsPanel } from './components/DepartmentDistrictsPanel.jsx';
 import { DepartmentCsrGrantPanel } from './components/DepartmentCsrGrantPanel.jsx';
+import { DepartmentPrototypesPanel } from './components/DepartmentPrototypesPanel.jsx';
 import { AddTechnicianModal } from './components/AddTechnicianModal.jsx';
 import { AddDistrictModal } from './components/AddDistrictModal.jsx';
 import { ViewTechnicianModal } from './components/ViewTechnicianModal.jsx';
 import { EditTechnicianModal } from './components/EditTechnicianModal.jsx';
 import { AssignToTechnicianModal } from './components/AssignToTechnicianModal.jsx';
+import { DepartmentBudgetOfficersPanel } from './components/DepartmentBudgetOfficersPanel.jsx';
+import { DepartmentBudgetReviewPanel } from './components/DepartmentBudgetReviewPanel.jsx';
+import { AddBudgetOfficerModal } from './components/AddBudgetOfficerModal.jsx';
+import { ViewBudgetOfficerModal } from './components/ViewBudgetOfficerModal.jsx';
+import { EditBudgetOfficerModal } from './components/EditBudgetOfficerModal.jsx';
+import { AssignBudgetOfficerModal } from './components/AssignBudgetOfficerModal.jsx';
 import { DepartmentMobileNav } from './components/DepartmentMobileNav.jsx';
 import { GovernmentFooter } from '../government/components/layout/GovernmentFooter.jsx';
 import { departmentService } from '../government/services/departmentService.js';
 import { citizenService } from '../citizen/services/citizenService.js';
 import technicianService from '../government/services/technicianService.js';
+import { budgetOfficerService } from '../government/services/budgetOfficerService.js';
+import { projectCsrSyncService } from '../government/services/projectCsrSyncService.js';
 
 import { filterDepartmentChallenges } from './components/departmentChallengeFilter.helper.js';
 
@@ -27,6 +36,7 @@ export const DepartmentPortal = ({ user, onLogout }) => {
   const [allDepartments, setAllDepartments] = useState([]);
   const [problems, setProblems] = useState([]);
   const [technicians, setTechnicians] = useState([]);
+  const [budgetOfficers, setBudgetOfficers] = useState([]);
   const [districts, setDistricts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedProblem, setSelectedProblem] = useState(null);
@@ -34,10 +44,14 @@ export const DepartmentPortal = ({ user, onLogout }) => {
 
   // Modals State
   const [isAddTechOpen, setIsAddTechOpen] = useState(false);
+  const [showAddBudgetOfficerModal, setShowAddBudgetOfficerModal] = useState(false);
   const [isAddDistrictOpen, setIsAddDistrictOpen] = useState(false);
   const [viewingTech, setViewingTech] = useState(null);
   const [editingTech, setEditingTech] = useState(null);
+  const [viewingBudgetOfficer, setViewingBudgetOfficer] = useState(null);
+  const [editingBudgetOfficer, setEditingBudgetOfficer] = useState(null);
   const [assigningProblemTech, setAssigningProblemTech] = useState(null);
+  const [assigningBudgetProblem, setAssigningBudgetProblem] = useState(null);
 
   const getDeptIdFromUrl = () => {
     if (typeof window === 'undefined') return null;
@@ -55,10 +69,10 @@ export const DepartmentPortal = ({ user, onLogout }) => {
       const resDepts = await departmentService.getDepartments({ limit: 100 });
       const depts = resDepts?.data || (Array.isArray(resDepts) ? resDepts : []) || [];
       setAllDepartments(depts);
-      
+
       let matched = null;
       if (queryDeptId) {
-        matched = depts.find((d) => 
+        matched = depts.find((d) =>
           d.deptId?.toLowerCase() === queryDeptId.toLowerCase() ||
           d.id === queryDeptId ||
           d._id?.toString() === queryDeptId ||
@@ -86,6 +100,7 @@ export const DepartmentPortal = ({ user, onLogout }) => {
       const allChls = resChallenges?.challenges || (Array.isArray(resChallenges) ? resChallenges : []) || [];
       setProblems(filterDepartmentChallenges(allChls, matched));
 
+      let fetchedBOs = [];
       if (matched) {
         const techRes = await technicianService.getTechnicians({
           departmentId: matched.deptId || matched.id,
@@ -94,7 +109,35 @@ export const DepartmentPortal = ({ user, onLogout }) => {
           district: matched.district
         });
         setTechnicians(techRes?.data?.data || techRes?.data || []);
+
+        const boRes = await budgetOfficerService.getOfficers({
+          departmentName: matched?.name
+        });
+        fetchedBOs = boRes?.data?.data || boRes?.data || [];
+        setBudgetOfficers(fetchedBOs);
       }
+
+      // Sync projects from projectCsrSyncService
+      await projectCsrSyncService.initializeFromBackend();
+      const allProjects = projectCsrSyncService.getActiveProjects();
+      // Combine with fetched citizen challenges (in a real app, backend handles this unification)
+      // For now, we will merge any project that is assigned to this department
+      setProblems(prev => {
+        const merged = [...prev];
+        allProjects.forEach(proj => {
+          const idx = merged.findIndex(p => p.id === proj.id || p.challengeId === proj.challengeId || (proj.projectId && (p.id === proj.projectId || p.projectId === proj.projectId)));
+          if (idx >= 0) {
+            merged[idx] = { ...merged[idx], ...proj };
+          } else if (
+            (proj.handoverDepartment && matched?.name && proj.handoverDepartment.toLowerCase().trim() === matched.name.toLowerCase().trim()) ||
+            (proj.assignedBudgetOfficer && fetchedBOs.some(bo => String(bo.officerId || bo.id || bo._id) === String(proj.assignedBudgetOfficer.officerId)))
+          ) {
+            merged.push(proj);
+          }
+        });
+        return merged;
+      });
+
     } catch (err) {
       console.warn('Error loading department portal data:', err);
     } finally {
@@ -106,13 +149,64 @@ export const DepartmentPortal = ({ user, onLogout }) => {
     loadData();
     const handlePopState = () => loadData();
     window.addEventListener('popstate', handlePopState);
-    return () => window.removeEventListener('popstate', handlePopState);
+    const unsub = projectCsrSyncService.subscribe((_, data) => {
+      if (data?.updatedProjects) {
+        setProblems(prev => {
+          const merged = [...prev];
+          data.updatedProjects.forEach(proj => {
+            const idx = merged.findIndex(p => p.id === proj.id || p.challengeId === proj.challengeId || (proj.projectId && (p.id === proj.projectId || p.projectId === proj.projectId)));
+            if (idx >= 0) {
+              merged[idx] = { ...merged[idx], ...proj };
+            } else if (
+              (proj.handoverDepartment && department?.name && proj.handoverDepartment.toLowerCase().trim() === department.name.toLowerCase().trim()) ||
+              (proj.assignedBudgetOfficer && budgetOfficers.some(bo => String(bo.officerId || bo.id || bo._id) === String(proj.assignedBudgetOfficer.officerId)))
+            ) {
+              merged.push(proj);
+            }
+          });
+          return merged;
+        });
+      }
+    });
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+      unsub();
+    };
   }, [queryDeptId]);
 
   const handleUpdateProblem = (updated) => {
     const targetId = updated.challengeId || updated.id || updated._id;
     setProblems((prev) => prev.map((p) => ((p.challengeId || p.id || p._id) === targetId ? updated : p)));
-    setSelectedProblem(updated);
+
+    // Only update the selected problem if we are already viewing it in the Action Panel
+    if (selectedProblem && (selectedProblem.challengeId || selectedProblem.id || selectedProblem._id) === targetId) {
+      setSelectedProblem(updated);
+    }
+  };
+
+  const handleAssignBudgetOfficer = (problem, officer) => {
+    projectCsrSyncService.assignToBudgetOfficer(problem.id || problem.challengeId || problem._id, officer);
+    handleUpdateProblem({
+      ...problem,
+      assignedBudgetOfficer: {
+        officerId: officer._id || officer.id || officer.officerId,
+        name: officer.fullName || officer.name,
+        status: 'Assigned',
+        assignedAt: new Date().toISOString()
+      }
+    });
+  };
+
+  const handleSubmitBudgetToGovt = (problem) => {
+    projectCsrSyncService.submitBudgetToGovernment(problem.id || problem.challengeId || problem._id);
+    handleUpdateProblem({
+      ...problem,
+      assignedBudgetOfficer: {
+        ...problem.assignedBudgetOfficer,
+        status: 'Forwarded',
+        forwardedAt: new Date().toISOString()
+      }
+    });
   };
   const handleCreatedTech = (tech) => setTechnicians((prev) => [tech, ...prev]);
   const handleUpdatedTech = (updated) => {
@@ -120,6 +214,15 @@ export const DepartmentPortal = ({ user, onLogout }) => {
     setTechnicians((prev) => prev.map((t) => ((t.technicianId || t.id || t._id) === id ? updated : t)));
   };
   const handleDeletedTech = (techId) => setTechnicians((prev) => prev.filter((t) => (t.technicianId || t.id || t._id) !== techId));
+
+  const handleCreatedBudgetOfficer = (bo) => setBudgetOfficers((prev) => [bo, ...prev]);
+  const handleUpdatedBudgetOfficer = (updated) => {
+    setBudgetOfficers((prev) => prev.map((b) => ((b.officerId || b.id || b._id) === (updated.officerId || updated.id || updated._id) ? updated : b)));
+  };
+  const handleDeletedBudgetOfficer = (boId) => {
+    setBudgetOfficers((prev) => prev.filter((b) => (b.officerId || b.id || b._id) !== boId));
+  };
+
   const handleCreatedDistrict = (dist) => setDistricts((prev) => [dist, ...prev]);
   const handleDeletedDistrict = (distId) => setDistricts((prev) => prev.filter((d) => (d.id || d._id) !== distId));
 
@@ -131,9 +234,24 @@ export const DepartmentPortal = ({ user, onLogout }) => {
     switch (activeTab) {
       case 'problems':
         return <DepartmentProblemsPanel problems={problems} onSelectProblem={(p) => setSelectedProblem(p)} onAssignToTech={setAssigningProblemTech} />;
+      case 'prototypes':
+        return <DepartmentPrototypesPanel problems={problems} onAssignToBudgetOfficer={setAssigningBudgetProblem} />;
       case 'technicians':
       case 'field-workers':
         return <DepartmentTechniciansPanel technicians={technicians} department={department} onAddTech={() => setIsAddTechOpen(true)} onViewTech={setViewingTech} onEditTech={setEditingTech} onDeletedTech={handleDeletedTech} />;
+      case 'budget-officers':
+        return (
+          <DepartmentBudgetOfficersPanel
+            officers={budgetOfficers}
+            department={department}
+            onAddOfficer={() => setShowAddBudgetOfficerModal(true)}
+            onViewOfficer={setViewingBudgetOfficer}
+            onEditOfficer={setEditingBudgetOfficer}
+            onDeletedOfficer={handleDeletedBudgetOfficer}
+          />
+        );
+      case 'budget-approvals':
+        return <DepartmentBudgetReviewPanel problems={problems} onSubmitToGovernment={handleSubmitBudgetToGovt} />;
       case 'csr-grant':
         return <DepartmentCsrGrantPanel department={department} problems={problems} />;
       case 'districts':
@@ -180,10 +298,20 @@ export const DepartmentPortal = ({ user, onLogout }) => {
 
       {/* Modals */}
       <AddTechnicianModal department={department} isOpen={isAddTechOpen} onClose={() => setIsAddTechOpen(false)} onCreated={handleCreatedTech} />
+      <AddBudgetOfficerModal
+        isOpen={showAddBudgetOfficerModal}
+        onClose={() => setShowAddBudgetOfficerModal(false)}
+        department={department}
+        onCreated={handleCreatedBudgetOfficer}
+      />
+      <ViewBudgetOfficerModal officer={viewingBudgetOfficer} isOpen={Boolean(viewingBudgetOfficer)} onClose={() => setViewingBudgetOfficer(null)} />
+      <EditBudgetOfficerModal officer={editingBudgetOfficer} isOpen={Boolean(editingBudgetOfficer)} onClose={() => setEditingBudgetOfficer(null)} onUpdated={handleUpdatedBudgetOfficer} />
+
       {!isWardDept && <AddDistrictModal isOpen={isAddDistrictOpen} onClose={() => setIsAddDistrictOpen(false)} onCreated={handleCreatedDistrict} isDistrictDept={department?.category === 'District Department'} isBlockDept={department?.category === 'Block / Tehsil Office'} />}
       <ViewTechnicianModal technician={viewingTech} isOpen={Boolean(viewingTech)} onClose={() => setViewingTech(null)} />
       <EditTechnicianModal technician={editingTech} isOpen={Boolean(editingTech)} onClose={() => setEditingTech(null)} onUpdated={handleUpdatedTech} />
       <AssignToTechnicianModal challenge={assigningProblemTech} technicians={technicians} isOpen={Boolean(assigningProblemTech)} onClose={() => setAssigningProblemTech(null)} onAssigned={handleUpdateProblem} />
+      <AssignBudgetOfficerModal problem={assigningBudgetProblem} officers={budgetOfficers} isOpen={Boolean(assigningBudgetProblem)} onClose={() => setAssigningBudgetProblem(null)} onAssign={handleAssignBudgetOfficer} />
     </div>
   );
 };

@@ -18,6 +18,7 @@ import { DepartmentPortal } from '../features/department/DepartmentPortal.jsx';
 import { BlockPortal } from '../features/block/BlockPortal.jsx';
 import { WardPortal } from '../features/ward/WardPortal.jsx';
 import { TechnicianPortal } from '../features/technician/TechnicianPortal.jsx';
+import { BudgetOfficerPortal } from '../features/budgetOfficer/BudgetOfficerPortal.jsx';
 import { LandingPage } from '../features/landing/components/LandingPage.jsx';
 import { AboutPage } from '../features/landing/components/AboutPage.jsx';
 import { AboutJharkhandPage } from '../features/landing/components/AboutJharkhandPage.jsx';
@@ -174,6 +175,14 @@ export function Router() {
       return (
         <ProtectedRoute allowedRoles={['TECHNICIAN', 'GOVERNMENT', 'ADMIN', 'DEPARTMENT']} onNavigate={navigate}>
           <TechnicianPortal user={user} onLogout={handleLogout} />
+        </ProtectedRoute>
+      );
+    }
+
+    if (currentPath === '/budget-officer' || currentPath === '/budget-officer-portal') {
+      return (
+        <ProtectedRoute allowedRoles={['BUDGET_OFFICER', 'GOVERNMENT', 'ADMIN', 'DEPARTMENT']} onNavigate={navigate}>
+          <BudgetOfficerPortal user={user} onLogout={handleLogout} />
         </ProtectedRoute>
       );
     }
