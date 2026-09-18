@@ -1,0 +1,1 @@
+# Johar Setu is an innovative technology platform designed to revolutionize higher education, research, and skill development across Jharkhand. By bridging the gap between academia, government, and industry, Johar Setu creates a dynamic ecosystem that accelerates innovation, fosters entrepreneurship, and enhances employability for students and youth.
