@@ -2,101 +2,59 @@ import React from 'react';
 import DOMPurify from 'dompurify';
 
 /**
- * Pure-JS token-based HTML to React element converter.
- * Sanitizes with DOMPurify and renders pure React textContent and elements safely.
+ * Recursively converts DOM nodes into React elements without dangerouslySetInnerHTML
  */
-function parseHtmlToReact(htmlStr) {
-  if (!htmlStr || typeof htmlStr !== 'string') return null;
+function domToReact(node, key) {
+  if (!node) return null;
 
-  // Sanitize first with DOMPurify
-  const sanitized = DOMPurify.sanitize(htmlStr, {
-    ALLOWED_TAGS: [
+  // Text node
+  if (node.nodeType === 3) {
+    return node.textContent;
+  }
+
+  // Element node
+  if (node.nodeType === 1) {
+    const tagName = node.tagName.toLowerCase();
+    const allowedTags = [
       'p', 'strong', 'b', 'em', 'i', 'u', 's', 'strike',
       'span', 'div', 'ul', 'ol', 'li', 'br', 'hr',
-      'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'a', 'code', 'pre', 'sub', 'sup'
-    ],
-    ALLOWED_ATTR: ['href', 'target', 'rel', 'class', 'className']
-  });
+      'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+      'a', 'blockquote', 'code', 'pre', 'sub', 'sup'
+    ];
 
-  if (!sanitized.trim()) return null;
+    const children = Array.from(node.childNodes).map((child, i) => domToReact(child, `${key}-${i}`));
 
-  // If there are no HTML tags, return plain text
-  if (!/<[a-z0-9]+[^>]*>/i.test(sanitized)) {
-    return sanitized;
-  }
+    if (!allowedTags.includes(tagName)) {
+      return children.length === 1 ? children[0] : <React.Fragment key={key}>{children}</React.Fragment>;
+    }
 
-  const tagRegex = /<(\/)?([a-z0-9]+)([^>]*)>|([^<]+)/gi;
-  const stack = [{ tag: 'root', props: {}, children: [] }];
-  let match;
-  let keyIndex = 0;
+    const props = { key };
 
-  while ((match = tagRegex.exec(sanitized)) !== null) {
-    const [, isClosing, tagNameRaw, attrString, textContent] = match;
-
-    if (textContent) {
-      // Safe text node rendered as React text content
-      stack[stack.length - 1].children.push(textContent);
-    } else if (tagNameRaw) {
-      const tagName = tagNameRaw.toLowerCase();
-      const current = stack[stack.length - 1];
-
-      if (isClosing) {
-        if (stack.length > 1 && stack[stack.length - 1].tag === tagName) {
-          const finished = stack.pop();
-          const element = React.createElement(
-            finished.tag,
-            { key: `elem-${++keyIndex}`, ...finished.props },
-            finished.children.length > 0 ? finished.children : null
-          );
-          stack[stack.length - 1].children.push(element);
-        }
-      } else {
-        if (tagName === 'br') {
-          current.children.push(<br key={`br-${++keyIndex}`} />);
-          continue;
-        }
-        if (tagName === 'hr') {
-          current.children.push(<hr key={`hr-${++keyIndex}`} />);
-          continue;
-        }
-
-        const props = {};
-        if (attrString) {
-          const hrefMatch = attrString.match(/href=["']([^"']*)["']/i);
-          if (hrefMatch && tagName === 'a') {
-            const href = hrefMatch[1];
-            if (href.startsWith('http://') || href.startsWith('https://') || href.startsWith('mailto:')) {
-              props.href = href;
-              props.target = '_blank';
-              props.rel = 'noopener noreferrer';
-            }
-          }
-          const classMatch = attrString.match(/class(?:Name)?=["']([^"']*)["']/i);
-          if (classMatch) {
-            props.className = classMatch[1];
-          }
-        }
-
-        stack.push({
-          tag: tagName,
-          props,
-          children: []
-        });
+    if (tagName === 'a') {
+      const href = node.getAttribute('href');
+      if (href && (href.startsWith('http://') || href.startsWith('https://') || href.startsWith('mailto:'))) {
+        props.href = href;
+        props.target = '_blank';
+        props.rel = 'noopener noreferrer';
       }
     }
+
+    const classAttr = node.getAttribute('class');
+    if (classAttr) {
+      props.className = classAttr;
+    }
+
+    if (tagName === 'br') {
+      return <br key={key} />;
+    }
+    if (tagName === 'hr') {
+      return <hr key={key} />;
+    }
+
+    return React.createElement(tagName, props, children.length > 0 ? children : null);
   }
 
-  while (stack.length > 1) {
-    const finished = stack.pop();
-    const element = React.createElement(
-      finished.tag,
-      { key: `elem-${++keyIndex}`, ...finished.props },
-      finished.children.length > 0 ? finished.children : null
-    );
-    stack[stack.length - 1].children.push(element);
-  }
-
-  return stack[0].children;
+  return null;
 }
 
 /**
@@ -106,11 +64,27 @@ function parseHtmlToReact(htmlStr) {
 export const SafeHtml = ({ html = '', className = '' }) => {
   if (!html || typeof html !== 'string') return null;
 
+  // Sanitize first with DOMPurify
+  const clean = DOMPurify.sanitize(html, {
+    ALLOWED_TAGS: [
+      'p', 'strong', 'b', 'em', 'i', 'u', 's', 'strike',
+      'span', 'div', 'ul', 'ol', 'li', 'br', 'hr',
+      'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+      'a', 'blockquote', 'code', 'pre', 'sub', 'sup'
+    ],
+    ALLOWED_ATTR: ['href', 'target', 'rel', 'class', 'className']
+  });
+
+  if (!clean.trim()) return null;
+
   try {
-    const elements = parseHtmlToReact(html);
-    return <div className={className}>{elements}</div>;
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(clean, 'text/html');
+    const nodes = Array.from(doc.body.childNodes).map((child, idx) => domToReact(child, `node-${idx}`));
+
+    return <div className={className}>{nodes}</div>;
   } catch {
-    return <div className={className}>{DOMPurify.sanitize(html).replace(/<[^>]*>/g, '')}</div>;
+    return <div className={className}>{clean.replace(/<[^>]*>/g, '')}</div>;
   }
 };
 
