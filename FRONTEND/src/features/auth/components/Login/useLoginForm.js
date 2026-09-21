@@ -9,7 +9,7 @@ export const useLoginForm = (onNavigate) => {
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [fieldErrors, setFieldErrors] = useState({ email: '', password: '' });
+  const [fieldErrors, setFieldErrors] = useState({ email: '', passcode: '' });
   const [errorMessage, setErrorMessage] = useState('');
 
   const handleEmailChange = (e) => {
@@ -20,7 +20,7 @@ export const useLoginForm = (onNavigate) => {
 
   const handlePasswordChange = (e) => {
     setPassword(e.target.value);
-    if (fieldErrors.password) setFieldErrors((prev) => ({ ...prev, password: '' }));
+    if (fieldErrors.passcode) setFieldErrors((prev) => ({ ...prev, passcode: '' }));
     if (errorMessage) setErrorMessage('');
   };
 

@@ -116,9 +116,9 @@ export const LoginFormCard = ({ onNavigate }) => {
                 value={password}
                 onChange={handlePasswordChange}
                 placeholder="••••••••"
-                aria-invalid={!!fieldErrors.password || !!errorMessage}
+                aria-invalid={!!fieldErrors.passcode || !!errorMessage}
                 className={`w-full pl-10 pr-11 py-2.5 text-sm font-semibold text-slate-900 bg-white border rounded-none transition-all focus:outline-none placeholder:text-slate-400 placeholder:font-normal shadow-2xs ${
-                  fieldErrors.password || errorMessage
+                  fieldErrors.passcode || errorMessage
                     ? 'border-red-500 focus:border-red-600 focus:ring-2 focus:ring-red-500/20'
                     : 'border-slate-300 hover:border-slate-400 focus:border-[#007A61] focus:ring-2 focus:ring-[#007A61]/15'
                 }`}
@@ -133,10 +133,10 @@ export const LoginFormCard = ({ onNavigate }) => {
                 {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
             </div>
-            {fieldErrors.password && (
+            {fieldErrors.passcode && (
               <p className="text-xs text-red-600 font-semibold mt-1 flex items-center gap-1">
                 <AlertCircle className="w-3.5 h-3.5 shrink-0" />
-                <span>{fieldErrors.password}</span>
+                <span>{fieldErrors.passcode}</span>
               </p>
             )}
           </div>

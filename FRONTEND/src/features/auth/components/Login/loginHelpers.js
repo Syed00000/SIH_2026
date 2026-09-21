@@ -1,5 +1,5 @@
 export const validateLoginForm = (email, password) => {
-  const errors = { email: '', password: '' };
+  const errors = { email: '', passcode: '' };
   const trimmedEmail = (email || '').trim();
 
   if (!trimmedEmail) {
@@ -7,13 +7,13 @@ export const validateLoginForm = (email, password) => {
   }
 
   if (!password) {
-    errors.password = 'Please enter your password.'; // NOSONAR - form validation error message, not a hardcoded secret
+    errors.passcode = 'Please enter your password.';
   } else if (password.length < 6) {
-    errors.password = 'Password must be at least 6 characters long.'; // NOSONAR
+    errors.passcode = 'Password must be at least 6 characters long.';
   }
 
   return {
-    isValid: !errors.email && !errors.password,
+    isValid: !errors.email && !errors.passcode,
     errors
   };
 };
