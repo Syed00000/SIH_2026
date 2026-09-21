@@ -40,8 +40,8 @@ export function toWardUserEntity(ward) {
   const wardId = ward.wardId || (ward._id ? ward._id.toString() : '');
   const id = ward._id ? ward._id.toString() : wardId;
   const email = ward.credentials?.loginEmail || ward.councillorEmail || `${wardId.toLowerCase()}@jharkhand.gov.in`;
-  const rawPass = ward.credentials?.password || 'Ward@2026';
-  const passwordHash = rawPass.startsWith('$2') ? rawPass : bcrypt.hashSync(rawPass, 10);
+  const rawPass = ward.credentials?.password || process.env.DEFAULT_WARD_PASSWORD || '';
+  const passwordHash = rawPass && rawPass.startsWith('$2') ? rawPass : (rawPass ? bcrypt.hashSync(rawPass, 10) : '');
 
   return {
     id,

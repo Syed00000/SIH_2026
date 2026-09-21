@@ -1,5 +1,6 @@
 import technicianRepository from '../infrastructure/technician.repository.js';
 import Technician from '../infrastructure/technician.schema.js';
+import config from '../../../../shared/config/index.js';
 
 const DEFAULT_TRADE_MAP = {
   water: { name: 'Ram Kumar Mahto', trade: 'Drinking Water & Handpump Mechanic', phone: '9431100201' },
@@ -27,6 +28,7 @@ export const technicianService = {
     const blockShort = (block || 'Kanke').split(' ')[0].toLowerCase();
     const deptSuffix = departmentId.replace(/[^a-zA-Z0-9]/g, '').slice(-6);
     const loginEmail = `tech.${cleanKey}.${deptSuffix.toLowerCase()}@jharkhand.gov.in`;
+    const defaultTechPassword = config.DEFAULT_TECH_PASSWORD || process.env.DEFAULT_TECH_PASSWORD || '';
 
     try {
       await technicianRepository.create({
@@ -42,8 +44,8 @@ export const technicianService = {
         credentials: {
           loginId: loginEmail,
           loginEmail,
-          password: 'Tech@JH2026!',
-          generatedPassword: 'Tech@JH2026!'
+          password: defaultTechPassword,
+          generatedPassword: defaultTechPassword
         },
         status: 'Active',
         notes: 'Designated field technician for gram panchayat inspections'
@@ -86,7 +88,8 @@ export const technicianService = {
     const count = await technicianRepository.count();
     const techId = data.technicianId || `TECH-${String(count + 1).padStart(3, '0')}`;
     const email = (data.email || `${techId.toLowerCase()}@jharkhand.gov.in`).toLowerCase();
-    const password = data.credentials?.password || data.password || 'Tech@JH2026!';
+    const defaultTechPassword = config.DEFAULT_TECH_PASSWORD || process.env.DEFAULT_TECH_PASSWORD || '';
+    const password = data.credentials?.password || data.password || defaultTechPassword;
 
     return technicianRepository.create({
       ...data,

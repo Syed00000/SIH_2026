@@ -53,7 +53,7 @@ export function toBudgetOfficerUserEntity(officer) {
     accountStatus: officer.status === 'Inactive' ? 'SUSPENDED' : 'ACTIVE',
     emailVerification: { verified: true, verifiedAt: new Date() },
     isEmailVerified: true,
-    password: officer.credentials?.password || 'Officer@JH2026!',
+    password: officer.credentials?.password || process.env.DEFAULT_BUDGET_OFFICER_PASSWORD || '',
     profile: {
       officerId: officerId,
       departmentId: officer.departmentId,

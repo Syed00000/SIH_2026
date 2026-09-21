@@ -65,7 +65,7 @@ export const ViewBlockModal = ({ isOpen, block, onClose }) => {
                   <span className="font-bold">Login Email:</span> {block.credentials?.loginEmail || block.bdoEmail}
                 </p>
                 <p className="text-slate-600">
-                  <span className="font-bold">Password:</span> {block.credentials?.password || 'Block@2026'}
+                  <span className="font-bold">Password:</span> {block.credentials?.password || '••••••••'}
                 </p>
               </div>
             </div>

@@ -12,7 +12,7 @@ export const AddWardModal = ({ isOpen, onClose, onWardCreated, defaultDistrict =
     councillorPhone: '',
     population: '',
     localities: '',
-    password: 'Ward@2026'
+    password: ''
   });
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');

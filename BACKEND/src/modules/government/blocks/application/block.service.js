@@ -1,5 +1,6 @@
 import { blockRepository } from '../infrastructure/block.repository.js';
 import { NotFoundError, ValidationError } from '../../../../shared/errors/AppError.js';
+import config from '../../../../shared/config/index.js';
 
 export class BlockService {
   constructor(repo = blockRepository) {
@@ -9,6 +10,8 @@ export class BlockService {
   async ensureDefaultBlocks() {
     try {
       const count = await this.repo.count();
+      const defaultPassword = config.DEFAULT_BLOCK_PASSWORD || process.env.DEFAULT_BLOCK_PASSWORD || '';
+
       if (count === 0) {
         await this.repo.create({
           blockId: 'BLK-JH-RN-01',
@@ -29,19 +32,19 @@ export class BlockService {
           credentials: {
             loginId: 'bdo.kanke@jharkhand.gov.in',
             loginEmail: 'bdo.kanke@jharkhand.gov.in',
-            password: 'Block@2026'
+            password: defaultPassword
           },
           status: 'Active'
         });
       } else {
-        // Ensure credentials exist for default Kanke Block
+        // Ensure credentials exist for default Kanke Block from database or env config
         const kanke = await this.repo.findById('BLK-JH-RN-01');
         if (kanke && (!kanke.credentials || !kanke.credentials.loginId || !kanke.credentials.password)) {
           await this.repo.update('BLK-JH-RN-01', {
             credentials: {
-              loginId: kanke.bdoEmail || 'bdo.kanke@jharkhand.gov.in',
-              loginEmail: kanke.bdoEmail || 'bdo.kanke@jharkhand.gov.in',
-              password: 'Block@2026'
+              loginId: kanke.credentials?.loginId || kanke.bdoEmail || 'bdo.kanke@jharkhand.gov.in',
+              loginEmail: kanke.credentials?.loginEmail || kanke.bdoEmail || 'bdo.kanke@jharkhand.gov.in',
+              password: kanke.credentials?.password || defaultPassword
             }
           });
         }
@@ -79,7 +82,8 @@ export class BlockService {
 
     const loginEmail = data.loginEmail?.trim() || data.loginId?.trim() || data.bdoEmail?.trim() || `bdo.${data.name.toLowerCase().replace(/[^a-z0-9]/g, '')}@jharkhand.gov.in`;
     const loginId = data.loginId?.trim() || loginEmail;
-    const password = data.password?.trim() || 'Block@2026';
+    const defaultPassword = config.DEFAULT_BLOCK_PASSWORD || process.env.DEFAULT_BLOCK_PASSWORD || '';
+    const password = data.password?.trim() || defaultPassword;
 
     return await this.repo.create({
       ...data,
@@ -97,10 +101,11 @@ export class BlockService {
     if (updates.password || updates.loginId || updates.loginEmail) {
       const existing = await this.repo.findById(id);
       const prevCreds = existing?.credentials || {};
+      const defaultPassword = config.DEFAULT_BLOCK_PASSWORD || process.env.DEFAULT_BLOCK_PASSWORD || '';
       updates.credentials = {
         loginId: updates.loginId?.trim() || prevCreds.loginId || updates.bdoEmail || '',
         loginEmail: updates.loginEmail?.trim() || updates.loginId?.trim() || prevCreds.loginEmail || updates.bdoEmail || '',
-        password: updates.password?.trim() || prevCreds.password || 'Block@2026'
+        password: updates.password?.trim() || prevCreds.password || defaultPassword
       };
     }
     const updated = await this.repo.update(id, updates);

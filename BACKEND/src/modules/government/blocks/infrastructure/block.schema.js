@@ -83,7 +83,7 @@ const blockSchema = new mongoose.Schema(
       password: {
         type: String,
         trim: true,
-        default: 'Block@2026'
+        default: ''
       }
     },
     status: {

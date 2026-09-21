@@ -80,11 +80,12 @@ const start = async () => {
 
         const existingAdmin = await Admin.findOne({ email: 'admin@jharkhand.gov.in' });
         if (!existingAdmin) {
+          const superAdminPassword = config.GOVT_ADMIN_PASSWORD || process.env.GOVT_ADMIN_PASSWORD || '';
           const superAdmin = new Admin({
             fullName: 'Government Super Administrator',
             username: 'admin',
             email: 'admin@jharkhand.gov.in',
-            password: 'Admin@123456',
+            password: superAdminPassword,
             mobileNumber: '9876543210',
             role: 'State Government Admin',
             primaryRole: 'Super Administrator',
@@ -95,16 +96,17 @@ const start = async () => {
           });
           await superAdmin.save();
           await syncAdminUserAuth(superAdmin);
-          logger.info('Default Super Admin initialized: admin@jharkhand.gov.in / Admin@123456');
+          logger.info('Default Super Admin initialized: admin@jharkhand.gov.in');
         }
 
         const existingNodal = await Admin.findOne({ email: 'nodal@jharkhand.gov.in' });
         if (!existingNodal) {
+          const nodalPassword = config.DEFAULT_NODAL_PASSWORD || process.env.DEFAULT_NODAL_PASSWORD || '';
           const defaultAdmin = new Admin({
             fullName: 'State Nodal Administrator',
             username: 'nodal_admin',
             email: 'nodal@jharkhand.gov.in',
-            password: 'Nodal@123456',
+            password: nodalPassword,
             mobileNumber: '9876543211',
             role: 'State Nodal Officer',
             primaryRole: 'State Level Administrator',
@@ -115,7 +117,7 @@ const start = async () => {
           });
           await defaultAdmin.save();
           await syncAdminUserAuth(defaultAdmin);
-          logger.info('Default Nodal Administrator initialized: nodal@jharkhand.gov.in / Nodal@123456');
+          logger.info('Default Nodal Administrator initialized: nodal@jharkhand.gov.in');
         }
       } catch (adminInitErr) {
         logger.warn('Admin bootstrap notice: ' + adminInitErr.message);

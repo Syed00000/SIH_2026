@@ -19,7 +19,8 @@ export async function syncAdminUserAuth(admin, passwordHash = null, oldEmail = n
       finalHash = await bcrypt.hash(admin.password, 10);
     }
     if (!finalHash) {
-      finalHash = await bcrypt.hash('Nodal@123456', 10);
+      const fallbackPass = process.env.DEFAULT_NODAL_PASSWORD || '';
+      finalHash = fallbackPass ? await bcrypt.hash(fallbackPass, 10) : '';
     }
 
     // 3. Find user by email

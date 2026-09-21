@@ -86,7 +86,7 @@ const wardSchema = new mongoose.Schema(
       password: {
         type: String,
         trim: true,
-        default: 'Ward@2026'
+        default: ''
       }
     },
     status: {
