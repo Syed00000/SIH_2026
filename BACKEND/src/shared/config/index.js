@@ -21,7 +21,12 @@ const configSchema = z.object({
   CLOUDINARY_API_KEY: z.string().optional().default(''),
   CLOUDINARY_API_SECRET: z.string().optional().default(''),
   CLOUDINARY_URL: z.string().optional().default(''),
-  STORAGE_PROVIDER: z.enum(['cloudinary', 'local', 's3']).default('cloudinary')
+  STORAGE_PROVIDER: z.enum(['cloudinary', 'local', 's3']).default('cloudinary'),
+  DEFAULT_BLOCK_PASSWORD: z.string().default(process.env.DEFAULT_BLOCK_PASSWORD || ''),
+  DEFAULT_WARD_PASSWORD: z.string().default(process.env.DEFAULT_WARD_PASSWORD || ''),
+  DEFAULT_TECH_PASSWORD: z.string().default(process.env.DEFAULT_TECH_PASSWORD || ''),
+  DEFAULT_NODAL_PASSWORD: z.string().default(process.env.DEFAULT_NODAL_PASSWORD || ''),
+  DEFAULT_BUDGET_OFFICER_PASSWORD: z.string().default(process.env.DEFAULT_BUDGET_OFFICER_PASSWORD || '')
 });
 
 const parseConfig = () => {
@@ -43,7 +48,12 @@ const parseConfig = () => {
     CLOUDINARY_API_KEY: process.env.CLOUDINARY_API_KEY,
     CLOUDINARY_API_SECRET: process.env.CLOUDINARY_API_SECRET,
     CLOUDINARY_URL: process.env.CLOUDINARY_URL,
-    STORAGE_PROVIDER: process.env.STORAGE_PROVIDER
+    STORAGE_PROVIDER: process.env.STORAGE_PROVIDER,
+    DEFAULT_BLOCK_PASSWORD: process.env.DEFAULT_BLOCK_PASSWORD,
+    DEFAULT_WARD_PASSWORD: process.env.DEFAULT_WARD_PASSWORD,
+    DEFAULT_TECH_PASSWORD: process.env.DEFAULT_TECH_PASSWORD,
+    DEFAULT_NODAL_PASSWORD: process.env.DEFAULT_NODAL_PASSWORD,
+    DEFAULT_BUDGET_OFFICER_PASSWORD: process.env.DEFAULT_BUDGET_OFFICER_PASSWORD
   });
 
   if (!result.success) {

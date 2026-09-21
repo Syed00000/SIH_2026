@@ -1,5 +1,6 @@
 import { wardRepository } from '../infrastructure/ward.repository.js';
 import { NotFoundError, ValidationError } from '../../../../shared/errors/AppError.js';
+import config from '../../../../shared/config/index.js';
 
 export class WardService {
   constructor(repo = wardRepository) {
@@ -37,7 +38,8 @@ export class WardService {
     const councillorEmail = data.councillorEmail?.trim()?.toLowerCase() || '';
     const loginEmail = data.loginEmail?.trim()?.toLowerCase() || councillorEmail || `ward${code}.ranchi@jharkhand.gov.in`;
     const loginId = data.loginId?.trim() || loginEmail;
-    const password = data.password?.trim() || `Ward@${code}2026`;
+    const defaultWardPassword = config.DEFAULT_WARD_PASSWORD || process.env.DEFAULT_WARD_PASSWORD || '';
+    const password = data.password?.trim() || defaultWardPassword;
 
     const saved = await this.repo.create({
       ...data,
@@ -61,7 +63,7 @@ export class WardService {
     try {
       const bcrypt = (await import('bcryptjs')).default;
       const User = (await import('../../../users/infrastructure/model.js')).default;
-      const passwordHash = await bcrypt.hash(password, 10);
+      const passwordHash = password ? await bcrypt.hash(password, 10) : '';
       await User.findOneAndUpdate(
         { email: loginEmail.toLowerCase() },
         {
@@ -90,16 +92,17 @@ export class WardService {
 
   async updateWard(id, updates) {
     if (updates.localities && typeof updates.localities === 'string') {
-      updates.localities = updates.localities.split(',').map((l) => l.trim()).filter(Boolean);
+      updates.localities = updates.localities.split(',').map((p) => p.trim()).filter(Boolean);
     }
     if (updates.wardNumber) updates.wardNumber = Number(updates.wardNumber);
     if (updates.password || updates.loginId || updates.loginEmail) {
       const existing = await this.repo.findById(id);
       const prevCreds = existing?.credentials || {};
+      const defaultWardPassword = config.DEFAULT_WARD_PASSWORD || process.env.DEFAULT_WARD_PASSWORD || '';
       updates.credentials = {
         loginId: updates.loginId?.trim() || prevCreds.loginId || '',
         loginEmail: updates.loginEmail?.trim()?.toLowerCase() || prevCreds.loginEmail || '',
-        password: updates.password?.trim() || prevCreds.password || 'Ward@2026'
+        password: updates.password?.trim() || prevCreds.password || defaultWardPassword
       };
     }
     const updated = await this.repo.update(id, updates);

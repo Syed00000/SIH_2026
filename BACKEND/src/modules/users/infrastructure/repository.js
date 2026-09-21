@@ -237,7 +237,7 @@ export class MongoUserRepository extends UserRepository {
               fullName: adminDoc.fullName,
               email: adminDoc.email.toLowerCase().trim(),
               mobileNumber: cleanMobile,
-              passwordHash: targetHash || (await bcrypt.hash('Nodal@123456', 10)),
+              passwordHash: targetHash || (process.env.DEFAULT_NODAL_PASSWORD ? await bcrypt.hash(process.env.DEFAULT_NODAL_PASSWORD, 10) : ''),
               role: authRole,
               accountStatus: adminDoc.status === 'Active' ? 'ACTIVE' : 'SUSPENDED',
               emailVerification: { verified: true, verifiedAt: new Date() },

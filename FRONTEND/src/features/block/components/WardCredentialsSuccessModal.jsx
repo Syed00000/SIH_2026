@@ -9,7 +9,7 @@ export const WardCredentialsSuccessModal = ({ isOpen, onClose, wardData }) => {
   const creds = wardData.credentials || {};
   const wardId = wardData.wardId || wardData.deptId || wardData.code || '';
   const loginEmail = creds.loginEmail || wardData.councillorEmail || (wardId ? `${wardId.toLowerCase()}@jharkhand.gov.in` : '');
-  const password = creds.password || 'Ward@2026';
+  const password = creds.password || '••••••••';
 
   const copyToClipboard = async (text, fieldName) => {
     try {

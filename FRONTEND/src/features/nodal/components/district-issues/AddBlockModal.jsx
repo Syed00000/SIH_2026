@@ -5,7 +5,7 @@ import { blockService } from '../../../government/services/blockService.js';
 export const AddBlockModal = ({ isOpen, onClose, onBlockCreated, defaultDistrict = 'Ranchi' }) => {
   const [form, setForm] = useState({
     name: '', district: defaultDistrict || 'Ranchi', bdoName: '', bdoEmail: '', bdoPhone: '',
-    loginId: '', password: 'Block@2026'
+    loginId: '', password: ''
   });
   const [panchayatInput, setPanchayatInput] = useState('');
   const [panchayats, setPanchayats] = useState([]);
@@ -103,7 +103,7 @@ export const AddBlockModal = ({ isOpen, onClose, onBlockCreated, defaultDistrict
             </div>
             <div>
               <label className="text-[10px] font-bold text-emerald-900 uppercase block mb-1">Portal Password</label>
-              <input type="text" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} className="w-full px-2 py-1 text-xs border border-emerald-200 rounded-xl bg-white font-mono" />
+              <input type="text" placeholder="Leave empty for auto default" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} className="w-full px-2 py-1 text-xs border border-emerald-200 rounded-xl bg-white font-mono" />
             </div>
           </div>
 

@@ -4,6 +4,7 @@ import Admin from '../infrastructure/model.js';
 import { NotFoundError, ValidationError } from '../../../../shared/errors/AppError.js';
 import { calculateStats } from '../infrastructure/helpers/admin-stats.helper.js';
 import { syncAdminUserAuth } from './helpers/admin-sync.helper.js';
+import config from '../../../../shared/config/index.js';
 
 export class AdminService {
   async getAdmins({ search = '', role = 'All', status = 'All', district = 'All', page = 1, limit = 10 }) {
@@ -64,8 +65,9 @@ export class AdminService {
     const existingUsername = await Admin.findOne({ username: finalUsername.toLowerCase().trim() });
     if (existingUsername) throw new ValidationError('Username is already taken');
 
-    const cleanPassword = password && password.trim() ? password.trim() : 'Nodal@123456';
-    const passwordHash = await bcrypt.hash(cleanPassword, 10);
+    const defaultNodalPass = config.DEFAULT_NODAL_PASSWORD || process.env.DEFAULT_NODAL_PASSWORD || '';
+    const cleanPassword = password && password.trim() ? password.trim() : defaultNodalPass;
+    const passwordHash = cleanPassword ? await bcrypt.hash(cleanPassword, 10) : '';
     const colors = ['purple', 'green', 'orange', 'pink', 'teal', 'blue', 'cyan', 'indigo'];
     const avatarColor = colors[Math.floor(Math.random() * colors.length)];
 

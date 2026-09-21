@@ -21,7 +21,7 @@ export const EditBlockModal = ({ isOpen, onClose, block, onBlockUpdated }) => {
         bdoEmail: block.bdoEmail || '',
         bdoPhone: block.bdoPhone || '',
         loginId: block.credentials?.loginId || block.credentials?.loginEmail || block.bdoEmail || '',
-        password: block.credentials?.password || 'Block@2026'
+        password: block.credentials?.password || ''
       });
       setPanchayats(block.panchayats || []);
     }

@@ -121,7 +121,7 @@ export class LoginService {
           config.GOVT_ADMIN_EMAIL &&
           userEmailStr.toLowerCase() === config.GOVT_ADMIN_EMAIL.toLowerCase()
         ) {
-          plainCandidate = config.GOVT_ADMIN_PASSWORD || 'Admin@123456';
+          plainCandidate = config.GOVT_ADMIN_PASSWORD || process.env.GOVT_ADMIN_PASSWORD || '';
         }
 
         if (!plainCandidate && userEmailStr) {

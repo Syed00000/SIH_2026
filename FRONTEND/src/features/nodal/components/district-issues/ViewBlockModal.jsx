@@ -4,8 +4,8 @@ import { X, Building2, MapPin, UserCheck, Phone, Mail, KeyRound, ShieldCheck } f
 export const ViewBlockModal = ({ isOpen, onClose, block }) => {
   if (!isOpen || !block) return null;
 
-  const loginId = block.credentials?.loginId || block.credentials?.loginEmail || block.bdoEmail || 'bdo.kanke@jharkhand.gov.in';
-  const password = block.credentials?.password || 'Block@2026';
+  const loginId = block.credentials?.loginId || block.credentials?.loginEmail || block.bdoEmail || 'N/A';
+  const password = block.credentials?.password || '••••••••';
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in select-none">

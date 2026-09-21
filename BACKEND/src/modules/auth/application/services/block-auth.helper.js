@@ -38,9 +38,13 @@ export async function findBlockById(id) {
 export function getBlockValidPasswords(block) {
   if (!block) return [];
   const passwords = new Set();
-  if (block.credentials?.password) passwords.add(block.credentials.password.trim());
-  passwords.add('Block@2026');
-  passwords.add('Admin@123');
+  if (block.credentials?.password) {
+    passwords.add(block.credentials.password.trim());
+  }
+  const defaultPass = process.env.DEFAULT_BLOCK_PASSWORD;
+  if (defaultPass) {
+    passwords.add(defaultPass.trim());
+  }
   return Array.from(passwords).filter(Boolean);
 }
 
@@ -70,8 +74,8 @@ export function toBlockUserEntity(block) {
   const blockId = block.blockId || 'BLK-JH-RN-01';
   const id = block._id ? block._id.toString() : blockId;
   const email = block.credentials?.loginEmail || block.bdoEmail || `${blockId.toLowerCase()}@jharkhand.gov.in`;
-  const rawPass = block.credentials?.password || 'Block@2026';
-  const passwordHash = rawPass.startsWith('$2') ? rawPass : bcrypt.hashSync(rawPass, 10);
+  const rawPass = block.credentials?.password || process.env.DEFAULT_BLOCK_PASSWORD || '';
+  const passwordHash = rawPass && rawPass.startsWith('$2') ? rawPass : (rawPass ? bcrypt.hashSync(rawPass, 10) : '');
 
   return {
     id,

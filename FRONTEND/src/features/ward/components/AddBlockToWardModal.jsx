@@ -12,7 +12,7 @@ export const AddBlockToWardModal = ({ isOpen, ward, onClose, onBlockCreated }) =
     bdoEmail: '',
     bdoPhone: '',
     panchayats: '',
-    password: 'Block@2026'
+    password: ''
   });
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
@@ -152,6 +152,7 @@ export const AddBlockToWardModal = ({ isOpen, ward, onClose, onBlockCreated }) =
                 name="password"
                 value={formData.password}
                 onChange={handleChange}
+                placeholder="Leave empty for auto default"
                 className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:border-[#007A61]"
               />
             </div>

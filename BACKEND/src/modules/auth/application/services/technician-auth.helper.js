@@ -53,7 +53,7 @@ export function toTechnicianUserEntity(tech) {
     accountStatus: tech.status === 'Inactive' ? 'SUSPENDED' : 'ACTIVE',
     emailVerification: { verified: true, verifiedAt: new Date() },
     isEmailVerified: true,
-    password: tech.credentials?.password || 'Tech@JH2026!',
+    password: tech.credentials?.password || process.env.DEFAULT_TECH_PASSWORD || '',
     profile: {
       technicianId: techId,
       departmentId: tech.departmentId,
