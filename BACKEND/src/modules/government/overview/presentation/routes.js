@@ -3,13 +3,12 @@ import { MongooseUniversity } from '../../heis/infrastructure/model.js';
 import { MongooseIndustry } from '../../industries/infrastructure/model.js';
 import { MongooseAdmin } from '../../admins/infrastructure/model.js';
 import { MongooseUser } from '../../../users/infrastructure/model.js';
-import { GrantFundService } from '../../grants/service.js';
+import { GovernmentGrantFund } from '../../grants/model.js';
 import { CitizenChallenge } from '../../../citizen/infrastructure/model.js';
 import { UniversityProject } from '../../../university/infrastructure/model.js';
 import { governmentNotificationService } from '../application/government-notification.service.js';
 
 const router = Router();
-const grantFundService = new GrantFundService();
 
 router.get('/', (req, res, next) => {
   req.url = '/stats';
@@ -71,7 +70,7 @@ router.get('/stats', async (req, res, next) => {
           }
         }
       ]),
-      grantFundService.getFundsOverview(),
+      GovernmentGrantFund.find({ status: 'Active' }).sort({ allocationDate: -1 }).lean(),
       UniversityProject.find({ isDeleted: { $ne: true } }).lean(),
       MongooseUniversity.aggregate([{ $group: { _id: '$district', count: { $sum: 1 } } }]),
       MongooseIndustry.aggregate([{ $group: { _id: '$category', count: { $sum: 1 } } }]),
@@ -83,8 +82,18 @@ router.get('/stats', async (req, res, next) => {
       CitizenChallenge.find({ isDeleted: { $ne: true } }).sort({ createdAt: -1 }).limit(10).lean()
     ]);
 
+    const fundList = fundsOverview || [];
+    const inflows = fundList.filter((f) =>
+      f.fundType === 'CORPUS_INFLOW' || f.fundType === 'CORPUS_DEDUCTION' || f.departmentId === 'STATE_GOV' || f.department === 'Government of Jharkhand State Innovation Pool'
+    );
+    const allocations = fundList.filter((f) =>
+      f.fundType === 'DEPARTMENT_ALLOCATION' || (!['CORPUS_INFLOW', 'CORPUS_DEDUCTION'].includes(f.fundType) && f.departmentId && f.departmentId !== 'STATE_GOV')
+    );
+    const totalCommittedInflows = Math.max(0, inflows.reduce((sum, f) => sum + (Number(f.amount) || 0), 0));
+    const totalAllocatedToDepts = allocations.reduce((sum, f) => sum + (Number(f.amount) || 0), 0);
+    const stateGrantsTotal = Math.max(0, totalCommittedInflows - totalAllocatedToDepts);
+
     const financials = industryFinancials[0] || { totalCsrFundsCr: 0, totalProjects: 0, totalLabs: 0 };
-    const stateGrantsTotal = fundsOverview?.stateGrantsTotal || 0;
     const stateGrantsTotalCr = stateGrantsTotal / 10000000;
     const totalCommittedCorpus = stateGrantsTotal + ((financials.totalCsrFundsCr || 0) * 10000000);
     const totalInnovationCorpusCr = Number(((financials.totalCsrFundsCr || 0) + stateGrantsTotalCr).toFixed(2));

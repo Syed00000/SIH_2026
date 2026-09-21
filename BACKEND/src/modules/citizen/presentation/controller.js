@@ -14,7 +14,7 @@ export class CitizenController {
     this.queryHandler = createQueryHandler(service);
     this.analyticsHandler = createAnalyticsHandler(service);
     this.triageHandler = createTriageHandler(service);
-    this.mediaHandler = createMediaHandler();
+    this.mediaHandler = createMediaHandler(service);
     this.aiHandler = createAiTriageHandler(service);
     this.chatHandler = createAiChatHandler();
   }

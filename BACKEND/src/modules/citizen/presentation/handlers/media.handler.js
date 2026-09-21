@@ -1,7 +1,7 @@
-import { citizenMediaService } from '../../application/services/citizen-media.service.js';
 import logger from '../../../../shared/logger/index.js';
 
-export const createMediaHandler = (mediaService = citizenMediaService) => {
+export const createMediaHandler = (service) => {
+  const mediaService = service?.mediaService || service;
   const uploadMedia = async (req, res, next) => {
     try {
       const file = req.file;
