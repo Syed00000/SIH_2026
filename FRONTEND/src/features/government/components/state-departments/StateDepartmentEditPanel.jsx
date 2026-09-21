@@ -186,7 +186,38 @@ export const StateDepartmentEditPanel = ({ department, onBack, onSave }) => {
   };
 
   const handleGeneratePassword = () => {
-    const generated = 'Jharkhand@' + Math.floor(1000 + Math.random() * 9000);
+    const uppercaseChars = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
+    const lowercaseChars = 'abcdefghijkmnopqrstuvwxyz';
+    const numberChars = '23456789';
+    const specialChars = '!@#$%';
+    const allChars = uppercaseChars + lowercaseChars + numberChars + specialChars;
+
+    const getRandomChar = (charset) => {
+      if (typeof window !== 'undefined' && window.crypto?.getRandomValues) {
+        const arr = new Uint32Array(1);
+        window.crypto.getRandomValues(arr);
+        return charset.charAt(arr[0] % charset.length);
+      }
+      return charset.charAt(Math.floor(Math.random() * charset.length));
+    };
+
+    const characters = [
+      getRandomChar(uppercaseChars),
+      getRandomChar(lowercaseChars),
+      getRandomChar(numberChars),
+      getRandomChar(specialChars)
+    ];
+
+    for (let i = 4; i < 12; i++) {
+      characters.push(getRandomChar(allChars));
+    }
+
+    for (let i = characters.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [characters[i], characters[j]] = [characters[j], characters[i]];
+    }
+
+    const generated = characters.join('');
     setFormData(prev => ({
       ...prev,
       credentials: { ...prev.credentials, password: generated }
