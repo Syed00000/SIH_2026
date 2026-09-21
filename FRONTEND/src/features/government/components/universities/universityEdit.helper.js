@@ -29,7 +29,7 @@ export const buildInitialFormData = (university) => ({
   activeProjects: university?.quickSummary?.activeProjects ?? '',
   capacityStatus: university?.quickSummary?.capacityStatus || 'Available',
 
-  loginPassword: university?.credentials?.generatedPassword || 'HEI@Jharkhand2026!'
+  loginPassword: university?.credentials?.generatedPassword || ''
 });
 
 export const FOCUS_AREA_OPTIONS = [

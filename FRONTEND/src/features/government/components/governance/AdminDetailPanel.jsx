@@ -18,6 +18,8 @@ import {
   AlertCircle
 } from 'lucide-react';
 
+const MASKED_CREDENTIAL = '••••••••••••';
+
 export const AdminDetailPanel = ({ admin, onBack, onEdit, onToggleStatus, onDelete }) => {
   const [activeSubTab, setActiveSubTab] = useState('credentials');
   const [showPassword, setShowPassword] = useState(false);
@@ -30,6 +32,7 @@ export const AdminDetailPanel = ({ admin, onBack, onEdit, onToggleStatus, onDele
   const role = admin.role || 'Nodal Officer';
   const primaryRole = admin.primaryRole || 'District Nodal Lead';
   const targetId = admin.id || admin._id;
+  const adminSecret = admin.password;
 
   const showToast = (msg) => {
     setNotification(msg);
@@ -241,7 +244,7 @@ export const AdminDetailPanel = ({ admin, onBack, onEdit, onToggleStatus, onDele
                   <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
                     Administrative Key / Password
                   </span>
-                  {admin.password && (
+                  {adminSecret && (
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
@@ -254,12 +257,12 @@ export const AdminDetailPanel = ({ admin, onBack, onEdit, onToggleStatus, onDele
                 </div>
                 <div className="flex items-center justify-between gap-2 mt-1">
                   <span className="font-mono font-bold text-slate-900 text-xs tracking-wider">
-                    {admin.password ? (showPassword ? admin.password : '••••••••••••') : 'Stored securely in database'}
+                    {adminSecret ? (showPassword ? adminSecret : MASKED_CREDENTIAL) : 'Stored securely in database'}
                   </span>
-                  {admin.password && (
+                  {adminSecret && (
                     <button
                       type="button"
-                      onClick={() => handleCopy(admin.password, 'pass', 'Password')}
+                      onClick={() => handleCopy(adminSecret, 'pass', 'Password')}
                       className="p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 text-slate-700 shadow-2xs cursor-pointer shrink-0 transition-colors"
                       title="Copy Password"
                     >

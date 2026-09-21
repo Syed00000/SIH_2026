@@ -74,7 +74,7 @@ export const ViewStateModal = ({ isOpen, ministry, onClose }) => {
                   <span className="font-bold">Login Email:</span> {ministry.credentials?.loginEmail || ministry.headEmail}
                 </p>
                 <p className="text-slate-600">
-                  <span className="font-bold">Password:</span> {ministry.credentials?.password || 'Gov@State2026'}
+                  <span className="font-bold">Password:</span> {ministry.credentials?.password || '••••••••'}
                 </p>
               </div>
             </div>

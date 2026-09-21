@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { SafeHtml } from '../../../../shared/components/SafeHtml.jsx';
 import { FileText, Sparkles, CheckCircle2, FlaskConical, TestTube2, ShieldCheck, Rocket } from 'lucide-react';
 
 const PROTO_PHASES = [
@@ -38,9 +39,9 @@ export const PrototypePhasesView = ({ approval }) => {
           </h3>
         </div>
         {legacyContent ? (
-          <div
+          <SafeHtml
+            html={legacyContent}
             className="ql-editor prose prose-sm prose-slate max-w-none text-xs text-slate-700 leading-relaxed bg-slate-50/80 p-3 rounded-lg border border-slate-200/60"
-            dangerouslySetInnerHTML={{ __html: legacyContent }}
           />
         ) : (
           <p className="text-xs text-slate-500">No prototype details provided.</p>
@@ -131,9 +132,9 @@ export const PrototypePhasesView = ({ approval }) => {
         </div>
 
         {hasContent ? (
-          <div
+          <SafeHtml
+            html={content}
             className="ql-editor prose prose-sm prose-slate max-w-none text-xs text-slate-700 leading-relaxed bg-slate-50/80 p-4 rounded-lg border border-slate-200/60"
-            dangerouslySetInnerHTML={{ __html: content }}
           />
         ) : (
           <div className="p-6 bg-slate-50 rounded-lg border border-slate-200/60 text-center">

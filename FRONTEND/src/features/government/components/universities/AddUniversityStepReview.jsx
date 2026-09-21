@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { CheckCircle2, KeyRound, RefreshCw, Copy, Check, Eye, EyeOff } from 'lucide-react';
 
+const MASKED_CREDENTIAL = '••••••••••••';
+
 export const AddUniversityStepReview = ({
   formData,
   onGeneratePassword,
@@ -52,7 +54,7 @@ export const AddUniversityStepReview = ({
             <div>
               <span className="text-[10px] text-slate-400 font-medium block">Generated Password</span>
               <span className="text-xs font-mono font-bold text-slate-900 select-all">
-                {showPassword ? formData.initialPassword : '••••••••••••'}
+                {showPassword ? formData.initialPassword : MASKED_CREDENTIAL}
               </span>
             </div>
             <div className="flex items-center space-x-1">

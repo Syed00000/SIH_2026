@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { X, Building2, MapPin, Mail, KeyRound, Copy, Check, Eye, EyeOff, ShieldCheck, IndianRupee, Phone, Briefcase } from 'lucide-react';
 
+const MASKED_CREDENTIAL = '••••••••••••';
+
 export const ViewDistrictModal = ({ isOpen, onClose, district }) => {
   const [copied, setCopied] = useState(false);
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
@@ -8,11 +10,11 @@ export const ViewDistrictModal = ({ isOpen, onClose, district }) => {
   if (!isOpen || !district) return null;
 
   const loginEmail = district.headEmail || district.credentials?.loginEmail || district.credentials?.loginId || '-';
-  const password = district.credentials?.password || district.credentials?.generatedPassword || '-';
+  const loginSecret = district.credentials?.password || district.credentials?.generatedPassword || '-';
   const isInactive = district.status === 'Inactive' || district.status === 'Suspended';
 
   const handleCopyCredentials = () => {
-    navigator.clipboard.writeText(`Department: ${district.name}\nCode: ${district.code || district.deptId}\nLogin ID: ${loginEmail}\nPassword: ${password}`);
+    navigator.clipboard.writeText(`Department: ${district.name}\nCode: ${district.code || district.deptId}\nLogin ID: ${loginEmail}\nPassword: ${loginSecret}`);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -134,8 +136,8 @@ export const ViewDistrictModal = ({ isOpen, onClose, district }) => {
               </div>
               <div className="bg-white p-2.5 rounded-lg border border-teal-100">
                 <div className="flex items-center justify-between mb-0.5">
-                  <span className="text-[9.5px] text-slate-400 font-bold uppercase">Password</span>
-                  {password !== '-' && (
+                  <span className="text-[10px] font-sans text-slate-400 font-bold uppercase">Password</span>
+                  {loginSecret !== '-' && (
                     <button
                       type="button"
                       onClick={() => setIsPasswordVisible(!isPasswordVisible)}
@@ -146,7 +148,7 @@ export const ViewDistrictModal = ({ isOpen, onClose, district }) => {
                   )}
                 </div>
                 <span className="font-mono text-slate-800 font-bold tracking-wider block">
-                  {password === '-' ? 'Not Set' : isPasswordVisible ? password : '••••••••••••'}
+                  {loginSecret === '-' ? 'Not Set' : isPasswordVisible ? loginSecret : MASKED_CREDENTIAL}
                 </span>
               </div>
             </div>

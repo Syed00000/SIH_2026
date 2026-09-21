@@ -1,4 +1,5 @@
 import React from 'react';
+import { SafeHtml } from '../../../../../shared/components/SafeHtml.jsx';
 import { ShieldCheck, Building2, CheckSquare, Printer, Award, FileText, CheckCircle2 } from 'lucide-react';
 
 export const PrototypePhase3CertificationView = ({ project, onPrintCertificate }) => {
@@ -86,7 +87,7 @@ export const PrototypePhase3CertificationView = ({ project, onPrintCertificate }
       {certNotes && (
         <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-2xs space-y-2">
           <h4 className="text-xs font-black uppercase text-slate-800 flex items-center space-x-1.5"><Award className="w-3.5 h-3.5 text-slate-500" /><span>State Technical Council Sanction Directives</span></h4>
-          <div className="text-xs text-slate-700 leading-relaxed prose max-w-none" dangerouslySetInnerHTML={{ __html: certNotes }} />
+          <SafeHtml html={certNotes} className="text-xs text-slate-700 leading-relaxed prose max-w-none" />
         </div>
       )}
     </div>

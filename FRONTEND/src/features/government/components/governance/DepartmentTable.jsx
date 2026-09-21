@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { Eye, Pencil, Trash2, PauseCircle, PlayCircle, Landmark, Home, MapPin, KeyRound, Check, EyeOff, ShieldCheck } from 'lucide-react';
 
+const MASKED_CODE = '••••••••';
+
 export const DepartmentTable = ({
   departments = [],
   onViewDetails,
@@ -60,14 +62,14 @@ export const DepartmentTable = ({
                 const isInactive = dept.status === 'Inactive' || dept.status === 'Suspended';
                 const idKey = dept.deptId || dept.id || dept._id;
                 const isCopied = copiedId === idKey;
-                const isPasswordVisible = visiblePasswords[idKey] || false;
 
                 const locationStr = isGramPanchayat
                   ? [dept.panchayat, dept.block, dept.district].filter(Boolean).join(', ')
                   : dept.district ? `${dept.district} District` : dept.applicableJurisdiction || 'State Wide';
 
                 const loginEmail = dept.credentials?.loginEmail || dept.headEmail || '-';
-                const password = dept.credentials?.password || dept.credentials?.generatedPassword || '-';
+                const isPasswordVisible = !!visiblePasswords[idKey];
+                const deptCodeVal = dept.credentials?.password || dept.credentials?.generatedPassword || '-';
 
                 return (
                   <tr
@@ -103,9 +105,9 @@ export const DepartmentTable = ({
                     <td className="py-4 px-4 font-mono text-xs" onClick={(e) => e.stopPropagation()}>
                       <div className="flex items-center gap-1.5">
                         <span className="font-bold bg-slate-100 px-2 py-0.5 rounded border border-slate-200 text-slate-700 tracking-wider">
-                          {password === '-' ? '-' : (isPasswordVisible ? password : '••••••••')}
+                          {deptCodeVal === '-' ? '-' : (isPasswordVisible ? deptCodeVal : MASKED_CODE)}
                         </span>
-                        {password !== '-' && (
+                        {deptCodeVal !== '-' && (
                           <button
                             type="button"
                             onClick={() => togglePasswordVisibility(idKey)}

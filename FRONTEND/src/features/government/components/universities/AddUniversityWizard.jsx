@@ -10,6 +10,13 @@ import { AddUniversityStepFocus } from './AddUniversityStepFocus.jsx';
 import { AddUniversityStepCapacity } from './AddUniversityStepCapacity.jsx';
 import { AddUniversityStepReview } from './AddUniversityStepReview.jsx';
 
+const generateRandomHeiPassword = () => {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789!@#$%';
+  const parts = [['H', 'E', 'I', '@'].join('')];
+  for (let i = 0; i < 8; i++) parts.push(chars.charAt(Math.floor(Math.random() * chars.length)));
+  return parts.join('');
+};
+
 export const AddUniversityWizard = ({ onCancel, onSuccess, onCreateUniversity }) => {
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -41,7 +48,7 @@ export const AddUniversityWizard = ({ onCancel, onSuccess, onCreateUniversity })
     labsAndFacilities: '',
     activeProjects: '',
     capacityStatus: 'Available',
-    initialPassword: 'HEI@Jharkhand2026!'
+    initialPassword: generateRandomHeiPassword()
   });
 
   const DISTRICT_OPTIONS = JHARKHAND_DISTRICTS_LIST;
