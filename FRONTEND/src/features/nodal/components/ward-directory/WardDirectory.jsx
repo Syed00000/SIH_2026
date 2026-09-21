@@ -47,10 +47,7 @@ export const WardDirectory = ({ nodalDistrict = 'Ranchi' }) => {
           councillorName: d.headName || 'mukesh',
           councillorEmail: d.headEmail || d.credentials?.loginEmail || 'ward133@gmail.com',
           councillorPhone: d.headPhone || '8888888',
-          credentials: d.credentials || {
-            loginId: d.headEmail || 'ward133@gmail.com', loginEmail: d.headEmail || 'ward133@gmail.com',
-            password: 'ward@133', generatedPassword: 'ward@133'
-          }
+          credentials: d.credentials || null
         }));
 
       const rawWards = Array.isArray(resWards) ? resWards : (resWards?.data || []);

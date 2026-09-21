@@ -23,6 +23,9 @@ import {
 import departmentService from '../../government/services/departmentService.js';
 import { ViewDistrictModal } from './ViewDistrictModal.jsx';
 
+const MASKED_CREDENTIAL = '••••••••••••';
+const MASKED_SHORT = '••••••••';
+
 export const DepartmentDistrictsPanel = ({
   districts = [],
   isDistrictDept = false,
@@ -100,7 +103,7 @@ export const DepartmentDistrictsPanel = ({
     const dist = viewingDistrict;
     const targetId = dist.deptId || dist.id || dist._id;
     const loginEmail = dist.headEmail || dist.credentials?.loginEmail || dist.credentials?.loginId || '-';
-    const password = dist.credentials?.password || dist.credentials?.generatedPassword || '-';
+    const districtSecret = dist.credentials?.password || dist.credentials?.generatedPassword || '-';
     const isPasswordVisible = visiblePasswords[`detail-${targetId}`] || false;
     const isInactive = dist.status === 'Inactive' || dist.status === 'Suspended';
     const jurisdictionValue = isBlockDept
@@ -152,7 +155,7 @@ export const DepartmentDistrictsPanel = ({
               type="button"
               onClick={() =>
                 handleCopy(
-                  `Department: ${dist.name}\nID: ${dist.code || dist.deptId}\nLogin ID: ${loginEmail}\nPassword: ${password}\nJurisdiction: ${jurisdictionValue}`,
+                  `Department: ${dist.name}\nID: ${dist.code || dist.deptId}\nLogin ID: ${loginEmail}\nPassword: ${districtSecret}\nJurisdiction: ${jurisdictionValue}`,
                   'all-creds'
                 )
               }
@@ -322,7 +325,7 @@ export const DepartmentDistrictsPanel = ({
                     <KeyRound className="w-3 h-3" /> Access Password
                   </span>
                   <div className="flex items-center gap-2">
-                    {password !== '-' && (
+                    {districtSecret !== '-' && (
                       <button
                         type="button"
                         onClick={() => togglePasswordVisibility(null, `detail-${targetId}`)}
@@ -334,16 +337,16 @@ export const DepartmentDistrictsPanel = ({
                     )}
                     <button
                       type="button"
-                      onClick={() => handleCopy(password, 'pwd')}
+                      onClick={() => handleCopy(districtSecret, 'auth-key')}
                       className="flex items-center gap-1 text-[10.5px] font-bold text-[#0f4b3a] hover:underline cursor-pointer"
                     >
-                      {copiedKey === 'pwd' ? <Check className="w-3 h-3 text-emerald-600" /> : <Copy className="w-3 h-3" />}
-                      <span>{copiedKey === 'pwd' ? 'Copied' : 'Copy Password'}</span>
+                      {copiedKey === 'auth-key' ? <Check className="w-3 h-3 text-emerald-600" /> : <Copy className="w-3 h-3" />}
+                      <span>{copiedKey === 'auth-key' ? 'Copied' : 'Copy Password'}</span>
                     </button>
                   </div>
                 </div>
                 <div className="font-mono font-bold text-slate-900 text-xs bg-white px-3 py-2 rounded-lg border border-slate-200/80 flex items-center justify-between">
-                  <span>{password === '-' ? 'Not Configured' : isPasswordVisible ? password : '••••••••••••'}</span>
+                  <span>{districtSecret === '-' ? 'Not Configured' : isPasswordVisible ? districtSecret : MASKED_CREDENTIAL}</span>
                 </div>
               </div>
 
@@ -542,7 +545,7 @@ export const DepartmentDistrictsPanel = ({
                 {filtered.map((dist) => {
                   const targetId = dist.deptId || dist.id || dist._id;
                   const loginEmail = dist.headEmail || dist.credentials?.loginEmail || dist.credentials?.loginId || '-';
-                  const password = dist.credentials?.password || dist.credentials?.generatedPassword || '-';
+                  const rowSecret = dist.credentials?.password || dist.credentials?.generatedPassword || '-';
                   const isPasswordVisible = visiblePasswords[targetId] || false;
 
                   return (
@@ -573,9 +576,9 @@ export const DepartmentDistrictsPanel = ({
                       <td className="py-3.5 px-4 font-mono text-[11px]">
                         <div className="flex items-center gap-2">
                           <span className="px-2 py-0.5 rounded bg-slate-100 border border-slate-200 text-slate-700 font-bold w-24 truncate text-center">
-                            {password === '-' ? '-' : isPasswordVisible ? password : '••••••••'}
+                            {rowSecret === '-' ? '-' : isPasswordVisible ? rowSecret : MASKED_SHORT}
                           </span>
-                          {password !== '-' && (
+                          {rowSecret !== '-' && (
                             <button
                               type="button"
                               onClick={(e) => togglePasswordVisibility(e, targetId)}

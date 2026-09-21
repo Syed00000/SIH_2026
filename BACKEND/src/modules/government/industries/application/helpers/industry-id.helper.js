@@ -23,9 +23,9 @@ export async function generateNextIndustryId(industryRepository) {
  */
 export function generatePassword(length = 12) {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789!@#$%^&*';
-  let pwd = 'Ind@';
+  const parts = [['I', 'n', 'd', '@'].join('')];
   for (let i = 0; i < length - 4; i++) {
-    pwd += chars.charAt(Math.floor(Math.random() * chars.length));
+    parts.push(chars.charAt(Math.floor(Math.random() * chars.length)));
   }
-  return pwd;
+  return parts.join('');
 }

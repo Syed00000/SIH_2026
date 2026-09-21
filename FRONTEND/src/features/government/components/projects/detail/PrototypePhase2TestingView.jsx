@@ -1,4 +1,5 @@
 import React from 'react';
+import { SafeHtml } from '../../../../../shared/components/SafeHtml.jsx';
 import { ShieldCheck, FileCheck2, CheckCircle2, Award, Activity, Radio, MapPin, Gauge } from 'lucide-react';
 import { openPdf } from '../../../../../shared/utils/openPdf.js';
 
@@ -92,7 +93,7 @@ export const PrototypePhase2TestingView = ({ project }) => {
       {testNotes && (
         <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-2xs space-y-2">
           <h4 className="text-xs font-black uppercase text-slate-800 flex items-center space-x-1.5"><Award className="w-3.5 h-3.5 text-slate-500" /><span>Field Testing Telemetry & Observations</span></h4>
-          <div className="text-xs text-slate-700 leading-relaxed prose max-w-none" dangerouslySetInnerHTML={{ __html: testNotes }} />
+          <SafeHtml html={testNotes} className="text-xs text-slate-700 leading-relaxed prose max-w-none" />
         </div>
       )}
     </div>

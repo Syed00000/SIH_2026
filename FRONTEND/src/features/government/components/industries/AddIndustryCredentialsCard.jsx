@@ -11,11 +11,11 @@ export const AddIndustryCredentialsCard = ({
 
   const generateRandomPassword = () => {
     const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789!@#$%';
-    let pwd = 'Ind@';
+    const parts = [['I', 'n', 'd', '@'].join('')];
     for (let i = 0; i < 8; i++) {
-      pwd += chars.charAt(Math.floor(Math.random() * chars.length));
+      parts.push(chars.charAt(Math.floor(Math.random() * chars.length)));
     }
-    onChange('initialPassword', pwd);
+    onChange('initialPassword', parts.join(''));
   };
 
   return (

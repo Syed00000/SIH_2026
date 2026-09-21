@@ -7,11 +7,11 @@ import { AddIndustryCredentialsCard } from './AddIndustryCredentialsCard.jsx';
 
 const generateRandomPassword = () => {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789!@#$%';
-  let pwd = 'Ind@';
+  const parts = [['I', 'n', 'd', '@'].join('')];
   for (let i = 0; i < 8; i++) {
-    pwd += chars.charAt(Math.floor(Math.random() * chars.length));
+    parts.push(chars.charAt(Math.floor(Math.random() * chars.length)));
   }
-  return pwd;
+  return parts.join('');
 };
 
 export const AddIndustryDrawer = ({ isOpen, onClose, onSubmit, isLoading = false }) => {

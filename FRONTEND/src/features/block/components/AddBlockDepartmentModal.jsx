@@ -8,7 +8,7 @@ export const AddBlockDepartmentModal = ({ block, isOpen, onClose, onCreated }) =
   const [headName, setHeadName] = useState('');
   const [headEmail, setHeadEmail] = useState('');
   const [headPhone, setHeadPhone] = useState('');
-  const [password, setPassword] = useState('Dept@JH2026!');
+  const [password, setPassword] = useState('');
   const [description, setDescription] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
@@ -40,8 +40,8 @@ export const AddBlockDepartmentModal = ({ block, isOpen, onClose, onCreated }) =
         credentials: {
           loginId: cleanEmail,
           loginEmail: cleanEmail,
-          password: password || 'Dept@JH2026!',
-          generatedPassword: password || 'Dept@JH2026!'
+          password: password.trim(),
+          generatedPassword: password.trim()
         }
       };
 

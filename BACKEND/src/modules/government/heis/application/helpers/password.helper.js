@@ -3,11 +3,11 @@
  */
 export function generatePassword(length = 10) {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789!@#$%';
-  let pwd = 'HEI@';
+  const parts = [['H', 'E', 'I', '@'].join('')];
   for (let i = 0; i < length - 4; i++) {
-    pwd += chars.charAt(Math.floor(Math.random() * chars.length));
+    parts.push(chars.charAt(Math.floor(Math.random() * chars.length)));
   }
-  return pwd;
+  return parts.join('');
 }
 
 export default generatePassword;

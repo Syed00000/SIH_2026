@@ -28,6 +28,7 @@ import {
 } from 'lucide-react';
 import { universityApiService } from '../../../university/services/universityApiService.js';
 import { openPdf } from '../../../../shared/utils/openPdf.js';
+import { SafeHtml } from '../../../../shared/components/SafeHtml.jsx';
 
 const STAGE_CONFIG = [
   { num: 1, key: 'labDesign',    label: '1. Lab Design (TRL 1-3)',    short: 'Lab Design',    icon: FlaskConical, color: 'amber' },
@@ -378,9 +379,9 @@ export const InspectPrototypeModal = ({
             </div>
 
             {activeContent && activeContent.replace(/<[^>]*>/g, '').trim().length > 0 ? (
-              <div
+              <SafeHtml
+                html={activeContent}
                 className="ql-editor prose prose-sm prose-slate max-w-none text-xs text-slate-800 leading-relaxed bg-slate-50/70 p-4 rounded-xl border border-slate-200/80 min-h-[160px]"
-                dangerouslySetInnerHTML={{ __html: activeContent }}
               />
             ) : (
               <div className="p-8 text-center bg-slate-50 rounded-xl border border-dashed border-slate-200 space-y-2">

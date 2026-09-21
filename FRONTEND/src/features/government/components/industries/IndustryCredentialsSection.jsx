@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { KeyRound, Eye, EyeOff, Copy, Check } from 'lucide-react';
 
+const MASKED_CREDENTIAL = '••••••••••••';
+
 export const IndustryCredentialsSection = ({
   loginEmail,
   loginPassword
@@ -48,7 +50,7 @@ export const IndustryCredentialsSection = ({
           </label>
           <div className="flex items-center justify-between bg-slate-50 border border-slate-200 rounded px-2.5 py-1 text-xs">
             <span className="font-mono text-[11px] font-semibold text-slate-800 tracking-wider truncate mr-2 select-all">
-              {showPassword ? loginPassword : '••••••••••••'}
+              {showPassword ? loginPassword : MASKED_CREDENTIAL}
             </span>
             <div className="flex items-center space-x-1 shrink-0">
               <button

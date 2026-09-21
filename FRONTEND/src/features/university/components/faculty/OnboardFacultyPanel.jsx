@@ -5,6 +5,13 @@ import { FacultyOnboardHeader } from './onboard/FacultyOnboardHeader.jsx';
 import { FacultyOnboardFormFields } from './onboard/FacultyOnboardFormFields.jsx';
 import { FacultyOnboardPreviewCard } from './onboard/FacultyOnboardPreviewCard.jsx';
 
+const generateRandomFacultyPassword = () => {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789!@#$%';
+  const parts = [['F', 'a', 'c', '@'].join('')];
+  for (let i = 0; i < 8; i++) parts.push(chars.charAt(Math.floor(Math.random() * chars.length)));
+  return parts.join('');
+};
+
 export const OnboardFacultyPanel = ({ onBack, onSuccess, universityCode = 'RU001' }) => {
   const [loading, setLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
@@ -37,6 +44,7 @@ export const OnboardFacultyPanel = ({ onBack, onSuccess, universityCode = 'RU001
     e.preventDefault();
     setLoading(true);
     try {
+      const specsList = formData.specialization.split(',').map((s) => s.trim()).filter(Boolean);
       const payload = {
         name: formData.name,
         designation: formData.designation,
@@ -47,7 +55,7 @@ export const OnboardFacultyPanel = ({ onBack, onSuccess, universityCode = 'RU001
         experience: formData.experience,
         specialization: specsList.length > 0 ? specsList : ['Applied Research', 'Innovation'],
         bio: formData.bio || `${formData.name} is specialized in ${formData.department} with active contributions to grassroots research.`,
-        password: formData.password || 'Faculty@123456',
+        password: formData.password || generateRandomFacultyPassword(),
         status: 'Active',
         availabilityStatus: formData.availabilityStatus || 'Available',
         activeProjects: 0,

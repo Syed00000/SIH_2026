@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { X, Building2, ShieldCheck, Mail, Phone, KeyRound, Copy, Check, Eye, EyeOff, MapPin, Briefcase } from 'lucide-react';
 
+const MASKED_CREDENTIAL = '••••••••••••';
+
 export const ViewBlockDepartmentModal = ({ department, isOpen, onClose }) => {
   const [copied, setCopied] = useState(false);
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
@@ -8,10 +10,10 @@ export const ViewBlockDepartmentModal = ({ department, isOpen, onClose }) => {
   if (!isOpen || !department) return null;
 
   const loginId = department.credentials?.loginId || department.credentials?.loginEmail || department.headEmail || 'dept@jharkhand.gov.in';
-  const password = department.credentials?.password || department.credentials?.generatedPassword || 'Dept@JH2026!';
+  const displaySecret = department.credentials?.password || department.credentials?.generatedPassword || '-';
 
   const handleCopyCredentials = () => {
-    navigator.clipboard.writeText(`Department: ${department.name}\nCode: ${department.code || department.deptId}\nLogin ID: ${loginId}\nPassword: ${password}`);
+    navigator.clipboard.writeText(`Department: ${department.name}\nCode: ${department.code || department.deptId}\nLogin ID: ${loginId}\nPassword: ${displaySecret}`);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -87,7 +89,7 @@ export const ViewBlockDepartmentModal = ({ department, isOpen, onClose }) => {
               <div className="bg-white p-2.5 rounded-lg border border-teal-100">
                 <div className="flex items-center justify-between mb-0.5">
                   <span className="text-[9.5px] font-sans text-slate-400 font-bold uppercase">Password</span>
-                  {password !== '-' && (
+                  {displaySecret !== '-' && (
                     <button
                       type="button"
                       onClick={() => setIsPasswordVisible(!isPasswordVisible)}
@@ -98,7 +100,7 @@ export const ViewBlockDepartmentModal = ({ department, isOpen, onClose }) => {
                   )}
                 </div>
                 <span className="text-slate-800 font-bold tracking-wider block">
-                  {isPasswordVisible ? password : '••••••••••••'}
+                  {isPasswordVisible ? displaySecret : MASKED_CREDENTIAL}
                 </span>
               </div>
             </div>

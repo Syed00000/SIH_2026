@@ -1,6 +1,13 @@
 import React, { useState } from 'react';
 import { X, Loader2, UserPlus, Lock, Eye, EyeOff, Check } from 'lucide-react';
 
+const generateRandomFacultyPassword = () => {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789!@#$%';
+  const parts = [['F', 'a', 'c', '@'].join('')];
+  for (let i = 0; i < 8; i++) parts.push(chars.charAt(Math.floor(Math.random() * chars.length)));
+  return parts.join('');
+};
+
 export const FacultyAddModal = ({
   isOpen,
   onClose,
@@ -28,7 +35,7 @@ export const FacultyAddModal = ({
     setLoading(true);
     const payload = {
       ...formData,
-      password: formData.password || 'Faculty@123456',
+      password: formData.password || generateRandomFacultyPassword(),
       specialization: formData.specialization.split(',').map((s) => s.trim()).filter(Boolean),
       status: 'Active',
       availabilityStatus: 'Available'

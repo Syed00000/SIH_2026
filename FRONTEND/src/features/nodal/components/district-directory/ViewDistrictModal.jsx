@@ -74,7 +74,7 @@ export const ViewDistrictModal = ({ isOpen, department, onClose }) => {
                   <span className="font-bold">Login Email:</span> {department.credentials?.loginEmail || department.headEmail}
                 </p>
                 <p className="text-slate-600">
-                  <span className="font-bold">Password:</span> {department.credentials?.password || 'Gov@Dist2026'}
+                  <span className="font-bold">Password:</span> {department.credentials?.password || '••••••••'}
                 </p>
               </div>
             </div>

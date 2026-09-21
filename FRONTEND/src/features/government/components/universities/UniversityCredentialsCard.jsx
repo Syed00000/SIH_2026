@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { KeyRound, Copy, Check, Eye, EyeOff } from 'lucide-react';
 
+const MASKED_CREDENTIAL = '••••••••••••';
+
 export const UniversityCredentialsCard = ({
   universityName = '',
   loginEmail = '',
@@ -70,7 +72,7 @@ export const UniversityCredentialsCard = ({
           <div>
             <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block mb-0.5">Account Password</span>
             <span className="text-xs font-mono font-bold text-slate-900 select-all">
-              {showPassword ? loginPassword : '••••••••••••'}
+              {showPassword ? loginPassword : MASKED_CREDENTIAL}
             </span>
           </div>
           <div className="flex items-center space-x-1">
