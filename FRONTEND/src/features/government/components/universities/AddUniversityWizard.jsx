@@ -59,11 +59,39 @@ export const AddUniversityWizard = ({ onCancel, onSuccess, onCreateUniversity })
     });
   };
 
-  const generateStrongPassword = () => {
-    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789!@#$%';
-    let pwd = 'HEI@';
-    for (let i = 0; i < 8; i++) pwd += chars.charAt(Math.floor(Math.random() * chars.length));
-    setFormData((prev) => ({ ...prev, initialPassword: pwd }));
+  const generateStrongPassword = (length = 12) => {
+    const uppercaseChars = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
+    const lowercaseChars = 'abcdefghijkmnopqrstuvwxyz';
+    const numberChars = '23456789';
+    const specialChars = '!@#$%';
+    const allChars = uppercaseChars + lowercaseChars + numberChars + specialChars;
+
+    const getRandomChar = (charset) => {
+      if (typeof window !== 'undefined' && window.crypto?.getRandomValues) {
+        const arr = new Uint32Array(1);
+        window.crypto.getRandomValues(arr);
+        return charset.charAt(arr[0] % charset.length);
+      }
+      return charset.charAt(Math.floor(Math.random() * charset.length));
+    };
+
+    const characters = [
+      getRandomChar(uppercaseChars),
+      getRandomChar(lowercaseChars),
+      getRandomChar(numberChars),
+      getRandomChar(specialChars)
+    ];
+
+    for (let i = 4; i < length; i++) {
+      characters.push(getRandomChar(allChars));
+    }
+
+    for (let i = characters.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [characters[i], characters[j]] = [characters[j], characters[i]];
+    }
+
+    setFormData((prev) => ({ ...prev, initialPassword: characters.join('') }));
   };
 
   const validateStep = (step) => {
