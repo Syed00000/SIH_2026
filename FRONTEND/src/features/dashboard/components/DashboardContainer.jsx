@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../auth/AuthContext.jsx';
-import { LoginForm } from '../../auth/components/LoginForm.jsx';
+import { LoginForm } from '../../auth/components/Login/LoginForm.jsx';
 import { DashboardHeader } from './header/DashboardHeader.jsx';
 import { DashboardSidebar } from './sidebar/DashboardSidebar.jsx';
 import { DashboardFooter } from './footer/DashboardFooter.jsx';

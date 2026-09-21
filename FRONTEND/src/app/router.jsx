@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { RootLayout } from './layout.jsx';
 import { useAuth } from '../features/auth/AuthContext.jsx';
 import { ProtectedRoute } from './ProtectedRoute.jsx';
-import { LoginForm } from '../features/auth/components/LoginForm.jsx';
+import { LoginForm } from '../features/auth/components/Login/LoginForm.jsx';
 import { RegisterForm } from '../features/auth/components/Register/RegisterForm.jsx';
 import { VerifyEmail } from '../features/auth/components/VerifyEmail.jsx';
 import { ForgotPassword } from '../features/auth/components/ForgotPassword.jsx';
