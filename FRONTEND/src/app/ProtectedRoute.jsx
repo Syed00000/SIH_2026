@@ -1,7 +1,7 @@
 import React from 'react';
 import { useAuth } from '../features/auth/AuthContext.jsx';
 import { ShieldAlert, ArrowRight, LogOut } from 'lucide-react';
-import { LoginForm } from '../features/auth/components/LoginForm.jsx';
+import { LoginForm } from '../features/auth/components/Login/LoginForm.jsx';
 
 export const ProtectedRoute = ({
   allowedRoles,
