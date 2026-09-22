@@ -36,8 +36,7 @@ export function Router() {
   useEffect(() => {
     const handlePopState = () => {
       setCurrentPath(window.location.pathname);
-      const params = Object.fromEntries(new URLSearchParams(window.location.search));
-      setQueryParams(params);
+      setQueryParams(Object.fromEntries(new URLSearchParams(window.location.search)));
     };
     window.addEventListener('popstate', handlePopState);
     handlePopState();
@@ -50,8 +49,7 @@ export function Router() {
     if (path.includes('?')) {
       const [base, query] = path.split('?');
       cleanPath = base;
-      const parsed = Object.fromEntries(new URLSearchParams(query));
-      combinedQuery = { ...parsed, ...combinedQuery };
+      combinedQuery = { ...Object.fromEntries(new URLSearchParams(query)), ...combinedQuery };
     }
     const searchStr = Object.keys(combinedQuery).length > 0
       ? `?${new URLSearchParams(combinedQuery).toString()}`
@@ -78,6 +76,28 @@ export function Router() {
     );
   }
 
+  const renderPublicPage = () => {
+    if (isAuthenticated) return <DashboardContainer onNavigate={navigate} />;
+    switch (currentPath) {
+      case '/':
+      case '/landing': return <LandingPage onNavigate={navigate} />;
+      case '/about': return <AboutPage onNavigate={navigate} />;
+      case '/about-jharkhand': return <AboutJharkhandPage onNavigate={navigate} />;
+      case '/impact': return <ImpactPage onNavigate={navigate} />;
+      case '/industry': return <IndustryLandingPage onNavigate={navigate} />;
+      case '/institutions': return <InstitutionsPage onNavigate={navigate} />;
+      case '/contact': return <ContactPage onNavigate={navigate} />;
+      case '/login': return <LoginForm onNavigate={navigate} />;
+      case '/register': return <RegisterForm onNavigate={navigate} />;
+      case '/register/industry':
+      case '/apply-industry': return <IndustryRegistrationPage onNavigate={navigate} />;
+      case '/forgot-password': return <ForgotPassword onNavigate={navigate} />;
+      case '/reset-password': return <ResetPassword emailQuery={queryParams.email} onNavigate={navigate} />;
+      case '/verify-email': return <VerifyEmail emailQuery={queryParams.email} onNavigate={navigate} />;
+      default: return <LoginForm onNavigate={navigate} />;
+    }
+  };
+
   const renderComponent = () => {
     const publicRoutes = [
       '/', '/landing', '/about', '/about-jharkhand', '/impact', '/industry', '/institutions', '/contact',
@@ -85,114 +105,26 @@ export function Router() {
       '/forgot-password', '/reset-password', '/verify-email'
     ];
 
-    if (publicRoutes.includes(currentPath)) {
-      if (isAuthenticated) return <DashboardContainer onNavigate={navigate} />;
-      switch (currentPath) {
-        case '/':
-        case '/landing': return <LandingPage onNavigate={navigate} />;
-        case '/about': return <AboutPage onNavigate={navigate} />;
-        case '/about-jharkhand': return <AboutJharkhandPage onNavigate={navigate} />;
-        case '/impact': return <ImpactPage onNavigate={navigate} />;
-        case '/industry': return <IndustryLandingPage onNavigate={navigate} />;
-        case '/institutions': return <InstitutionsPage onNavigate={navigate} />;
-        case '/contact': return <ContactPage onNavigate={navigate} />;
-        case '/login': return <LoginForm onNavigate={navigate} />;
-        case '/register': return <RegisterForm onNavigate={navigate} />;
-        case '/register/industry':
-        case '/apply-industry': return <IndustryRegistrationPage onNavigate={navigate} />;
-        case '/forgot-password': return <ForgotPassword onNavigate={navigate} />;
-        case '/reset-password': return <ResetPassword emailQuery={queryParams.email} onNavigate={navigate} />;
-        case '/verify-email': return <VerifyEmail emailQuery={queryParams.email} onNavigate={navigate} />;
-        default: return <LoginForm onNavigate={navigate} />;
+    if (publicRoutes.includes(currentPath)) return renderPublicPage();
+
+    const portalMap = [
+      { prefix: '/citizen', roles: ['CITIZEN', 'GOVERNMENT', 'ADMIN', 'SUPER_ADMIN'], el: <CitizenPortal user={user} onLogout={handleLogout} /> },
+      { prefix: '/nodal', roles: ['NODAL', 'GOVERNMENT', 'ADMIN', 'SUPER_ADMIN'], el: <NodalPortal user={user} onLogout={handleLogout} onNavigate={navigate} /> },
+      { prefix: '/faculty', roles: ['FACULTY', 'UNIVERSITY', 'GOVERNMENT', 'ADMIN', 'SUPER_ADMIN'], el: <FacultyLayout user={user} onLogout={handleLogout} /> },
+      { prefix: '/university', roles: ['UNIVERSITY', 'HEI', 'GOVERNMENT', 'ADMIN', 'SUPER_ADMIN'], el: <UniversityLayout user={user} onLogout={handleLogout} /> },
+      { prefix: '/government', roles: ['GOVERNMENT', 'ADMIN', 'SUPER_ADMIN'], el: <GovernmentLayout onLogout={handleLogout} /> },
+      { prefix: '/department', roles: ['DEPARTMENT', 'GOVERNMENT', 'ADMIN', 'SUPER_ADMIN'], el: <DepartmentPortal user={user} onLogout={handleLogout} /> },
+      { prefix: '/ward', roles: ['WARD', 'GOVERNMENT', 'ADMIN', 'SUPER_ADMIN', 'BLOCK'], el: <WardPortal user={user} onLogout={handleLogout} onNavigate={navigate} /> },
+      { prefix: '/block', roles: ['BLOCK', 'GOVERNMENT', 'ADMIN', 'SUPER_ADMIN'], el: <BlockPortal user={user} onLogout={handleLogout} /> },
+      { prefix: '/technician', roles: ['TECHNICIAN', 'GOVERNMENT', 'ADMIN', 'SUPER_ADMIN'], el: <TechnicianPortal user={user} onLogout={handleLogout} /> },
+      { prefix: '/budget-officer', roles: ['BUDGET_OFFICER', 'GOVERNMENT', 'ADMIN', 'SUPER_ADMIN'], el: <BudgetOfficerPortal user={user} onLogout={handleLogout} /> },
+      { prefix: '/industry-portal', roles: ['INDUSTRY', 'GOVERNMENT', 'ADMIN', 'SUPER_ADMIN'], el: <DashboardContainer onNavigate={navigate} /> }
+    ];
+
+    for (const p of portalMap) {
+      if (currentPath.startsWith(p.prefix)) {
+        return <ProtectedRoute allowedRoles={p.roles} onNavigate={navigate}>{p.el}</ProtectedRoute>;
       }
-    }
-
-    if (currentPath.startsWith('/citizen')) {
-      return (
-        <ProtectedRoute allowedRoles={['CITIZEN', 'GOVERNMENT', 'ADMIN', 'SUPER_ADMIN']} onNavigate={navigate}>
-          <CitizenPortal user={user} onLogout={handleLogout} />
-        </ProtectedRoute>
-      );
-    }
-
-    if (currentPath.startsWith('/nodal')) {
-      return (
-        <ProtectedRoute allowedRoles={['NODAL', 'GOVERNMENT', 'ADMIN', 'SUPER_ADMIN']} onNavigate={navigate}>
-          <NodalPortal user={user} onLogout={handleLogout} onNavigate={navigate} />
-        </ProtectedRoute>
-      );
-    }
-
-    if (currentPath.startsWith('/faculty')) {
-      return (
-        <ProtectedRoute allowedRoles={['FACULTY', 'UNIVERSITY', 'GOVERNMENT', 'ADMIN', 'SUPER_ADMIN']} onNavigate={navigate}>
-          <FacultyLayout user={user} onLogout={handleLogout} />
-        </ProtectedRoute>
-      );
-    }
-
-    if (currentPath.startsWith('/university')) {
-      return (
-        <ProtectedRoute allowedRoles={['UNIVERSITY', 'HEI', 'GOVERNMENT', 'ADMIN', 'SUPER_ADMIN']} onNavigate={navigate}>
-          <UniversityLayout user={user} onLogout={handleLogout} />
-        </ProtectedRoute>
-      );
-    }
-
-    if (currentPath.startsWith('/government')) {
-      return (
-        <ProtectedRoute allowedRoles={['GOVERNMENT', 'ADMIN', 'SUPER_ADMIN']} onNavigate={navigate}>
-          <GovernmentLayout onLogout={handleLogout} />
-        </ProtectedRoute>
-      );
-    }
-
-    if (currentPath.startsWith('/department')) {
-      return (
-        <ProtectedRoute allowedRoles={['DEPARTMENT', 'GOVERNMENT', 'ADMIN', 'SUPER_ADMIN']} onNavigate={navigate}>
-          <DepartmentPortal user={user} onLogout={handleLogout} />
-        </ProtectedRoute>
-      );
-    }
-
-    if (currentPath.startsWith('/ward')) {
-      return (
-        <ProtectedRoute allowedRoles={['WARD', 'GOVERNMENT', 'ADMIN', 'SUPER_ADMIN', 'BLOCK']} onNavigate={navigate}>
-          <WardPortal user={user} onLogout={handleLogout} onNavigate={navigate} />
-        </ProtectedRoute>
-      );
-    }
-
-    if (currentPath.startsWith('/block')) {
-      return (
-        <ProtectedRoute allowedRoles={['BLOCK', 'GOVERNMENT', 'ADMIN', 'SUPER_ADMIN']} onNavigate={navigate}>
-          <BlockPortal user={user} onLogout={handleLogout} />
-        </ProtectedRoute>
-      );
-    }
-
-    if (currentPath.startsWith('/technician')) {
-      return (
-        <ProtectedRoute allowedRoles={['TECHNICIAN', 'GOVERNMENT', 'ADMIN', 'SUPER_ADMIN']} onNavigate={navigate}>
-          <TechnicianPortal user={user} onLogout={handleLogout} />
-        </ProtectedRoute>
-      );
-    }
-
-    if (currentPath.startsWith('/budget-officer')) {
-      return (
-        <ProtectedRoute allowedRoles={['BUDGET_OFFICER', 'GOVERNMENT', 'ADMIN', 'SUPER_ADMIN']} onNavigate={navigate}>
-          <BudgetOfficerPortal user={user} onLogout={handleLogout} />
-        </ProtectedRoute>
-      );
-    }
-
-    if (currentPath.startsWith('/industry-portal')) {
-      return (
-        <ProtectedRoute allowedRoles={['INDUSTRY', 'GOVERNMENT', 'ADMIN', 'SUPER_ADMIN']} onNavigate={navigate}>
-          <DashboardContainer onNavigate={navigate} />
-        </ProtectedRoute>
-      );
     }
 
     return (
@@ -202,23 +134,10 @@ export function Router() {
     );
   };
 
-  const isPublicPage = [
-    '/',
-    '/landing',
-    '/about',
-    '/about-jharkhand',
-    '/impact',
-    '/industry',
-    '/institutions',
-    '/contact',
-    '/login',
-    '/register'
-  ].includes(currentPath);
-
   return (
     <RootLayout>
       {renderComponent()}
-      {isPublicPage && <JoharSetuAiAssistant />}
+      <JoharSetuAiAssistant />
     </RootLayout>
   );
 }
