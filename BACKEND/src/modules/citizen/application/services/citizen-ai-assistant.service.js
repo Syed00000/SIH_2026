@@ -76,6 +76,22 @@ Write a warm, respectful, welcoming greeting in ${effectiveLang} addressing them
       });
     }
 
+    // 0.1 Direct Edit Draft Inquiry (Ask what to edit ONLY if citizen hasn't provided the new details yet)
+    const hasEditContent = Boolean(
+      this.detectDistrict(rawMessage) ||
+      (parsed.district && this.detectDistrict(parsed.district)) ||
+      /^(?:location|jagah|pata|address|area|mohalla|samasya|problem|vivaran)[:\s]/i.test(rawMessage) ||
+      /(?:me yeh likho|me likho|yeh kar do|ye kar do)/i.test(rawMessage)
+    );
+
+    if ((parsed.intent === 'EDIT_DRAFT' || rawMessage.startsWith('EDIT_DRAFT')) && !hasEditContent) {
+      return await challengeSubmitter.askWhatToEdit({
+        history,
+        effectiveLang,
+        hasHistory
+      });
+    }
+
     // 1. Confirm & Finalize Submission
     if (parsed.intent === 'CONFIRM_SUBMISSION' || rawMessage.startsWith('CONFIRM_SUBMIT:')) {
       let draftReport = null;
@@ -184,10 +200,11 @@ Write a warm, respectful, welcoming greeting in ${effectiveLang} addressing them
       null;
 
     const isNewProblemStart = /\b(aur|naya|nayi|doosra|doosri|ek aur|new|another)\b/i.test(rawMessage);
-    const hadProblem = !isNewProblemStart && /(paani|bijli|pani|light|road|sadak|kachra|drain|naali|sewage|hospital|school|gaddha|shikayat|damage|issue)/i.test(recentHistoryText);
-    const askedLoc = /(district|zila|ज़िला|इलाका|area|block|प्रखंड|location)/i.test(recentHistoryText);
+    const hadProblem = !isNewProblemStart && /(paani|pani|water|bijli|light|current|batti|power|sadak|road|kachra|safai|drain|naali|nali|sewage|hospital|school|gaddha|gaddhe|pothole|shikayat|damage|issue|tutal|tuta|kharab|line|transformer|khamba|pole|gandagi|badboo|keechad|kado|andhera)/i.test(recentHistoryText);
+    const askedLoc = /(district|zila|ज़िला|इलाका|area|block|प्रखंड|location|mohalla|locality|edit|badal)/i.test(recentHistoryText);
+    const hasDraftInHistory = Array.isArray(history) && history.some(h => Boolean(h.draftReport));
 
-    if (parsed.intent === 'SUBMIT_PROBLEM' || (hadProblem && (detectedDistrict || askedLoc))) {
+    if (parsed.intent === 'SUBMIT_PROBLEM' || (hadProblem && (detectedDistrict || askedLoc)) || hasDraftInHistory || detectedDistrict) {
       return await challengeSubmitter.prepareDraft({
         parsed,
         rawMessage,

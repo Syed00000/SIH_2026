@@ -10,8 +10,9 @@ Classify citizen intent into one of:
 2. "WITHDRAW_PROBLEM": User wants to withdraw/retract an active problem.
 3. "DELETE_PROBLEM": User wants to delete/remove an unassigned problem.
 4. "TRACK_PROBLEM": User wants status update, asks "kya hua", provides a Problem ID, asks about submission date, or asks for problem list.
-5. "SUBMIT_PROBLEM": User describes a new civic issue (water, road, electricity, garbage, drainage, etc.) or provides location for an issue.
-6. "GENERAL_QUERY": Portal info, greetings, general questions.
+5. "SUBMIT_PROBLEM": User describes a civic issue or provides/updates location or problem details (e.g. "Location Dhanbad kar do", "Samasya me likho...").
+6. "EDIT_DRAFT": User says they want to edit or change the draft in general without providing specific new details yet (e.g., "edit karna hai", "kuch badalna hai", "badalna hai", "kuch galat hai", "edit karo", "EDIT_DRAFT", "sudhar karna hai").
+7. "GENERAL_QUERY": Portal info, greetings, general questions.
 
 If "SUBMIT_PROBLEM", extract:
 - problemDescription, district (${JHARKHAND_DISTRICTS.join(', ')}), areaOrBlock, domain (${VALID_DOMAINS.join(', ')}), priority ("Low"|"Medium"|"High"|"Critical"), title (4-8 words), isLocationProvided (boolean).
@@ -21,7 +22,7 @@ If "TRACK_PROBLEM", "WITHDRAW_PROBLEM", or "DELETE_PROBLEM", extract:
 
 Output ONLY valid JSON:
 {
-  "intent": "CONFIRM_SUBMISSION" | "WITHDRAW_PROBLEM" | "DELETE_PROBLEM" | "TRACK_PROBLEM" | "SUBMIT_PROBLEM" | "GENERAL_QUERY",
+  "intent": "CONFIRM_SUBMISSION" | "WITHDRAW_PROBLEM" | "DELETE_PROBLEM" | "TRACK_PROBLEM" | "SUBMIT_PROBLEM" | "EDIT_DRAFT" | "GENERAL_QUERY",
   "problemDescription": "...",
   "district": "...",
   "areaOrBlock": "...",
@@ -79,7 +80,7 @@ Output ONLY valid JSON:
       !isConfirmDelete &&
       !hasNewProblemKeyword &&
       (rawMessage.startsWith('CONFIRM_SUBMIT:') ||
-        /\b(confirm & submit|submit kardo|haan submit kardo|theek hai submit|haan bhej do|theek hai darj karo|darj kar do)\b/i.test(lower) ||
+        /\b(confirm & submit|submit kardo|haan submit kardo|theek hai submit|haan bhej do|theek hai darj karo|darj kar do|bina photo|bina evidence|without evidence|without photo|bina tasveer|bina video|haan bina evidence)\b/i.test(lower) ||
         (/^(confirm|yes|haan|ha|proceed|bhej do|theek hai)$/i.test(lower) &&
           /location|draft|darj|report|zila|district/i.test(recentHistoryText)));
 
@@ -97,7 +98,16 @@ Output ONLY valid JSON:
       challengeIdMatch ||
       /\b(track|status|kya hua|kahan hai|progress|meri problem|shikayat ka kya|update|list|tareekh|tareeq|tarikh|तारीख|pichhla|pichhli|complaint)\b/i.test(lower);
 
-    if (isExplicitWithdraw) {
+    const hasDraftInHistory = Array.isArray(history) && history.some(h => Boolean(h.draftReport));
+    const isExplicitEdit =
+      hasDraftInHistory &&
+      (rawMessage.startsWith('EDIT_DRAFT') ||
+        /\b(edit karna hai|kuch edit|badalna hai|change karna hai|modify karna hai|sudhaar|sudhar|galat likha hai|galat hai|kuch galat|edit karo|edit draft|kuch badalna|edit option|kya edit)\b/i.test(lower));
+
+    if (isExplicitEdit) {
+      parsed = parsed || {};
+      parsed.intent = 'EDIT_DRAFT';
+    } else if (isExplicitWithdraw) {
       parsed = parsed || {};
       parsed.intent = 'WITHDRAW_PROBLEM';
       if (actionPrefixMatch) parsed.challengeId = actionPrefixMatch[2];

@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { apiClient } from '../../../../infrastructure/api/client.js';
+import { config } from '../../../../infrastructure/config.js';
 import { citizenService } from '../../../../features/citizen/services/citizenService.js';
 import { useAuth } from '../../../../features/auth/AuthContext.jsx';
 import { SUPPORTED_LANGUAGES } from '../components/AssistantLanguageModal.jsx';
@@ -115,14 +116,31 @@ export const useAiAssistant = () => {
 
       // 2. Call AI chat with user session, media, and language context — minimum 700ms thinking delay
       //    so the bouncing dots typing indicator is visibly appreciated by the user
-      const [res] = await Promise.all([
-        apiClient.post('citizen/ai-chat', requestBody),
-        new Promise((resolve) => setTimeout(resolve, 700))
-      ]);
+      let res;
+      try {
+        [res] = await Promise.all([
+          apiClient.post('citizen/ai-chat', requestBody),
+          new Promise((resolve) => setTimeout(resolve, 700))
+        ]);
+      } catch (apiErr) {
+        // If we got a 401 (expired session), retry without auth token — ai-chat works without auth
+        if (apiErr?.status === 401 || apiErr?.response?.status === 401) {
+          console.warn('[JoharSetu AI Chat] 401 received, retrying as guest (ai-chat is optionalAuth)');
+          const baseUrl = config.api.baseUrl.endsWith('/') ? config.api.baseUrl : `${config.api.baseUrl}/`;
+          const guestRes = await fetch(`${baseUrl}citizen/ai-chat`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(requestBody)
+          });
+          res = await guestRes.json();
+        } else {
+          throw apiErr;
+        }
+      }
 
       const d = res.data?.data || res.data || {};
       const replyText = d.reply || 'Aapka sandesh prapt hua.';
-      const { draftReport = null, createdChallenge = null, trackingData = null, challengesList = null, withdrawnChallenge = null, deletedChallengeId = null, actionTarget = null } = d;
+      const { draftReport = null, createdChallenge = null, trackingData = null, challengesList = null, withdrawnChallenge = null, deletedChallengeId = null, actionTarget = null, showEditChips = false } = d;
 
       if (createdChallenge || withdrawnChallenge || deletedChallengeId) {
         try {
@@ -132,14 +150,18 @@ export const useAiAssistant = () => {
 
       setMessages((prev) => [
         ...prev,
-        { id: `a-${Date.now()}`, role: 'assistant', content: replyText, draftReport, createdChallenge, trackingData, challengesList, withdrawnChallenge, deletedChallengeId, actionTarget, time: formatTime() }
+        { id: `a-${Date.now()}`, role: 'assistant', content: replyText, draftReport, createdChallenge, trackingData, challengesList, withdrawnChallenge, deletedChallengeId, actionTarget, showEditChips, time: formatTime() }
       ]);
     } catch (err) {
-      const serverErrMsg = err.response?.data?.message || err.response?.data?.error?.message || err.message || 'Kshama karein, thodi takneeki samasya aayi.';
+      const serverErrMsg =
+        err?.status === 401
+          ? 'Aapka session expire ho gaya hai. Kripya login karein aur dobara try karein.'
+          : (err.response?.data?.message || err.response?.data?.error?.message || err.message || 'Kshama karein, thodi takneeki samasya aayi.');
       setMessages((prev) => [...prev, { id: `err-${Date.now()}`, role: 'assistant', content: `⚠️ ${serverErrMsg}`, time: formatTime() }]);
     } finally {
       setLoading(false);
     }
+
   };
 
   const handleSelectLanguage = (langObj) => {

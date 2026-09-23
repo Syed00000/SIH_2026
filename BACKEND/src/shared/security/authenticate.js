@@ -24,6 +24,10 @@ export const authenticate = (req, res, next) => {
     };
     next();
   } catch (error) {
+    if (error.name === 'TokenExpiredError') {
+      logger.info({ msg: 'JWT Access token expired (token refresh required)', error: error.message });
+      return next(new AuthenticationError('TOKEN_EXPIRED'));
+    }
     logger.warn({ msg: 'JWT Access Verification failed', error: error.message });
     return next(new AuthenticationError('Invalid or expired authentication token'));
   }

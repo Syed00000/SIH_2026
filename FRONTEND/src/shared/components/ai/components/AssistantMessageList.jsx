@@ -8,6 +8,7 @@ import {
   TrackingCard,
   ChallengeListCard
 } from './MessageCards.jsx';
+import { AssistantQuickActions } from './AssistantQuickActions.jsx';
 
 /**
  * Render table rows as sleek step flow cards
@@ -94,8 +95,18 @@ const TypewriterBubble = ({ text, isLatest }) => {
   );
 };
 
-export const AssistantMessageList = ({ messages, loading, messagesEndRef, onTrackId, onAction }) => {
+export const AssistantMessageList = ({
+  messages,
+  loading,
+  messagesEndRef,
+  onTrackId,
+  onAction,
+  onSubmitChallenge,
+  onTrackChallenge,
+  onChangeLanguage
+}) => {
   const latestMessageRef = React.useRef(null);
+  const hasUserMessages = messages.some((m) => m.role === 'user');
 
   React.useEffect(() => {
     const lastMsg = messages[messages.length - 1];
@@ -123,11 +134,11 @@ export const AssistantMessageList = ({ messages, loading, messagesEndRef, onTrac
           : (msg.content || '').split('---BUBBLE---').map(b => b.trim()).filter(Boolean);
 
         return (
-          <div
-            key={msg.id}
-            ref={isLatest ? latestMessageRef : null}
-            className={`flex flex-col ${isUser ? 'items-end' : 'items-start'}`}
-          >
+          <React.Fragment key={msg.id}>
+            <div
+              ref={isLatest ? latestMessageRef : null}
+              className={`flex flex-col ${isUser ? 'items-end' : 'items-start'}`}
+            >
           <div className={`flex items-start gap-2.5 max-w-[88%] ${isUser ? 'flex-row-reverse' : 'flex-row'}`}>
             {/* Avatar */}
             {!isUser
@@ -163,6 +174,33 @@ export const AssistantMessageList = ({ messages, loading, messagesEndRef, onTrac
                 </div>
               ))}
 
+              {/* Quick Edit Options Chips (Shown when AI asks what to edit) */}
+              {msg.showEditChips && (
+                <div className="mt-1 flex flex-wrap gap-1.5 animate-fade-in text-left">
+                  <button
+                    type="button"
+                    onClick={() => onAction?.('EDIT_FIELD_LOCATION')}
+                    className="px-2.5 py-1.5 rounded-full bg-white hover:bg-emerald-50 text-[#015a3a] border border-emerald-300 text-[11px] font-semibold flex items-center gap-1.5 cursor-pointer transition-all active:scale-95 shadow-2xs"
+                  >
+                    <span>📍 Location Badlein</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => onAction?.('EDIT_FIELD_DESCRIPTION')}
+                    className="px-2.5 py-1.5 rounded-full bg-white hover:bg-blue-50 text-blue-900 border border-blue-300 text-[11px] font-semibold flex items-center gap-1.5 cursor-pointer transition-all active:scale-95 shadow-2xs"
+                  >
+                    <span>📝 Samasya Badlein</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => onAction?.('TRIGGER_ATTACHMENT')}
+                    className="px-2.5 py-1.5 rounded-full bg-white hover:bg-purple-50 text-purple-900 border border-purple-300 text-[11px] font-semibold flex items-center gap-1.5 cursor-pointer transition-all active:scale-95 shadow-2xs"
+                  >
+                    <span>📎 Photo/Video Jodein</span>
+                  </button>
+                </div>
+              )}
+
               {/* Interactive Cards */}
               {msg.draftReport && <DraftReportCard draftReport={msg.draftReport} onAction={onAction} />}
               {msg.createdChallenge && <CreatedChallengeCard challenge={msg.createdChallenge} />}
@@ -190,8 +228,20 @@ export const AssistantMessageList = ({ messages, loading, messagesEndRef, onTrac
             {msg.time || 'Just now'}
           </span>
         </div>
-      );
-    })}
+
+        {/* Quick Actions (Submit, Track, Language) ONLY shown under welcome message in initial/cleared state */}
+        {!hasUserMessages && (msg.id === 'welcome' || msg.id === 'welcome-reset') && (
+          <div className="w-full pt-1 animate-fade-in">
+            <AssistantQuickActions
+              onSubmitChallenge={onSubmitChallenge}
+              onTrackChallenge={onTrackChallenge}
+              onChangeLanguage={onChangeLanguage}
+            />
+          </div>
+        )}
+      </React.Fragment>
+    );
+  })}
 
     {/* Bouncing dots typing indicator */}
     {loading && (

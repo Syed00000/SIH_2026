@@ -19,6 +19,7 @@ export const AssistantInputBar = ({
   const recognitionRef = useRef(null);
   const baseTextRef = useRef('');
   const latestTranscriptRef = useRef(input);
+  const autoSendTimerRef = useRef(null);
 
   const [attachment, setAttachment] = useState(null);
   const [isListening, setIsListening] = useState(false);
@@ -29,9 +30,16 @@ export const AssistantInputBar = ({
     latestTranscriptRef.current = input;
   }, [input]);
 
-  // Clean up any active speech recognition on unmount
+  // Clean up any active speech recognition and pending timer on unmount
   useEffect(() => {
+    const handleTriggerAttachment = () => {
+      fileInputRef.current?.click();
+    };
+    window.addEventListener('joharsetu:trigger-evidence-attachment', handleTriggerAttachment);
+
     return () => {
+      window.removeEventListener('joharsetu:trigger-evidence-attachment', handleTriggerAttachment);
+      if (autoSendTimerRef.current) clearTimeout(autoSendTimerRef.current);
       if (recognitionRef.current) {
         try {
           recognitionRef.current.abort();
@@ -72,31 +80,45 @@ export const AssistantInputBar = ({
 
   const getSpeechLang = (lang) => {
     switch (lang) {
-      case 'hi':
-        return 'hi-IN';
       case 'bn':
         return 'bn-IN';
       case 'sat':
-        return 'hi-IN'; // Fallback for Santhali locale
+        return 'hi-IN'; // Hindi acoustic model works best for regional Santhali accents
+      case 'hi':
       case 'en':
       default:
-        return 'en-IN'; // Indian English handles accents & Hinglish best
+        return 'hi-IN'; // hi-IN accurately captures Hindi, Bhojpuri, Magahi, Hinglish and English civic words
     }
+  };
+
+  const scheduleAutoSend = (delay = 350) => {
+    if (autoSendTimerRef.current) {
+      clearTimeout(autoSendTimerRef.current);
+    }
+    autoSendTimerRef.current = setTimeout(() => {
+      const finalMsg = (latestTranscriptRef.current || input || '').trim();
+      if (finalMsg && !loading) {
+        onSend(finalMsg, null);
+        latestTranscriptRef.current = '';
+        setInput('');
+      }
+    }, delay);
   };
 
   const handleToggleVoice = () => {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SpeechRecognition) {
-      showVoiceNotice('Voice input is not supported in this browser.');
+      showVoiceNotice('Voice input is not supported in this browser. Please use Google Chrome or Microsoft Edge.');
       return;
     }
 
-    // If already listening, stop recording
+    // If already listening, stop recording cleanly and auto-send
     if (isListening) {
       try {
         recognitionRef.current?.stop();
       } catch (_) {}
       setIsListening(false);
+      scheduleAutoSend(300);
       return;
     }
 
@@ -106,6 +128,7 @@ export const AssistantInputBar = ({
       recognition.lang = getSpeechLang(currentLang);
       recognition.continuous = true;
       recognition.interimResults = true;
+      recognition.maxAlternatives = 1;
 
       // Preserve existing typed text before voice starts
       const initialText = input ? input.trim() : '';
@@ -119,8 +142,6 @@ export const AssistantInputBar = ({
         let fullFinal = '';
         let fullInterim = '';
 
-        // Iterate over ALL results from index 0 to results.length - 1
-        // to ensure earlier finalized words are never lost or overwritten
         for (let i = 0; i < event.results.length; i++) {
           const item = event.results[i];
           const transcriptChunk = item[0]?.transcript || '';
@@ -131,13 +152,11 @@ export const AssistantInputBar = ({
           }
         }
 
-        // Combine all final parts with any active interim part
         let spokenText = fullFinal.trim();
         if (fullInterim.trim()) {
           spokenText = spokenText ? `${spokenText} ${fullInterim.trim()}` : fullInterim.trim();
         }
 
-        // Clean redundant whitespace
         spokenText = spokenText.replace(/\s+/g, ' ').trim();
 
         if (spokenText) {
@@ -154,20 +173,22 @@ export const AssistantInputBar = ({
         setIsListening(false);
         const err = event.error;
         if (err === 'not-allowed' || err === 'service-not-allowed') {
-          showVoiceNotice('Microphone permission is required.');
+          showVoiceNotice('Microphone permission is required. Please allow microphone access.');
         } else if (err === 'audio-capture') {
           showVoiceNotice('No microphone was found or microphone is busy.');
         } else if (err === 'network') {
           showVoiceNotice('Network error during voice recognition.');
         } else if (err === 'no-speech') {
-          // Gracefully handled silence timeout
+          // Graceful handling on silence timeout
         } else if (err !== 'aborted') {
-          showVoiceNotice('Could not recognize voice. Please try again.');
+          showVoiceNotice('Could not recognize voice. Please speak clearly and try again.');
         }
       };
 
       recognition.onend = () => {
         setIsListening(false);
+        // Auto-send when recognition naturally ends (e.g. user pauses speaking)
+        scheduleAutoSend(400);
       };
 
       recognitionRef.current = recognition;
@@ -179,8 +200,15 @@ export const AssistantInputBar = ({
     }
   };
 
+
   const handleSubmit = (e) => {
     e.preventDefault();
+
+    // Cancel pending auto-send timer if user submits manually
+    if (autoSendTimerRef.current) {
+      clearTimeout(autoSendTimerRef.current);
+      autoSendTimerRef.current = null;
+    }
 
     // If currently listening when user submits, stop recognition cleanly
     if (isListening) {
@@ -244,6 +272,36 @@ export const AssistantInputBar = ({
         </div>
       )}
 
+      {/* Active Listening Audio Wave Banner */}
+      {isListening && (
+        <div className="mb-2 px-3 py-2 bg-red-50/90 border border-red-200/80 rounded-xl flex items-center justify-between animate-fade-in shadow-2xs">
+          <div className="flex items-center space-x-2">
+            <span className="relative flex h-3 w-3">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-3 w-3 bg-red-600"></span>
+            </span>
+            <span className="text-xs font-semibold text-red-700">
+              {currentLang === 'hi' ? '🎙️ माइक चालू है... बोलिए' : '🎙️ Mic is listening... Speak now'}
+            </span>
+            {/* Animated Audio Wave Bars */}
+            <div className="flex items-center space-x-0.5 ml-2">
+              <span className="w-0.5 h-3 bg-red-500 animate-pulse"></span>
+              <span className="w-0.5 h-4 bg-red-600 animate-pulse [animation-delay:150ms]"></span>
+              <span className="w-0.5 h-2 bg-red-400 animate-pulse [animation-delay:300ms]"></span>
+              <span className="w-0.5 h-5 bg-red-600 animate-pulse [animation-delay:75ms]"></span>
+              <span className="w-0.5 h-3 bg-red-500 animate-pulse [animation-delay:200ms]"></span>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={handleToggleVoice}
+            className="text-[11px] font-bold text-red-700 bg-red-100 hover:bg-red-200 px-2 py-0.5 rounded-md cursor-pointer transition-colors"
+          >
+            Done / Stop
+          </button>
+        </div>
+      )}
+
       {/* Input row */}
       <form onSubmit={handleSubmit} className="flex items-center space-x-2">
         {/* Pill Box */}
@@ -255,6 +313,7 @@ export const AssistantInputBar = ({
           {/* Hidden File Input */}
           <input
             type="file"
+            id="ai-chat-evidence-file-input"
             ref={fileInputRef}
             onChange={handleFileChange}
             accept="image/*,video/*,.pdf"
@@ -275,6 +334,7 @@ export const AssistantInputBar = ({
           {/* Text Input */}
           <input
             type="text"
+            id="ai-assistant-text-input"
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder={activePlaceholder}

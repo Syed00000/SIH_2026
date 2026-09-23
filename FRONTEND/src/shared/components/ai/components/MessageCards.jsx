@@ -5,87 +5,138 @@ import {
 } from 'lucide-react';
 
 /* ───────────────────── Draft Verification Preview ───────────────────── */
-export const DraftReportCard = ({ draftReport, onAction }) => (
-  <div className="mt-2 p-3.5 bg-white border border-slate-200/90 rounded-2xl shadow-sm space-y-3 text-slate-800 animate-fade-in text-left">
-    <div className="flex items-center justify-between gap-2">
-      <div className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-50 border border-emerald-200/80 text-[#015a3a] text-[11px] font-semibold">
-        <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-        <span>Verification Preview</span>
+export const DraftReportCard = ({ draftReport, onAction }) => {
+  const hasEvidence = Array.isArray(draftReport.media) && draftReport.media.length > 0;
+
+  return (
+    <div className="mt-2 p-3.5 bg-white border border-slate-200/90 rounded-2xl shadow-sm space-y-3 text-slate-800 animate-fade-in text-left">
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-50 border border-emerald-200/80 text-[#015a3a] text-[11px] font-semibold">
+          <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+          <span>Verification Preview</span>
+        </div>
+        <span className="px-2 py-0.5 rounded-md bg-amber-50 border border-amber-200/80 text-amber-800 text-[10px] font-semibold uppercase">
+          {draftReport.priority || 'Medium'} Priority
+        </span>
       </div>
-      <span className="px-2 py-0.5 rounded-md bg-amber-50 border border-amber-200/80 text-amber-800 text-[10px] font-semibold uppercase">
-        {draftReport.priority || 'Medium'} Priority
-      </span>
-    </div>
-    <div>
-      <h4 className="text-[13px] font-bold text-slate-900 leading-snug">{draftReport.title}</h4>
-      {draftReport.description && draftReport.description !== draftReport.title && (
-        <p className="text-[11px] text-slate-500 line-clamp-2 mt-1 leading-relaxed">{draftReport.description}</p>
+      <div>
+        <h4 className="text-[13px] font-bold text-slate-900 leading-snug">{draftReport.title}</h4>
+        {draftReport.description && draftReport.description !== draftReport.title && (
+          <p className="text-[11px] text-slate-500 line-clamp-2 mt-1 leading-relaxed">{draftReport.description}</p>
+        )}
+      </div>
+
+      {/* Attached Evidence Preview or Missing Evidence Notice */}
+      {hasEvidence ? (
+        <div className="bg-emerald-50/70 p-2 rounded-xl border border-emerald-200/80 space-y-1.5">
+          <div className="flex items-center justify-between text-[10.5px] font-bold text-emerald-900">
+            <span className="flex items-center gap-1.5">
+              <Camera className="w-3.5 h-3.5 text-emerald-700" /> Ground Evidence Attached
+            </span>
+            <span className="bg-emerald-200/70 px-2 py-0.5 rounded-md text-[10px] font-bold text-emerald-900">
+              {draftReport.media.length} {draftReport.media.length === 1 ? 'Asset' : 'Assets'}
+            </span>
+          </div>
+          <div className="flex items-center gap-1.5 overflow-x-auto py-0.5">
+            {draftReport.media.map((m, idx) => {
+              const url = typeof m === 'string' ? m : (m.url || m.accessUrl || '');
+              const isVid = typeof m === 'object' ? (m.resourceType === 'video' || m.fileType === 'video') : Boolean(url.match(/\.(mp4|webm|mov)(\?.*)?$/i));
+              return (
+                <div key={idx} className="relative w-11 h-11 rounded-lg overflow-hidden border border-emerald-300 shrink-0 bg-slate-900 flex items-center justify-center shadow-2xs">
+                  {isVid ? (
+                    <video src={url} className="w-full h-full object-cover" />
+                  ) : (
+                    <img src={url} alt="evidence" className="w-full h-full object-cover" />
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      ) : (
+        <div className="bg-amber-50/80 p-2.5 rounded-xl border border-amber-200/80 space-y-1">
+          <div className="flex items-center gap-1.5 text-amber-900 font-bold text-[11px]">
+            <AlertCircle className="w-3.5 h-3.5 text-amber-600 shrink-0" />
+            <span>Ground Evidence (Photo/Video): None Attached</span>
+          </div>
+          <p className="text-[10.5px] text-amber-800 leading-relaxed">
+            Photo ya video hone se zila nodal adhikari samasya ko turant verify karke karyavahi shuru karte hain. Kya aap bina photo ke submit karna chahte hain ya photo attach karenge?
+          </p>
+        </div>
+      )}
+
+      <div className="bg-slate-50/80 p-2.5 rounded-xl border border-slate-100 space-y-2 text-[11px]">
+        <div className="flex items-center justify-between gap-2">
+          <span className="flex items-center gap-1.5 text-slate-500 font-medium">
+            <MapPin className="w-3.5 h-3.5 text-emerald-600 shrink-0" /> Location
+          </span>
+          <span className="font-semibold text-slate-800 truncate text-right">{draftReport.areaOrBlock}, {draftReport.district}</span>
+        </div>
+        <div className="flex items-center justify-between gap-2 border-t border-slate-100/80 pt-1.5">
+          <span className="flex items-center gap-1.5 text-slate-500 font-medium">
+            <Building2 className="w-3.5 h-3.5 text-blue-600 shrink-0" /> Department
+          </span>
+          <span className="font-semibold text-slate-800 truncate text-right">{draftReport.domain}</span>
+        </div>
+      </div>
+
+      {/* Explicit Actions Based on Evidence Status */}
+      {hasEvidence ? (
+        <div className="flex items-center gap-2 pt-0.5">
+          <button
+            type="button"
+            onClick={() => onAction?.('CONFIRM_SUBMIT', draftReport)}
+            className="flex-1 h-9 px-3.5 bg-[#015a3a] hover:bg-[#01482e] active:scale-[0.98] text-white text-xs font-semibold rounded-xl shadow-2xs flex items-center justify-center gap-1.5 cursor-pointer transition-all"
+          >
+            <CheckCircle2 className="w-4 h-4 text-emerald-200" />
+            <span className="whitespace-nowrap">Confirm &amp; Submit</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => onAction?.('EDIT_DRAFT', draftReport)}
+            className="h-9 px-3 bg-white hover:bg-slate-50 active:scale-[0.98] text-slate-700 text-xs font-medium rounded-xl border border-slate-200/90 flex items-center gap-1.5 cursor-pointer transition-colors shadow-2xs"
+          >
+            <Pencil className="w-3.5 h-3.5 text-slate-500" />
+            <span>Edit</span>
+          </button>
+        </div>
+      ) : (
+        <div className="space-y-2 pt-0.5">
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                const fileInput = document.getElementById('ai-chat-evidence-file-input');
+                if (fileInput) fileInput.click();
+                else onAction?.('TRIGGER_ATTACHMENT');
+              }}
+              className="h-9 px-2.5 bg-[#015a3a] hover:bg-[#01482e] active:scale-[0.98] text-white text-[11.5px] font-semibold rounded-xl shadow-2xs flex items-center justify-center gap-1.5 cursor-pointer transition-all"
+            >
+              <Camera className="w-3.5 h-3.5 text-emerald-200 shrink-0" />
+              <span className="truncate">📎 Photo / Video Jodein</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => onAction?.('CONFIRM_SUBMIT', draftReport)}
+              className="h-9 px-2.5 bg-amber-50 hover:bg-amber-100/90 active:scale-[0.98] text-amber-900 border border-amber-300 text-[11px] font-semibold rounded-xl flex items-center justify-center gap-1 cursor-pointer transition-colors shadow-2xs"
+            >
+              <CheckCircle2 className="w-3.5 h-3.5 text-amber-700 shrink-0" />
+              <span className="truncate">Bina Evidence Submit</span>
+            </button>
+          </div>
+          <button
+            type="button"
+            onClick={() => onAction?.('EDIT_DRAFT', draftReport)}
+            className="w-full h-8 bg-white hover:bg-slate-50 active:scale-[0.98] text-slate-600 text-[11px] font-medium rounded-xl border border-slate-200 flex items-center justify-center gap-1.5 cursor-pointer transition-colors shadow-2xs"
+          >
+            <Pencil className="w-3.5 h-3.5 text-slate-400" />
+            <span>Edit Location / Details</span>
+          </button>
+        </div>
       )}
     </div>
-
-    {/* Attached Evidence Preview */}
-    {Array.isArray(draftReport.media) && draftReport.media.length > 0 && (
-      <div className="bg-emerald-50/70 p-2 rounded-xl border border-emerald-200/80 space-y-1.5">
-        <div className="flex items-center justify-between text-[10.5px] font-bold text-emerald-900">
-          <span className="flex items-center gap-1.5">
-            <Camera className="w-3.5 h-3.5 text-emerald-700" /> Ground Evidence Attached
-          </span>
-          <span className="bg-emerald-200/70 px-2 py-0.5 rounded-md text-[10px] font-bold text-emerald-900">
-            {draftReport.media.length} {draftReport.media.length === 1 ? 'Asset' : 'Assets'}
-          </span>
-        </div>
-        <div className="flex items-center gap-1.5 overflow-x-auto py-0.5">
-          {draftReport.media.map((m, idx) => {
-            const url = typeof m === 'string' ? m : (m.url || m.accessUrl || '');
-            const isVid = typeof m === 'object' ? (m.resourceType === 'video' || m.fileType === 'video') : Boolean(url.match(/\.(mp4|webm|mov)(\?.*)?$/i));
-            return (
-              <div key={idx} className="relative w-11 h-11 rounded-lg overflow-hidden border border-emerald-300 shrink-0 bg-slate-900 flex items-center justify-center shadow-2xs">
-                {isVid ? (
-                  <video src={url} className="w-full h-full object-cover" />
-                ) : (
-                  <img src={url} alt="evidence" className="w-full h-full object-cover" />
-                )}
-              </div>
-            );
-          })}
-        </div>
-      </div>
-    )}
-
-    <div className="bg-slate-50/80 p-2.5 rounded-xl border border-slate-100 space-y-2 text-[11px]">
-      <div className="flex items-center justify-between gap-2">
-        <span className="flex items-center gap-1.5 text-slate-500 font-medium">
-          <MapPin className="w-3.5 h-3.5 text-emerald-600 shrink-0" /> Location
-        </span>
-        <span className="font-semibold text-slate-800 truncate text-right">{draftReport.areaOrBlock}, {draftReport.district}</span>
-      </div>
-      <div className="flex items-center justify-between gap-2 border-t border-slate-100/80 pt-1.5">
-        <span className="flex items-center gap-1.5 text-slate-500 font-medium">
-          <Building2 className="w-3.5 h-3.5 text-blue-600 shrink-0" /> Department
-        </span>
-        <span className="font-semibold text-slate-800 truncate text-right">{draftReport.domain}</span>
-      </div>
-    </div>
-    <div className="flex items-center gap-2 pt-0.5">
-      <button
-        type="button"
-        onClick={() => onAction?.('CONFIRM_SUBMIT', draftReport)}
-        className="flex-1 h-9 px-3.5 bg-[#015a3a] hover:bg-[#01482e] active:scale-[0.98] text-white text-xs font-semibold rounded-xl shadow-2xs flex items-center justify-center gap-1.5 cursor-pointer transition-all"
-      >
-        <CheckCircle2 className="w-4 h-4 text-emerald-200" />
-        <span className="whitespace-nowrap">Confirm &amp; Submit</span>
-      </button>
-      <button
-        type="button"
-        onClick={() => onAction?.('CHANGE_LOCATION')}
-        className="h-9 px-3 bg-white hover:bg-slate-50 active:scale-[0.98] text-slate-700 text-xs font-medium rounded-xl border border-slate-200/90 flex items-center gap-1.5 cursor-pointer transition-colors shadow-2xs"
-      >
-        <Pencil className="w-3.5 h-3.5 text-slate-500" />
-        <span>Edit</span>
-      </button>
-    </div>
-  </div>
-);
+  );
+};
 
 /* ───────────────────── Registered Challenge Card ───────────────────── */
 export const CreatedChallengeCard = ({ challenge }) => (

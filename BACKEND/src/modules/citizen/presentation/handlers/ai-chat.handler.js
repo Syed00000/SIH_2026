@@ -58,6 +58,7 @@ export const createAiChatHandler = () => {
           withdrawnChallenge: result.withdrawnChallenge || null,
           deletedChallengeId: result.deletedChallengeId || null,
           actionTarget: result.actionTarget || null,
+          showEditChips: result.showEditChips || false,
           signature: chatbotGuardrailService.generateHmacSignature(sanitizedReply),
           timestamp: new Date().toISOString(),
           firewallStatus: 'PROTECTED'

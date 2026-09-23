@@ -6,7 +6,7 @@ class AiClient {
    * Invokes Groq first with fast fallback to OpenRouter using user API keys
    */
   async generateCompletion(messages, maxTokens = 800, temperature = 0.3) {
-    // 1. Try Groq (ultra-fast model with user API key)
+    // 1. Try Groq (ultra-fast inference)
     if (aiConfig.groqApiKey) {
       try {
         const res = await fetch(aiConfig.groqBaseUrl, {
@@ -16,23 +16,26 @@ class AiClient {
             'Content-Type': 'application/json'
           },
           body: JSON.stringify({
-            model: aiConfig.groqModel || 'qwen/qwen3.8-27b',
+            model: aiConfig.groqModel || 'openai/gpt-oss-20b',
             messages,
             max_tokens: maxTokens,
             temperature
           }),
-          signal: AbortSignal.timeout(5000)
+          signal: AbortSignal.timeout(8000)
         });
 
         if (res.ok) {
           const data = await res.json();
           const choice = data.choices?.[0]?.message;
-          let content = choice?.content || choice?.reasoning;
+          let content = choice?.content;
           if (content && typeof content === 'string' && content.trim()) {
             content = content.replace(/<think>[\s\S]*?<\/think>/gi, '').trim();
             logger.info({ msg: 'Live AI completion generated via Groq', model: aiConfig.groqModel });
             return content;
           }
+        } else if (res.status === 429) {
+          // Rate limited — immediately fall through to OpenRouter, no retry wait
+          logger.warn({ msg: 'Groq rate limited (429), switching to OpenRouter fallback', model: aiConfig.groqModel });
         } else {
           const errText = await res.text();
           logger.warn({ msg: 'Groq chat completion non-OK status', status: res.status, err: errText });
@@ -42,14 +45,16 @@ class AiClient {
       }
     }
 
-    // 2. Fallback to OpenRouter (using user API key)
+    // 2. Fallback to OpenRouter
     if (aiConfig.openRouterApiKey) {
       try {
         const res = await fetch(aiConfig.openRouterBaseUrl, {
           method: 'POST',
           headers: {
             Authorization: `Bearer ${aiConfig.openRouterApiKey}`,
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'HTTP-Referer': 'https://joharsetu.jharkhand.gov.in',
+            'X-Title': 'JoharSetu Civic AI'
           },
           body: JSON.stringify({
             model: aiConfig.openRouterModel || 'meta-llama/llama-3.1-8b-instruct',
@@ -57,13 +62,13 @@ class AiClient {
             max_tokens: maxTokens,
             temperature
           }),
-          signal: AbortSignal.timeout(7000)
+          signal: AbortSignal.timeout(10000)
         });
 
         if (res.ok) {
           const data = await res.json();
           const choice = data.choices?.[0]?.message;
-          let content = choice?.content || choice?.reasoning;
+          let content = choice?.content;
           if (content && typeof content === 'string' && content.trim()) {
             content = content.replace(/<think>[\s\S]*?<\/think>/gi, '').trim();
             logger.info({ msg: 'Live AI completion generated via OpenRouter', model: aiConfig.openRouterModel });

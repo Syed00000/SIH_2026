@@ -3,7 +3,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { AssistantTrigger } from './components/AssistantTrigger.jsx';
 import { AssistantHeader } from './components/AssistantHeader.jsx';
 import { AssistantMessageList } from './components/AssistantMessageList.jsx';
-import { AssistantQuickActions } from './components/AssistantQuickActions.jsx';
 import { AssistantInputBar } from './components/AssistantInputBar.jsx';
 import { AssistantLanguageModal } from './components/AssistantLanguageModal.jsx';
 import { useAiAssistant } from './hooks/useAiAssistant.js';
@@ -79,14 +78,43 @@ export const JoharSetuAiAssistant = () => {
                   onSelectLanguage={handleSelectLanguage}
                 />
 
-                {/* Chat Message Stream */}
+                {/* Chat Message Stream with contextual initial quick actions */}
                 <AssistantMessageList
                   messages={messages}
                   loading={loading}
                   messagesEndRef={messagesEndRef}
                   onTrackId={(id) => handleSendMessage(id)}
+                  onSubmitChallenge={handleSubmitChallenge}
+                  onTrackChallenge={handleTrackChallenge}
+                  onChangeLanguage={() => setIsLanguageModalOpen(true)}
                   onAction={(actionType, payload) => {
-                    if (actionType === 'CONFIRM_SUBMIT') {
+                    if (actionType === 'TRIGGER_ATTACHMENT') {
+                      const fileInput = document.getElementById('ai-chat-evidence-file-input');
+                      if (fileInput) fileInput.click();
+                      else window.dispatchEvent(new CustomEvent('joharsetu:trigger-evidence-attachment'));
+                    } else if (actionType === 'EDIT_DRAFT') {
+                      handleSendMessage('Mujhe is draft report mein kuch badalna/edit karna hai');
+                    } else if (actionType === 'EDIT_FIELD_LOCATION') {
+                      const prefix = 'Location badal kar yeh kar do: ';
+                      setInput(prefix);
+                      setTimeout(() => {
+                        const el = document.getElementById('ai-assistant-text-input');
+                        if (el) {
+                          el.focus();
+                          el.setSelectionRange(prefix.length, prefix.length);
+                        }
+                      }, 60);
+                    } else if (actionType === 'EDIT_FIELD_DESCRIPTION') {
+                      const prefix = 'Samasya me yeh likho: ';
+                      setInput(prefix);
+                      setTimeout(() => {
+                        const el = document.getElementById('ai-assistant-text-input');
+                        if (el) {
+                          el.focus();
+                          el.setSelectionRange(prefix.length, prefix.length);
+                        }
+                      }, 60);
+                    } else if (actionType === 'CONFIRM_SUBMIT') {
                       handleSendMessage(`CONFIRM_SUBMIT: ${typeof payload === 'string' ? payload : JSON.stringify(payload)}`);
                     } else if (actionType === 'CHANGE_LOCATION') {
                       setInput('Mera zila aur area yeh hai: ');
@@ -104,13 +132,6 @@ export const JoharSetuAiAssistant = () => {
                       handleSendMessage(`Delete karna hai ${payload}`);
                     }
                   }}
-                />
-
-                {/* 3 Quick Action Tiles (Submit, Track, Language) */}
-                <AssistantQuickActions
-                  onSubmitChallenge={handleSubmitChallenge}
-                  onTrackChallenge={handleTrackChallenge}
-                  onChangeLanguage={() => setIsLanguageModalOpen(true)}
                 />
 
                 {/* Pill-shaped Input Bar */}

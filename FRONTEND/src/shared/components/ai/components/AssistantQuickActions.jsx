@@ -18,7 +18,7 @@ export const AssistantQuickActions = ({
   }
 }) => {
   return (
-    <div className="mx-3 my-1.5 sm:my-2 bg-white rounded-xl border border-slate-100 shadow-2xs overflow-hidden shrink-0">
+    <div className="w-full my-2 bg-white rounded-2xl border border-slate-200/90 shadow-xs overflow-hidden shrink-0">
       <div className="grid grid-cols-3 divide-x divide-slate-100 text-center">
         {/* Submit a Challenge */}
         <button

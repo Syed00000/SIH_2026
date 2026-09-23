@@ -13,9 +13,12 @@ export const aiConfig = {
   collectionName: 'joharsetu_challenges',
   vectorSize: 384,
 
-  // Groq — ultra-fast inference (qwen/qwen3.8-27b is verified active on account with ~500ms latency)
+  // Groq — ultra-fast inference
+  // Primary: openai/gpt-oss-20b (higher OTPM, great Hindi/multilingual support)
+  // Secondary: openai/gpt-oss-120b (for higher quality complex reasoning calls)
   groqApiKey: (process.env.GROQ_API_KEY || '').trim(),
-  groqModel: 'qwen/qwen3.8-27b',
+  groqModel: 'openai/gpt-oss-20b',
+  groqModelLarge: 'openai/gpt-oss-120b',
   groqBaseUrl: 'https://api.groq.com/openai/v1/chat/completions',
 
   // OpenRouter (Fallback)
