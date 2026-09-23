@@ -26,9 +26,16 @@ export const CitizenChallengeDetailModal = ({ challenge = null, isOpen, onClose,
   const isWithdrawn = localStatus === 'Withdrawn';
   const isResolved = localStatus === 'Resolved' || localStatus === 'Deployed';
   const assignedUni = safeChallenge.assignedUniversity || {};
-  const isAssigned = Boolean(assignedUni.name || assignedUni.universityName);
-  const isAccepted = safeChallenge.assignmentStatus === 'ACCEPTED' || safeChallenge.assignmentStatus === 'Accepted';
+  const isAssigned = Boolean(
+    assignedUni.name || assignedUni.universityName || assignedUni.id ||
+    safeChallenge.assignedDepartment?.name || safeChallenge.assignedDepartment?.id ||
+    safeChallenge.assignedTechnician?.name || safeChallenge.assignedTechnician?.id ||
+    safeChallenge.assignedFaculty?.name || safeChallenge.assignedFaculty?.id ||
+    safeChallenge.acceptanceStatus === 'Accepted' ||
+    ['In Progress', 'Resolved', 'Deployed', 'Accepted', 'Under Field Work'].includes(localStatus)
+  );
   const canWithdraw = !isWithdrawn && !isResolved && !isAssigned;
+  const canDelete = !isAssigned && !isResolved;
   const protoPdf = challenge.prototypePdfUrl || challenge.resolutionDossier?.prototypePdfUrl || challenge.solutionPdfUrl;
 
   const handleWithdraw = async () => {
@@ -108,7 +115,7 @@ export const CitizenChallengeDetailModal = ({ challenge = null, isOpen, onClose,
           </div>
 
           {/* Attached Evidence Section */}
-          {isResolved && <CitizenChallengeEvidenceSection challenge={challenge} />}
+          <CitizenChallengeEvidenceSection challenge={challenge} />
 
           {/* Deployed Prototype & Resolution Dossier */}
           {protoPdf && (
@@ -159,11 +166,16 @@ export const CitizenChallengeDetailModal = ({ challenge = null, isOpen, onClose,
                 <span>Withdraw</span>
               </button>
             )}
-            {isWithdrawn && !showDeleteConfirm && (
+            {canDelete && !showDeleteConfirm && (
               <button type="button" onClick={() => setShowDeleteConfirm(true)} className="px-3 py-1.5 border border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100 font-bold rounded-lg flex items-center space-x-1.5 text-[11px] cursor-pointer">
                 <Trash2 className="w-3.5 h-3.5 text-rose-600" />
                 <span>Delete</span>
               </button>
+            )}
+            {isAssigned && !isResolved && (
+              <span className="text-[10px] font-bold text-slate-500 bg-slate-100 border border-slate-200 px-2 py-1 rounded-md">
+                🔒 Assigned to Department (Locked)
+              </span>
             )}
           </div>
           <button onClick={onClose} className="px-5 py-2 bg-white text-black border border-slate-200 hover:bg-slate-100 font-bold rounded-xl shadow-2xs text-xs cursor-pointer">

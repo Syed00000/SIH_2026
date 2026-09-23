@@ -84,6 +84,26 @@ export const JoharSetuAiAssistant = () => {
                   messages={messages}
                   loading={loading}
                   messagesEndRef={messagesEndRef}
+                  onTrackId={(id) => handleSendMessage(id)}
+                  onAction={(actionType, payload) => {
+                    if (actionType === 'CONFIRM_SUBMIT') {
+                      handleSendMessage(`CONFIRM_SUBMIT: ${typeof payload === 'string' ? payload : JSON.stringify(payload)}`);
+                    } else if (actionType === 'CHANGE_LOCATION') {
+                      setInput('Mera zila aur area yeh hai: ');
+                    } else if (actionType === 'CONFIRM_WITHDRAW') {
+                      handleSendMessage(`CONFIRM_WITHDRAW: ${payload}`);
+                    } else if (actionType === 'CONFIRM_DELETE') {
+                      handleSendMessage(`CONFIRM_DELETE: ${payload}`);
+                    } else if (actionType === 'CANCEL_ACTION') {
+                      handleSendMessage('Rehne do, cancel karo');
+                    } else if (actionType === 'WITHDRAW') {
+                      // From tracking card — sends a natural message that triggers AI confirm flow
+                      handleSendMessage(`Withdraw karna hai ${payload}`);
+                    } else if (actionType === 'DELETE') {
+                      // From tracking card — sends a natural message that triggers AI confirm flow
+                      handleSendMessage(`Delete karna hai ${payload}`);
+                    }
+                  }}
                 />
 
                 {/* 3 Quick Action Tiles (Submit, Track, Language) */}

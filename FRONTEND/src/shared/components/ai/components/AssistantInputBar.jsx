@@ -20,15 +20,22 @@ export const AssistantInputBar = ({
   const handleFileChange = (e) => {
     const file = e.target.files?.[0];
     if (file) {
+      const isMedia = file.type.startsWith('image/') || file.type.startsWith('video/');
+      const previewUrl = isMedia ? URL.createObjectURL(file) : null;
       setAttachment({
         name: file.name,
         size: file.size,
-        type: file.type
+        type: file.type,
+        rawFile: file,
+        previewUrl
       });
     }
   };
 
   const clearAttachment = () => {
+    if (attachment?.previewUrl) {
+      try { URL.revokeObjectURL(attachment.previewUrl); } catch (_) {}
+    }
     setAttachment(null);
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
@@ -82,13 +89,19 @@ export const AssistantInputBar = ({
       {attachment && (
         <div className="mb-2 px-3 py-1.5 bg-emerald-50 border border-emerald-200 rounded-lg flex items-center justify-between text-xs text-emerald-800 animate-fade-in">
           <div className="flex items-center space-x-1.5 truncate">
-            <Paperclip className="w-3.5 h-3.5 text-[#015a3a]" />
+            {attachment.type?.startsWith('video/') ? (
+              <span className="text-[10px] font-bold bg-emerald-700 text-white px-1.5 py-0.5 rounded">VIDEO</span>
+            ) : attachment.type?.startsWith('image/') ? (
+              <span className="text-[10px] font-bold bg-[#015a3a] text-white px-1.5 py-0.5 rounded">PHOTO</span>
+            ) : (
+              <Paperclip className="w-3.5 h-3.5 text-[#015a3a]" />
+            )}
             <span className="truncate font-medium">{attachment.name}</span>
           </div>
           <button
             type="button"
             onClick={clearAttachment}
-            className="p-0.5 hover:bg-emerald-200/60 rounded-full transition-colors"
+            className="p-0.5 hover:bg-emerald-200/60 rounded-full transition-colors cursor-pointer"
           >
             <X className="w-3.5 h-3.5 text-emerald-700" />
           </button>
@@ -104,7 +117,7 @@ export const AssistantInputBar = ({
             type="file"
             ref={fileInputRef}
             onChange={handleFileChange}
-            accept="image/*,.pdf,.doc,.docx"
+            accept="image/*,video/*,.pdf"
             className="hidden"
           />
 

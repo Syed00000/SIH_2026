@@ -132,7 +132,14 @@ export const GovernmentNotificationPopover = ({ onNavigateTab }) => {
                 <p className="text-[11px]">No pending requisitions or unreviewed grievances.</p>
               </div>
             ) : (
-              notifications.map((n) => {
+              [...notifications]
+                .sort((a, b) => {
+                  const aUnread = !readIds.has(a.id);
+                  const bUnread = !readIds.has(b.id);
+                  if (aUnread !== bUnread) return aUnread ? -1 : 1;
+                  return new Date(b.timestamp || 0) - new Date(a.timestamp || 0);
+                })
+                .map((n) => {
                 const isRead = readIds.has(n.id);
                 return (
                   <div

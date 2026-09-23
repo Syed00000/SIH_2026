@@ -40,10 +40,13 @@ export class CitizenRepository {
   }
 
   async getActivitiesStats(filter = {}) {
-    const query = {
-      ...filter,
-      $or: [{ isDeleted: { $ne: true } }, { status: 'Resolved' }]
-    };
+    const conditions = [
+      { $or: [{ isDeleted: { $ne: true } }, { status: 'Resolved' }] }
+    ];
+    if (filter && Object.keys(filter).length > 0) {
+      conditions.push(filter);
+    }
+    const query = conditions.length > 1 ? { $and: conditions } : conditions[0];
     const challenges = (await CitizenChallenge.find(query).lean()) || [];
     return calculateActivityStats(challenges);
   }

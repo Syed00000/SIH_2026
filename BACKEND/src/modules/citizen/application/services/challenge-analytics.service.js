@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import MongooseUniversity from '../../../government/heis/infrastructure/model.js';
 import MongooseIndustry from '../../../government/industries/infrastructure/model.js';
 import { GovernmentGrantFund } from '../../../government/grants/model.js';
@@ -19,14 +20,22 @@ export class ChallengeAnalyticsService {
         { district: distRegex },
         { 'assignedNodalOfficer.district': distRegex }
       ];
-    } else if (user?.role === 'CITIZEN' && user?.id) {
-      filter = {
-        $or: [
-          { citizenId: user.id },
-          { 'submitter.email': user.email },
-          { 'submitter.mobileNumber': user.mobileNumber }
-        ]
-      };
+    } else if ((user?.role || '').toUpperCase() === 'CITIZEN' && user?.id) {
+      const emailRegex = user.email ? new RegExp(`^${user.email.trim()}$`, 'i') : null;
+      const userMatch = [
+        { citizenId: user.id },
+        { citizenId: String(user.id) }
+      ];
+      if (emailRegex) userMatch.push({ 'submitter.email': emailRegex });
+      if (user.mobileNumber) userMatch.push({ 'submitter.mobileNumber': user.mobileNumber });
+      if (mongoose.isValidObjectId(user.id)) userMatch.push({ citizenId: new mongoose.Types.ObjectId(user.id) });
+
+      const personalStats = await this.repository.getActivitiesStats({ $or: userMatch });
+      if (personalStats && personalStats.total > 0) {
+        filter = { $or: userMatch };
+      } else {
+        filter = {};
+      }
     }
 
     const [activityStats, totalAll, universitiesCount, industryCount] = await Promise.all([

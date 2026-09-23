@@ -18,6 +18,7 @@ export const CitizenMyChallenges = ({
   onSelectChallenge,
   onSubmitClick,
   activeStatusFilter = 'All',
+  setActiveStatusFilter,
   activeDomainFilter = 'All',
   setActiveDomainFilter
 }) => {
@@ -54,11 +55,21 @@ export const CitizenMyChallenges = ({
   const handleDeleteChallenge = async (e, ch) => {
     e.stopPropagation();
     const chlId = ch.challengeId || ch.id || ch._id;
-    const isResolved = (ch.status || '').toLowerCase() === 'resolved' || Boolean(ch.isDeployed);
-    const confirmMsg = isResolved
-      ? `Remove resolved problem statement ${chlId} from your active list?\n\n(Note: Your solved problem will remain permanently counted in Jharkhand State analytics, solved charts, and public innovation registries).`
-      : `Are you sure you want to permanently delete withdrawn problem statement ${chlId}?`;
+    const isAssigned = Boolean(
+      ch.assignedDepartment?.id || ch.assignedDepartment?.name ||
+      ch.assignedTechnician?.id || ch.assignedTechnician?.name ||
+      ch.assignedUniversity?.id || ch.assignedUniversity?.name ||
+      ch.assignedFaculty?.id || ch.assignedFaculty?.name ||
+      ch.acceptanceStatus === 'Accepted' ||
+      ['In Progress', 'Accepted', 'Under Field Work'].includes(ch.status)
+    );
 
+    if (isAssigned) {
+      alert(`Problem statement ${chlId} cannot be deleted because it has already been assigned to a department or field technician for resolution.`);
+      return;
+    }
+
+    const confirmMsg = `Are you sure you want to permanently delete problem statement ${chlId}? All records and media will be removed.`;
     if (!window.confirm(confirmMsg)) {
       return;
     }
@@ -148,7 +159,10 @@ export const CitizenMyChallenges = ({
                 <button
                   key={st}
                   type="button"
-                  onClick={() => setStatusFilter(st)}
+                  onClick={() => {
+                    setStatusFilter(st);
+                    if (setActiveStatusFilter) setActiveStatusFilter(st);
+                  }}
                   className={`text-[11px] sm:text-xs py-1 font-bold transition-all cursor-pointer whitespace-nowrap border-b-2 ${
                     isActive
                       ? 'text-[#007A61] border-[#007A61]'

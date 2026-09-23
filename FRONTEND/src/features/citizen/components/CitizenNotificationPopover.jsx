@@ -94,6 +94,12 @@ export const CitizenNotificationPopover = ({ user, onSelectNotification }) => {
   };
 
   const unreadCount = updates.filter((u) => u.isUnread).length;
+  const sortedUpdates = [...updates].sort((a, b) => {
+    const aUnread = Boolean(a.isUnread);
+    const bUnread = Boolean(b.isUnread);
+    if (aUnread !== bUnread) return aUnread ? -1 : 1;
+    return new Date(b.timestamp || 0) - new Date(a.timestamp || 0);
+  });
 
   return (
     <div className="relative" ref={popoverRef}>
@@ -146,7 +152,7 @@ export const CitizenNotificationPopover = ({ user, onSelectNotification }) => {
               <div className="py-12 flex flex-col items-center justify-center space-y-3">
                 <div className="w-6 h-6 border-2 border-emerald-600 border-t-transparent rounded-full animate-spin" />
               </div>
-            ) : updates.length === 0 ? (
+            ) : sortedUpdates.length === 0 ? (
               <div className="py-10 text-center space-y-2">
                 <div className="flex items-center justify-center mx-auto mb-3">
                   <BellOff className="w-8 h-8 text-slate-200" />
@@ -158,7 +164,7 @@ export const CitizenNotificationPopover = ({ user, onSelectNotification }) => {
               </div>
             ) : (
               <div className="divide-y divide-slate-100">
-                {updates.map((upd) => (
+                {sortedUpdates.map((upd) => (
                   <div
                     key={upd.id}
                     onClick={() => handleRowClick(upd)}

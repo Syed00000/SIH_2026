@@ -60,7 +60,14 @@ export const ClarificationDeskPanel = ({
         </div>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          {filteredChallenges.map((ch) => (
+          {[...filteredChallenges]
+            .sort((a, b) => {
+              const aActive = Boolean((a.clarificationQuery || a.assignedUniversity?.clarificationQuery) && !a.clarificationResponse);
+              const bActive = Boolean((b.clarificationQuery || b.assignedUniversity?.clarificationQuery) && !b.clarificationResponse);
+              if (aActive !== bActive) return aActive ? -1 : 1;
+              return 0;
+            })
+            .map((ch) => (
             <ClarificationThreadCard
               key={ch.challengeId || ch.id || 'CHL-JH-2026'}
               ch={ch}

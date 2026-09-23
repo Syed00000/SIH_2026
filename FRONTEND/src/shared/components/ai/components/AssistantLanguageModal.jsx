@@ -2,10 +2,10 @@ import React from 'react';
 import { Check, X, Globe } from 'lucide-react';
 
 const SUPPORTED_LANGUAGES = [
-  { code: 'en', label: 'English', native: 'English', greeting: 'Namaste! 👏\nI\'m Johar Setu Assistant.\nHow can I help you today?' },
-  { code: 'hi', label: 'Hindi', native: 'हिन्दी', greeting: 'नमस्ते! 🙏\nमैं जोहार सेतु सहायक हूँ।\nआज मैं आपकी क्या सहायता कर सकता हूँ?' },
-  { code: 'sat', label: 'Santhali', native: 'ᱥᱟᱱᱛᱟᱲᱤ', greeting: 'ᱡᱚᱦᱟᱨ! 🙏\nᱤᱧ ᱡᱚᱦᱟᱨ ᱥᱮᱛᱩ ᱜᱚᱲᱚᱭᱤᱡ ᱠᱟᱹᱱᱟᱹᱧ᱾\nᱛᱮᱦᱮᱧ ᱟᱢᱟᱜ ᱪᱮᱫ ᱜᱚᱲᱚ ᱫᱟᱲᱮᱭᱟᱜᱼᱟ?' },
-  { code: 'bn', label: 'Bengali', native: 'বাংলা', greeting: 'নমস্কার! 🙏\nআমি জোহার সেতু সহকারী।\nআজ আমি আপনাকে কীভাবে সাহায্য করতে পারি?' }
+  { code: 'en', label: 'English', native: 'English', greeting: "Hey there, friend! 👋\nI'm your JoharSetu AI buddy.\nTell me, what's going on? How can I help you out today?" },
+  { code: 'hi', label: 'Hindi', native: 'हिन्दी', greeting: 'नमस्ते भाई! 🙏\nमैं तुम्हारा जोहार सेतु दोस्त हूँ।\nबताओ आज क्या दिक्कत है, क्या मदद करूँ?' },
+  { code: 'sat', label: 'Santhali', native: 'ᱥᱟᱱᱛᱟᱲᱤ', greeting: 'ᱡᱚᱦᱟᱨ ᱜᱟᱛᱮ! 🙏\nᱤᱧ ᱡᱚᱦᱟᱨ ᱥᱮᱛᱩ ᱨᱮ ᱟᱢᱤᱡ ᱜᱟᱛᱮ ᱠᱟᱹᱱᱟᱹᱧ᱾\nᱞᱟᱹᱭ ᱢᱮ, ᱛᱮᱦᱮᱧ ᱪᱮᱫ ᱮᱴᱠᱮᱴᱚᱬᱮ ᱢᱮᱱᱟᱜᱼᱟ?' },
+  { code: 'bn', label: 'Bengali', native: 'বাংলা', greeting: 'নমস্কার ভাই! 🙏\nআমি তোমার জোহার সেতু বন্ধু।\nবলো আজ কী সমস্যা, কীভাবে সাহায্য করতে পারি?' }
 ];
 
 /**

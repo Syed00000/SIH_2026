@@ -50,6 +50,9 @@ export function calculateActivityStats(challenges = []) {
       statMap.underReview += 1;
     }
 
+    // Every challenge in the system filed by this citizen is a submitted challenge
+    statMap.submitted += 1;
+
     if (isClarified) {
       statMap.clarified += 1;
     }

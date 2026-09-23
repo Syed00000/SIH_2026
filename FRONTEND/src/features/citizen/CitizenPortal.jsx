@@ -54,9 +54,9 @@ export const CitizenPortal = ({ user: propUser, onLogout }) => {
 
       const myChallenges = myChallRes.challenges || [];
       const computedActivities = {
-        submitted: myChallenges.filter((c) => (c.status || '').toLowerCase() === 'submitted').length,
-        underReview: myChallenges.filter((c) => (c.status || '').toLowerCase() === 'under review').length,
-        inProgress: myChallenges.filter((c) => (c.status || '').toLowerCase() === 'in progress').length,
+        submitted: myChallenges.length,
+        underReview: myChallenges.filter((c) => ['under review', 'submitted'].includes((c.status || '').toLowerCase())).length,
+        inProgress: myChallenges.filter((c) => ['in progress', 'accepted'].includes((c.status || '').toLowerCase())).length,
         resolved: myChallenges.filter((c) => (c.status || '').toLowerCase() === 'resolved').length,
         total: myChallenges.length
       };
@@ -84,6 +84,18 @@ export const CitizenPortal = ({ user: propUser, onLogout }) => {
 
   useEffect(() => {
     loadData();
+
+    const handleAiSubmitted = (e) => {
+      const payload = e.detail;
+      if (payload) {
+        if (payload.challengeId) setRecentChallenge(payload);
+        else if (payload.createdChallenge) setRecentChallenge(payload.createdChallenge);
+        loadData();
+      }
+    };
+
+    window.addEventListener('joharsetu:challenge-submitted', handleAiSubmitted);
+    return () => window.removeEventListener('joharsetu:challenge-submitted', handleAiSubmitted);
   }, []);
 
   const handleOpenSubmit = () => {
@@ -110,8 +122,17 @@ export const CitizenPortal = ({ user: propUser, onLogout }) => {
     setActiveTab('challenges');
   };
 
+  const handleNavTabChange = (tabId) => {
+    if (tabId === 'challenges') {
+      setActiveStatusFilter('All');
+      setActiveDomainFilter('All');
+    }
+    setActiveTab(tabId);
+  };
+
   const handleViewAllChallenges = () => {
     setActiveStatusFilter('All');
+    setActiveDomainFilter('All');
     setActiveTab('challenges');
   };
 
@@ -144,7 +165,7 @@ export const CitizenPortal = ({ user: propUser, onLogout }) => {
         {/* Left Desktop Sidebar Navigation */}
         <CitizenSidebar
           activeTab={activeTab}
-          setActiveTab={setActiveTab}
+          setActiveTab={handleNavTabChange}
           onSubmitClick={handleOpenSubmit}
           isSidebarExpanded={isSidebarExpanded}
           setIsSidebarExpanded={setIsSidebarExpanded}
