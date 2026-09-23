@@ -119,6 +119,7 @@ export const JoharSetuAiAssistant = () => {
                   setInput={setInput}
                   onSend={handleSendMessage}
                   loading={loading}
+                  currentLang={currentLang}
                   placeholder={
                     currentLang === 'hi'
                       ? 'अपना संदेश यहाँ लिखें...'
