@@ -32,9 +32,11 @@ export const useAiAssistant = () => {
   }, []);
 
   const handleSendMessage = async (textToSend, attachment = null) => {
-    const query = (textToSend || input).trim();
+    const query = (typeof textToSend === 'string' ? textToSend : input).trim();
     if (!query && !attachment) return;
     if (loading) return;
+
+    console.log('[JoharSetu AI Chat] FINAL MESSAGE SENT TO AI:', query);
 
     // 1. Upload media file to storage if attached
     let uploadedMedia = [];
@@ -93,24 +95,28 @@ export const useAiAssistant = () => {
           media: m.media || (m.draftReport?.media || [])
         }));
 
+      const requestBody = {
+        message: query || (attachment ? `Uploaded evidence: ${attachment.name}` : ''),
+        history: historyPayload,
+        media: uploadedMedia,
+        currentLang,
+        user: user
+          ? {
+              id: user._id || user.id,
+              fullName: user.fullName || user.name || 'Citizen',
+              email: user.email,
+              mobileNumber: user.mobileNumber || user.phone,
+              district: user.profile?.district || user.district || ''
+            }
+          : null
+      };
+
+      console.log('[JoharSetu AI Chat] Request payload to citizen/ai-chat:', requestBody);
+
       // 2. Call AI chat with user session, media, and language context — minimum 700ms thinking delay
       //    so the bouncing dots typing indicator is visibly appreciated by the user
       const [res] = await Promise.all([
-        apiClient.post('citizen/ai-chat', {
-          message: query || (attachment ? `Uploaded evidence: ${attachment.name}` : ''),
-          history: historyPayload,
-          media: uploadedMedia,
-          currentLang,
-          user: user
-            ? {
-                id: user._id || user.id,
-                fullName: user.fullName || user.name || 'Citizen',
-                email: user.email,
-                mobileNumber: user.mobileNumber || user.phone,
-                district: user.profile?.district || user.district || ''
-              }
-            : null
-        }),
+        apiClient.post('citizen/ai-chat', requestBody),
         new Promise((resolve) => setTimeout(resolve, 700))
       ]);
 
