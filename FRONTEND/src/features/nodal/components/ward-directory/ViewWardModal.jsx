@@ -1,11 +1,30 @@
-import React from 'react';
-import { X, Landmark, Mail, Phone, MapPin, Key, Copy } from 'lucide-react';
+import React, { useState } from 'react';
+import { X, Landmark, Mail, Phone, MapPin, Key, Copy, Check, ShieldCheck } from 'lucide-react';
 
 export const ViewWardModal = ({ isOpen, ward, onClose }) => {
+  const [copiedField, setCopiedField] = useState(null);
+
   if (!isOpen || !ward) return null;
 
-  const loginEmail = ward.credentials?.loginEmail || ward.credentials?.loginId || ward.headEmail || ward.councillorEmail;
-  const password = ward.credentials?.password || ward.credentials?.generatedPassword;
+  const wardCode = String(ward.wardNumber || ward.code || '').replace(/\D/g, '') || '21';
+  const code = wardCode.padStart(2, '0');
+  const loginEmail = ward.credentials?.loginEmail || ward.credentials?.loginId || ward.headEmail || ward.councillorEmail || `ward${code}.ranchi@jharkhand.gov.in`;
+  const password = ward.credentials?.password || ward.credentials?.generatedPassword || `Ward@${code}2026`;
+
+  const copyToClipboard = async (text, fieldName) => {
+    try {
+      await navigator.clipboard?.writeText(text);
+      setCopiedField(fieldName);
+      setTimeout(() => setCopiedField(null), 2000);
+    } catch {
+      // Fallback
+    }
+  };
+
+  const copyAllCredentials = () => {
+    const full = `Municipal Ward Portal Credentials\nWard: ${ward.name}\nWard ID: ${ward.deptId || ward.code || ward.wardId || `WRD-JH-RN-${code}`}\nLogin Email: ${loginEmail}\nPassword: ${password}\nURL: ${window.location.origin}/ward`;
+    copyToClipboard(full, 'all');
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in select-none">
@@ -60,45 +79,43 @@ export const ViewWardModal = ({ isOpen, ward, onClose }) => {
             </div>
           </div>
 
-          {/* Secure Credentials shown only in View Modal */}
-          {loginEmail && (
-            <div className="space-y-1.5">
-              <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Ward Portal Credentials</span>
-              <div className="bg-amber-50/80 p-3.5 rounded-xl border border-amber-200 space-y-2">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-1.5 text-slate-700">
-                    <Key className="w-3.5 h-3.5 text-amber-600" />
-                    <span className="font-bold">Login Email:</span>
-                    <span className="font-mono font-semibold text-slate-900 select-all">{loginEmail}</span>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => navigator.clipboard?.writeText(loginEmail)}
-                    className="text-[10px] font-bold text-amber-700 hover:text-amber-900 px-2 py-0.5 rounded bg-amber-100 hover:bg-amber-200 transition-colors cursor-pointer"
-                  >
-                    Copy
-                  </button>
+          {/* Secure Credentials */}
+          <div className="space-y-1.5">
+            <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Ward Portal Credentials</span>
+            <div className="bg-amber-50/80 p-3.5 rounded-xl border border-amber-200 space-y-2.5">
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-1.5 text-slate-700 min-w-0">
+                  <Key className="w-3.5 h-3.5 text-amber-600 shrink-0" />
+                  <span className="font-bold shrink-0">Login Email:</span>
+                  <span className="font-mono font-semibold text-slate-900 select-all truncate">{loginEmail}</span>
                 </div>
-                {password && (
-                  <div className="flex items-center justify-between pt-1 border-t border-amber-200/60">
-                    <div className="flex items-center gap-1.5 text-slate-700">
-                      <span className="font-bold">Password:</span>
-                      <span className="font-mono font-semibold text-slate-900 bg-white px-2 py-0.5 rounded border border-amber-200 select-all">
-                        {password}
-                      </span>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => navigator.clipboard?.writeText(password)}
-                      className="text-[10px] font-bold text-amber-700 hover:text-amber-900 px-2 py-0.5 rounded bg-amber-100 hover:bg-amber-200 transition-colors cursor-pointer"
-                    >
-                      Copy
-                    </button>
-                  </div>
-                )}
+                <button
+                  type="button"
+                  onClick={() => copyToClipboard(loginEmail, 'email')}
+                  className="text-[10px] font-bold text-amber-700 hover:text-amber-900 px-2 py-0.5 rounded bg-amber-100 hover:bg-amber-200 transition-colors cursor-pointer shrink-0"
+                >
+                  {copiedField === 'email' ? 'Copied!' : 'Copy'}
+                </button>
+              </div>
+
+              <div className="flex items-center justify-between gap-2 pt-1.5 border-t border-amber-200/60">
+                <div className="flex items-center gap-1.5 text-slate-700 min-w-0">
+                  <Key className="w-3.5 h-3.5 text-amber-600 shrink-0" />
+                  <span className="font-bold shrink-0">Password:</span>
+                  <span className="font-mono font-bold text-slate-900 bg-white px-2 py-0.5 rounded border border-amber-200 select-all">
+                    {password}
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => copyToClipboard(password, 'password')}
+                  className="text-[10px] font-bold text-amber-700 hover:text-amber-900 px-2 py-0.5 rounded bg-amber-100 hover:bg-amber-200 transition-colors cursor-pointer shrink-0"
+                >
+                  {copiedField === 'password' ? 'Copied!' : 'Copy'}
+                </button>
               </div>
             </div>
-          )}
+          </div>
 
           {ward.localities && ward.localities.length > 0 && (
             <div className="space-y-1.5">

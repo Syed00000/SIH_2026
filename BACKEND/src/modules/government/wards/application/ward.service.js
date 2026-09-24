@@ -8,13 +8,34 @@ export class WardService {
   }
 
   async getAllWards(query = {}) {
-    return await this.repo.findAll(query);
+    const wards = await this.repo.findAll(query);
+    return (wards || []).map((w) => {
+      const code = String(w.wardNumber || '01').padStart(2, '0');
+      const defaultPass = config.DEFAULT_WARD_PASSWORD || process.env.DEFAULT_WARD_PASSWORD || `Ward@${code}2026`;
+      return {
+        ...w,
+        credentials: {
+          loginId: w.credentials?.loginId || w.councillorEmail || `ward${code}.ranchi@jharkhand.gov.in`,
+          loginEmail: w.credentials?.loginEmail || w.councillorEmail || `ward${code}.ranchi@jharkhand.gov.in`,
+          password: w.credentials?.password || defaultPass
+        }
+      };
+    });
   }
 
   async getWardById(id) {
     const ward = await this.repo.findById(id);
     if (!ward) throw new NotFoundError(`Ward not found with ID: ${id}`);
-    return ward;
+    const code = String(ward.wardNumber || '01').padStart(2, '0');
+    const defaultPass = config.DEFAULT_WARD_PASSWORD || process.env.DEFAULT_WARD_PASSWORD || `Ward@${code}2026`;
+    return {
+      ...ward,
+      credentials: {
+        loginId: ward.credentials?.loginId || ward.councillorEmail || `ward${code}.ranchi@jharkhand.gov.in`,
+        loginEmail: ward.credentials?.loginEmail || ward.councillorEmail || `ward${code}.ranchi@jharkhand.gov.in`,
+        password: ward.credentials?.password || defaultPass
+      }
+    };
   }
 
   async createWard(data) {
@@ -38,7 +59,7 @@ export class WardService {
     const councillorEmail = data.councillorEmail?.trim()?.toLowerCase() || '';
     const loginEmail = data.loginEmail?.trim()?.toLowerCase() || councillorEmail || `ward${code}.ranchi@jharkhand.gov.in`;
     const loginId = data.loginId?.trim() || loginEmail;
-    const defaultWardPassword = config.DEFAULT_WARD_PASSWORD || process.env.DEFAULT_WARD_PASSWORD || '';
+    const defaultWardPassword = config.DEFAULT_WARD_PASSWORD || process.env.DEFAULT_WARD_PASSWORD || `Ward@${code}2026`;
     const password = data.password?.trim() || defaultWardPassword;
 
     const saved = await this.repo.create({
@@ -97,8 +118,8 @@ export class WardService {
     if (updates.wardNumber) updates.wardNumber = Number(updates.wardNumber);
     if (updates.password || updates.loginId || updates.loginEmail) {
       const existing = await this.repo.findById(id);
-      const prevCreds = existing?.credentials || {};
-      const defaultWardPassword = config.DEFAULT_WARD_PASSWORD || process.env.DEFAULT_WARD_PASSWORD || '';
+      const code = String(existing?.wardNumber || '01').padStart(2, '0');
+      const defaultWardPassword = config.DEFAULT_WARD_PASSWORD || process.env.DEFAULT_WARD_PASSWORD || `Ward@${code}2026`;
       updates.credentials = {
         loginId: updates.loginId?.trim() || prevCreds.loginId || '',
         loginEmail: updates.loginEmail?.trim()?.toLowerCase() || prevCreds.loginEmail || '',
