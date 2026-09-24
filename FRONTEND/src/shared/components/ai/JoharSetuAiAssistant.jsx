@@ -8,7 +8,7 @@ import { AssistantLanguageModal } from './components/AssistantLanguageModal.jsx'
 import { useAiAssistant } from './hooks/useAiAssistant.js';
 
 /**
- * Official Johar Setu AI Assistant with Floating Circle Trigger.
+ * Official Johar Setu AI Assistant with Floating Circle Trigger & Voice Output.
  * Fully Mobile-Responsive & Elevated above Mobile Bottom Navigation.
  */
 export const JoharSetuAiAssistant = () => {
@@ -23,6 +23,11 @@ export const JoharSetuAiAssistant = () => {
     loading,
     messages,
     messagesEndRef,
+    isVoiceEnabled,
+    setIsVoiceEnabled,
+    speakingMessageId,
+    speakText,
+    stopSpeaking,
     handleSendMessage,
     handleSelectLanguage,
     handleSubmitChallenge,
@@ -68,6 +73,19 @@ export const JoharSetuAiAssistant = () => {
                   onMinimize={() => setIsOpen(false)}
                   onClose={() => setIsOpen(false)}
                   onClearChat={handleClearChat}
+                  isVoiceEnabled={isVoiceEnabled}
+                  onToggleVoice={() => {
+                    if (isVoiceEnabled) {
+                      stopSpeaking();
+                      setIsVoiceEnabled(false);
+                    } else {
+                      setIsVoiceEnabled(true);
+                      const lastAssistantMsg = [...messages].reverse().find(m => m.role === 'assistant');
+                      if (lastAssistantMsg) {
+                        speakText(lastAssistantMsg.content, currentLang, lastAssistantMsg.id);
+                      }
+                    }
+                  }}
                 />
 
                 {/* Language Selector Overlay */}
@@ -78,11 +96,15 @@ export const JoharSetuAiAssistant = () => {
                   onSelectLanguage={handleSelectLanguage}
                 />
 
-                {/* Chat Message Stream with contextual initial quick actions */}
+                {/* Chat Message Stream with Voice Output & Quick Actions */}
                 <AssistantMessageList
                   messages={messages}
                   loading={loading}
                   messagesEndRef={messagesEndRef}
+                  currentLang={currentLang}
+                  speakingMessageId={speakingMessageId}
+                  onSpeak={(text, lang, msgId) => speakText(text, lang, msgId)}
+                  onStopSpeaking={stopSpeaking}
                   onTrackId={(id) => handleSendMessage(id)}
                   onSubmitChallenge={handleSubmitChallenge}
                   onTrackChallenge={handleTrackChallenge}
@@ -133,7 +155,6 @@ export const JoharSetuAiAssistant = () => {
                     }
                   }}
                 />
-
                 {/* Pill-shaped Input Bar */}
                 <AssistantInputBar
                   input={input}
@@ -143,8 +164,12 @@ export const JoharSetuAiAssistant = () => {
                   currentLang={currentLang}
                   placeholder={
                     currentLang === 'hi'
-                      ? 'अपना संदेश यहाँ लिखें...'
-                      : 'Type your message here...'
+                      ? 'अपना संदेश यहाँ लिखें या बोलें...'
+                      : currentLang === 'bn'
+                      ? 'আপনার বার্তা এখানে লিখুন বা বলুন...'
+                      : currentLang === 'sat'
+                      ? 'ᱟᱢᱟᱜ ᱠᱟᱛᱷᱟ ᱱᱚᱸᱰᱮ ᱚᱞ ᱢᱮ ᱥᱮ ᱞᱟᱹᱭ ᱢᱮ...'
+                      : 'Type your message or speak...'
                   }
                 />
               </motion.div>

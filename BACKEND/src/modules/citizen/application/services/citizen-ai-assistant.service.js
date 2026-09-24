@@ -6,6 +6,7 @@ import { intentAnalyzer } from './ai-assistant/intent-analyzer.js';
 import { challengeTracker } from './ai-assistant/challenge-tracker.js';
 import { challengeSubmitter } from './ai-assistant/challenge-submitter.js';
 import { challengeWithdrawDelete } from './ai-assistant/challenge-withdraw-delete.js';
+import { knowledgeEngine } from './ai-assistant/knowledge-engine.js';
 import { BUBBLE_DELIMITER } from './ai-assistant/constants.js';
 import logger from '../../../../shared/logger/index.js';
 
@@ -33,7 +34,7 @@ Write a warm, respectful, welcoming greeting in ${effectiveLang} addressing them
         { role: 'user', content: greetingPrompt }
       ], 300, 0.4);
 
-      const fallbackGreeting = `Namaste bhai ji! 🙏 JoharSetu par aapka swaagat hai.${BUBBLE_DELIMITER}Aap sadak, paani, bijli, naali, kachra ya kisi bhi civic samasya ko darj karne ke liye bata sakte hain, photo-video bhi jod sakte hain.${BUBBLE_DELIMITER}Ya agar purani shikayat ka live status janna ho toh Problem ID batayein!`;
+      const fallbackGreeting = knowledgeEngine.formatGreetingResponse(effectiveLang);
 
       return {
         reply: aiGreeting || fallbackGreeting,
@@ -194,9 +195,7 @@ Write a warm, respectful, welcoming greeting in ${effectiveLang} addressing them
     // 4. Submit Problem (Prepares Location & Verification Report)
     const detectedDistrict =
       this.detectDistrict(rawMessage) ||
-      this.detectDistrict(recentHistoryText) ||
       (parsed.district && this.detectDistrict(parsed.district)) ||
-      userDefaultDistrict ||
       null;
 
     const isNewProblemStart = /\b(aur|naya|nayi|doosra|doosri|ek aur|new|another)\b/i.test(rawMessage);
@@ -204,7 +203,9 @@ Write a warm, respectful, welcoming greeting in ${effectiveLang} addressing them
     const askedLoc = /(district|zila|ज़िला|इलाका|area|block|प्रखंड|location|mohalla|locality|edit|badal)/i.test(recentHistoryText);
     const hasDraftInHistory = Array.isArray(history) && history.some(h => Boolean(h.draftReport));
 
-    if (parsed.intent === 'SUBMIT_PROBLEM' || (hadProblem && (detectedDistrict || askedLoc)) || hasDraftInHistory || detectedDistrict) {
+    const isReplyingToLocationPrompt = (hadProblem && (detectedDistrict || askedLoc)) || (hasDraftInHistory && detectedDistrict);
+
+    if (parsed.intent === 'SUBMIT_PROBLEM' || (isReplyingToLocationPrompt && parsed.intent !== 'GENERAL_QUERY')) {
       return await challengeSubmitter.prepareDraft({
         parsed,
         rawMessage,
@@ -212,23 +213,24 @@ Write a warm, respectful, welcoming greeting in ${effectiveLang} addressing them
         media,
         user,
         userProfile,
-        detectedDistrict,
+        detectedDistrict: detectedDistrict || userDefaultDistrict || null,
         effectiveLang,
         hasHistory
       });
     }
 
-    // 5. General Queries / FAQs
+    // 5. General Queries / FAQs / Platform Information with Knowledge Engine
     const faqSystem = `${languageManager.getRespectfulSystemPrompt(effectiveLang, hasHistory)}
-JoharSetu connects Jharkhand citizens directly with district nodal officers and government departments to solve civic problems.`;
+JoharSetu is the official Integrated Civic Grievance and University Innovation platform for Government of Jharkhand.
+Provide clear, accurate, practical, and respectful answers for all citizen inquiries about portal features, helplines, departments, and government processes.`;
 
     const aiFaq = await aiClient.generateCompletion([
       { role: 'system', content: faqSystem },
       ...(Array.isArray(history) ? history.slice(-4) : []),
       { role: 'user', content: rawMessage }
-    ], 350, 0.4);
+    ], 450, 0.3);
 
-    const fallbackFaq = `${hasHistory ? 'Bhai ji,' : 'Namaste bhai ji! 🙏'} JoharSetu par aapki madad ke liye hamesha taiyaar hain.${BUBBLE_DELIMITER}Aap yahan sadak, paani, bijli, safai jaisi samasyaayein darj kar sakte hain aur unka live status track kar sakte hain.${BUBBLE_DELIMITER}Batayein, aapki kya madad kar saktein hain?`;
+    const fallbackFaq = knowledgeEngine.getAnswer(rawMessage, effectiveLang, userProfile || user);
 
     return {
       reply: aiFaq || fallbackFaq,

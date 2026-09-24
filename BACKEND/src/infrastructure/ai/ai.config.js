@@ -13,13 +13,17 @@ export const aiConfig = {
   collectionName: 'joharsetu_challenges',
   vectorSize: 384,
 
-  // Groq — ultra-fast inference
-  // Primary: openai/gpt-oss-20b (higher OTPM, great Hindi/multilingual support)
-  // Secondary: openai/gpt-oss-120b (for higher quality complex reasoning calls)
+  // Groq — ultra-fast inference with valid active models
   groqApiKey: (process.env.GROQ_API_KEY || '').trim(),
-  groqModel: 'openai/gpt-oss-20b',
-  groqModelLarge: 'openai/gpt-oss-120b',
+  groqModel: 'llama-3.3-70b-versatile',
+  groqFallbackModel: 'llama-3.1-8b-instant',
+  groqModelLarge: 'llama-3.3-70b-versatile',
   groqBaseUrl: 'https://api.groq.com/openai/v1/chat/completions',
+
+  // Google Gemini API
+  geminiApiKey: (process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY || '').trim(),
+  geminiModel: 'gemini-1.5-flash',
+  geminiBaseUrl: 'https://generativelanguage.googleapis.com/v1beta/models',
 
   // OpenRouter (Fallback)
   openRouterApiKey: (process.env.OPENROUTER_API_KEY || '').trim(),

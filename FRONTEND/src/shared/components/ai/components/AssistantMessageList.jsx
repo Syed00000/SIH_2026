@@ -1,5 +1,5 @@
 import React from 'react';
-import { User, CheckCircle2, Clock, ShieldCheck, RotateCcw, Trash2 } from 'lucide-react';
+import { User, CheckCircle2, Clock, ShieldCheck, RotateCcw, Trash2, Volume2, VolumeX } from 'lucide-react';
 import { JoharSetuIcon } from './JoharSetuIcon.jsx';
 import {
   DraftReportCard,
@@ -103,7 +103,11 @@ export const AssistantMessageList = ({
   onAction,
   onSubmitChallenge,
   onTrackChallenge,
-  onChangeLanguage
+  onChangeLanguage,
+  onSpeak,
+  onStopSpeaking,
+  speakingMessageId,
+  currentLang = 'hi'
 }) => {
   const latestMessageRef = React.useRef(null);
   const hasUserMessages = messages.some((m) => m.role === 'user');
@@ -113,10 +117,8 @@ export const AssistantMessageList = ({
     if (!lastMsg) return;
 
     if (lastMsg.role === 'user') {
-      // User sent message -> scroll to bottom so user message & loading indicator are in view
       messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     } else {
-      // Assistant replied -> scroll so the START of the assistant's message is visible at the top
       if (latestMessageRef.current) {
         latestMessageRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }
@@ -132,6 +134,7 @@ export const AssistantMessageList = ({
         const bubbles = isUser
           ? [msg.content || '']
           : (msg.content || '').split('---BUBBLE---').map(b => b.trim()).filter(Boolean);
+        const isCurrentlySpeaking = speakingMessageId === msg.id;
 
         return (
           <React.Fragment key={msg.id}>
@@ -166,10 +169,46 @@ export const AssistantMessageList = ({
               {/* Speech bubbles */}
               {bubbles.map((bubbleText, bubbleIdx) => (
                 <div key={`${msg.id}-bubble-${bubbleIdx}`}
-                  className={`p-3 text-xs sm:text-[13px] leading-relaxed shadow-2xs ${isUser ? 'bg-[#015a3a] text-white rounded-2xl rounded-tr-xs font-medium' : 'bg-[#eaf6ef] border border-emerald-100/70 text-slate-800 rounded-2xl rounded-tl-xs font-normal'}`}>
+                  className={`group/bubble relative p-3 text-xs sm:text-[13px] leading-relaxed shadow-2xs ${
+                    isUser
+                      ? 'bg-[#015a3a] text-white rounded-2xl rounded-tr-xs font-medium'
+                      : 'bg-[#eaf6ef] border border-emerald-100/70 text-slate-800 rounded-2xl rounded-tl-xs font-normal'
+                  }`}>
                   {isUser
                     ? <div className="whitespace-pre-line break-words">{bubbleText}</div>
-                    : <TypewriterBubble text={bubbleText} isLatest={isLatestAssistant && bubbleIdx === bubbles.length - 1} />
+                    : (
+                      <div>
+                        <TypewriterBubble text={bubbleText} isLatest={isLatestAssistant && bubbleIdx === bubbles.length - 1} />
+                        {/* Audio speaker button for this assistant bubble */}
+                        {onSpeak && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (isCurrentlySpeaking) {
+                                onStopSpeaking?.();
+                              } else {
+                                onSpeak(bubbleText, currentLang, msg.id);
+                              }
+                            }}
+                            title={isCurrentlySpeaking ? 'Stop voice' : 'Listen in voice (बोलकर सुनें)'}
+                            aria-label="Listen in voice"
+                            className="mt-1.5 inline-flex items-center gap-1 text-[10px] text-emerald-800 hover:text-[#015a3a] bg-white/70 hover:bg-white px-2 py-0.5 rounded-full border border-emerald-200/60 shadow-2xs transition-colors cursor-pointer"
+                          >
+                            {isCurrentlySpeaking ? (
+                              <>
+                                <VolumeX className="w-3 h-3 text-rose-600 animate-pulse" />
+                                <span className="font-semibold text-rose-700">Stop Voice</span>
+                              </>
+                            ) : (
+                              <>
+                                <Volume2 className="w-3 h-3 text-[#015a3a]" />
+                                <span className="font-medium">Listen (सुनें)</span>
+                              </>
+                            )}
+                          </button>
+                        )}
+                      </div>
+                    )
                   }
                 </div>
               ))}

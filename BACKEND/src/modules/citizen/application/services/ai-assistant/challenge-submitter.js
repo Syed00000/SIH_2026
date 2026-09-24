@@ -2,7 +2,17 @@ import { citizenService } from '../../service.js';
 import { aiClient } from './ai-client.js';
 import { languageManager } from './language-manager.js';
 import { VALID_DOMAINS, BUBBLE_DELIMITER } from './constants.js';
+import { extractTrueCivicDomain } from '../../../../../infrastructure/ai/challenge-intelligence.service.js';
 import logger from '../../../../../shared/logger/index.js';
+
+const COMMON_LOCALITIES = [
+  'Doranda', 'Kanke Road', 'Kanke', 'Bariatu', 'Hinoo', 'Morabadi', 'Harmu', 'Kokar', 'Lalpur', 'Namkum',
+  'Tatisilwai', 'Dhurwa', 'Hatia', 'Ratu Road', 'Ratu', 'Argora', 'Ashok Nagar', 'Kadru', 'Pandra',
+  'Sakchi', 'Bistupur', 'Mango', 'Jugsalai', 'Kadma', 'Sonari', 'Telco', 'Golmuri', 'Adityapur', 'Gamharia',
+  'Katras', 'Govindpur', 'Jharia', 'Sindri', 'Baghmara', 'Chas', 'Bokaro Steel City', 'Bermo', 'Phusro',
+  'Deoghar Main', 'Jasidih', 'Madhupur', 'Hazaribagh Main', 'Barhi', 'Ramgarh Cantt', 'Patratu', 'Daltonganj',
+  'Medininagar', 'Chaibasa Main', 'Ghatshila', 'Giridih Main', 'Dumka Main'
+];
 
 class ChallengeSubmitter {
   extractProblemFromHistory(history = []) {
@@ -62,6 +72,25 @@ class ChallengeSubmitter {
     if (/(hospital|doctor|dawa|aspatal|nurse|treatment|ilaj|swasthya|health)/i.test(lower)) return 'Healthcare';
     if (/(school|college|padhai|shiksha|teacher|master|class)/i.test(lower)) return 'Education';
     if (/(kisan|kheti|crop|fasal|beej|tractor|anaaj)/i.test(lower)) return 'Agriculture';
+    return null;
+  }
+
+  detectAreaOrBlock(text) {
+    if (!text) return null;
+    const lower = text.toLowerCase();
+    for (const loc of COMMON_LOCALITIES) {
+      if (new RegExp(`\\b${loc.toLowerCase()}\\b`, 'i').test(lower)) {
+        return loc;
+      }
+    }
+    const wardMatch = text.match(/\b(?:ward|ward no|ward number|ward-)\s*(\d{1,3})\b/i);
+    if (wardMatch) {
+      return `Ward ${wardMatch[1]}`;
+    }
+    const sectorMatch = text.match(/\b(?:sector|sec)\s*([0-9A-Za-z-]+)\b/i);
+    if (sectorMatch) {
+      return `Sector ${sectorMatch[1]}`;
+    }
     return null;
   }
 
@@ -140,7 +169,16 @@ Ask them warmly and respectfully in ${effectiveLang} as 'Aap' or 'Bhai ji' (NEVE
         { role: 'user', content: askDetailsPrompt }
       ], 300, 0.3);
 
-      const fallbackAsk = `Haan bhai ji, bilkul! Batayein, kya samasya hai?${BUBBLE_DELIMITER}Sadak, paani, bijli, safai ya koi aur dikkat? Aur yeh kis ilaqe ya zila ki baat hai, taaki hum turant madad kar sakein!`;
+      let fallbackAsk = `Haan bhai ji, bilkul! Batayein, kya samasya hai?${BUBBLE_DELIMITER}Sadak, paani, bijli, safai ya koi aur dikkat? Aur yeh kis ilaqe ya zila ki baat hai, taaki hum turant madad kar sakein!`;
+      if (effectiveLang === 'en') {
+        fallbackAsk = `Sure, absolutely! Please tell me what civic issue you are facing (e.g. roads, water, electricity, sanitation, etc.).${BUBBLE_DELIMITER}Also let me know which District and Locality in Jharkhand this is in, so we can assist you right away!`;
+      } else if (effectiveLang === 'hi') {
+        fallbackAsk = `हाँ भाई जी, बिल्कुल! बताएं क्या समस्या है?${BUBBLE_DELIMITER}सड़क, पानी, बिजली, सफाई या कोई अन्य दिक्कत? और यह झारखंड के किस ज़िले या इलाके की बात है, ताकि हम तुरंत सहायता कर सकें!`;
+      } else if (effectiveLang === 'bn') {
+        fallbackAsk = `হ্যাঁ ভাই, অবশ্যই! কী সমস্যা হচ্ছে বলুন।${BUBBLE_DELIMITER}রাস্তা, পানি, বিদ্যুৎ বা পরিচ্ছন্নতার কোনো সমস্যা? এবং এটি কোন জেলা ও এলাকার?`;
+      } else if (effectiveLang === 'sat') {
+        fallbackAsk = `ᱦᱮᱸ ᱜᱟᱛᱮ, ᱞᱟᱹᱭ ᱢᱮ ᱪᱮᱫ ᱮᱴᱠᱮᱴᱚᱬᱮ ᱢᱮᱱᱟᱜᱼᱟ?${BUBBLE_DELIMITER}ᱰᱟᱦᱟᱨ, ᱫᱟᱜ, ᱵᱤᱡᱽᱞᱤ ᱥᱮ ᱥᱟᱯᱷᱟ-ᱥᱟᱹᱯᱷᱤ? ᱟᱨ ᱚᱠᱟ ᱡᱤᱞᱟ ᱨᱮᱱᱟᱜ ᱠᱟᱱᱟ?`;
+      }
 
       return {
         reply: aiAsk || fallbackAsk,
@@ -165,7 +203,14 @@ STRICT RULE: Do NOT ask what their problem is again! We already know the problem
         { role: 'user', content: askLocationPrompt }
       ], 300, 0.3);
 
-      const fallbackLoc = `Bhai ji, aapki samasya samajh aa gayi hai.${BUBBLE_DELIMITER}Kripya apna **Zila (District)** aur **Mohalla/Area** batayein, taaki hum ise seedhe aapke Zila Nodal Adhikari tak bhej sakein! Agar photo/video ho toh 📎 se jod dein.`;
+      let fallbackLoc = `Bhai ji, aapki samasya samajh aa gayi hai.${BUBBLE_DELIMITER}Kripya apna **Zila (District)** aur **Mohalla/Area** batayein, taaki hum ise seedhe aapke Zila Nodal Adhikari tak bhej sakein! Agar photo/video ho toh 📎 se jod dein.`;
+      if (effectiveLang === 'en') {
+        fallbackLoc = `I understand the civic issue you reported.${BUBBLE_DELIMITER}Please share your **District** and **Locality/Ward/Area** in Jharkhand so we can route this directly to your District Nodal Officer. Feel free to attach photos using 📎!`;
+      } else if (effectiveLang === 'hi') {
+        fallbackLoc = `आपकी समस्या समझ आ गई है भाई जी।${BUBBLE_DELIMITER}कृपया अपना **ज़िला (District)** और **मोहल्ला/इलाका** बताएं, ताकि हम इसे सीधे आपके ज़िला नोडल अधिकारी को भेज सकें। यदि फोटो हो तो 📎 से जोड़ दें!`;
+      } else if (effectiveLang === 'bn') {
+        fallbackLoc = `আপনার समस्या বুঝতে পেরেছি ভাই।${BUBBLE_DELIMITER}অনুগ্রহ করে আপনার **জেলা** এবং **এলাকা/ওয়ার্ড** জানান, যাতে আমরা সরাসরি জেলা নোডাল কর্মকর্তার কাছে পাঠাতে পারি।`;
+      }
 
       return {
         reply: aiAskLoc || fallbackLoc,
@@ -189,18 +234,20 @@ STRICT RULE: Do NOT ask what their problem is again! We already know the problem
       return curr;
     };
 
-    let extractedArea = null;
+    let extractedArea = this.detectAreaOrBlock(rawMessage) || this.detectAreaOrBlock(parsed?.problemDescription);
     let textForArea = rawMessage;
     if (finalDistrict) {
       textForArea = textForArea.replace(new RegExp(`\\b${finalDistrict}\\b`, 'gi'), ' ');
     }
 
     // 3a. Check for specific landmarks, roads, colonies, mohallas, wards
-    const roadMatch = textForArea.match(/([a-zA-Z0-9\u0900-\u097F\s]{2,25}\s*(?:road|chowk|colony|nagar|market|gali|mohalla|para|more|mod|mor|bazaar|bazar|station|stand|ward\s*\d+|sector\s*\d+))/i);
-    if (roadMatch) {
-      const candidate = cleanCandidateArea(roadMatch[1]);
-      if (candidate.length >= 2 && !/(?:toot|kharab|gaya|gayi|beh|light|bijli|fat|jal)/i.test(candidate)) {
-        extractedArea = candidate;
+    if (!extractedArea) {
+      const roadMatch = textForArea.match(/([a-zA-Z0-9\u0900-\u097F\s]{2,25}\s*(?:road|chowk|colony|nagar|market|gali|mohalla|para|more|mod|mor|bazaar|bazar|station|stand|ward\s*\d+|sector\s*\d+))/i);
+      if (roadMatch) {
+        const candidate = cleanCandidateArea(roadMatch[1]);
+        if (candidate.length >= 2 && !/(?:toot|kharab|gaya|gayi|beh|light|bijli|fat|jal)/i.test(candidate)) {
+          extractedArea = candidate;
+        }
       }
     }
 
@@ -232,7 +279,10 @@ STRICT RULE: Do NOT ask what their problem is again! We already know the problem
     const finalDescription = newDesc || existingDraft?.description || currentOrHistoryProblem;
 
     // 5. Domain & Title resolution
+    const fullText = `${parsed?.title || ''} ${parsed?.problemDescription || ''} ${finalDescription} ${rawMessage}`;
+    const detectedDomain = extractTrueCivicDomain(parsed?.title, fullText, parsed?.domain);
     const domain = (newDesc && this.detectDomainFromText(newDesc)) ||
+      (detectedDomain && VALID_DOMAINS.includes(detectedDomain) ? detectedDomain : null) ||
       (parsed?.domain && VALID_DOMAINS.includes(parsed.domain) ? parsed.domain : null) ||
       (existingDraft?.domain || this.detectDomainFromText(finalDescription) || 'Urban Development');
 
@@ -338,6 +388,7 @@ Divide into 2 short bubbles separated by "${BUBBLE_DELIMITER}".
         ? `Bhai ji, humne aapki darj samasya aur location ki jaanch kar ke preview taiyaar kiya hai:${BUBBLE_DELIMITER}• **समस्या (Issue):** ${finalDescription}\n• **ज़िला (District):** ${finalDistrict}\n• **इलाका (Area):** ${finalArea}\n• **विभाग (Domain):** ${domain}\n• **Evidence:** ${accumulatedMedia.length} file(s) attached\n\nAgar sab theek hai toh neeche **'Confirm & Submit'** button dabayein ya 'Haan submit kardo' kahein!`
         : `Bhai ji, humne aapki samasya aur location note kar li hai:${BUBBLE_DELIMITER}• **समस्या (Issue):** ${finalDescription}\n• **ज़िला (District):** ${finalDistrict}\n• **इलाका (Area):** ${finalArea}\n• **विभाग (Domain):** ${domain}\n\n⚠️ **Dhyan dein:** Aapne koi photo ya video evidence nahi joda hai. Kya aap bina evidence ke hi submit karna chahte hain, ya photo/video attach karenge? Neeche button se chunein ya bolkar batayein!`;
     }
+    }
 
     return { reply: aiReply || fallbackReply, intent: 'DRAFT_CONFIRMATION_NEEDED', draftReport };
   }
@@ -413,7 +464,14 @@ Write a warm, respectful confirmation in ${effectiveLang} addressing the citizen
         { role: 'user', content: confirmPrompt }
       ], 600, 0.3);
 
-      const fallbackReply = `Aapki samasya safaltapoorvak JoharSetu par darj kar li gayi hai! 🎉\n\n📋 **Problem ID:** ${created.challengeId}\n📌 **Vishy:** ${created.title}${BUBBLE_DELIMITER}Yeh mamla **${created.district} Zila Nodal Cell** ko bhej diya gaya hai. Sambandhit vibhag jald hi zameeni jaanch karega.${BUBBLE_DELIMITER}Aap iska live status kabhi bhi yahan chat mein ya 'My Challenges' section mein dekh sakte hain.`;
+      let fallbackReply = `Aapki samasya safaltapoorvak JoharSetu par darj kar li gayi hai! 🎉\n\n📋 **Problem ID:** ${created.challengeId}\n📌 **Vishy:** ${created.title}${BUBBLE_DELIMITER}Yeh mamla **${created.district} Zila Nodal Cell** ko bhej diya gaya hai. Sambandhit vibhag jald hi zameeni jaanch karega.${BUBBLE_DELIMITER}Aap iska live status kabhi bhi yahan chat mein ya 'My Challenges' section mein dekh sakte hain.`;
+      if (effectiveLang === 'en') {
+        fallbackReply = `Your civic complaint has been officially registered on JoharSetu! 🎉\n\n📋 **Problem ID:** ${created.challengeId}\n📌 **Title:** ${created.title}${BUBBLE_DELIMITER}This issue has been routed to the **${created.district} District Nodal Cell** for line department field inspection.${BUBBLE_DELIMITER}You can track real-time progress anytime in this chat or under the 'My Challenges' dashboard.`;
+      } else if (effectiveLang === 'hi') {
+        fallbackReply = `आपकी समस्या सफलतापूर्वक जोहारसेतु पर दर्ज कर ली गई है! 🎉\n\n📋 **Problem ID:** ${created.challengeId}\n📌 **विषय:** ${created.title}${BUBBLE_DELIMITER}यह मामला **${created.district} ज़िला नोडल सेल** को भेज दिया गया है। संबंधित विभाग जल्द ही ज़मीनी निरीक्षण करेगा।${BUBBLE_DELIMITER}आप इसका लाइव स्टेटस कभी भी यहाँ चैट में या 'My Challenges' सेक्शन में देख सकते हैं।`;
+      } else if (effectiveLang === 'bn') {
+        fallbackReply = `আপনার অভিযোগ সফলভাবে নিবন্ধিত হয়েছে! 🎉\n\n📋 **Problem ID:** ${created.challengeId}\n📌 **বিষয়:** ${created.title}${BUBBLE_DELIMITER}বিষয়টি **${created.district} জেলা নোডাল সেল**-এ পাঠানো হয়েছে।${BUBBLE_DELIMITER}আপনি চ্যাট বা ড্যাশবোর্ড থেকে লাইভ স্ট্যাটাস দেখতে পারেন।`;
+      }
 
       return {
         reply: aiReply || fallbackReply,
@@ -434,8 +492,11 @@ Write a warm, respectful confirmation in ${effectiveLang} addressing the citizen
       };
     } catch (err) {
       logger.error({ msg: 'Submission via AI failed', error: err.message });
+      const errMsg = effectiveLang === 'en'
+        ? `We apologize, a technical error occurred while submitting: ${err.message}. Please try again.`
+        : `Khed hai, samasya darj karne mein takneeki samasya aayi: ${err.message}. Kripya punah prayas karein.`;
       return {
-        reply: `Khed hai, samasya darj karne mein takneeki samasya aayi: ${err.message}. Kripya punah prayas karein.`,
+        reply: errMsg,
         intent: 'SUBMIT_PROBLEM_ERROR'
       };
     }
@@ -443,3 +504,4 @@ Write a warm, respectful confirmation in ${effectiveLang} addressing the citizen
 }
 
 export const challengeSubmitter = new ChallengeSubmitter();
+export default challengeSubmitter;

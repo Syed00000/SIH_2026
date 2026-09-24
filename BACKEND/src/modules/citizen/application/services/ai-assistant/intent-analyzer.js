@@ -4,15 +4,20 @@ import logger from '../../../../../shared/logger/index.js';
 
 class IntentAnalyzer {
   async analyze({ rawMessage, history = [], media = [], userDefaultDistrict = '' }) {
-    const analysisSystemPrompt = `You are the intent and entity parser for JoharSetu (Jharkhand civic portal).
+    const analysisSystemPrompt = `You are the accurate intent and entity parser for JoharSetu (Government of Jharkhand civic innovation portal).
 Classify citizen intent into one of:
-1. "CONFIRM_SUBMISSION": User is confirming, agreeing, or approving to submit the drafted problem (e.g., "confirm", "haan submit kar do", "theek hai", "yes proceed", "submit kardo").
-2. "WITHDRAW_PROBLEM": User wants to withdraw/retract an active problem.
-3. "DELETE_PROBLEM": User wants to delete/remove an unassigned problem.
-4. "TRACK_PROBLEM": User wants status update, asks "kya hua", provides a Problem ID, asks about submission date, or asks for problem list.
-5. "SUBMIT_PROBLEM": User describes a civic issue or provides/updates location or problem details (e.g. "Location Dhanbad kar do", "Samasya me likho...").
+1. "CONFIRM_SUBMISSION": User is explicitly confirming/approving to submit a drafted complaint (e.g., "confirm", "haan submit kardo", "theek hai submit kar do", "yes submit", "proceed").
+2. "WITHDRAW_PROBLEM": User wants to withdraw an active complaint.
+3. "DELETE_PROBLEM": User wants to delete/remove an unassigned complaint.
+4. "TRACK_PROBLEM": User wants status update, asks "kya hua", provides a Problem ID (CHL-JH-...), asks about submission date, or asks for problem list.
+5. "SUBMIT_PROBLEM": User is actively reporting or asserting a real, on-ground civic breakdown (e.g. "water pipe broken in Bariatu", "road pothole in Ranchi", "transformer burnt in Dhanbad", "sewage overflow") or providing/updating location/problem details. NOT questions asking how the portal works!
 6. "EDIT_DRAFT": User says they want to edit or change the draft in general without providing specific new details yet (e.g., "edit karna hai", "kuch badalna hai", "badalna hai", "kuch galat hai", "edit karo", "EDIT_DRAFT", "sudhar karna hai").
-7. "GENERAL_QUERY": Portal info, greetings, general questions.
+7. "GENERAL_QUERY": General inquiries, questions about how portal works, login/registration help, department helplines, emergency numbers, university research & grants, rules, greetings, small talk.
+
+CRITICAL RULES:
+- Base intent, domain, and problem strictly on the LATEST MESSAGE.
+- NEVER drag forward or inherit previous topics (like electricity or water) into new questions or greetings.
+- If the latest message is an inquiry (e.g. "what is the helpline", "how to submit", "tell me about roads", "login issues"), it MUST be classified as "GENERAL_QUERY".
 
 If "SUBMIT_PROBLEM", extract:
 - problemDescription, district (${JHARKHAND_DISTRICTS.join(', ')}), areaOrBlock, domain (${VALID_DOMAINS.join(', ')}), priority ("Low"|"Medium"|"High"|"Critical"), title (4-8 words), isLocationProvided (boolean).
@@ -51,12 +56,12 @@ Output ONLY valid JSON:
       logger.warn({ msg: 'Intent parsing failed', err: err.message });
     }
 
-    // Heuristics fallback
+    // Heuristics fallback & disambiguation
     const lower = rawMessage.toLowerCase().trim();
     const actionPrefixMatch = rawMessage.match(/^(CONFIRM_WITHDRAW|CONFIRM_DELETE|WITHDRAW|DELETE):\s*(CHL-JH-\d{4}-\d+|CH-JH-\d{4}-\d+|CH-[A-Z0-9-]+)/i);
     const challengeIdMatch = rawMessage.match(/\b(CH-JH-\d{4}-\d+|CHL-JH-\d{4}-\d+|CH-[A-Z0-9-]+)\b/i);
 
-    // Cancel guard — must be checked FIRST so it doesn't match withdraw/delete patterns
+    // Cancel guard
     const isCancelAction = /^(rehne do|cancel karo|nahi karna|nahi|mat karo|choddo|chhodo|ruk|ruk ja)\b/i.test(lower);
     if (isCancelAction) {
       return { parsed: { intent: 'GENERAL_QUERY' }, challengeIdMatch: null, recentHistoryText };
@@ -72,8 +77,6 @@ Output ONLY valid JSON:
       /\b(confirm delete|haan delete|pakka delete|hata do)\b/i.test(lower) ||
       (/\b(confirm|haan|yes|ha|theek hai|proceed)\b/i.test(lower) && /delete|hata|mitana/i.test(recentHistoryText));
 
-    // Only explicit multi-word confirm phrases, OR a bare short "yes/haan/confirm" WITH draft in history
-    // NEVER match if the message has new-problem keywords (aur, naya, doosra, ek aur, karna hai)
     const hasNewProblemKeyword = /\b(aur|naya|nayi|doosra|doosri|ek aur|new|another|phir se|dubara)\b/i.test(lower);
     const isExplicitConfirmSubmit =
       !isConfirmWithdraw &&
@@ -87,7 +90,7 @@ Output ONLY valid JSON:
     const isExplicitWithdraw =
       isConfirmWithdraw ||
       Boolean(actionPrefixMatch && actionPrefixMatch[1].toUpperCase().includes('WITHDRAW')) ||
-      /\b(withdraw|wapas|waapas|cancel|radd)\b/i.test(lower);
+      /\b(withdraw|wapas|waapas|radd|wapas lena hai)\b/i.test(lower);
 
     const isExplicitDelete =
       isConfirmDelete ||
@@ -96,7 +99,18 @@ Output ONLY valid JSON:
 
     const isExplicitTracking =
       challengeIdMatch ||
-      /\b(track|status|kya hua|kahan hai|progress|meri problem|shikayat ka kya|update|list|tareekh|tareeq|tarikh|तारीख|pichhla|pichhli|complaint)\b/i.test(lower);
+      /\b(track|status|kya hua|kahan hai|progress|meri problem|shikayat ka kya|update|list|tareekh|tareeq|tarikh|तारीख|pichhla|pichhli|complaint status)\b/i.test(lower);
+
+    // Is the user asking an informational question?
+    const isInformationalQuery =
+      /\b(kaise|how to|kya hai|what is|kahan|where|kab|when|kyun|why|who|helpline|number|toll free|contact|jaankari|batao|bataiye|explain|details|list|rules|process|timing|login|register|signup|password|role|student|university|grant|scholarship|internship|portal|platform)\b/i.test(lower);
+
+    // Active ground assertion (user reporting an actual fault on the ground)
+    const isGroundProblemAssertion =
+      (/\b(hamare yahan|hamare mohalle|mera area|mere ghar|gali me|road pe|sadak pe|yahan|yaha|colony me|ward me|village me|gaon me)\b/i.test(lower) ||
+       /\b(toota hai|tooti hai|kharab hai|band hai|nahi aa raha|nahi aati|overflow|jal gaya|current aa raha|gaddha hai|paani bhar gaya|kachra pada hai|badbu aa rahi hai|darkness hai|andhera hai|leakage ho rahi hai)\b/i.test(lower) ||
+       /\b(broken|damaged|overflowing|not working|leaking|flooded|pothole|power cut for|no water since)\b/i.test(lower)) &&
+      !isInformationalQuery;
 
     const hasDraftInHistory = Array.isArray(history) && history.some(h => Boolean(h.draftReport));
     const isExplicitEdit =
@@ -124,10 +138,23 @@ Output ONLY valid JSON:
       parsed = parsed || {};
       parsed.intent = 'TRACK_PROBLEM';
       if (challengeIdMatch) parsed.challengeId = challengeIdMatch[0];
-    } else if (!parsed) {
-      const isSubmission = /(paani|bijli|pani|light|road|sadak|kachra|drain|naali|sewage|hospital|school|problem|samasya|gaddha|shikayat|repair|broken|damage|issue)/i.test(lower);
+    } else if (isInformationalQuery && !isGroundProblemAssertion) {
+      // STRICTLY General query for informational questions, even if they contain words like "paani" or "problem"
       parsed = {
-        intent: isSubmission ? 'SUBMIT_PROBLEM' : 'GENERAL_QUERY',
+        intent: 'GENERAL_QUERY',
+        challengeId: null,
+        isLocationProvided: false
+      };
+    } else if (isGroundProblemAssertion) {
+      parsed = {
+        intent: 'SUBMIT_PROBLEM',
+        problemDescription: rawMessage,
+        challengeId: null,
+        isLocationProvided: false
+      };
+    } else if (!parsed) {
+      parsed = {
+        intent: 'GENERAL_QUERY',
         challengeId: challengeIdMatch ? challengeIdMatch[0] : null,
         isLocationProvided: false
       };
@@ -176,3 +203,4 @@ Output ONLY valid JSON:
 }
 
 export const intentAnalyzer = new IntentAnalyzer();
+export default intentAnalyzer;

@@ -9,24 +9,133 @@ const formatTime = () => {
   return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 };
 
+/**
+ * Strips markdown, delimiters, bullet points, URLs, and table artifacts for natural human-like voice synthesis
+ */
+const cleanTextForSpeech = (rawText) => {
+  if (!rawText) return '';
+  return String(rawText)
+    .replace(/---BUBBLE---/g, '. ')
+    .replace(/<think>[\s\S]*?<\/think>/gi, '')
+    .replace(/https?:\/\/[^\s]+/g, '')
+    .replace(/[`*#_~[\]]/g, '')
+    .replace(/•/g, '')
+    .replace(/[|]/g, ' ')
+    .replace(/📞/g, 'Call: ')
+    .replace(/[^\w\s\u0900-\u097F\u0980-\u09FF\u1C50-\u1C7F.,!?-]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+};
+
 export const useAiAssistant = () => {
   const { user } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [isLanguageModalOpen, setIsLanguageModalOpen] = useState(false);
-  const [currentLang, setCurrentLang] = useState('en');
+  const [currentLang, setCurrentLang] = useState(() => {
+    try {
+      return localStorage.getItem('joharsetu_ai_lang') || 'en';
+    } catch (_) {
+      return 'en';
+    }
+  });
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
+  const [isVoiceEnabled, setIsVoiceEnabled] = useState(true);
+  const [speakingMessageId, setSpeakingMessageId] = useState(null);
 
-  const [messages, setMessages] = useState([
-    {
-      id: 'welcome',
-      role: 'assistant',
-      content: "Namaste! 👏\nI'm Johar Setu Assistant.\nHow can I help you today?",
-      time: '10:24 AM'
-    }
-  ]);
+  const [messages, setMessages] = useState(() => {
+    const savedLang = (() => {
+      try { return localStorage.getItem('joharsetu_ai_lang') || 'en'; } catch (_) { return 'en'; }
+    })();
+    let greeting = "Namaste! Welcome to JoharSetu Assistant. 👋\nI can help you report civic issues, track progress, or find department helplines.\nHow can I help you today?";
+    if (savedLang === 'hi') greeting = "नमस्ते भाई जी! 🙏\nमैं आपका जोहारसेतु सहायक हूँ।\nबताइए, आज आपकी क्या सहायता करूँ?";
+    else if (savedLang === 'bn') greeting = "নমস্কার ভাই! 🙏\nআমি আপনার জোহার সেতু সহায়ক।\nবলুন, আজ কীভাবে সাহায্য করতে পারি?";
+    else if (savedLang === 'sat') greeting = "ᱡᱚᱦᱟᱨ gate! 🙏\nᱤᱧ ᱡᱚᱦᱟᱨ ᱥᱮᱛᱩ ᱜᱚᱲᱚᱭᱤᱡ ᱠᱟᱹᱱᱟᱹᱧ᱾\nᱞᱟᱹᱭ ᱢᱮ, ᱪᱮᱫ ᱜᱚᱲᱚ ᱞᱟᱹᱠᱛᱤ?";
+    return [{ id: 'welcome', role: 'assistant', content: greeting, time: formatTime() }];
+  });
 
   const messagesEndRef = useRef(null);
+
+  const stopSpeaking = useCallback(() => {
+    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+      try {
+        window.speechSynthesis.cancel();
+      } catch (_) {}
+    }
+    setSpeakingMessageId(null);
+  }, []);
+
+  const speakText = useCallback((rawText, langCode = 'en', messageId = null) => {
+    if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
+
+    try {
+      window.speechSynthesis.cancel();
+      const textToSpeak = cleanTextForSpeech(rawText);
+      if (!textToSpeak) return;
+
+      const utterance = new SpeechSynthesisUtterance(textToSpeak);
+
+      // Determine voice locale
+      let targetLocale = 'en-IN';
+      if (langCode === 'en') targetLocale = 'en-IN';
+      else if (langCode === 'hi') targetLocale = 'hi-IN';
+      else if (langCode === 'bn') targetLocale = 'bn-IN';
+      else if (langCode === 'sat') targetLocale = 'hi-IN';
+
+      utterance.lang = targetLocale;
+      utterance.rate = 1.0;
+      utterance.pitch = 1.0;
+
+      // Match available voices
+      const voices = window.speechSynthesis.getVoices();
+      if (voices.length > 0) {
+        let preferredVoice = null;
+        if (langCode === 'en') {
+          preferredVoice = voices.find(v => /english \(india\)|indian|ravi|priya|neerja|george|zira|david/i.test(v.name)) ||
+                           voices.find(v => v.lang.startsWith('en')) ||
+                           voices[0];
+        } else if (langCode === 'hi' || langCode === 'sat') {
+          preferredVoice = voices.find(v => /hindi|heera|hemant|kalpana|swara/i.test(v.name)) ||
+                           voices.find(v => v.lang.startsWith('hi')) ||
+                           voices[0];
+        } else if (langCode === 'bn') {
+          preferredVoice = voices.find(v => /bengali|bangla/i.test(v.name)) ||
+                           voices.find(v => v.lang.startsWith('bn')) ||
+                           voices[0];
+        } else {
+          preferredVoice = voices.find(v => v.lang.startsWith(targetLocale.slice(0, 2))) || voices[0];
+        }
+
+        if (preferredVoice) {
+          utterance.voice = preferredVoice;
+        }
+      }
+
+      utterance.onstart = () => {
+        setSpeakingMessageId(messageId);
+      };
+
+      utterance.onend = () => {
+        setSpeakingMessageId(null);
+      };
+
+      utterance.onerror = () => {
+        setSpeakingMessageId(null);
+      };
+
+      window.speechSynthesis.speak(utterance);
+    } catch (err) {
+      console.warn('Text-to-speech error:', err);
+      setSpeakingMessageId(null);
+    }
+  }, []);
+
+  // Stop speaking if drawer is closed or unmounted
+  useEffect(() => {
+    if (!isOpen) {
+      stopSpeaking();
+    }
+  }, [isOpen, stopSpeaking]);
 
   const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -36,6 +145,9 @@ export const useAiAssistant = () => {
     const query = (typeof textToSend === 'string' ? textToSend : input).trim();
     if (!query && !attachment) return;
     if (loading) return;
+
+    // Stop previous voice output when a new message is sent
+    stopSpeaking();
 
     console.log('[JoharSetu AI Chat] FINAL MESSAGE SENT TO AI:', query);
 
@@ -88,7 +200,7 @@ export const useAiAssistant = () => {
     try {
       const historyPayload = messages
         .filter((m) => m.id !== 'welcome' && m.id !== 'welcome-reset')
-        .slice(-8)
+        .slice(-6)
         .map((m) => ({
           role: m.role,
           content: m.content,
@@ -148,16 +260,26 @@ export const useAiAssistant = () => {
         } catch (_) {}
       }
 
+      const assistantMsgId = `a-${Date.now()}`;
       setMessages((prev) => [
         ...prev,
-        { id: `a-${Date.now()}`, role: 'assistant', content: replyText, draftReport, createdChallenge, trackingData, challengesList, withdrawnChallenge, deletedChallengeId, actionTarget, showEditChips, time: formatTime() }
+        { id: assistantMsgId, role: 'assistant', content: replyText, draftReport, createdChallenge, trackingData, challengesList, withdrawnChallenge, deletedChallengeId, actionTarget, showEditChips, time: formatTime() }
       ]);
+
+      // Automatically speak assistant response if voice output is enabled
+      if (isVoiceEnabled) {
+        speakText(replyText, currentLang, assistantMsgId);
+      }
     } catch (err) {
       const serverErrMsg =
         err?.status === 401
           ? 'Aapka session expire ho gaya hai. Kripya login karein aur dobara try karein.'
           : (err.response?.data?.message || err.response?.data?.error?.message || err.message || 'Kshama karein, thodi takneeki samasya aayi.');
-      setMessages((prev) => [...prev, { id: `err-${Date.now()}`, role: 'assistant', content: `⚠️ ${serverErrMsg}`, time: formatTime() }]);
+      const errorMsgId = `err-${Date.now()}`;
+      setMessages((prev) => [...prev, { id: errorMsgId, role: 'assistant', content: `⚠️ ${serverErrMsg}`, time: formatTime() }]);
+      if (isVoiceEnabled) {
+        speakText(serverErrMsg, currentLang, errorMsgId);
+      }
     } finally {
       setLoading(false);
     }
@@ -166,7 +288,11 @@ export const useAiAssistant = () => {
 
   const handleSelectLanguage = (langObj) => {
     setCurrentLang(langObj.code);
-    setMessages((prev) => [...prev, { id: `lang-${Date.now()}`, role: 'assistant', content: langObj.greeting, time: formatTime() }]);
+    const langMsgId = `lang-${Date.now()}`;
+    setMessages((prev) => [...prev, { id: langMsgId, role: 'assistant', content: langObj.greeting, time: formatTime() }]);
+    if (isVoiceEnabled) {
+      speakText(langObj.greeting, langObj.code, langMsgId);
+    }
   };
 
   const handleSubmitChallenge = () => {
@@ -186,6 +312,7 @@ export const useAiAssistant = () => {
   };
 
   const handleClearChat = () => {
+    stopSpeaking();
     setMessages([
       {
         id: 'welcome-reset',
@@ -207,6 +334,11 @@ export const useAiAssistant = () => {
     loading,
     messages,
     messagesEndRef,
+    isVoiceEnabled,
+    setIsVoiceEnabled,
+    speakingMessageId,
+    speakText,
+    stopSpeaking,
     handleSendMessage,
     handleSelectLanguage,
     handleSubmitChallenge,
