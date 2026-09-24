@@ -57,20 +57,24 @@ Output ONLY valid JSON:
     const challengeIdMatch = rawMessage.match(/\b(CH-JH-\d{4}-\d+|CHL-JH-\d{4}-\d+|CH-[A-Z0-9-]+)\b/i);
 
     // Cancel guard — must be checked FIRST so it doesn't match withdraw/delete patterns
-    const isCancelAction = /^(rehne do|cancel karo|nahi karna|nahi|mat karo|choddo|chhodo|ruk|ruk ja)\b/i.test(lower);
+    const isCancelAction =
+      /^(rehne do|cancel karo|nahi karna|nahi|mat karo|choddo|chhodo|ruk|ruk ja|cancel)\b/i.test(lower) ||
+      /(रहने दो|रद्द करो|कैंसिल करो|नहीं करना|मत करो|छोड़ो)/.test(rawMessage);
     if (isCancelAction) {
-      return { parsed: { intent: 'GENERAL_QUERY' }, challengeIdMatch: null, recentHistoryText };
+      return { parsed: { intent: 'CANCEL_ACTION' }, challengeIdMatch: null, recentHistoryText };
     }
 
     const isConfirmWithdraw =
       rawMessage.startsWith('CONFIRM_WITHDRAW:') ||
       /\b(confirm withdraw|haan withdraw|pakka withdraw|haan wapas|wapas le lo)\b/i.test(lower) ||
-      (/\b(confirm|haan|yes|ha|theek hai|proceed)\b/i.test(lower) && /withdraw|wapas|waapas/i.test(recentHistoryText));
+      (/\b(confirm|haan|yes|ha|theek hai|proceed)\b/i.test(lower) && /withdraw|wapas|waapas/i.test(recentHistoryText)) ||
+      /(हाँ वापस लो|वापस ले लो|हाँ वापस|वापस लें|पुष्टि करें और वापस लें)/.test(rawMessage);
 
     const isConfirmDelete =
       rawMessage.startsWith('CONFIRM_DELETE:') ||
       /\b(confirm delete|haan delete|pakka delete|hata do)\b/i.test(lower) ||
-      (/\b(confirm|haan|yes|ha|theek hai|proceed)\b/i.test(lower) && /delete|hata|mitana/i.test(recentHistoryText));
+      (/\b(confirm|haan|yes|ha|theek hai|proceed)\b/i.test(lower) && /delete|hata|mitana/i.test(recentHistoryText)) ||
+      /(हाँ हटा दो|हटा दो|डिलीट करो|स्थायी रूप से हटाएं)/.test(rawMessage);
 
     // Only explicit multi-word confirm phrases, OR a bare short "yes/haan/confirm" WITH draft in history
     // NEVER match if the message has new-problem keywords (aur, naya, doosra, ek aur, karna hai)
@@ -81,28 +85,33 @@ Output ONLY valid JSON:
       !hasNewProblemKeyword &&
       (rawMessage.startsWith('CONFIRM_SUBMIT:') ||
         /\b(confirm & submit|submit kardo|haan submit kardo|theek hai submit|haan bhej do|theek hai darj karo|darj kar do|bina photo|bina evidence|without evidence|without photo|bina tasveer|bina video|haan bina evidence)\b/i.test(lower) ||
-        (/^(confirm|yes|haan|ha|proceed|bhej do|theek hai)$/i.test(lower) &&
-          /location|draft|darj|report|zila|district/i.test(recentHistoryText)));
+        /(हाँ सबमिट कर दो|सबमिट कर दो|पुष्टि करें और सबमिट करें|दर्ज कर दो|हाँ दर्ज करें|बिना प्रमाण सबमिट करें|बिना प्रमाण सबमिट|बिना फोटो सबमिट करें)/.test(rawMessage) ||
+        (/^(confirm|yes|haan|ha|proceed|bhej do|theek hai|हाँ|ठीक है|सबमिट)$/i.test(lower) &&
+          /location|draft|darj|report|zila|district|लोकेशन|ज़िला|शिकायत/i.test(recentHistoryText)));
 
     const isExplicitWithdraw =
       isConfirmWithdraw ||
       Boolean(actionPrefixMatch && actionPrefixMatch[1].toUpperCase().includes('WITHDRAW')) ||
-      /\b(withdraw|wapas|waapas|cancel|radd)\b/i.test(lower);
+      /\b(withdraw|wapas|waapas|radd)\b/i.test(lower) ||
+      /(वापस|रद्द|विथड्रॉ)/.test(rawMessage);
 
     const isExplicitDelete =
       isConfirmDelete ||
       Boolean(actionPrefixMatch && actionPrefixMatch[1].toUpperCase().includes('DELETE')) ||
-      /\b(delete|hata do|hatao|mitana|remove|trash|डिलीट)\b/i.test(lower);
+      /\b(delete|hata do|hatao|mitana|remove|trash|डिलीट)\b/i.test(lower) ||
+      /(हटा दें|हटाएं|हटा दो)/.test(rawMessage);
 
     const isExplicitTracking =
       challengeIdMatch ||
-      /\b(track|status|kya hua|kahan hai|progress|meri problem|shikayat ka kya|update|list|tareekh|tareeq|tarikh|तारीख|pichhla|pichhli|complaint)\b/i.test(lower);
+      /\b(track|status|kya hua|kahan hai|progress|meri problem|shikayat ka kya|update|list|tareekh|tareeq|tarikh|तारीख|pichhla|pichhli|complaint)\b/i.test(lower) ||
+      /(ट्रैक|स्थिति|स्टेटस|कहाँ है|प्रगति|मेरी शिकायत|मेरी समस्या|पिछली शिकायत)/.test(rawMessage);
 
     const hasDraftInHistory = Array.isArray(history) && history.some(h => Boolean(h.draftReport));
     const isExplicitEdit =
       hasDraftInHistory &&
       (rawMessage.startsWith('EDIT_DRAFT') ||
-        /\b(edit karna hai|kuch edit|badalna hai|change karna hai|modify karna hai|sudhaar|sudhar|galat likha hai|galat hai|kuch galat|edit karo|edit draft|kuch badalna|edit option|kya edit)\b/i.test(lower));
+        /\b(edit karna hai|kuch edit|badalna hai|change karna hai|modify karna hai|sudhaar|sudhar|galat likha hai|galat hai|kuch galat|edit karo|edit draft|kuch badalna|edit option|kya edit)\b/i.test(lower) ||
+        /(एडिट|बदलना है|सुधार|गलत है|संशोधन)/.test(rawMessage));
 
     if (isExplicitEdit) {
       parsed = parsed || {};
@@ -125,7 +134,7 @@ Output ONLY valid JSON:
       parsed.intent = 'TRACK_PROBLEM';
       if (challengeIdMatch) parsed.challengeId = challengeIdMatch[0];
     } else if (!parsed) {
-      const isSubmission = /(paani|bijli|pani|light|road|sadak|kachra|drain|naali|sewage|hospital|school|problem|samasya|gaddha|shikayat|repair|broken|damage|issue)/i.test(lower);
+      const isSubmission = /(paani|bijli|pani|light|road|sadak|kachra|drain|naali|sewage|hospital|school|problem|samasya|gaddha|shikayat|repair|broken|damage|issue|पानी|बिजली|सड़क|सड़कें|कचरा|सफाई|नाली|सीवर|अस्पताल|स्कूल|समस्या|शिकायत|गड्डा|गड्ढा|टूटी|खराब|बह|लाइट|ट्रांसफॉर्मर|खंभा|प्रदूषण)/i.test(rawMessage);
       parsed = {
         intent: isSubmission ? 'SUBMIT_PROBLEM' : 'GENERAL_QUERY',
         challengeId: challengeIdMatch ? challengeIdMatch[0] : null,

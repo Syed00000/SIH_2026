@@ -9,7 +9,7 @@ const formatTime = () => {
   return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 };
 
-export const useAiAssistant = () => {
+export const useAiAssistant = ({ mode = 'citizen' } = {}) => {
   const { user } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [isLanguageModalOpen, setIsLanguageModalOpen] = useState(false);
@@ -17,12 +17,16 @@ export const useAiAssistant = () => {
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
 
+  const initialWelcomeMessage = mode === 'info'
+    ? "Namaste! 👏\nI'm JoharSetu Information Assistant.\nHow can I help you with information about JoharSetu public services today?"
+    : "Namaste! 👏\nI'm Johar Setu Assistant.\nHow can I help you today?";
+
   const [messages, setMessages] = useState([
     {
       id: 'welcome',
       role: 'assistant',
-      content: "Namaste! 👏\nI'm Johar Setu Assistant.\nHow can I help you today?",
-      time: '10:24 AM'
+      content: initialWelcomeMessage,
+      time: formatTime()
     }
   ]);
 
@@ -32,7 +36,16 @@ export const useAiAssistant = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, []);
 
-  const handleSendMessage = async (textToSend, attachment = null) => {
+  const handleSendMessage = async (textToSend, attachmentOrOptions = null) => {
+    let attachment = null;
+    let displayLabel = null;
+    if (attachmentOrOptions && (attachmentOrOptions.rawFile || attachmentOrOptions.name || attachmentOrOptions.previewUrl)) {
+      attachment = attachmentOrOptions;
+    } else if (attachmentOrOptions && typeof attachmentOrOptions === 'object') {
+      attachment = attachmentOrOptions.attachment || null;
+      displayLabel = attachmentOrOptions.displayLabel || null;
+    }
+
     const query = (typeof textToSend === 'string' ? textToSend : input).trim();
     if (!query && !attachment) return;
     if (loading) return;
@@ -72,10 +85,39 @@ export const useAiAssistant = () => {
       }
     }
 
+    // Friendly human-like display text for citizen's chat bubble
+    let bubbleContent = displayLabel;
+    if (!bubbleContent) {
+      if (query.startsWith('CONFIRM_SUBMIT:')) {
+        bubbleContent = currentLang === 'hi'
+          ? '✓ पुष्टि करें और सबमिट करें'
+          : currentLang === 'en'
+          ? '✓ Confirm & Submit'
+          : '✓ Haan, submit kar do';
+      } else if (query.startsWith('CONFIRM_WITHDRAW:')) {
+        const id = query.replace('CONFIRM_WITHDRAW:', '').trim();
+        bubbleContent = currentLang === 'hi'
+          ? `✓ वापस लेने की पुष्टि करें ${id ? `(${id})` : ''}`
+          : currentLang === 'en'
+          ? `✓ Confirm Withdrawal ${id ? `(${id})` : ''}`
+          : `✓ Haan, wapas le lo ${id ? `(${id})` : ''}`;
+      } else if (query.startsWith('CONFIRM_DELETE:')) {
+        const id = query.replace('CONFIRM_DELETE:', '').trim();
+        bubbleContent = currentLang === 'hi'
+          ? `✓ हटाने की पुष्टि करें ${id ? `(${id})` : ''}`
+          : currentLang === 'en'
+          ? `✓ Confirm Delete ${id ? `(${id})` : ''}`
+          : `✓ Haan, delete kar do ${id ? `(${id})` : ''}`;
+      } else {
+        bubbleContent = query || (attachment ? `Sent attachment: ${attachment.name}` : '');
+      }
+    }
+
     const userMsg = {
       id: `u-${Date.now()}`,
       role: 'user',
-      content: query || (attachment ? `Sent attachment: ${attachment.name}` : ''),
+      content: bubbleContent,
+      rawQuery: query, // preserve exact command for backend wire transport
       attachment: processedAttachment,
       media: uploadedMedia,
       time: formatTime()
@@ -91,7 +133,7 @@ export const useAiAssistant = () => {
         .slice(-8)
         .map((m) => ({
           role: m.role,
-          content: m.content,
+          content: m.rawQuery || m.content,
           draftReport: m.draftReport || null,
           media: m.media || (m.draftReport?.media || [])
         }));
@@ -100,6 +142,7 @@ export const useAiAssistant = () => {
         message: query || (attachment ? `Uploaded evidence: ${attachment.name}` : ''),
         history: historyPayload,
         media: uploadedMedia,
+        selectedLanguage: currentLang,
         currentLang,
         user: user
           ? {
@@ -140,7 +183,11 @@ export const useAiAssistant = () => {
 
       const d = res.data?.data || res.data || {};
       const replyText = d.reply || 'Aapka sandesh prapt hua.';
-      const { draftReport = null, createdChallenge = null, trackingData = null, challengesList = null, withdrawnChallenge = null, deletedChallengeId = null, actionTarget = null, showEditChips = false } = d;
+      const { draftReport = null, createdChallenge = null, trackingData = null, challengesList = null, withdrawnChallenge = null, deletedChallengeId = null, actionTarget = null, showEditChips = false, selectedLanguage = null } = d;
+
+      if (selectedLanguage && selectedLanguage !== currentLang) {
+        setCurrentLang(selectedLanguage);
+      }
 
       if (createdChallenge || withdrawnChallenge || deletedChallengeId) {
         try {
@@ -190,7 +237,7 @@ export const useAiAssistant = () => {
       {
         id: 'welcome-reset',
         role: 'assistant',
-        content: "Hey there! 👏\nI'm your Johar Setu AI buddy.\nTell me, how can I help you today?",
+        content: initialWelcomeMessage,
         time: formatTime()
       }
     ]);

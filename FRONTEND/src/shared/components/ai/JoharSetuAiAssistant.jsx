@@ -11,7 +11,7 @@ import { useAiAssistant } from './hooks/useAiAssistant.js';
  * Official Johar Setu AI Assistant with Floating Circle Trigger.
  * Fully Mobile-Responsive & Elevated above Mobile Bottom Navigation.
  */
-export const JoharSetuAiAssistant = () => {
+export const JoharSetuAiAssistant = ({ mode = 'citizen' }) => {
   const {
     isOpen,
     setIsOpen,
@@ -28,7 +28,7 @@ export const JoharSetuAiAssistant = () => {
     handleSubmitChallenge,
     handleTrackChallenge,
     handleClearChat
-  } = useAiAssistant();
+  } = useAiAssistant({ mode });
 
   return (
     <div className="select-none font-sans">
@@ -80,6 +80,8 @@ export const JoharSetuAiAssistant = () => {
 
                 {/* Chat Message Stream with contextual initial quick actions */}
                 <AssistantMessageList
+                  mode={mode}
+                  lang={currentLang}
                   messages={messages}
                   loading={loading}
                   messagesEndRef={messagesEndRef}
@@ -87,15 +89,25 @@ export const JoharSetuAiAssistant = () => {
                   onSubmitChallenge={handleSubmitChallenge}
                   onTrackChallenge={handleTrackChallenge}
                   onChangeLanguage={() => setIsLanguageModalOpen(true)}
+                  onInfoQuery={(queryText) => handleSendMessage(queryText)}
                   onAction={(actionType, payload) => {
                     if (actionType === 'TRIGGER_ATTACHMENT') {
                       const fileInput = document.getElementById('ai-chat-evidence-file-input');
                       if (fileInput) fileInput.click();
                       else window.dispatchEvent(new CustomEvent('joharsetu:trigger-evidence-attachment'));
                     } else if (actionType === 'EDIT_DRAFT') {
-                      handleSendMessage('Mujhe is draft report mein kuch badalna/edit karna hai');
+                      const msg = currentLang === 'hi'
+                        ? 'मुझे इस ड्राफ्ट रिपोर्ट में कुछ सुधार/बदलना है'
+                        : currentLang === 'en'
+                        ? 'I want to edit this draft report'
+                        : 'Mujhe is draft report mein kuch badalna/edit karna hai';
+                      handleSendMessage(msg);
                     } else if (actionType === 'EDIT_FIELD_LOCATION') {
-                      const prefix = 'Location badal kar yeh kar do: ';
+                      const prefix = currentLang === 'hi'
+                        ? 'लोकेशन बदलकर यह करें: '
+                        : currentLang === 'en'
+                        ? 'Change location to: '
+                        : 'Location badal kar yeh kar do: ';
                       setInput(prefix);
                       setTimeout(() => {
                         const el = document.getElementById('ai-assistant-text-input');
@@ -105,7 +117,11 @@ export const JoharSetuAiAssistant = () => {
                         }
                       }, 60);
                     } else if (actionType === 'EDIT_FIELD_DESCRIPTION') {
-                      const prefix = 'Samasya me yeh likho: ';
+                      const prefix = currentLang === 'hi'
+                        ? 'समस्या में यह लिखें: '
+                        : currentLang === 'en'
+                        ? 'Change issue description to: '
+                        : 'Samasya me yeh likho: ';
                       setInput(prefix);
                       setTimeout(() => {
                         const el = document.getElementById('ai-assistant-text-input');
@@ -115,21 +131,56 @@ export const JoharSetuAiAssistant = () => {
                         }
                       }, 60);
                     } else if (actionType === 'CONFIRM_SUBMIT') {
-                      handleSendMessage(`CONFIRM_SUBMIT: ${typeof payload === 'string' ? payload : JSON.stringify(payload)}`);
+                      const label = currentLang === 'hi'
+                        ? '✓ पुष्टि करें और सबमिट करें'
+                        : currentLang === 'en'
+                        ? '✓ Confirm & Submit'
+                        : '✓ Haan, submit kar do';
+                      handleSendMessage(`CONFIRM_SUBMIT: ${typeof payload === 'string' ? payload : JSON.stringify(payload)}`, { displayLabel: label });
                     } else if (actionType === 'CHANGE_LOCATION') {
-                      setInput('Mera zila aur area yeh hai: ');
+                      const prefix = currentLang === 'hi'
+                        ? 'मेरा ज़िला और इलाका यह है: '
+                        : currentLang === 'en'
+                        ? 'My district and area is: '
+                        : 'Mera zila aur area yeh hai: ';
+                      setInput(prefix);
                     } else if (actionType === 'CONFIRM_WITHDRAW') {
-                      handleSendMessage(`CONFIRM_WITHDRAW: ${payload}`);
+                      const label = currentLang === 'hi'
+                        ? `✓ वापस लेने की पुष्टि करें ${payload ? `(${payload})` : ''}`
+                        : currentLang === 'en'
+                        ? `✓ Confirm Withdrawal ${payload ? `(${payload})` : ''}`
+                        : `✓ Haan, wapas le lo ${payload ? `(${payload})` : ''}`;
+                      handleSendMessage(`CONFIRM_WITHDRAW: ${payload}`, { displayLabel: label });
                     } else if (actionType === 'CONFIRM_DELETE') {
-                      handleSendMessage(`CONFIRM_DELETE: ${payload}`);
+                      const label = currentLang === 'hi'
+                        ? `✓ हटाने की पुष्टि करें ${payload ? `(${payload})` : ''}`
+                        : currentLang === 'en'
+                        ? `✓ Confirm Delete ${payload ? `(${payload})` : ''}`
+                        : `✓ Haan, delete kar do ${payload ? `(${payload})` : ''}`;
+                      handleSendMessage(`CONFIRM_DELETE: ${payload}`, { displayLabel: label });
                     } else if (actionType === 'CANCEL_ACTION') {
-                      handleSendMessage('Rehne do, cancel karo');
+                      const msg = currentLang === 'hi'
+                        ? 'रहने दो, रद्द करो'
+                        : currentLang === 'en'
+                        ? 'Cancel this action'
+                        : 'Rehne do, cancel karo';
+                      handleSendMessage(msg);
                     } else if (actionType === 'WITHDRAW') {
-                      // From tracking card — sends a natural message that triggers AI confirm flow
-                      handleSendMessage(`Withdraw karna hai ${payload}`);
+                      // From tracking card — sends a message that triggers AI confirm flow
+                      const msg = currentLang === 'hi'
+                        ? `वापस लेना है ${payload}`
+                        : currentLang === 'en'
+                        ? `Withdraw ${payload}`
+                        : `Withdraw karna hai ${payload}`;
+                      handleSendMessage(msg);
                     } else if (actionType === 'DELETE') {
-                      // From tracking card — sends a natural message that triggers AI confirm flow
-                      handleSendMessage(`Delete karna hai ${payload}`);
+                      // From tracking card — sends a message that triggers AI confirm flow
+                      const msg = currentLang === 'hi'
+                        ? `हटाना है ${payload}`
+                        : currentLang === 'en'
+                        ? `Delete ${payload}`
+                        : `Delete karna hai ${payload}`;
+                      handleSendMessage(msg);
                     }
                   }}
                 />

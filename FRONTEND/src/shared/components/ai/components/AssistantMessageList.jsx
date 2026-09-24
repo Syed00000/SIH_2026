@@ -95,6 +95,43 @@ const TypewriterBubble = ({ text, isLatest }) => {
   );
 };
 
+const cleanUserBubbleContent = (text, lang = 'en') => {
+  if (!text || typeof text !== 'string') return '';
+  const trimmed = text.trim();
+  if (trimmed.startsWith('CONFIRM_SUBMIT:')) {
+    return lang === 'hi'
+      ? '✓ पुष्टि करें और सबमिट करें'
+      : lang === 'en'
+      ? '✓ Confirm & Submit'
+      : '✓ Haan, submit kar do';
+  }
+  if (trimmed.startsWith('CONFIRM_WITHDRAW:')) {
+    const id = trimmed.replace('CONFIRM_WITHDRAW:', '').trim();
+    return lang === 'hi'
+      ? `✓ वापस लेने की पुष्टि करें ${id ? `(${id})` : ''}`
+      : lang === 'en'
+      ? `✓ Confirm Withdrawal ${id ? `(${id})` : ''}`
+      : `✓ Haan, wapas le lo ${id ? `(${id})` : ''}`;
+  }
+  if (trimmed.startsWith('CONFIRM_DELETE:')) {
+    const id = trimmed.replace('CONFIRM_DELETE:', '').trim();
+    return lang === 'hi'
+      ? `✓ हटाने की पुष्टि करें ${id ? `(${id})` : ''}`
+      : lang === 'en'
+      ? `✓ Confirm Delete ${id ? `(${id})` : ''}`
+      : `✓ Haan, delete kar do ${id ? `(${id})` : ''}`;
+  }
+  // If raw JSON payload was passed
+  if (trimmed.startsWith('{') && trimmed.endsWith('}') && (trimmed.includes('"title"') || trimmed.includes('"district"'))) {
+    return lang === 'hi'
+      ? '✓ पुष्टि करें और सबमिट करें'
+      : lang === 'en'
+      ? '✓ Confirm & Submit'
+      : '✓ Haan, submit kar do';
+  }
+  return text;
+};
+
 export const AssistantMessageList = ({
   messages,
   loading,
@@ -103,7 +140,10 @@ export const AssistantMessageList = ({
   onAction,
   onSubmitChallenge,
   onTrackChallenge,
-  onChangeLanguage
+  onChangeLanguage,
+  onInfoQuery,
+  mode = 'citizen',
+  lang = 'en'
 }) => {
   const latestMessageRef = React.useRef(null);
   const hasUserMessages = messages.some((m) => m.role === 'user');
@@ -168,7 +208,7 @@ export const AssistantMessageList = ({
                 <div key={`${msg.id}-bubble-${bubbleIdx}`}
                   className={`p-3 text-xs sm:text-[13px] leading-relaxed shadow-2xs ${isUser ? 'bg-[#015a3a] text-white rounded-2xl rounded-tr-xs font-medium' : 'bg-[#eaf6ef] border border-emerald-100/70 text-slate-800 rounded-2xl rounded-tl-xs font-normal'}`}>
                   {isUser
-                    ? <div className="whitespace-pre-line break-words">{bubbleText}</div>
+                    ? <div className="whitespace-pre-line break-words">{cleanUserBubbleContent(bubbleText, lang)}</div>
                     : <TypewriterBubble text={bubbleText} isLatest={isLatestAssistant && bubbleIdx === bubbles.length - 1} />
                   }
                 </div>
@@ -182,45 +222,53 @@ export const AssistantMessageList = ({
                     onClick={() => onAction?.('EDIT_FIELD_LOCATION')}
                     className="px-2.5 py-1.5 rounded-full bg-white hover:bg-emerald-50 text-[#015a3a] border border-emerald-300 text-[11px] font-semibold flex items-center gap-1.5 cursor-pointer transition-all active:scale-95 shadow-2xs"
                   >
-                    <span>📍 Location Badlein</span>
+                    <span>{lang === 'hi' ? '📍 स्थान बदलें' : '📍 Location Badlein'}</span>
                   </button>
                   <button
                     type="button"
                     onClick={() => onAction?.('EDIT_FIELD_DESCRIPTION')}
                     className="px-2.5 py-1.5 rounded-full bg-white hover:bg-blue-50 text-blue-900 border border-blue-300 text-[11px] font-semibold flex items-center gap-1.5 cursor-pointer transition-all active:scale-95 shadow-2xs"
                   >
-                    <span>📝 Samasya Badlein</span>
+                    <span>{lang === 'hi' ? '📝 समस्या बदलें' : '📝 Samasya Badlein'}</span>
                   </button>
                   <button
                     type="button"
                     onClick={() => onAction?.('TRIGGER_ATTACHMENT')}
                     className="px-2.5 py-1.5 rounded-full bg-white hover:bg-purple-50 text-purple-900 border border-purple-300 text-[11px] font-semibold flex items-center gap-1.5 cursor-pointer transition-all active:scale-95 shadow-2xs"
                   >
-                    <span>📎 Photo/Video Jodein</span>
+                    <span>{lang === 'hi' ? '📎 फ़ोटो/वीडियो जोड़ें' : '📎 Photo/Video Jodein'}</span>
                   </button>
                 </div>
               )}
 
               {/* Interactive Cards */}
-              {msg.draftReport && <DraftReportCard draftReport={msg.draftReport} onAction={onAction} />}
-              {msg.createdChallenge && <CreatedChallengeCard challenge={msg.createdChallenge} />}
+              {msg.draftReport && <DraftReportCard draftReport={msg.draftReport} onAction={onAction} lang={lang} />}
+              {msg.createdChallenge && <CreatedChallengeCard challenge={msg.createdChallenge} lang={lang} />}
               {msg.withdrawnChallenge && (
                 <div className="mt-1 p-2.5 bg-amber-50 border border-amber-200/90 rounded-xl text-[11px] text-amber-900 font-bold flex items-center space-x-2 text-left">
                   <RotateCcw className="w-4 h-4 text-amber-700 shrink-0" />
-                  <span>Problem {msg.withdrawnChallenge.challengeId} marked as Withdrawn</span>
+                  <span>
+                    {lang === 'hi'
+                      ? `समस्या ${msg.withdrawnChallenge.challengeId} आधिकारिक रूप से वापस ले ली गई`
+                      : `Problem ${msg.withdrawnChallenge.challengeId} marked as Withdrawn`}
+                  </span>
                 </div>
               )}
               {msg.deletedChallengeId && (
                 <div className="mt-1 p-2.5 bg-rose-50 border border-rose-200/90 rounded-xl text-[11px] text-rose-800 font-bold flex items-center space-x-2 text-left">
                   <Trash2 className="w-4 h-4 text-rose-600 shrink-0" />
-                  <span>Problem {msg.deletedChallengeId} permanently deleted</span>
+                  <span>
+                    {lang === 'hi'
+                      ? `समस्या ${msg.deletedChallengeId} स्थायी रूप से हटा दी गई`
+                      : `Problem ${msg.deletedChallengeId} permanently deleted`}
+                  </span>
                 </div>
               )}
               {msg.actionTarget && !msg.withdrawnChallenge && !msg.deletedChallengeId && (
-                <ActionConfirmCard actionTarget={msg.actionTarget} onAction={onAction} />
+                <ActionConfirmCard actionTarget={msg.actionTarget} onAction={onAction} lang={lang} />
               )}
-              {msg.trackingData && <TrackingCard trackingData={msg.trackingData} onAction={onAction} />}
-              {msg.challengesList?.length > 0 && <ChallengeListCard challengesList={msg.challengesList} onTrackId={onTrackId} />}
+              {msg.trackingData && <TrackingCard trackingData={msg.trackingData} onAction={onAction} lang={lang} />}
+              {msg.challengesList?.length > 0 && <ChallengeListCard challengesList={msg.challengesList} onTrackId={onTrackId} lang={lang} />}
             </div>
           </div>
 
@@ -229,13 +277,16 @@ export const AssistantMessageList = ({
           </span>
         </div>
 
-        {/* Quick Actions (Submit, Track, Language) ONLY shown under welcome message in initial/cleared state */}
+        {/* Quick Actions ONLY shown under welcome message in initial/cleared state */}
         {!hasUserMessages && (msg.id === 'welcome' || msg.id === 'welcome-reset') && (
           <div className="w-full pt-1 animate-fade-in">
             <AssistantQuickActions
+              mode={mode}
+              lang={lang}
               onSubmitChallenge={onSubmitChallenge}
               onTrackChallenge={onTrackChallenge}
               onChangeLanguage={onChangeLanguage}
+              onInfoQuery={onInfoQuery}
             />
           </div>
         )}
@@ -256,7 +307,7 @@ export const AssistantMessageList = ({
             <span className="w-2 h-2 rounded-full bg-[#015a3a] animate-bounce" />
           </div>
           <span className="text-[11.5px] font-semibold text-emerald-900 tracking-wide">
-            Johar Setu AI type kar raha hai...
+            {lang === 'hi' ? 'जोहारसेतु AI लिख रहा है...' : 'Johar Setu AI is thinking...'}
           </span>
         </div>
       </div>

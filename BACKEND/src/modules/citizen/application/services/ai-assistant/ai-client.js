@@ -2,6 +2,22 @@ import { aiConfig } from '../../../../../infrastructure/ai/ai.config.js';
 import logger from '../../../../../shared/logger/index.js';
 
 class AiClient {
+  cleanCompletion(text) {
+    if (!text || typeof text !== 'string') return '';
+    let clean = text.replace(/<think>[\s\S]*?<\/think>/gi, '').trim();
+    if (
+      /cannot fulfill your request|as an ai language model|i cannot assist with that|i can help you with a different prompt|i cannot (?:create|provide|generate|write|help with|fulfill) (?:a |the )?(?:message|response|complaint|request)/i.test(clean)
+    ) {
+      return null;
+    }
+    // Strip common LLM meta preambles and boilerplate
+    clean = clean.replace(/^(?:here(?:'s| is) (?:a |the )?(?:response|reply|answer|message)[^\n]*\n*)/i, '');
+    clean = clean.replace(/^(?:sure(?: thing)?|certainly|of course)[,!.\s]*\n*/i, '');
+    clean = clean.replace(/^(?:here is what I will say:?)\s*\n*/i, '');
+    clean = clean.replace(/^(?:---+|\*\*\*+|___+)\s*\n*/gm, '');
+    return clean.trim();
+  }
+
   /**
    * Invokes Groq first with fast fallback to OpenRouter using user API keys
    */
@@ -29,7 +45,7 @@ class AiClient {
           const choice = data.choices?.[0]?.message;
           let content = choice?.content;
           if (content && typeof content === 'string' && content.trim()) {
-            content = content.replace(/<think>[\s\S]*?<\/think>/gi, '').trim();
+            content = this.cleanCompletion(content);
             logger.info({ msg: 'Live AI completion generated via Groq', model: aiConfig.groqModel });
             return content;
           }
@@ -70,7 +86,7 @@ class AiClient {
           const choice = data.choices?.[0]?.message;
           let content = choice?.content;
           if (content && typeof content === 'string' && content.trim()) {
-            content = content.replace(/<think>[\s\S]*?<\/think>/gi, '').trim();
+            content = this.cleanCompletion(content);
             logger.info({ msg: 'Live AI completion generated via OpenRouter', model: aiConfig.openRouterModel });
             return content;
           }

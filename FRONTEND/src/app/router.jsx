@@ -134,10 +134,20 @@ export function Router() {
     );
   };
 
+  const publicRoutes = [
+    '/', '/landing', '/about', '/about-jharkhand', '/impact', '/industry', '/institutions', '/contact',
+    '/login', '/register', '/register/industry', '/apply-industry',
+    '/forgot-password', '/reset-password', '/verify-email'
+  ];
+
+  const isPublicRoute = publicRoutes.includes(currentPath);
+  const isCitizenRoute = currentPath.startsWith('/citizen');
+
   return (
     <RootLayout>
       {renderComponent()}
-      <JoharSetuAiAssistant />
+      {isCitizenRoute && <JoharSetuAiAssistant mode="citizen" />}
+      {isPublicRoute && <JoharSetuAiAssistant mode="info" />}
     </RootLayout>
   );
 }

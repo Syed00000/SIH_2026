@@ -1,4 +1,12 @@
 import dotenv from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Load .env from backend root relative to this file
+dotenv.config({ path: path.resolve(__dirname, '../../../.env') });
 dotenv.config();
 
 export const aiConfig = {
@@ -14,8 +22,6 @@ export const aiConfig = {
   vectorSize: 384,
 
   // Groq — ultra-fast inference
-  // Primary: openai/gpt-oss-20b (higher OTPM, great Hindi/multilingual support)
-  // Secondary: openai/gpt-oss-120b (for higher quality complex reasoning calls)
   groqApiKey: (process.env.GROQ_API_KEY || '').trim(),
   groqModel: 'openai/gpt-oss-20b',
   groqModelLarge: 'openai/gpt-oss-120b',
@@ -27,8 +33,8 @@ export const aiConfig = {
   openRouterBaseUrl: 'https://openrouter.ai/api/v1/chat/completions',
 
   // Deduplication Thresholds
-  duplicateThreshold: 0.75, // Cosine similarity threshold for flagging potential duplicate
-  strongDuplicateThreshold: 0.85 // Strong duplicate threshold
+  duplicateThreshold: 0.75,
+  strongDuplicateThreshold: 0.85
 };
 
 export default aiConfig;
