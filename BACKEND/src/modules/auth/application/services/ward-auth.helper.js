@@ -39,8 +39,9 @@ export function toWardUserEntity(ward) {
   if (!ward) return null;
   const wardId = ward.wardId || (ward._id ? ward._id.toString() : '');
   const id = ward._id ? ward._id.toString() : wardId;
-  const email = ward.credentials?.loginEmail || ward.councillorEmail || `${wardId.toLowerCase()}@jharkhand.gov.in`;
-  const rawPass = ward.credentials?.password || process.env.DEFAULT_WARD_PASSWORD || '';
+  const code = String(ward.wardNumber || '').padStart(2, '0') || '01';
+  const defaultPass = process.env.DEFAULT_WARD_PASSWORD || `Ward@${code}2026`;
+  const rawPass = ward.credentials?.password || defaultPass;
   const passwordHash = rawPass && rawPass.startsWith('$2') ? rawPass : (rawPass ? bcrypt.hashSync(rawPass, 10) : '');
 
   return {

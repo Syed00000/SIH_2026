@@ -1,29 +1,26 @@
 import React, { useState, useEffect } from 'react';
-import { X, Landmark, AlertCircle, Save } from 'lucide-react';
+import { X, Landmark, AlertCircle, Save, Key, RefreshCw } from 'lucide-react';
 import { wardService } from '../../../government/services/wardService.js';
 
 export const EditWardModal = ({ isOpen, ward, onClose, onWardUpdated }) => {
   const [formData, setFormData] = useState({
-    name: '',
-    councillorName: '',
-    councillorEmail: '',
-    councillorPhone: '',
-    population: '',
-    localities: '',
-    status: 'Active'
+    name: '', councillorName: '', councillorEmail: '', councillorPhone: '',
+    population: '', localities: '', password: '', status: 'Active'
   });
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
 
   useEffect(() => {
     if (ward) {
+      const code = String(ward.wardNumber || '01').padStart(2, '0');
       setFormData({
         name: ward.name || '',
         councillorName: ward.councillorName || '',
-        councillorEmail: ward.councillorEmail || '',
+        councillorEmail: ward.councillorEmail || ward.credentials?.loginEmail || '',
         councillorPhone: ward.councillorPhone || '',
         population: ward.population || '',
         localities: Array.isArray(ward.localities) ? ward.localities.join(', ') : (ward.localities || ''),
+        password: ward.credentials?.password || `Ward@${code}2026`,
         status: ward.status || 'Active'
       });
       setError('');
@@ -37,6 +34,11 @@ export const EditWardModal = ({ isOpen, ward, onClose, onWardUpdated }) => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+  const generateAutoPassword = () => {
+    const code = String(ward.wardNumber || '01').padStart(2, '0');
+    setFormData((prev) => ({ ...prev, password: `Ward@${code}2026` }));
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!formData.name.trim()) return setError('Ward name is required.');
@@ -48,7 +50,9 @@ export const EditWardModal = ({ isOpen, ward, onClose, onWardUpdated }) => {
       const payload = {
         ...formData,
         population: Number(formData.population) || 0,
-        localities: formData.localities.split(',').map((l) => l.trim()).filter(Boolean)
+        localities: formData.localities.split(',').map((l) => l.trim()).filter(Boolean),
+        password: formData.password.trim(),
+        loginEmail: formData.councillorEmail.trim()
       };
       const updated = await wardService.updateWard(targetId, payload);
       if (onWardUpdated) onWardUpdated(updated);
@@ -88,86 +92,52 @@ export const EditWardModal = ({ isOpen, ward, onClose, onWardUpdated }) => {
 
           <div>
             <label className="block text-[11px] font-bold text-slate-700 mb-1">Ward Name *</label>
-            <input
-              type="text"
-              name="name"
-              value={formData.name}
-              onChange={handleChange}
-              className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:border-[#007A61]"
-              required
-            />
+            <input type="text" name="name" value={formData.name} onChange={handleChange} className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:border-[#007A61]" required />
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block text-[11px] font-bold text-slate-700 mb-1">In-charge / Councillor</label>
-              <input
-                type="text"
-                name="councillorName"
-                value={formData.councillorName}
-                onChange={handleChange}
-                className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:border-[#007A61]"
-              />
+              <input type="text" name="councillorName" value={formData.councillorName} onChange={handleChange} className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:border-[#007A61]" />
             </div>
             <div>
               <label className="block text-[11px] font-bold text-slate-700 mb-1">Contact Phone</label>
-              <input
-                type="text"
-                name="councillorPhone"
-                value={formData.councillorPhone}
-                onChange={handleChange}
-                className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:border-[#007A61]"
-              />
+              <input type="text" name="councillorPhone" value={formData.councillorPhone} onChange={handleChange} className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:border-[#007A61]" />
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block text-[11px] font-bold text-slate-700 mb-1">Official Email</label>
-              <input
-                type="email"
-                name="councillorEmail"
-                value={formData.councillorEmail}
-                onChange={handleChange}
-                className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:border-[#007A61]"
-              />
+              <input type="email" name="councillorEmail" value={formData.councillorEmail} onChange={handleChange} className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:border-[#007A61]" />
             </div>
             <div>
               <label className="block text-[11px] font-bold text-slate-700 mb-1">Population</label>
-              <input
-                type="number"
-                name="population"
-                value={formData.population}
-                onChange={handleChange}
-                className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:border-[#007A61]"
-              />
+              <input type="number" name="population" value={formData.population} onChange={handleChange} className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:border-[#007A61]" />
             </div>
           </div>
 
           <div>
             <label className="block text-[11px] font-bold text-slate-700 mb-1">Localities (comma separated)</label>
-            <input
-              type="text"
-              name="localities"
-              value={formData.localities}
-              onChange={handleChange}
-              className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:border-[#007A61]"
-            />
+            <input type="text" name="localities" value={formData.localities} onChange={handleChange} className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:border-[#007A61]" />
+          </div>
+
+          <div>
+            <div className="flex items-center justify-between mb-1">
+              <label className="text-[11px] font-bold text-slate-700">Ward Portal Password</label>
+              <button type="button" onClick={generateAutoPassword} className="text-[10px] text-[#007A61] hover:underline font-bold flex items-center gap-1 cursor-pointer">
+                <RefreshCw className="w-2.5 h-2.5" /> Auto-generate
+              </button>
+            </div>
+            <div className="relative">
+              <Key className="w-3.5 h-3.5 absolute left-3 top-3 text-slate-400" />
+              <input type="text" name="password" value={formData.password} onChange={handleChange} placeholder="e.g. Ward@012026" className="w-full pl-8 pr-3 py-2 text-xs font-mono rounded-xl border border-slate-200 focus:outline-none focus:border-[#007A61]" />
+            </div>
           </div>
 
           <div className="pt-2 flex items-center justify-end gap-2">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-4 py-2 text-xs font-bold text-slate-600 hover:bg-slate-100 rounded-xl cursor-pointer"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={submitting}
-              className="flex items-center gap-1.5 px-4 py-2 text-xs font-bold bg-[#007A61] hover:bg-[#006651] text-white rounded-xl shadow-xs cursor-pointer disabled:opacity-50"
-            >
+            <button type="button" onClick={onClose} className="px-4 py-2 text-xs font-bold text-slate-600 hover:bg-slate-100 rounded-xl cursor-pointer">Cancel</button>
+            <button type="submit" disabled={submitting} className="flex items-center gap-1.5 px-4 py-2 text-xs font-bold bg-[#007A61] hover:bg-[#006651] text-white rounded-xl shadow-xs cursor-pointer disabled:opacity-50">
               <Save className="w-3.5 h-3.5" />
               <span>{submitting ? 'Updating...' : 'Save Changes'}</span>
             </button>

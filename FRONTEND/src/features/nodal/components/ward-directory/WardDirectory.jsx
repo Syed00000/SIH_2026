@@ -40,15 +40,22 @@ export const WardDirectory = ({ nodalDistrict = 'Ranchi' }) => {
           const cat = (d.category || '').toLowerCase();
           return cat.includes('ward') || cat.includes('commissioner') || (d.deptId && d.deptId.includes('6542'));
         })
-        .map((d) => ({
-          ...d,
-          wardId: d.deptId || d.code || `WRD-${d.district}`,
-          wardNumber: d.district && !isNaN(d.district) ? Number(d.district) : 133,
-          councillorName: d.headName || 'mukesh',
-          councillorEmail: d.headEmail || d.credentials?.loginEmail || 'ward133@gmail.com',
-          councillorPhone: d.headPhone || '8888888',
-          credentials: d.credentials || null
-        }));
+        .map((d) => {
+          const wNum = d.district && !isNaN(d.district) ? Number(d.district) : 1;
+          const code = String(wNum).padStart(2, '0');
+          return {
+            ...d,
+            wardId: d.deptId || d.code || `WRD-${d.district || code}`,
+            wardNumber: wNum,
+            councillorName: d.headName || '',
+            councillorEmail: d.headEmail || d.credentials?.loginEmail || '',
+            councillorPhone: d.headPhone || '',
+            credentials: d.credentials || {
+              loginEmail: d.headEmail || `ward${code}.ranchi@jharkhand.gov.in`,
+              password: `Ward@${code}2026`
+            }
+          };
+        });
 
       const rawWards = Array.isArray(resWards) ? resWards : (resWards?.data || []);
 
@@ -122,22 +129,11 @@ export const WardDirectory = ({ nodalDistrict = 'Ranchi' }) => {
         </div>
 
         <div className="flex items-center gap-2 self-start sm:self-auto">
-          <button
-            type="button"
-            onClick={() => setIsAddWardOpen(true)}
-            className="flex items-center gap-1.5 px-3.5 py-2 bg-[#007A61] hover:bg-[#006651] text-white rounded-xl text-xs font-bold shadow-xs cursor-pointer"
-          >
-            <Plus className="w-3.5 h-3.5" />
-            <span>Add Ward</span>
+          <button type="button" onClick={() => setIsAddWardOpen(true)} className="flex items-center gap-1.5 px-3.5 py-2 bg-[#007A61] hover:bg-[#006651] text-white rounded-xl text-xs font-bold shadow-xs cursor-pointer">
+            <Plus className="w-3.5 h-3.5" /> <span>Add Ward</span>
           </button>
-          <button
-            type="button"
-            onClick={loadData}
-            disabled={loading}
-            className="flex items-center gap-1.5 px-3.5 py-2 bg-slate-50 hover:bg-slate-100 text-slate-700 rounded-xl text-xs font-bold border border-slate-200 cursor-pointer"
-          >
-            <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin text-[#007A61]' : ''}`} />
-            <span>Sync Wards</span>
+          <button type="button" onClick={loadData} disabled={loading} className="flex items-center gap-1.5 px-3.5 py-2 bg-slate-50 hover:bg-slate-100 text-slate-700 rounded-xl text-xs font-bold border border-slate-200 cursor-pointer">
+            <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin text-[#007A61]' : ''}`} /> <span>Sync Wards</span>
           </button>
         </div>
       </div>
