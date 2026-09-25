@@ -37,4 +37,17 @@ export default defineConfig({
       },
     },
   },
+  build: {
+    chunkSizeWarningLimit: 1500,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'vendor-ui': ['lucide-react', 'framer-motion'],
+          'vendor-charts': ['recharts'],
+          'vendor-maps': ['leaflet', 'leaflet.heat', 'leaflet.markercluster', 'react-leaflet'],
+          'vendor-pdf': ['jspdf'],
+        },
+      },
+    },
+  },
 });

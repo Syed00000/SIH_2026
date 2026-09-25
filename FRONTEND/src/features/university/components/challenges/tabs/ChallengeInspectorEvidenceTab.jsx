@@ -3,24 +3,7 @@ import { ShieldCheck, Phone, Mail, Quote, Camera, ImageOff } from 'lucide-react'
 import { ChallengeInspectorEvidenceCard } from './ChallengeInspectorEvidenceCard.jsx';
 import { ChallengeInspectorEvidenceLightbox } from './ChallengeInspectorEvidenceLightbox.jsx';
 import { getPdfViewUrl } from '../../../../../shared/utils/openPdf.js';
-
-const resolveMediaUrl = (rawUrl) => {
-  if (!rawUrl || typeof rawUrl !== 'string') return '';
-  const trimmed = rawUrl.trim();
-  if (
-    trimmed.startsWith('http://') ||
-    trimmed.startsWith('https://') ||
-    trimmed.startsWith('data:') ||
-    trimmed.startsWith('blob:')
-  ) {
-    return trimmed;
-  }
-  const cleanPath = trimmed.startsWith('/') ? trimmed : `/${trimmed}`;
-  const backendBase = (typeof window !== 'undefined' && window.location.port === '5173')
-    ? 'http://127.0.0.1:3000'
-    : '';
-  return `${backendBase}${cleanPath}`;
-};
+import { resolveMediaUrl } from '../../../../../shared/utils/mediaUtils.js';
 
 export const ChallengeInspectorEvidenceTab = ({ challenge = {} }) => {
   const [selectedPreview, setSelectedPreview] = useState(null);

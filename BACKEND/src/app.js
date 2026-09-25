@@ -118,6 +118,14 @@ app.use('/api/v1/public/notices', noticesRoutes);
 app.use('/api/v1/public/updates', publicUpdatesRouter);
 app.use('/api/v1/admin/updates', adminUpdatesRouter);
 
+// Graceful fallback for Socket.IO polling in serverless environments
+app.all(['/socket.io', '/socket.io/*'], (req, res) => {
+  res.status(200).json({
+    status: 'notice',
+    message: 'Socket.IO real-time websockets require persistent hosting (e.g. Render/Railway/VPS). REST API active.'
+  });
+});
+
 app.use((req, res, next) => {
   next(new NotFoundError(`Route ${req.method} ${req.path} not found`));
 });

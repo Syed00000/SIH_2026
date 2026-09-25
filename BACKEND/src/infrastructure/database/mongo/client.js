@@ -5,7 +5,9 @@ import logger from '../../../shared/logger/index.js';
 
 try {
   dns.setDefaultResultOrder('ipv4first');
-  dns.setServers(['8.8.8.8', '8.8.4.4', '1.1.1.1']);
+  if (!process.env.VERCEL) {
+    dns.setServers(['8.8.8.8', '8.8.4.4', '1.1.1.1']);
+  }
 } catch (dnsErr) {
   logger.warn('Could not set DNS configuration:', dnsErr.message);
 }

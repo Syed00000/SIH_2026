@@ -8,6 +8,7 @@ import { QuickActionCards } from './QuickActionCards';
 import { JharkhandOverviewSection } from './JharkhandOverviewSection';
 import { LiveTickersSection } from './LiveTickersSection';
 import { SectorsGallery } from './SectorsGallery';
+import apiClient from '../../../infrastructure/api/client.js';
 
 export const LandingPage = ({ onNavigate }) => {
   const [isDistrictMapOpen, setIsDistrictMapOpen] = useState(false);
@@ -23,8 +24,7 @@ export const LandingPage = ({ onNavigate }) => {
     const fetchNotices = async () => {
       try {
         setNoticesLoading(true);
-        const res = await fetch('http://localhost:3000/api/v1/public/notices');
-        const data = await res.json();
+        const data = await apiClient.get('public/notices');
         if (data.status === 'success') setNotices(data.data.notices);
         else setNoticesError('Unable to load latest notices.');
       } catch (err) {
@@ -40,8 +40,7 @@ export const LandingPage = ({ onNavigate }) => {
     const fetchUpdates = async () => {
       try {
         setUpdatesLoading(true);
-        const res = await fetch('http://localhost:3000/api/v1/public/updates?limit=6');
-        const data = await res.json();
+        const data = await apiClient.get('public/updates', { params: { limit: 6 } });
         if (data.status === 'success') setUpdates(data.data.updates);
         else setUpdatesError('Unable to load latest updates.');
       } catch (err) {
@@ -91,9 +90,9 @@ export const LandingPage = ({ onNavigate }) => {
       <section className="py-2.5 md:py-3.5 bg-[#fbfcfb] border-b border-gray-100">
         <div className="w-full px-4 md:px-8 lg:px-12">
           {/* Top Row: Jharkhand Overview, Leadership, and District Glance */}
-          <JharkhandOverviewSection 
-            onNavigate={onNavigate} 
-            onOpenDistrictMap={() => setIsDistrictMapOpen(true)} 
+          <JharkhandOverviewSection
+            onNavigate={onNavigate}
+            onOpenDistrictMap={() => setIsDistrictMapOpen(true)}
           />
 
           {/* Marquee Tickers: Challenges, Updates, and Notices */}
@@ -113,9 +112,9 @@ export const LandingPage = ({ onNavigate }) => {
       </section>
 
       {/* Interactive Jharkhand District Map Modal */}
-      <JharkhandDistrictMapModal 
-        isOpen={isDistrictMapOpen} 
-        onClose={() => setIsDistrictMapOpen(false)} 
+      <JharkhandDistrictMapModal
+        isOpen={isDistrictMapOpen}
+        onClose={() => setIsDistrictMapOpen(false)}
       />
     </LandingLayout>
   );

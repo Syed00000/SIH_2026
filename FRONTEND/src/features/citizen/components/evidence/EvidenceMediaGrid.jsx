@@ -1,23 +1,6 @@
 import React, { useState } from 'react';
 import { Eye, FileText, Trash2, X } from 'lucide-react';
-
-const resolveMediaUrl = (rawUrl) => {
-  if (!rawUrl || typeof rawUrl !== 'string') return '';
-  const trimmed = rawUrl.trim();
-  if (
-    trimmed.startsWith('http://') ||
-    trimmed.startsWith('https://') ||
-    trimmed.startsWith('data:') ||
-    trimmed.startsWith('blob:')
-  ) {
-    return trimmed;
-  }
-  const cleanPath = trimmed.startsWith('/') ? trimmed : `/${trimmed}`;
-  const backendBase = (typeof window !== 'undefined' && window.location.port === '5173')
-    ? 'http://127.0.0.1:3000'
-    : '';
-  return `${backendBase}${cleanPath}`;
-};
+import { resolveMediaUrl } from '../../../../shared/utils/mediaUtils.js';
 
 export const EvidenceMediaGrid = ({
   mediaList = [],

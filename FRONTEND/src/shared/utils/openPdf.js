@@ -3,11 +3,14 @@ const getBackendBase = () => {
   if (envUrl) {
     return envUrl.replace(/\/api\/v1\/?$/, '').replace(/\/$/, '');
   }
-  if (typeof window !== 'undefined' && window.location) {
-    const port = '3000';
-    return `${window.location.protocol}//${window.location.hostname}:${port}`;
+  if (
+    typeof window !== 'undefined' &&
+    window.location &&
+    (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+  ) {
+    return `${window.location.protocol}//${window.location.hostname}:3000`;
   }
-  return 'http://localhost:3000';
+  return typeof window !== 'undefined' ? window.location.origin : '';
 };
 
 /**

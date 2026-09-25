@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { RefreshCw, Plus, Trash2, Edit2, Link as LinkIcon, AlertCircle, Eye } from 'lucide-react';
+import apiClient from '../../../../infrastructure/api/client.js';
 
 export const ManageUpdatesDashboard = () => {
   const [updates, setUpdates] = useState([]);
@@ -11,8 +12,7 @@ export const ManageUpdatesDashboard = () => {
   const fetchUpdates = async () => {
     try {
       setLoading(true);
-      const res = await fetch('http://localhost:3000/api/v1/admin/updates');
-      const data = await res.json();
+      const data = await apiClient.get('admin/updates');
       if (data.status === 'success') {
         setUpdates(data.data.updates);
       } else {
@@ -33,8 +33,7 @@ export const ManageUpdatesDashboard = () => {
     try {
       setSyncing(true);
       setSyncMessage(null);
-      const res = await fetch('http://localhost:3000/api/v1/admin/updates/sync', { method: 'POST' });
-      const data = await res.json();
+      const data = await apiClient.post('admin/updates/sync', {});
       if (data.status === 'success') {
         setSyncMessage(data.message);
         await fetchUpdates();
@@ -51,10 +50,8 @@ export const ManageUpdatesDashboard = () => {
   const handleDelete = async (id) => {
     if (!window.confirm('Are you sure you want to delete this update?')) return;
     try {
-      const res = await fetch(`http://localhost:3000/api/v1/admin/updates/${id}`, { method: 'DELETE' });
-      if (res.ok || res.status === 204) {
-        setUpdates(prev => prev.filter(u => u.id !== id));
-      }
+      await apiClient.delete(`admin/updates/${id}`);
+      setUpdates(prev => prev.filter(u => u.id !== id));
     } catch (err) {
       alert('Failed to delete update.');
     }
@@ -62,14 +59,8 @@ export const ManageUpdatesDashboard = () => {
 
   const handleToggleActive = async (id, currentStatus) => {
     try {
-      const res = await fetch(`http://localhost:3000/api/v1/admin/updates/${id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ isActive: !currentStatus })
-      });
-      if (res.ok) {
-        setUpdates(prev => prev.map(u => u.id === id ? { ...u, isActive: !currentStatus } : u));
-      }
+      await apiClient.put(`admin/updates/${id}`, { isActive: !currentStatus });
+      setUpdates(prev => prev.map(u => u.id === id ? { ...u, isActive: !currentStatus } : u));
     } catch (err) {
       alert('Failed to update status.');
     }

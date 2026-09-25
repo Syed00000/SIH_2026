@@ -8,12 +8,14 @@ export const IndustrySuccessModal = ({ isOpen, onClose, credentials }) => {
 
   const { industryId, legalName, email, password } = credentials;
 
+  const portalUrl = typeof window !== 'undefined' ? `${window.location.origin}/login` : '/login';
+
   const credentialsText = `=========================================
 JOHARSETU JHARKHAND INDUSTRY ONBOARDING
 =========================================
 Organization Legal Name : ${legalName}
 Industry Entity ID      : ${industryId}
-Portal Login URL        : http://localhost:5173/login
+Portal Login URL        : ${portalUrl}
 Login Username / Email  : ${email}
 Temporary Password      : ${password}
 Account Status          : Active

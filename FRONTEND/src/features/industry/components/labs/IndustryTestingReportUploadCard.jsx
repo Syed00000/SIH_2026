@@ -3,6 +3,7 @@ import { Upload, FileText, CheckCircle2, Lock, ExternalLink, Loader2, AlertCircl
 import { universityApiService } from '../../../university/services/universityApiService.js';
 import { facultyProjectsApi } from '../../../university/services/api/facultyProjectsApi.js';
 import { getPdfViewUrl } from '../../../../shared/utils/openPdf.js';
+import apiClient from '../../../../infrastructure/api/client.js';
 
 export const IndustryTestingReportUploadCard = ({ project, stages = [], allStagesCompleted = false, onDossierSubmitted }) => {
   const [pdfFile, setPdfFile] = useState(null);
@@ -51,11 +52,10 @@ export const IndustryTestingReportUploadCard = ({ project, stages = [], allStage
       formData.append('type', 'testing-report');
       const targetId = project?.projectId || project?.id || project?.requestId;
       const targetCode = project?.universityCode || 'RU001';
-      const res = await fetch(`http://localhost:3000/api/v1/university/projects/${encodeURIComponent(targetId)}/upload-pdf?universityCode=${encodeURIComponent(targetCode)}`, {
-        method: 'POST',
-        body: formData
-      });
-      const data = await res.json();
+      const data = await apiClient.upload(
+        `university/projects/${encodeURIComponent(targetId)}/upload-pdf?universityCode=${encodeURIComponent(targetCode)}`,
+        formData
+      );
       if (data?.data?.url || data?.data?.pdfUrl) {
         setPdfUrl(data.data.url || data.data.pdfUrl);
         setPdfName(data.data.fileName || file.name);
