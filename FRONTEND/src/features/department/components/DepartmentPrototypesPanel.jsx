@@ -1,5 +1,5 @@
 import React from 'react';
-import { Package, MapPin, Target, Sparkles, AlertCircle, Eye, Beaker } from 'lucide-react';
+import { Package, MapPin, Target, AlertCircle, Eye, Beaker } from 'lucide-react';
 import { openPdf } from '../../../shared/utils/openPdf.js';
 
 export const DepartmentPrototypesPanel = ({ problems = [], onAssignToBudgetOfficer }) => {
@@ -116,8 +116,7 @@ export const DepartmentPrototypesPanel = ({ problems = [], onAssignToBudgetOffic
                 </div>
 
                 <div className="pt-4 border-t border-slate-100 flex items-center justify-between gap-3 flex-wrap">
-                  <div className="flex items-center gap-1.5 text-[11px] font-black text-emerald-700 bg-emerald-50/80 px-3 py-1.5 rounded-lg border border-emerald-200/60 shadow-sm shrink-0">
-                    <Sparkles className="w-3.5 h-3.5 text-emerald-500" />
+                  <div className="flex items-center text-[11px] font-black text-emerald-700 bg-emerald-50/80 px-3 py-1.5 rounded-lg border border-emerald-200/60 shadow-sm shrink-0">
                     <span>Active & Operational</span>
                   </div>
                   
