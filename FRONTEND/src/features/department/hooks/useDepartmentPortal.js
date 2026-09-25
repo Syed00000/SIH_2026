@@ -5,6 +5,7 @@ import technicianService from '../../government/services/technicianService.js';
 import { budgetOfficerService } from '../../government/services/budgetOfficerService.js';
 import { projectCsrSyncService } from '../../government/services/projectCsrSyncService.js';
 import { filterDepartmentChallenges } from '../components/departmentChallengeFilter.helper.js';
+import apiClient from '../../../infrastructure/api/client.js';
 
 export const useDepartmentPortal = ({ user }) => {
   const [activeTab, setActiveTab] = useState('overview');
@@ -60,23 +61,82 @@ export const useDepartmentPortal = ({ user }) => {
       setAllDepartments(depts);
 
       let matched = null;
+      const uEmail = (user?.email || '').toLowerCase().trim();
+      const uDeptId = (user?.deptId || user?.profile?.deptId || '').toLowerCase().trim();
+      const uCode = (user?.code || user?.profile?.code || '').toLowerCase().trim();
+      const uCategory = (user?.category || user?.profile?.category || '').toLowerCase().trim();
+      const uDistrict = (user?.district || user?.profile?.district || '').toLowerCase().trim();
+
+      // 1. If queryDeptId is present in URL and matches a real department:
       if (queryDeptId) {
+        const qLower = queryDeptId.toLowerCase().trim();
         matched = depts.find((d) =>
-          d.deptId?.toLowerCase() === queryDeptId.toLowerCase() ||
-          d.id === queryDeptId ||
-          d._id?.toString() === queryDeptId ||
-          d.code?.toLowerCase() === queryDeptId.toLowerCase()
+          d.deptId?.toLowerCase() === qLower ||
+          d.id?.toLowerCase() === qLower ||
+          d._id?.toString().toLowerCase() === qLower ||
+          d.code?.toLowerCase() === qLower ||
+          d.credentials?.loginEmail?.toLowerCase() === qLower ||
+          d.headEmail?.toLowerCase() === qLower
         );
       }
-      if (!matched && (user?.deptId || user?.profile?.deptId)) {
-        const uId = user.deptId || user.profile?.deptId;
-        matched = depts.find((d) => d.deptId === uId || d.id === uId || d._id?.toString() === uId);
+
+      // 2. Match by logged-in user credentials (MOST ACCURATE for direct department login)
+      if (!matched && uEmail) {
+        matched = depts.find((d) =>
+          d.credentials?.loginEmail?.toLowerCase() === uEmail ||
+          d.headEmail?.toLowerCase() === uEmail ||
+          d.email?.toLowerCase() === uEmail ||
+          d.credentials?.loginId?.toLowerCase() === uEmail
+        );
       }
-      if (!matched && (user?.department || user?.profile?.department)) {
-        const uDeptName = (user.department || user.profile?.department || '').toLowerCase();
-        matched = depts.find((d) => d.name?.toLowerCase().includes(uDeptName));
+
+      // 3. Match by user deptId or code
+      if (!matched && (uDeptId || uCode)) {
+        matched = depts.find((d) =>
+          (uDeptId && (d.deptId?.toLowerCase() === uDeptId || d.id?.toLowerCase() === uDeptId || d._id?.toString().toLowerCase() === uDeptId)) ||
+          (uCode && d.code?.toLowerCase() === uCode)
+        );
       }
+
+      // 4. Match by userId
+      if (!matched && user?.id) {
+        matched = depts.find((d) => d.userId?.toString() === user.id.toString());
+      }
+
+      // 5. Match by department name + district + category
+      if (!matched && (user?.department || user?.profile?.department || user?.fullName)) {
+        const uDeptName = (user?.department || user?.profile?.department || user?.fullName || '').toLowerCase().trim();
+        matched = depts.find((d) => {
+          const nameMatches = d.name?.toLowerCase().includes(uDeptName) || uDeptName.includes(d.name?.toLowerCase());
+          const catMatches = !uCategory || d.category?.toLowerCase() === uCategory;
+          const distMatches = !uDistrict || d.district?.toLowerCase() === uDistrict;
+          return nameMatches && catMatches && distMatches;
+        });
+        if (!matched) {
+          matched = depts.find((d) => {
+            const nameMatches = d.name?.toLowerCase().includes(uDeptName) || uDeptName.includes(d.name?.toLowerCase());
+            const distMatches = !uDistrict || d.district?.toLowerCase() === uDistrict;
+            return nameMatches && distMatches;
+          });
+        }
+        if (!matched) {
+          matched = depts.find((d) => d.name?.toLowerCase().includes(uDeptName));
+        }
+      }
+
+      // 6. Fallback if still not matched
       if (!matched && depts.length > 0) matched = depts[0];
+
+      // Sync URL parameter to the resolved department ID
+      if (matched?.deptId && typeof window !== 'undefined') {
+        const currentUrlDept = new URLSearchParams(window.location.search).get('deptId');
+        if (currentUrlDept !== matched.deptId) {
+          const url = new URL(window.location);
+          url.searchParams.set('deptId', matched.deptId);
+          window.history.replaceState({}, '', url.toString());
+        }
+      }
+
       setDepartment(matched);
 
       const isDistrict = matched?.category === 'District Department';
@@ -214,15 +274,23 @@ export const useDepartmentPortal = ({ user }) => {
     });
   };
 
-  const handleSubmitBudgetToGovt = (problem) => {
-    projectCsrSyncService.submitBudgetToGovernment(problem.id || problem.challengeId || problem._id);
+  const handleSubmitBudgetToGovt = async (problem) => {
+    const targetId = problem.id || problem.challengeId || problem._id;
+    const cleanId = String(targetId).replace('PROP-', '');
+    const updatedOfficer = {
+      ...(problem.assignedBudgetOfficer || {}),
+      status: 'Forwarded',
+      forwardedAt: new Date().toISOString()
+    };
+    try {
+      await apiClient.put(`university/projects/${cleanId}?universityCode=ALL`, {
+        assignedBudgetOfficer: updatedOfficer
+      });
+    } catch {}
+    projectCsrSyncService.submitBudgetToGovernment(targetId);
     handleUpdateProblem({
       ...problem,
-      assignedBudgetOfficer: {
-        ...problem.assignedBudgetOfficer,
-        status: 'Forwarded',
-        forwardedAt: new Date().toISOString()
-      }
+      assignedBudgetOfficer: updatedOfficer
     });
   };
 

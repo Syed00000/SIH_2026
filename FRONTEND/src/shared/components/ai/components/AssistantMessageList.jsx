@@ -164,7 +164,7 @@ export const AssistantMessageList = ({
   }, [messages.length]);
 
   return (
-    <div className="flex-1 overflow-y-auto px-4 py-3 space-y-4 custom-scrollbar bg-slate-50/40">
+    <div className="flex-1 overflow-y-auto px-3 sm:px-4 py-3 space-y-4 custom-scrollbar bg-slate-50/40">
       {messages.map((msg, msgIndex) => {
         const isUser = msg.role === 'user';
         const isLatest = msgIndex === messages.length - 1;
@@ -172,14 +172,15 @@ export const AssistantMessageList = ({
         const bubbles = isUser
           ? [msg.content || '']
           : (msg.content || '').split('---BUBBLE---').map(b => b.trim()).filter(Boolean);
+        const hasCard = Boolean(msg.draftReport || msg.createdChallenge || msg.actionTarget || msg.trackingData || msg.challengesList);
 
         return (
           <React.Fragment key={msg.id}>
             <div
               ref={isLatest ? latestMessageRef : null}
-              className={`flex flex-col ${isUser ? 'items-end' : 'items-start'}`}
+              className={`flex flex-col ${isUser ? 'items-end' : 'items-start'} w-full`}
             >
-          <div className={`flex items-start gap-2.5 max-w-[88%] ${isUser ? 'flex-row-reverse' : 'flex-row'}`}>
+          <div className={`flex items-start gap-2 sm:gap-2.5 w-full ${isUser ? 'max-w-[85%] flex-row-reverse' : hasCard ? 'max-w-full sm:max-w-[94%] flex-row' : 'max-w-[92%] sm:max-w-[88%] flex-row'}`}>
             {/* Avatar */}
             {!isUser
               ? <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center shrink-0 border border-emerald-600/30 shadow-2xs mt-0.5"><JoharSetuIcon className="w-6 h-6" /></div>

@@ -33,6 +33,15 @@ export class User {
     this.lastLoginAt = lastLoginAt;
     this.createdAt = createdAt;
     this.updatedAt = updatedAt;
+    this.deptId = (profile && profile.deptId) || null;
+    this.category = (profile && profile.category) || null;
+    this.department = (profile && profile.department) || null;
+    this.district = (profile && profile.district) || null;
+    this.block = (profile && profile.block) || null;
+    this.code = (profile && profile.code) || null;
+    this.officerId = (profile && profile.officerId) || null;
+    this.departmentId = (profile && profile.departmentId) || null;
+    this.designation = (profile && profile.designation) || null;
   }
 
   get isEmailVerified() {
@@ -46,6 +55,16 @@ export class User {
       email: this.email,
       mobileNumber: this.mobileNumber,
       role: this.role,
+      deptId: this.profile?.deptId || this.deptId || null,
+      category: this.profile?.category || this.category || null,
+      department: this.profile?.department || this.department || null,
+      district: this.profile?.district || this.district || null,
+      block: this.profile?.block || this.block || null,
+      code: this.profile?.code || this.code || null,
+      technicianId: this.profile?.technicianId || this.technicianId || null,
+      officerId: this.profile?.officerId || this.officerId || null,
+      departmentId: this.profile?.departmentId || this.departmentId || null,
+      designation: this.profile?.designation || this.designation || null,
       profile: this.profile,
       emailVerified: this.isEmailVerified,
       accountStatus: this.accountStatus,

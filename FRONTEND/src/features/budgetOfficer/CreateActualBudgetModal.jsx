@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { X, Calculator, IndianRupee, FileText, Upload, Save } from 'lucide-react';
+import { getPreliminaryBudget, formatIndianCurrency } from './budgetUtils.js';
 
 export const CreateActualBudgetModal = ({ isOpen, onClose, task, onSubmit }) => {
   const [actualAmount, setActualAmount] = useState('');
@@ -9,7 +10,7 @@ export const CreateActualBudgetModal = ({ isOpen, onClose, task, onSubmit }) => 
 
   if (!isOpen || !task) return null;
 
-  const oldBudget = Number(task.estimatedCost || task.sanctionedBudget || task.budget || 250000);
+  const oldBudget = getPreliminaryBudget(task);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -54,7 +55,7 @@ export const CreateActualBudgetModal = ({ isOpen, onClose, task, onSubmit }) => 
             <span className="text-xs font-bold text-amber-700 uppercase">Preliminary Estimate Provided by Dept</span>
             <span className="text-2xl font-black text-amber-900 flex items-center">
               <IndianRupee className="w-5 h-5 mr-1" />
-              {oldBudget.toLocaleString('en-IN')}
+              {formatIndianCurrency(oldBudget)}
             </span>
             <span className="text-xs text-amber-800 font-medium pt-1">
               Please review this figure and prepare the final required amount based on actual material and labor cost calculations.

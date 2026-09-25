@@ -21,6 +21,10 @@ export const technicianRepository = {
     return Technician.findOne({ technicianId });
   },
 
+  findOne: async (query = {}) => {
+    return Technician.findOne(query);
+  },
+
   create: async (data) => {
     const technician = new Technician(data);
     return technician.save();

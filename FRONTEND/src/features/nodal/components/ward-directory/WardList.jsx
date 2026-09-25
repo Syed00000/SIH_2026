@@ -1,5 +1,5 @@
 import React from 'react';
-import { Landmark, Plus } from 'lucide-react';
+import { Landmark } from 'lucide-react';
 import { WardCard } from './WardCard.jsx';
 
 export const WardList = ({
@@ -8,8 +8,7 @@ export const WardList = ({
   onViewWard,
   onEditWard,
   onDeleteWard,
-  onAllocateProblem,
-  onAddWard
+  onAllocateProblem
 }) => {
   if (!wards || wards.length === 0) {
     return (
@@ -21,16 +20,6 @@ export const WardList = ({
         <p className="text-xs text-slate-500 max-w-sm mx-auto">
           No ward-level authorities or commissioner offices registered yet.
         </p>
-        {onAddWard && (
-          <button
-            type="button"
-            onClick={onAddWard}
-            className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#007A61] hover:bg-[#006651] text-white rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer mt-2"
-          >
-            <Plus className="w-4 h-4" />
-            <span>Add Ward Department</span>
-          </button>
-        )}
       </div>
     );
   }

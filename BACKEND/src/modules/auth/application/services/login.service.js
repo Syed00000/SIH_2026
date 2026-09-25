@@ -45,7 +45,7 @@ export class LoginService {
       const autoVerifyRoles = [
         'UNIVERSITY', 'FACULTY', 'GOVERNMENT', 'NODAL', 'DEPARTMENT',
         'INDUSTRY', 'WARD', 'BLOCK', 'TECHNICIAN', 'ADMIN', 'SUPER_ADMIN',
-        'CITIZEN', 'USER'
+        'CITIZEN', 'USER', 'BUDGET_OFFICER'
       ];
       if (autoVerifyRoles.includes(user.role)) {
         await this.userService.updateResetCredentials(user.id, {
@@ -64,13 +64,8 @@ export class LoginService {
     let isMatch = false;
     const rawPass = password || '';
     const passCandidates = [
-      rawPass,
-      rawPass.trim(),
-      rawPass.toLowerCase(),
-      rawPass.trim().toLowerCase(),
-      rawPass.charAt(0).toUpperCase() + rawPass.slice(1),
-      rawPass.charAt(0).toLowerCase() + rawPass.slice(1),
-      rawPass.toUpperCase()
+      rawPass, rawPass.trim(), rawPass.toLowerCase(), rawPass.trim().toLowerCase(),
+      rawPass.charAt(0).toUpperCase() + rawPass.slice(1), rawPass.toUpperCase()
     ];
     const uniqueCandidates = [...new Set(passCandidates.filter(Boolean))];
 
@@ -95,14 +90,35 @@ export class LoginService {
       } else if (user.role === 'BLOCK' && user.blockDoc) {
         const { verifyBlockPassword } = await import('./block-auth.helper.js');
         isMatch = await verifyBlockPassword(user.blockDoc, rawPass);
-      } else if (user.role === 'TECHNICIAN' && user.password) {
-        if (uniqueCandidates.includes(user.password) || uniqueCandidates.includes(user.password.trim())) {
+      } else if (user.role === 'TECHNICIAN') {
+        if (user.password && (uniqueCandidates.includes(user.password) || uniqueCandidates.includes(user.password.trim()))) {
           isMatch = true;
+        } else {
+          try {
+            const Technician = (await import('../../../government/technicians/infrastructure/technician.schema.js')).default;
+            const techDoc = await Technician.findOne({
+              $or: [
+                { email: user.email?.toLowerCase() },
+                { 'credentials.loginEmail': user.email?.toLowerCase() },
+                { technicianId: user.profile?.technicianId || user.technicianId }
+              ]
+            });
+            if (techDoc?.credentials) {
+              const techPlain = techDoc.credentials.password || techDoc.credentials.generatedPassword;
+              if (techPlain && uniqueCandidates.some((c) => c.toLowerCase() === techPlain.trim().toLowerCase())) {
+                isMatch = true;
+                const newHash = await bcrypt.hash(techPlain.trim(), 10);
+                await this.userService.updateResetCredentials(user.id, { passwordHash: newHash });
+                user.passwordHash = newHash;
+              }
+            }
+          } catch (tErr) {
+            logger.warn('Technician password reconciliation error:', tErr.message);
+          }
         }
-      } else if (user.role === 'BUDGET_OFFICER' && user.password) {
-        if (uniqueCandidates.includes(user.password) || uniqueCandidates.includes(user.password.trim())) {
-          isMatch = true;
-        }
+      } else if (user.role === 'BUDGET_OFFICER') {
+        const { verifyBudgetOfficerPassword } = await import('./budget-officer-auth.helper.js');
+        isMatch = await verifyBudgetOfficerPassword(user, uniqueCandidates, this.userService);
       } else if (user.role === 'CITIZEN') {
         const citizenFallbacks = ['Tauqueer@123', 'Citizen@123', '12345678', '123456', 'tauqueer123', 'tauqueer'];
         if (citizenFallbacks.some((c) => uniqueCandidates.includes(c))) {
@@ -116,11 +132,7 @@ export class LoginService {
       try {
         let plainCandidate = null;
         const userEmailStr = user.email || '';
-        
-        if (
-          config.GOVT_ADMIN_EMAIL &&
-          userEmailStr.toLowerCase() === config.GOVT_ADMIN_EMAIL.toLowerCase()
-        ) {
+        if (config.GOVT_ADMIN_EMAIL && userEmailStr.toLowerCase() === config.GOVT_ADMIN_EMAIL.toLowerCase()) {
           plainCandidate = config.GOVT_ADMIN_PASSWORD || process.env.GOVT_ADMIN_PASSWORD || '';
         }
 

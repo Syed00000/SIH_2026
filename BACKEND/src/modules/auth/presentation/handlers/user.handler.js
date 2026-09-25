@@ -14,6 +14,8 @@ export const createUserHandler = (userService) => {
           deptId: user.deptId || user.profile?.deptId || '',
           department: user.department || user.profile?.department || user.fullName || '',
           district: user.profile?.district || user.district || '',
+          officerId: user.officerId || user.profile?.officerId || '',
+          designation: user.designation || user.profile?.designation || '',
           profile: user.profile,
           emailVerified: user.isEmailVerified ?? user.emailVerified,
           accountStatus: user.accountStatus

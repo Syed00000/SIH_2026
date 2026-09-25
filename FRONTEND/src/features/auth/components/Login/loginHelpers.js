@@ -30,8 +30,8 @@ export const navigateByRole = (loggedUser, onNavigate) => {
     }
   };
 
-  if (userRole === 'DEPARTMENT' || loggedUser?.deptId) {
-    const targetId = loggedUser.deptId || loggedUser.id;
+  if (userRole === 'DEPARTMENT' || loggedUser?.deptId || loggedUser?.profile?.deptId) {
+    const targetId = loggedUser.deptId || loggedUser?.profile?.deptId || loggedUser.code || loggedUser.id;
     return goTo('/department', { deptId: targetId });
   }
   if (userRole === 'WARD' || loggedUser?.wardId) {

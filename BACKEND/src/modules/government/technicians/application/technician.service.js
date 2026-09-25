@@ -1,6 +1,9 @@
+import bcrypt from 'bcryptjs';
 import technicianRepository from '../infrastructure/technician.repository.js';
-import Technician from '../infrastructure/technician.schema.js';
 import config from '../../../../shared/config/index.js';
+import { ConflictError } from '../../../../shared/errors/AppError.js';
+import { generateUniqueTechnicianId, generateDefaultDeptTechId } from './technician-id.helper.js';
+import { syncTechnicianToUser } from '../../../auth/application/services/technician-auth.helper.js';
 
 const DEFAULT_TRADE_MAP = {
   water: { name: 'Ram Kumar Mahto', trade: 'Drinking Water & Handpump Mechanic', phone: '9431100201' },
@@ -25,14 +28,15 @@ export const technicianService = {
 
     const def = DEFAULT_TRADE_MAP[key] || DEFAULT_TRADE_MAP.water;
     const cleanKey = key;
-    const blockShort = (block || 'Kanke').split(' ')[0].toLowerCase();
     const deptSuffix = departmentId.replace(/[^a-zA-Z0-9]/g, '').slice(-6);
     const loginEmail = `tech.${cleanKey}.${deptSuffix.toLowerCase()}@jharkhand.gov.in`;
-    const defaultTechPassword = config.DEFAULT_TECH_PASSWORD || process.env.DEFAULT_TECH_PASSWORD || '';
+    const defaultTechPassword = config.DEFAULT_TECH_PASSWORD || process.env.DEFAULT_TECH_PASSWORD || 'Tech@JH2026!';
+    const techId = generateDefaultDeptTechId(departmentId, cleanKey);
 
     try {
-      await technicianRepository.create({
-        technicianId: `TECH-${cleanKey.toUpperCase()}-01`,
+      const passwordHash = await bcrypt.hash(defaultTechPassword, 10);
+      const created = await technicianRepository.create({
+        technicianId: techId,
         name: def.name,
         departmentId,
         departmentName: departmentName || 'Department Wing',
@@ -45,11 +49,14 @@ export const technicianService = {
           loginId: loginEmail,
           loginEmail,
           password: defaultTechPassword,
-          generatedPassword: defaultTechPassword
+          generatedPassword: defaultTechPassword,
+          passwordHash
         },
         status: 'Active',
         notes: 'Designated field technician for gram panchayat inspections'
       });
+      const MongooseUser = (await import('../../../users/infrastructure/model.js')).default;
+      await syncTechnicianToUser(created, MongooseUser, bcrypt);
     } catch (err) {
       if (err.code !== 11000) {
         console.error('Failed to create default technician:', err);
@@ -85,13 +92,21 @@ export const technicianService = {
   },
 
   createTechnician: async (data) => {
-    const count = await technicianRepository.count();
-    const techId = data.technicianId || `TECH-${String(count + 1).padStart(3, '0')}`;
-    const email = (data.email || `${techId.toLowerCase()}@jharkhand.gov.in`).toLowerCase();
-    const defaultTechPassword = config.DEFAULT_TECH_PASSWORD || process.env.DEFAULT_TECH_PASSWORD || '';
-    const password = data.credentials?.password || data.password || defaultTechPassword;
+    const techId = data.technicianId?.trim() || (await generateUniqueTechnicianId(technicianRepository, data.departmentId));
+    const email = (data.email || data.credentials?.loginEmail || `${techId.toLowerCase()}@jharkhand.gov.in`).toLowerCase().trim();
 
-    return technicianRepository.create({
+    const existing = await technicianRepository.findOne({
+      $or: [{ email }, { 'credentials.loginEmail': email }, { technicianId: techId }]
+    });
+    if (existing) {
+      throw new ConflictError(`A technician with email "${email}" or ID "${techId}" already exists.`);
+    }
+
+    const defaultTechPassword = config.DEFAULT_TECH_PASSWORD || process.env.DEFAULT_TECH_PASSWORD || 'Tech@JH2026!';
+    const password = data.credentials?.password?.trim() || data.password?.trim() || defaultTechPassword;
+    const passwordHash = await bcrypt.hash(password, 10);
+
+    const created = await technicianRepository.create({
       ...data,
       technicianId: techId,
       email,
@@ -99,16 +114,63 @@ export const technicianService = {
         loginId: email,
         loginEmail: email,
         password,
-        generatedPassword: password
+        generatedPassword: password,
+        passwordHash
       }
     });
+
+    try {
+      const MongooseUser = (await import('../../../users/infrastructure/model.js')).default;
+      await syncTechnicianToUser(created, MongooseUser, bcrypt);
+    } catch (userErr) {
+      console.warn('MongooseUser creation error for technician:', userErr.message);
+    }
+
+    return created;
   },
 
   updateTechnician: async (id, data) => {
+    if (data.password || data.credentials?.password || data.email) {
+      try {
+        const existing = await technicianRepository.findById(id);
+        const newPass = data.credentials?.password?.trim() || data.password?.trim();
+        const email = (data.email || existing?.email || '').toLowerCase().trim();
+        if (newPass) {
+          const passwordHash = await bcrypt.hash(newPass, 10);
+          data.credentials = {
+            ...(existing?.credentials || {}),
+            password: newPass,
+            generatedPassword: newPass,
+            passwordHash
+          };
+          const MongooseUser = (await import('../../../users/infrastructure/model.js')).default;
+          await MongooseUser.findOneAndUpdate(
+            { $or: [{ email }, { 'profile.technicianId': existing?.technicianId }] },
+            { passwordHash, role: 'TECHNICIAN', accountStatus: 'ACTIVE', emailVerification: { verified: true, verifiedAt: new Date() } }
+          );
+        }
+      } catch (err) {
+        console.warn('MongooseUser update on technician update error:', err.message);
+      }
+    }
     return technicianRepository.update(id, data);
   },
 
   deleteTechnician: async (id) => {
+    try {
+      const existing = await technicianRepository.findById(id);
+      if (existing?.email || existing?.technicianId) {
+        const MongooseUser = (await import('../../../users/infrastructure/model.js')).default;
+        await MongooseUser.deleteOne({
+          $or: [
+            { email: existing.email?.toLowerCase() },
+            { 'profile.technicianId': existing.technicianId }
+          ]
+        }).catch(() => {});
+      }
+    } catch (delErr) {
+      console.warn('MongooseUser delete error for technician:', delErr.message);
+    }
     return technicianRepository.delete(id);
   }
 };

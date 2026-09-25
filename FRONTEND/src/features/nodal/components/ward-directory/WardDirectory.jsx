@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Landmark, RefreshCw, Plus, Search, Filter, Building2 } from 'lucide-react';
+import { Landmark, RefreshCw, Search, Filter, Building2 } from 'lucide-react';
 import { wardService } from '../../../government/services/wardService.js';
 import { departmentService } from '../../../government/services/departmentService.js';
 import { blockService } from '../../../government/services/blockService.js';
@@ -17,7 +17,6 @@ export const WardDirectory = ({ nodalDistrict = 'Ranchi' }) => {
   const [selectedBlock, setSelectedBlock] = useState('All');
 
   // Modals state
-  const [isAddWardOpen, setIsAddWardOpen] = useState(false);
   const [editingWard, setEditingWard] = useState(null);
   const [allocatingWard, setAllocatingWard] = useState(null);
   const [viewWard, setViewWard] = useState(null);
@@ -129,9 +128,6 @@ export const WardDirectory = ({ nodalDistrict = 'Ranchi' }) => {
         </div>
 
         <div className="flex items-center gap-2 self-start sm:self-auto">
-          <button type="button" onClick={() => setIsAddWardOpen(true)} className="flex items-center gap-1.5 px-3.5 py-2 bg-[#007A61] hover:bg-[#006651] text-white rounded-xl text-xs font-bold shadow-xs cursor-pointer">
-            <Plus className="w-3.5 h-3.5" /> <span>Add Ward</span>
-          </button>
           <button type="button" onClick={loadData} disabled={loading} className="flex items-center gap-1.5 px-3.5 py-2 bg-slate-50 hover:bg-slate-100 text-slate-700 rounded-xl text-xs font-bold border border-slate-200 cursor-pointer">
             <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin text-[#007A61]' : ''}`} /> <span>Sync Wards</span>
           </button>
@@ -172,12 +168,9 @@ export const WardDirectory = ({ nodalDistrict = 'Ranchi' }) => {
         wards={filteredWards} challenges={challenges}
         onViewWard={(w) => setViewWard(w)} onEditWard={(w) => setEditingWard(w)}
         onDeleteWard={handleDeleteWard} onAllocateProblem={(w) => setAllocatingWard(w)}
-        onAddWard={() => setIsAddWardOpen(true)}
       />
 
       <WardDirectoryModals
-        isAddWardOpen={isAddWardOpen} setIsAddWardOpen={setIsAddWardOpen}
-        onWardCreated={(newWard) => { setWards((prev) => [newWard, ...prev]); setIsAddWardOpen(false); }}
         districtName={districtName} editingWard={editingWard} setEditingWard={setEditingWard}
         onWardUpdated={handleWardUpdated} viewWard={viewWard} setViewWard={setViewWard}
         allocatingWard={allocatingWard} setAllocatingWard={setAllocatingWard}
