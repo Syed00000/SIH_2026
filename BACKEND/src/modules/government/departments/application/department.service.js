@@ -76,15 +76,33 @@ export class DepartmentService {
     const created = await this.repo.create(payload);
     try {
       const cleanPhone = (data.headPhone || '').toString().replace(/\D/g, '').slice(-10) || `98${Math.floor(10000000 + Math.random() * 90000000)}`;
-      await MongooseUser.findOneAndUpdate(
+      const userDoc = await MongooseUser.findOneAndUpdate(
         { email: loginEmail },
         {
-          fullName: data.name.trim(), email: loginEmail, mobileNumber: cleanPhone, passwordHash,
-          role: 'DEPARTMENT', accountStatus: 'ACTIVE', emailVerification: { verified: true, verifiedAt: new Date() },
-          profile: { deptId, department: data.name.trim(), category: data.category || 'District Department', district: data.district || 'Ranchi' }
+          fullName: data.name.trim(),
+          email: loginEmail,
+          mobileNumber: cleanPhone,
+          passwordHash,
+          role: 'DEPARTMENT',
+          accountStatus: 'ACTIVE',
+          emailVerification: { verified: true, verifiedAt: new Date() },
+          profile: {
+            deptId,
+            department: data.name.trim(),
+            category: data.category || 'District Department',
+            district: data.district || 'Ranchi',
+            block: data.block || '',
+            panchayat: data.panchayat || '',
+            code: code,
+            headName: data.headName?.trim() || '',
+            headRole: data.headRole?.trim() || 'Department Head'
+          }
         },
         { upsert: true, new: true }
       );
+      if (userDoc?._id) {
+        await this.repo.update(created.deptId || created._id, { userId: userDoc._id }).catch(() => {});
+      }
     } catch (userErr) { console.warn('MongooseUser creation error for dept:', userErr.message); }
     return created;
   }
@@ -99,9 +117,10 @@ export class DepartmentService {
   }
 
   async updateDepartment(id, updates) {
+    const existing = await this.repo.findById(id);
+    const prevCreds = existing?.credentials || {};
+
     if (updates.password || updates.headEmail || updates.loginId || updates.credentials) {
-      const existing = await this.repo.findById(id);
-      const prevCreds = existing?.credentials || {};
       const newPass = updates.credentials?.password?.trim() || updates.password?.trim() || prevCreds.password || prevCreds.generatedPassword || 'Dept@JH2026!';
       const passwordHash = await bcrypt.hash(newPass, 10);
       const loginEmail = (updates.credentials?.loginEmail?.trim() || updates.headEmail?.trim() || prevCreds.loginEmail || existing?.headEmail || `${(existing?.deptId || id).toLowerCase()}@jharkhand.gov.in`).toLowerCase();
@@ -109,15 +128,39 @@ export class DepartmentService {
         loginId: updates.credentials?.loginId?.trim() || updates.loginId?.trim() || prevCreds.loginId || existing?.deptId || id,
         loginEmail, password: newPass, passwordHash, generatedPassword: newPass
       };
-      try {
-        await MongooseUser.findOneAndUpdate(
-          { $or: [{ email: loginEmail }, { 'profile.deptId': existing?.deptId || id }] },
-          { passwordHash, role: 'DEPARTMENT', accountStatus: 'ACTIVE', emailVerification: { verified: true, verifiedAt: new Date() } }
-        );
-      } catch (err) { console.warn('MongooseUser update on dept update error:', err.message); }
     }
+
     const dept = await this.repo.update(id, updates);
     if (!dept) throw new Error('Department not found for update');
+
+    try {
+      const targetEmail = dept.credentials?.loginEmail || dept.headEmail;
+      if (targetEmail) {
+        await MongooseUser.findOneAndUpdate(
+          { $or: [{ email: targetEmail.toLowerCase() }, { 'profile.deptId': dept.deptId || id }] },
+          {
+            fullName: dept.name,
+            role: 'DEPARTMENT',
+            accountStatus: dept.status === 'Archived' ? 'SUSPENDED' : 'ACTIVE',
+            emailVerification: { verified: true, verifiedAt: new Date() },
+            profile: {
+              deptId: dept.deptId,
+              department: dept.name,
+              category: dept.category || 'District Department',
+              district: dept.district || 'Ranchi',
+              block: dept.block || '',
+              panchayat: dept.panchayat || '',
+              code: dept.code || '',
+              headName: dept.headName || '',
+              headRole: dept.headRole || 'Department Head'
+            }
+          }
+        );
+      }
+    } catch (syncErr) {
+      console.warn('MongooseUser update on dept update error:', syncErr.message);
+    }
+
     return dept;
   }
 

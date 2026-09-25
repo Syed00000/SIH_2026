@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Cpu, Search, Sparkles, LayoutList, LayoutGrid } from 'lucide-react';
+import { Cpu, Search, CheckCircle2, LayoutList, LayoutGrid } from 'lucide-react';
 import { projectCsrSyncService } from '../../services/projectCsrSyncService.js';
 import { InspectPrototypeDetailPanel } from './InspectPrototypeDetailPanel.jsx';
 import { PrototypeInteractiveCard } from './PrototypeInteractiveCard.jsx';
@@ -25,8 +25,7 @@ export const PrototypesEvaluationPanel = () => {
 
   const prototypeProjects = useMemo(() => projects.filter((p) => {
     const isProtoSent = Boolean(p.prototypeSentToGovernment || p.isPrototypeSentToGov || p.sentToGovernment || p.pdfUrl || p.prototypeStatus === 'Approved' || p.prototypeStatus === 'Ready for Deployment');
-    const isDeployed = p.status === 'Deployed' || Boolean(p.isDeployed);
-    return isProtoSent || isDeployed;
+    return isProtoSent || p.status === 'Deployed' || Boolean(p.isDeployed);
   }), [projects]);
 
   const showToast = (msg, type = 'success') => {
@@ -88,18 +87,8 @@ export const PrototypesEvaluationPanel = () => {
   if (selectedProjectForModal) {
     return (
       <div className="space-y-4 max-w-7xl mx-auto pb-12 select-none animate-fadeIn">
-        <InspectPrototypeDetailPanel
-          project={selectedProjectForModal}
-          onClose={() => setSelectedProjectForModal(null)}
-          onOpenDeployTerms={(p) => setSelectedProjectForTermsModal(p)}
-          onAdvanceStage={handleAdvanceTrl}
-        />
-        <PrototypeDeploymentTermsModal
-          isOpen={Boolean(selectedProjectForTermsModal)}
-          onClose={() => setSelectedProjectForTermsModal(null)}
-          project={selectedProjectForTermsModal}
-          onDeploySuccess={handleDeploySuccess}
-        />
+        <InspectPrototypeDetailPanel project={selectedProjectForModal} onClose={() => setSelectedProjectForModal(null)} onOpenDeployTerms={(p) => setSelectedProjectForTermsModal(p)} onAdvanceStage={handleAdvanceTrl} />
+        <PrototypeDeploymentTermsModal isOpen={Boolean(selectedProjectForTermsModal)} onClose={() => setSelectedProjectForTermsModal(null)} project={selectedProjectForTermsModal} onDeploySuccess={handleDeploySuccess} />
       </div>
     );
   }
@@ -108,7 +97,8 @@ export const PrototypesEvaluationPanel = () => {
     <div className="space-y-4 max-w-7xl mx-auto pb-12 select-none animate-fadeIn">
       {notification && (
         <div className="fixed bottom-6 right-6 z-50 px-4 py-3 rounded-xs shadow-xl border text-xs font-bold flex items-center space-x-2 bg-slate-900 text-white border-slate-800 animate-slideUp">
-          <Sparkles className="w-4 h-4 text-emerald-400" /><span>{notification.msg}</span>
+          <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+          <span>{notification.msg}</span>
         </div>
       )}
 
@@ -117,18 +107,13 @@ export const PrototypesEvaluationPanel = () => {
         <div>
           <div className="flex items-center space-x-2 text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">
             <span className="flex items-center space-x-1">
-              <Cpu className="w-3.5 h-3.5 text-[#007A61]" />
-              <span>Projects &amp; Solutions</span>
+              <Cpu className="w-3.5 h-3.5 text-[#007A61]" /><span>Projects &amp; Solutions</span>
             </span>
             <span>•</span>
             <span className="text-slate-700">Department of Higher &amp; Technical Education</span>
           </div>
-          <h1 className="text-xl md:text-2xl font-black text-slate-900 tracking-tight">
-            PROTOTYPES &amp; LAB-TO-FIELD TESTING (TRL)
-          </h1>
-          <p className="text-xs md:text-sm text-slate-500 font-medium mt-0.5">
-            State-level engineering verification tracking institutional innovations through 4 TRL phases: Lab Concept ➔ Ground Field ➔ State Certified ➔ Public Deployment.
-          </p>
+          <h1 className="text-xl md:text-2xl font-black text-slate-900 tracking-tight">PROTOTYPES &amp; LAB-TO-FIELD TESTING (TRL)</h1>
+          <p className="text-xs md:text-sm text-slate-500 font-medium mt-0.5">State-level engineering verification tracking institutional innovations through 4 TRL phases.</p>
         </div>
 
         <div className="bg-slate-50 px-4 py-2.5 rounded-xs border border-slate-200 text-center shrink-0">
@@ -142,9 +127,8 @@ export const PrototypesEvaluationPanel = () => {
         {stages.map((st) => (
           <div key={st.key} onClick={() => setSelectedTrlFilter(selectedTrlFilter === st.key ? 'All Stages' : st.key)}
             className={`bg-white border rounded-xs p-3.5 shadow-xs space-y-1.5 transition-all cursor-pointer hover:border-slate-300 ${selectedTrlFilter === st.key ? 'ring-2 ring-[#007A61] border-transparent bg-slate-50' : 'border-slate-200'}`}>
-            <div className="flex items-center justify-between">
-              <span className="text-[10px] font-bold uppercase text-slate-600">{st.range}</span>
-              <span className="text-xs font-bold font-mono text-slate-900">{st.count} Units</span>
+            <div className="flex items-center justify-between text-[10px] font-bold uppercase text-slate-600">
+              <span>{st.range}</span><span className="text-xs font-mono text-slate-900">{st.count} Units</span>
             </div>
             <h4 className="text-xs font-bold text-slate-900">{st.label}</h4>
           </div>
@@ -176,11 +160,8 @@ export const PrototypesEvaluationPanel = () => {
       {/* Main Content */}
       {viewMode === 'list' ? (
         <PrototypeListingTable
-          projects={filteredProjects}
-          onInspect={(p) => setSelectedProjectForModal(p)}
-          onAdvanceTrl={handleAdvanceTrl}
-          onOpenDeployTerms={(p) => setSelectedProjectForTermsModal(p)}
-          onOpenHandoverModal={(p) => setSelectedProjectForHandoverModal(p)}
+          projects={filteredProjects} onInspect={(p) => setSelectedProjectForModal(p)} onAdvanceTrl={handleAdvanceTrl}
+          onOpenDeployTerms={(p) => setSelectedProjectForTermsModal(p)} onOpenHandoverModal={(p) => setSelectedProjectForHandoverModal(p)}
         />
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
@@ -189,10 +170,8 @@ export const PrototypesEvaluationPanel = () => {
           ) : (
             filteredProjects.map((prj) => (
               <PrototypeInteractiveCard
-                key={prj.id}
-                project={prj}
-                onInspect={(p) => setSelectedProjectForModal(p)}
-                onAdvanceTrl={handleAdvanceTrl}
+                key={prj.id} project={prj}
+                onInspect={(p) => setSelectedProjectForModal(p)} onAdvanceTrl={handleAdvanceTrl}
                 onOpenDeployTerms={(p) => setSelectedProjectForTermsModal(p)}
                 onOpenHandoverModal={(p) => setSelectedProjectForHandoverModal(p)}
               />
@@ -204,15 +183,13 @@ export const PrototypesEvaluationPanel = () => {
       <PrototypeDeploymentTermsModal
         isOpen={Boolean(selectedProjectForTermsModal)}
         onClose={() => setSelectedProjectForTermsModal(null)}
-        project={selectedProjectForTermsModal}
-        onDeploySuccess={handleDeploySuccess}
+        project={selectedProjectForTermsModal} onDeploySuccess={handleDeploySuccess}
       />
 
       <PrototypeHandoverModal
         isOpen={Boolean(selectedProjectForHandoverModal)}
         onClose={() => setSelectedProjectForHandoverModal(null)}
-        project={selectedProjectForHandoverModal}
-        onHandoverSuccess={handleHandoverSuccess}
+        project={selectedProjectForHandoverModal} onHandoverSuccess={handleHandoverSuccess}
       />
     </div>
   );

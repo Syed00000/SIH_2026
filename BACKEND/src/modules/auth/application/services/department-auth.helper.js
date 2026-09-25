@@ -118,7 +118,10 @@ export function toDepartmentUserEntity(dept) {
         role: 'DEPARTMENT',
         deptId: this.deptId,
         department: this.department,
+        category: this.profile?.category || dept.category || 'District Department',
         district: this.district,
+        block: dept.block || '',
+        code: dept.code || '',
         profile: this.profile,
         emailVerified: true,
         accountStatus: this.accountStatus

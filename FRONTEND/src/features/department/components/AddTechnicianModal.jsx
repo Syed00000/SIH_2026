@@ -49,7 +49,8 @@ export const AddTechnicianModal = ({ department, isOpen, onClose, onCreated }) =
       if (onCreated) onCreated(created);
       onClose();
     } catch (err) {
-      setError(err.response?.data?.message || err.message || 'Failed to register technician');
+      const msg = err.response?.data?.error?.message || err.response?.data?.message || err.message || 'Failed to register technician';
+      setError(msg);
     } finally {
       setSubmitting(false);
     }

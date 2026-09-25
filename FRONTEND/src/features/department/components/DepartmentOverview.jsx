@@ -1,16 +1,18 @@
 import React from 'react';
-import { AlertCircle, Clock, CheckCircle2, Flame, Building2, MapPin, ArrowRight } from 'lucide-react';
+import { AlertCircle, Clock, CheckCircle2, Flame, Building2, MapPin, ArrowRight, HandCoins } from 'lucide-react';
 
 export const DepartmentOverview = ({
   department,
   problems = [],
   onSelectProblem,
-  onNavigateProblems
+  onNavigateProblems,
+  onNavigateBudgetApprovals
 }) => {
   const total = problems.length;
   const inProgress = problems.filter((p) => p.status === 'In Progress' || p.status === 'Assigned').length;
   const resolved = problems.filter((p) => p.status === 'Resolved' || p.status === 'Deployed').length;
   const critical = problems.filter((p) => p.priority === 'Critical' || p.priority === 'High').length;
+  const pendingBudgets = problems.filter((p) => p.assignedBudgetOfficer?.status === 'Submitted').length;
 
   const kpis = [
     { label: 'Assigned Problems', value: total, sub: 'Total civic directives received', icon: AlertCircle, color: 'text-slate-900', bg: 'bg-slate-100', iconColor: 'text-slate-900' },
@@ -23,13 +25,9 @@ export const DepartmentOverview = ({
   const [activeTab, setActiveTab] = React.useState('Active');
 
   const filteredProblems = problems.filter((p) => {
-    if (activeTab === 'Active') {
-      return p.status !== 'Resolved' && p.status !== 'Deployed' && p.status !== 'Escalated';
-    } else if (activeTab === 'Forwarded') {
-      return p.status === 'Escalated';
-    } else if (activeTab === 'Resolved') {
-      return p.status === 'Resolved' || p.status === 'Deployed';
-    }
+    if (activeTab === 'Active') return p.status !== 'Resolved' && p.status !== 'Deployed' && p.status !== 'Escalated';
+    if (activeTab === 'Forwarded') return p.status === 'Escalated';
+    if (activeTab === 'Resolved') return p.status === 'Resolved' || p.status === 'Deployed';
     return true;
   });
 
@@ -56,13 +54,39 @@ export const DepartmentOverview = ({
         })}
       </div>
 
+      {pendingBudgets > 0 && (
+        <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-amber-100 flex items-center justify-center shrink-0">
+              <HandCoins className="w-5 h-5 text-amber-700" />
+            </div>
+            <div>
+              <h3 className="text-xs font-black text-amber-900 uppercase tracking-wide">
+                {pendingBudgets} Budget Requisition{pendingBudgets > 1 ? 's' : ''} Ready for Review
+              </h3>
+              <p className="text-[11px] text-amber-700 font-medium mt-0.5">
+                Submitted by assigned Budget Officer. Review and submit to State Government.
+              </p>
+            </div>
+          </div>
+          {onNavigateBudgetApprovals && (
+            <button
+              type="button"
+              onClick={onNavigateBudgetApprovals}
+              className="px-3.5 py-1.5 bg-[#007A61] hover:bg-[#00604c] text-white font-bold text-xs rounded-xl transition-all shadow-xs flex items-center gap-1.5 self-start sm:self-auto cursor-pointer"
+            >
+              <span>Review Approvals</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </button>
+          )}
+        </div>
+      )}
+
       {/* Recent Problems Table */}
       <div className="bg-white rounded-2xl border border-slate-200/90 shadow-2xs p-4 space-y-3">
         <div className="flex flex-col md:flex-row md:items-center justify-between border-b border-slate-100 pb-3 gap-3">
           <div>
-            <h2 className="text-sm font-black text-slate-900 uppercase tracking-wide">
-              Civic Problems
-            </h2>
+            <h2 className="text-sm font-black text-slate-900 uppercase tracking-wide">Civic Problems</h2>
             <p className="text-[10px] text-slate-400 font-medium">Manage and track your assigned directives</p>
           </div>
           

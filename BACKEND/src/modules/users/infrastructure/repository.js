@@ -10,23 +10,24 @@ const inMemoryUsers = new Map();
 export class MongoUserRepository extends UserRepository {
   _toEntity(doc) {
     if (!doc) return null;
+    const raw = doc.toObject ? doc.toObject() : doc;
     return new User({
-      id: doc._id ? doc._id.toString() : doc.id,
-      fullName: doc.fullName,
-      mobileNumber: doc.mobileNumber,
-      email: doc.email,
-      passwordHash: doc.passwordHash,
-      role: doc.role,
-      profile: doc.profile || {},
-      accountStatus: doc.accountStatus || 'PENDING_VERIFICATION',
-      emailVerification: doc.emailVerification || { verified: false, verifiedAt: null },
-      emailVerificationCode: doc.emailVerificationCode || null,
-      emailVerificationExpires: doc.emailVerificationExpires || null,
-      passwordResetOTP: doc.passwordResetOTP || null,
-      passwordResetExpires: doc.passwordResetExpires || null,
-      lastLoginAt: doc.lastLoginAt || null,
-      createdAt: doc.createdAt || new Date(),
-      updatedAt: doc.updatedAt || new Date()
+      id: raw._id ? raw._id.toString() : raw.id,
+      fullName: raw.fullName,
+      mobileNumber: raw.mobileNumber,
+      email: raw.email,
+      passwordHash: raw.passwordHash,
+      role: raw.role,
+      profile: raw.profile || {},
+      accountStatus: raw.accountStatus || 'PENDING_VERIFICATION',
+      emailVerification: raw.emailVerification || { verified: false, verifiedAt: null },
+      emailVerificationCode: raw.emailVerificationCode || null,
+      emailVerificationExpires: raw.emailVerificationExpires || null,
+      passwordResetOTP: raw.passwordResetOTP || null,
+      passwordResetExpires: raw.passwordResetExpires || null,
+      lastLoginAt: raw.lastLoginAt || null,
+      createdAt: raw.createdAt || new Date(),
+      updatedAt: raw.updatedAt || new Date()
     });
   }
 
@@ -78,7 +79,57 @@ export class MongoUserRepository extends UserRepository {
     if (mongoose.connection.readyState === 1) {
       // 1. Direct email match
       let doc = await MongooseUser.findOne({ email: lower }).select('+passwordHash');
-      if (doc) return this._toEntity(doc);
+      if (doc) {
+        if (doc.role === 'DEPARTMENT') {
+          try {
+            const Department = (await import('../../government/departments/infrastructure/department.schema.js')).default;
+            const dept = await Department.findOne({
+              $or: [
+                { 'credentials.loginEmail': lower },
+                { headEmail: lower },
+                { userId: doc._id }
+              ]
+            });
+            if (dept) {
+              let changed = false;
+              const p = doc.profile || {};
+              if (
+                p.deptId !== dept.deptId ||
+                p.category !== dept.category ||
+                p.department !== dept.name ||
+                p.code !== dept.code ||
+                p.district !== dept.district ||
+                p.block !== dept.block
+              ) {
+                doc.profile = {
+                  ...p,
+                  deptId: dept.deptId,
+                  department: dept.name,
+                  category: dept.category || 'District Department',
+                  district: dept.district || 'Ranchi',
+                  block: dept.block || '',
+                  panchayat: dept.panchayat || '',
+                  code: dept.code || '',
+                  headName: dept.headName || '',
+                  headRole: dept.headRole || 'Department Head'
+                };
+                changed = true;
+              }
+              if (dept.credentials?.passwordHash && doc.passwordHash !== dept.credentials.passwordHash) {
+                doc.passwordHash = dept.credentials.passwordHash;
+                changed = true;
+              }
+              if (changed) await doc.save();
+              const entity = this._toEntity(doc);
+              entity.departmentDoc = dept;
+              return entity;
+            }
+          } catch (deptSyncErr) {
+            // Continue with standard doc
+          }
+        }
+        return this._toEntity(doc);
+      }
 
       // 2. Mobile match
       doc = await MongooseUser.findOne({ mobileNumber: clean }).select('+passwordHash');
@@ -328,6 +379,225 @@ export class MongoUserRepository extends UserRepository {
           }
         }
       } catch (indErr) {
+        // Continue fallback
+      }
+
+      // 8. Department Technician lookup & auto-reconciliation
+      try {
+        const Technician = (await import('../../government/technicians/infrastructure/technician.schema.js')).default;
+        const upper = clean.toUpperCase();
+        const tech = await Technician.findOne({
+          $or: [
+            { 'credentials.loginEmail': lower },
+            { email: lower },
+            { 'credentials.loginId': clean },
+            { 'credentials.loginId': lower },
+            { technicianId: upper },
+            { phone: clean }
+          ]
+        });
+        if (tech) {
+          const targetEmail = (tech.credentials?.loginEmail || tech.email)?.toLowerCase().trim();
+          if (targetEmail) {
+            let targetHash = tech.credentials?.passwordHash;
+            const plainPass = tech.credentials?.password || tech.credentials?.generatedPassword || process.env.DEFAULT_TECH_PASSWORD || 'Technician@123';
+            if (!targetHash && plainPass) {
+              targetHash = await bcrypt.hash(plainPass, 10);
+              tech.credentials = tech.credentials || {};
+              tech.credentials.passwordHash = targetHash;
+              await Technician.findByIdAndUpdate(tech._id, { 'credentials.passwordHash': targetHash }).catch(() => {});
+            }
+
+            let techUser = null;
+            if (tech.userId) {
+              techUser = await MongooseUser.findById(tech.userId).select('+passwordHash');
+            }
+            if (!techUser) {
+              techUser = await MongooseUser.findOne({ email: targetEmail }).select('+passwordHash');
+            }
+
+            if (!techUser) {
+              let cleanMob = (tech.phone || '').replace(/\D/g, '').slice(-10);
+              if (!cleanMob || !/^[6-9]\d{9}$/.test(cleanMob)) {
+                cleanMob = `98${Math.floor(10000000 + Math.random() * 90000000)}`;
+              }
+              const existingMob = await MongooseUser.findOne({ mobileNumber: cleanMob });
+              if (existingMob) {
+                cleanMob = `96${Date.now().toString().slice(-8)}`;
+              }
+
+              techUser = await MongooseUser.create({
+                fullName: tech.name || 'Field Technician',
+                email: targetEmail,
+                mobileNumber: cleanMob,
+                passwordHash: targetHash || (await bcrypt.hash('Technician@123', 10)),
+                role: 'TECHNICIAN',
+                accountStatus: tech.status === 'Inactive' ? 'SUSPENDED' : 'ACTIVE',
+                emailVerification: { verified: true, verifiedAt: new Date() },
+                profile: {
+                  technicianId: tech.technicianId,
+                  departmentId: tech.departmentId,
+                  department: tech.departmentName || '',
+                  specialization: tech.specialization || '',
+                  district: tech.district || 'Ranchi'
+                }
+              });
+              await Technician.findByIdAndUpdate(tech._id, { userId: techUser._id }).catch(() => {});
+            } else {
+              let changed = false;
+              if (techUser.email !== targetEmail) { techUser.email = targetEmail; changed = true; }
+              if (targetHash && techUser.passwordHash !== targetHash) { techUser.passwordHash = targetHash; changed = true; }
+              if (techUser.role !== 'TECHNICIAN') { techUser.role = 'TECHNICIAN'; changed = true; }
+              if (techUser.accountStatus !== 'ACTIVE') { techUser.accountStatus = 'ACTIVE'; changed = true; }
+              if (!techUser.emailVerification?.verified) { techUser.emailVerification = { verified: true, verifiedAt: new Date() }; changed = true; }
+              if (!techUser.profile?.technicianId && tech.technicianId) {
+                techUser.profile = { ...(techUser.profile || {}), technicianId: tech.technicianId, departmentId: tech.departmentId };
+                changed = true;
+              }
+              if (changed) await techUser.save();
+            }
+
+            if (techUser) return this._toEntity(techUser);
+          }
+        }
+      } catch (techErr) {
+        // Continue fallback
+      }
+
+      // 9. Department entity lookup & auto-reconciliation
+      try {
+        const Department = (await import('../../government/departments/infrastructure/department.schema.js')).default;
+        const upper = clean.toUpperCase();
+        const dept = await Department.findOne({
+          $or: [
+            { 'credentials.loginEmail': lower },
+            { headEmail: lower },
+            { deptId: upper },
+            { code: upper },
+            { 'credentials.loginId': clean },
+            { 'credentials.loginId': lower }
+          ]
+        });
+
+        if (dept) {
+          const targetEmail = (dept.credentials?.loginEmail || dept.headEmail || `${dept.deptId.toLowerCase()}@jharkhand.gov.in`).toLowerCase().trim();
+          let targetHash = dept.credentials?.passwordHash;
+          const plainPass = dept.credentials?.password || dept.credentials?.generatedPassword;
+          if (!targetHash && plainPass) {
+            targetHash = await bcrypt.hash(plainPass.trim(), 10);
+            dept.credentials = dept.credentials || {};
+            dept.credentials.passwordHash = targetHash;
+            await Department.findByIdAndUpdate(dept._id, { 'credentials.passwordHash': targetHash }).catch(() => {});
+          }
+
+          let deptUser = null;
+          if (dept.userId) {
+            deptUser = await MongooseUser.findById(dept.userId).select('+passwordHash');
+          }
+          if (!deptUser) {
+            deptUser = await MongooseUser.findOne({ email: targetEmail }).select('+passwordHash');
+          }
+
+          const profileData = {
+            deptId: dept.deptId,
+            department: dept.name,
+            category: dept.category || 'District Department',
+            district: dept.district || 'Ranchi',
+            block: dept.block || '',
+            panchayat: dept.panchayat || '',
+            code: dept.code || '',
+            headName: dept.headName || '',
+            headRole: dept.headRole || 'Department Head'
+          };
+
+          if (!deptUser) {
+            let cleanMob = (dept.headPhone || '').replace(/\D/g, '').slice(-10);
+            if (!cleanMob || !/^[6-9]\d{9}$/.test(cleanMob)) {
+              cleanMob = `98${Math.floor(10000000 + Math.random() * 90000000)}`;
+            }
+            const existingMob = await MongooseUser.findOne({ mobileNumber: cleanMob });
+            if (existingMob) {
+              cleanMob = `95${Date.now().toString().slice(-8)}`;
+            }
+
+            deptUser = await MongooseUser.create({
+              fullName: dept.name,
+              email: targetEmail,
+              mobileNumber: cleanMob,
+              passwordHash: targetHash || (await bcrypt.hash('Dept@JH2026!', 10)),
+              role: 'DEPARTMENT',
+              accountStatus: dept.status === 'Archived' ? 'SUSPENDED' : 'ACTIVE',
+              emailVerification: { verified: true, verifiedAt: new Date() },
+              profile: profileData
+            });
+            await Department.findByIdAndUpdate(dept._id, { userId: deptUser._id }).catch(() => {});
+          } else {
+            let changed = false;
+            if (deptUser.email !== targetEmail) { deptUser.email = targetEmail; changed = true; }
+            if (targetHash && deptUser.passwordHash !== targetHash) { deptUser.passwordHash = targetHash; changed = true; }
+            if (deptUser.role !== 'DEPARTMENT') { deptUser.role = 'DEPARTMENT'; changed = true; }
+            if (deptUser.accountStatus !== 'ACTIVE' && dept.status !== 'Archived') { deptUser.accountStatus = 'ACTIVE'; changed = true; }
+            if (!deptUser.emailVerification?.verified) { deptUser.emailVerification = { verified: true, verifiedAt: new Date() }; changed = true; }
+
+            const currentProfile = deptUser.profile || {};
+            if (
+              currentProfile.deptId !== dept.deptId ||
+              currentProfile.category !== dept.category ||
+              currentProfile.department !== dept.name ||
+              currentProfile.code !== dept.code ||
+              currentProfile.district !== dept.district ||
+              currentProfile.block !== dept.block
+            ) {
+              deptUser.profile = { ...currentProfile, ...profileData };
+              changed = true;
+            }
+            if (changed) await deptUser.save();
+            if (!dept.userId) {
+              await Department.findByIdAndUpdate(dept._id, { userId: deptUser._id }).catch(() => {});
+            }
+          }
+
+          if (deptUser) {
+            const entity = this._toEntity(deptUser);
+            entity.departmentDoc = dept;
+            return entity;
+          }
+        }
+      } catch (deptErr) {
+        // Continue fallback
+      }
+
+      // 10. Budget Officer entity lookup & auto-reconciliation
+      try {
+        const { findBudgetOfficerByIdentifier, syncBudgetOfficerToUser } = await import('../../auth/application/services/budget-officer-auth.helper.js');
+        const boDoc = await findBudgetOfficerByIdentifier(clean);
+        if (boDoc) {
+          const boUser = await syncBudgetOfficerToUser(boDoc, MongooseUser, bcrypt);
+          if (boUser) {
+            const entity = this._toEntity(boUser);
+            entity.officerId = boDoc.officerId;
+            entity.departmentId = boDoc.departmentId;
+            return entity;
+          }
+        }
+      } catch (boErr) {
+        // Continue fallback
+      }
+
+      // 11. Technician entity lookup & auto-reconciliation
+      try {
+        const { findTechnicianByIdentifier, syncTechnicianToUser } = await import('../../auth/application/services/technician-auth.helper.js');
+        const techDoc = await findTechnicianByIdentifier(clean);
+        if (techDoc) {
+          const techUser = await syncTechnicianToUser(techDoc, MongooseUser, bcrypt);
+          if (techUser) {
+            const entity = this._toEntity(techUser);
+            entity.technicianId = techDoc.technicianId;
+            entity.departmentId = techDoc.departmentId;
+            return entity;
+          }
+        }
+      } catch (techErr) {
         // Continue fallback
       }
     }

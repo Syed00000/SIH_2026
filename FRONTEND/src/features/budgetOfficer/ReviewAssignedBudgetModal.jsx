@@ -1,10 +1,11 @@
 import React from 'react';
 import { X, FileText, IndianRupee, Target, MapPin, Eye, ArrowRight } from 'lucide-react';
+import { getPreliminaryBudget, formatIndianCurrency } from './budgetUtils.js';
 
 export const ReviewAssignedBudgetModal = ({ isOpen, onClose, task, onProceedToPrepare }) => {
   if (!isOpen || !task) return null;
 
-  const oldBudget = Number(task.estimatedCost || task.sanctionedBudget || task.budget || 250000);
+  const oldBudget = getPreliminaryBudget(task);
   const protoUrl = task.prototypePdfUrl || task.resolutionDossier?.prototypePdfUrl || task.pdfUrl || task.testingReportPdfUrl;
 
   return (
@@ -56,7 +57,7 @@ export const ReviewAssignedBudgetModal = ({ isOpen, onClose, task, onProceedToPr
                 <IndianRupee className="w-4 h-4" /> Preliminary Estimate (Dept)
               </span>
               <span className="text-2xl font-black text-amber-900">
-                ₹ {oldBudget.toLocaleString('en-IN')}
+                ₹ {formatIndianCurrency(oldBudget)}
               </span>
             </div>
             <div className="text-right max-w-[200px]">

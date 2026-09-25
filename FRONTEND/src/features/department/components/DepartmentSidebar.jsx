@@ -10,7 +10,8 @@ export const DepartmentSidebar = ({
   departmentCategory = 'State Ministry',
   onLogout,
   isMobileMenuOpen = false,
-  setIsMobileMenuOpen
+  setIsMobileMenuOpen,
+  pendingBudgetsCount = 0
 }) => {
   const isDistrictDept = departmentCategory === 'District Department';
   const isBlockDept = departmentCategory === 'Block / Tehsil Office';
@@ -26,7 +27,7 @@ export const DepartmentSidebar = ({
     { id: 'prototypes', label: 'Deployed Solutions', icon: Beaker },
     { id: 'technicians', label: 'Technicians', icon: Wrench },
     { id: 'budget-officers', label: 'Budget Officers', icon: Users },
-    { id: 'budget-approvals', label: 'Budget Approvals', icon: HandCoins },
+    { id: 'budget-approvals', label: 'Budget Approvals', icon: HandCoins, badge: pendingBudgetsCount },
     ...(!isWardDept ? [{ id: 'districts', label: tabLabel, icon: Building2 }] : []),
     { id: 'csr-grant', label: 'CSR Grant', icon: HandCoins }
   ];
@@ -111,7 +112,18 @@ export const DepartmentSidebar = ({
                   title={item.label}
                 >
                   <Icon className={`w-4 h-4 shrink-0 ${isActive ? 'text-white' : 'text-slate-500'}`} />
-                  {(isSidebarExpanded || isMobileMenuOpen) && <span className="truncate">{item.label}</span>}
+                  {(isSidebarExpanded || isMobileMenuOpen) && (
+                    <div className="flex items-center justify-between flex-1 min-w-0">
+                      <span className="truncate">{item.label}</span>
+                      {Number(item.badge) > 0 && (
+                        <span className={`px-1.5 py-0.2 text-[10px] font-black rounded-full shrink-0 ${
+                          isActive ? 'bg-white text-[#007A61]' : 'bg-amber-500 text-white animate-pulse'
+                        }`}>
+                          {item.badge}
+                        </span>
+                      )}
+                    </div>
+                  )}
                 </button>
               );
             })}

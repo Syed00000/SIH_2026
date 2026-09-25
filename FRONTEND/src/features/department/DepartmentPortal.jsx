@@ -65,6 +65,10 @@ export const DepartmentPortal = ({ user, onLogout }) => {
     handleSelectDepartment
   } = useDepartmentPortal({ user });
 
+  const pendingBudgetsCount = problems.filter(
+    (p) => p.assignedBudgetOfficer?.status === 'Submitted'
+  ).length;
+
   const renderContent = () => {
     if (selectedProblem) {
       return (
@@ -154,6 +158,7 @@ export const DepartmentPortal = ({ user, onLogout }) => {
             problems={problems}
             onSelectProblem={(p) => setSelectedProblem(p)}
             onNavigateProblems={() => setActiveTab('problems')}
+            onNavigateBudgetApprovals={() => setActiveTab('budget-approvals')}
           />
         );
     }
@@ -189,6 +194,7 @@ export const DepartmentPortal = ({ user, onLogout }) => {
           onLogout={onLogout}
           isMobileMenuOpen={isMobileMenuOpen}
           setIsMobileMenuOpen={setIsMobileMenuOpen}
+          pendingBudgetsCount={pendingBudgetsCount}
         />
 
         <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden bg-white">

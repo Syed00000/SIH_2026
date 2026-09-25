@@ -19,10 +19,14 @@ export const CARTO_ATTRIBUTION =
 /**
  * Returns configuration for Leaflet tileLayer
  * @param {Object} options
- * @param {string} [options.mode='canvas'] - 'canvas' | 'satellite' | 'topo' | 'light'
+ * @param {string} [options.mode='canvas'] - 'canvas' | 'satellite' | 'topo' | 'light' | 'dark' | 'voyager'
  * @returns {Object} { url, attribution, subdomains, maxZoom, isConfigMissing, provider }
  */
 export function getMapTileConfig({ mode = 'canvas' } = {}) {
+  const cartoApiKey =
+    import.meta.env?.VITE_CARTO_API_KEY || 'cb1_3yhz_1_e7b1c7f6e22a991f83004a14';
+  const cartoQuery = cartoApiKey ? `?api_key=${cartoApiKey}` : '';
+
   if (mode === 'satellite') {
     return {
       provider: 'esri_satellite',
@@ -45,10 +49,32 @@ export function getMapTileConfig({ mode = 'canvas' } = {}) {
     };
   }
 
-  // High-Resolution CartoDB Voyager (clean, muted, professional GIS aesthetic)
+  if (mode === 'dark' || mode === 'darkmatter') {
+    return {
+      provider: 'carto_dark_matter',
+      url: `https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png${cartoQuery}`,
+      attribution: CARTO_ATTRIBUTION,
+      subdomains: 'abcd',
+      maxZoom: 19,
+      isConfigMissing: false
+    };
+  }
+
+  if (mode === 'light' || mode === 'positron') {
+    return {
+      provider: 'carto_positron',
+      url: `https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png${cartoQuery}`,
+      attribution: CARTO_ATTRIBUTION,
+      subdomains: 'abcd',
+      maxZoom: 19,
+      isConfigMissing: false
+    };
+  }
+
+  // High-Resolution CARTO Voyager (clean, muted, professional GIS aesthetic)
   return {
     provider: 'carto_voyager',
-    url: 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
+    url: `https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png${cartoQuery}`,
     attribution: CARTO_ATTRIBUTION,
     subdomains: 'abcd',
     maxZoom: 19,

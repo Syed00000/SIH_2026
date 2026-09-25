@@ -77,20 +77,20 @@ export const DraftReportCard = ({ draftReport, onAction, lang = 'en' }) => {
   const pLabel = lang === 'hi' ? `${t.priorities[pKey] || 'मध्यम'} ${t.priority}` : `${pKey} Priority`;
 
   return (
-    <div className="mt-2 p-3.5 bg-white border border-slate-200/90 rounded-2xl shadow-sm space-y-3 text-slate-800 animate-fade-in text-left">
+    <div className="mt-2 p-3 sm:p-3.5 bg-white border border-slate-200/90 rounded-2xl shadow-sm space-y-3 text-slate-800 animate-fade-in text-left w-full max-w-full overflow-hidden box-border">
       <div className="flex items-center justify-between gap-2">
-        <div className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-50 border border-emerald-200/80 text-[#015a3a] text-[11px] font-semibold">
+        <div className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-50 border border-emerald-200/80 text-[#015a3a] text-[11px] font-semibold shrink-0">
           <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-          <span>{t.verificationPreview}</span>
+          <span className="truncate">{t.verificationPreview}</span>
         </div>
-        <span className="px-2 py-0.5 rounded-md bg-amber-50 border border-amber-200/80 text-amber-800 text-[10px] font-semibold uppercase">
+        <span className="px-2 py-0.5 rounded-md bg-amber-50 border border-amber-200/80 text-amber-800 text-[10px] font-semibold uppercase shrink-0">
           {pLabel}
         </span>
       </div>
       <div>
-        <h4 className="text-[13px] font-bold text-slate-900 leading-snug">{draftReport.title}</h4>
+        <h4 className="text-[13px] font-bold text-slate-900 leading-snug break-words">{draftReport.title}</h4>
         {draftReport.description && draftReport.description !== draftReport.title && (
-          <p className="text-[11px] text-slate-500 line-clamp-2 mt-1 leading-relaxed">{draftReport.description}</p>
+          <p className="text-[11px] text-slate-500 line-clamp-2 mt-1 leading-relaxed break-words">{draftReport.description}</p>
         )}
       </div>
 
@@ -135,13 +135,13 @@ export const DraftReportCard = ({ draftReport, onAction, lang = 'en' }) => {
 
       <div className="bg-slate-50/80 p-2.5 rounded-xl border border-slate-100 space-y-2 text-[11px]">
         <div className="flex items-center justify-between gap-2">
-          <span className="flex items-center gap-1.5 text-slate-500 font-medium">
+          <span className="flex items-center gap-1.5 text-slate-500 font-medium shrink-0">
             <MapPin className="w-3.5 h-3.5 text-emerald-600 shrink-0" /> {t.location}
           </span>
           <span className="font-semibold text-slate-800 truncate text-right">{draftReport.areaOrBlock}, {draftReport.district}</span>
         </div>
         <div className="flex items-center justify-between gap-2 border-t border-slate-100/80 pt-1.5">
-          <span className="flex items-center gap-1.5 text-slate-500 font-medium">
+          <span className="flex items-center gap-1.5 text-slate-500 font-medium shrink-0">
             <Building2 className="w-3.5 h-3.5 text-blue-600 shrink-0" /> {t.department}
           </span>
           <span className="font-semibold text-slate-800 truncate text-right">{draftReport.domain}</span>
@@ -150,27 +150,27 @@ export const DraftReportCard = ({ draftReport, onAction, lang = 'en' }) => {
 
       {/* Explicit Actions Based on Evidence Status */}
       {hasEvidence ? (
-        <div className="flex items-center gap-2 pt-0.5">
+        <div className="flex items-center gap-1.5 sm:gap-2 pt-0.5 w-full">
           <button
             type="button"
             onClick={() => onAction?.('CONFIRM_SUBMIT', draftReport)}
-            className="flex-1 h-9 px-3.5 bg-[#015a3a] hover:bg-[#01482e] active:scale-[0.98] text-white text-xs font-semibold rounded-xl shadow-2xs flex items-center justify-center gap-1.5 cursor-pointer transition-all"
+            className="flex-1 min-w-0 h-9 px-2.5 sm:px-3.5 bg-[#015a3a] hover:bg-[#01482e] active:scale-[0.98] text-white text-xs font-semibold rounded-xl shadow-2xs flex items-center justify-center gap-1.5 cursor-pointer transition-all"
           >
-            <CheckCircle2 className="w-4 h-4 text-emerald-200" />
-            <span className="whitespace-nowrap">{t.confirmSubmit}</span>
+            <CheckCircle2 className="w-4 h-4 text-emerald-200 shrink-0" />
+            <span className="truncate">{t.confirmSubmit}</span>
           </button>
           <button
             type="button"
             onClick={() => onAction?.('EDIT_DRAFT', draftReport)}
-            className="h-9 px-3 bg-white hover:bg-slate-50 active:scale-[0.98] text-slate-700 text-xs font-medium rounded-xl border border-slate-200/90 flex items-center gap-1.5 cursor-pointer transition-colors shadow-2xs"
+            className="h-9 px-2.5 sm:px-3 bg-white hover:bg-slate-50 active:scale-[0.98] text-slate-700 text-xs font-medium rounded-xl border border-slate-200/90 flex items-center justify-center gap-1 sm:gap-1.5 cursor-pointer transition-colors shadow-2xs shrink-0"
           >
-            <Pencil className="w-3.5 h-3.5 text-slate-500" />
-            <span>{t.edit}</span>
+            <Pencil className="w-3.5 h-3.5 text-slate-500 shrink-0" />
+            <span className="whitespace-nowrap">{t.edit}</span>
           </button>
         </div>
       ) : (
-        <div className="space-y-2 pt-0.5">
-          <div className="grid grid-cols-2 gap-2">
+        <div className="space-y-2 pt-0.5 w-full">
+          <div className="grid grid-cols-2 gap-1.5 sm:gap-2">
             <button
               type="button"
               onClick={() => {
@@ -178,7 +178,7 @@ export const DraftReportCard = ({ draftReport, onAction, lang = 'en' }) => {
                 if (fileInput) fileInput.click();
                 else onAction?.('TRIGGER_ATTACHMENT');
               }}
-              className="h-9 px-2.5 bg-[#015a3a] hover:bg-[#01482e] active:scale-[0.98] text-white text-[11.5px] font-semibold rounded-xl shadow-2xs flex items-center justify-center gap-1.5 cursor-pointer transition-all"
+              className="min-w-0 h-9 px-2 sm:px-2.5 bg-[#015a3a] hover:bg-[#01482e] active:scale-[0.98] text-white text-[11.5px] font-semibold rounded-xl shadow-2xs flex items-center justify-center gap-1.5 cursor-pointer transition-all"
             >
               <Camera className="w-3.5 h-3.5 text-emerald-200 shrink-0" />
               <span className="truncate">{t.addPhoto}</span>
@@ -186,7 +186,7 @@ export const DraftReportCard = ({ draftReport, onAction, lang = 'en' }) => {
             <button
               type="button"
               onClick={() => onAction?.('CONFIRM_SUBMIT', draftReport)}
-              className="h-9 px-2.5 bg-amber-50 hover:bg-amber-100/90 active:scale-[0.98] text-amber-900 border border-amber-300 text-[11px] font-semibold rounded-xl flex items-center justify-center gap-1 cursor-pointer transition-colors shadow-2xs"
+              className="min-w-0 h-9 px-2 sm:px-2.5 bg-amber-50 hover:bg-amber-100/90 active:scale-[0.98] text-amber-900 border border-amber-300 text-[11px] font-semibold rounded-xl flex items-center justify-center gap-1 cursor-pointer transition-colors shadow-2xs"
             >
               <CheckCircle2 className="w-3.5 h-3.5 text-amber-700 shrink-0" />
               <span className="truncate">{t.submitWithoutEvidence}</span>
@@ -197,8 +197,8 @@ export const DraftReportCard = ({ draftReport, onAction, lang = 'en' }) => {
             onClick={() => onAction?.('EDIT_DRAFT', draftReport)}
             className="w-full h-8 bg-white hover:bg-slate-50 active:scale-[0.98] text-slate-600 text-[11px] font-medium rounded-xl border border-slate-200 flex items-center justify-center gap-1.5 cursor-pointer transition-colors shadow-2xs"
           >
-            <Pencil className="w-3.5 h-3.5 text-slate-400" />
-            <span>{t.editDetails}</span>
+            <Pencil className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+            <span className="truncate">{t.editDetails}</span>
           </button>
         </div>
       )}
@@ -210,19 +210,19 @@ export const DraftReportCard = ({ draftReport, onAction, lang = 'en' }) => {
 export const CreatedChallengeCard = ({ challenge, lang = 'en' }) => {
   const t = getT(lang);
   return (
-    <div className="mt-2 p-3.5 bg-white border border-emerald-200 rounded-2xl shadow-sm space-y-2.5 text-slate-800 animate-fade-in text-left">
+    <div className="mt-2 p-3 sm:p-3.5 bg-white border border-emerald-200 rounded-2xl shadow-sm space-y-2.5 text-slate-800 animate-fade-in text-left w-full max-w-full overflow-hidden box-border">
       <div className="flex items-center justify-between gap-2">
-        <span className="text-[11px] font-bold text-emerald-800 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200 flex items-center gap-1.5">
-          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-          <span>{t.registeredOfficially}</span>
+        <span className="text-[11px] font-bold text-emerald-800 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200 flex items-center gap-1.5 shrink-0">
+          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+          <span className="truncate">{t.registeredOfficially}</span>
         </span>
-        <span className="text-[11.5px] font-bold font-mono text-[#015a3a] bg-emerald-50/80 px-2.5 py-0.5 rounded-md border border-emerald-100">
+        <span className="text-[11.5px] font-bold font-mono text-[#015a3a] bg-emerald-50/80 px-2.5 py-0.5 rounded-md border border-emerald-100 shrink-0">
           {challenge.challengeId}
         </span>
       </div>
-      <div className="text-[12.5px] font-bold text-slate-900 line-clamp-1">{challenge.title}</div>
+      <div className="text-[12.5px] font-bold text-slate-900 line-clamp-1 break-words">{challenge.title}</div>
       {challenge.description && challenge.description !== challenge.title && (
-        <p className="text-[11px] text-slate-500 line-clamp-2 leading-relaxed -mt-1">{challenge.description}</p>
+        <p className="text-[11px] text-slate-500 line-clamp-2 leading-relaxed -mt-1 break-words">{challenge.description}</p>
       )}
 
       {/* Attached Evidence Preview */}
@@ -234,12 +234,12 @@ export const CreatedChallengeCard = ({ challenge, lang = 'en' }) => {
       )}
 
       <div className="grid grid-cols-2 gap-2 p-2 bg-slate-50/80 rounded-xl border border-slate-100 text-[11px] text-slate-600">
-        <div className="flex items-center gap-1.5"><MapPin className="w-3.5 h-3.5 text-emerald-600 shrink-0" /><span className="truncate">{challenge.district}</span></div>
-        <div className="flex items-center gap-1.5"><Building2 className="w-3.5 h-3.5 text-blue-600 shrink-0" /><span className="truncate">{challenge.domain}</span></div>
+        <div className="flex items-center gap-1.5 min-w-0"><MapPin className="w-3.5 h-3.5 text-emerald-600 shrink-0" /><span className="truncate">{challenge.district}</span></div>
+        <div className="flex items-center gap-1.5 min-w-0"><Building2 className="w-3.5 h-3.5 text-blue-600 shrink-0" /><span className="truncate">{challenge.domain}</span></div>
       </div>
       <div className="text-[10.5px] text-[#015a3a] font-medium flex items-center gap-1.5 pt-0.5">
         <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-        <span>{t.syncedLive}</span>
+        <span className="truncate">{t.syncedLive}</span>
       </div>
     </div>
   );
@@ -250,10 +250,10 @@ export const ActionConfirmCard = ({ actionTarget, onAction, lang = 'en' }) => {
   const t = getT(lang);
   const isDel = actionTarget.actionType === 'DELETE';
   return (
-    <div className={`mt-2 p-3.5 rounded-2xl border shadow-sm text-slate-800 animate-fade-in text-left space-y-3 ${isDel ? 'bg-rose-50/70 border-rose-200' : 'bg-amber-50/70 border-amber-200'}`}>
+    <div className={`mt-2 p-3 sm:p-3.5 rounded-2xl border shadow-sm text-slate-800 animate-fade-in text-left space-y-3 w-full max-w-full overflow-hidden box-border ${isDel ? 'bg-rose-50/70 border-rose-200' : 'bg-amber-50/70 border-amber-200'}`}>
       <div className="flex items-center gap-2">
         {isDel ? <Trash2 className="w-4 h-4 text-rose-600 shrink-0" /> : <RotateCcw className="w-4 h-4 text-amber-600 shrink-0" />}
-        <span className={`text-xs font-bold uppercase tracking-wider ${isDel ? 'text-rose-800' : 'text-amber-800'}`}>
+        <span className={`text-xs font-bold uppercase tracking-wider truncate ${isDel ? 'text-rose-800' : 'text-amber-800'}`}>
           {isDel ? t.confirmPermanentDelete : t.confirmWithdrawal}
         </span>
       </div>
@@ -262,23 +262,23 @@ export const ActionConfirmCard = ({ actionTarget, onAction, lang = 'en' }) => {
           <FileText className="w-3.5 h-3.5 text-slate-400 shrink-0" />
           <span className="font-bold text-slate-900 font-mono">{actionTarget.challengeId}</span>
         </div>
-        <div className="text-slate-700 font-medium line-clamp-1">{actionTarget.title}</div>
+        <div className="text-slate-700 font-medium line-clamp-1 break-words">{actionTarget.title}</div>
         {actionTarget.description && actionTarget.description !== actionTarget.title && (
-          <p className="text-slate-500 line-clamp-2 leading-relaxed">{actionTarget.description}</p>
+          <p className="text-slate-500 line-clamp-2 leading-relaxed break-words">{actionTarget.description}</p>
         )}
         <div className={`text-[10.5px] font-semibold flex items-center gap-1.5 pt-1 ${isDel ? 'text-rose-600' : 'text-amber-700'}`}>
           <AlertCircle className="w-3.5 h-3.5 shrink-0" />
           <span>{isDel ? t.permanentDeleteWarning : t.withdrawalWarning}</span>
         </div>
       </div>
-      <div className="flex items-center gap-2 pt-0.5">
+      <div className="flex items-center gap-1.5 sm:gap-2 pt-0.5 w-full">
         <button type="button" onClick={() => onAction?.(isDel ? 'CONFIRM_DELETE' : 'CONFIRM_WITHDRAW', actionTarget.challengeId)}
-          className={`flex-1 h-9 px-3 text-white text-xs font-semibold rounded-xl shadow-2xs flex items-center justify-center gap-1.5 cursor-pointer transition-all active:scale-[0.98] ${isDel ? 'bg-rose-600 hover:bg-rose-700' : 'bg-amber-600 hover:bg-amber-700'}`}>
-          {isDel ? <><Trash2 className="w-3.5 h-3.5" /><span>{t.confirmDeleteBtn}</span></> : <><RotateCcw className="w-3.5 h-3.5" /><span>{t.confirmWithdrawBtn}</span></>}
+          className={`flex-1 min-w-0 h-9 px-2.5 sm:px-3 text-white text-xs font-semibold rounded-xl shadow-2xs flex items-center justify-center gap-1.5 cursor-pointer transition-all active:scale-[0.98] ${isDel ? 'bg-rose-600 hover:bg-rose-700' : 'bg-amber-600 hover:bg-amber-700'}`}>
+          {isDel ? <><Trash2 className="w-3.5 h-3.5 shrink-0" /><span className="truncate">{t.confirmDeleteBtn}</span></> : <><RotateCcw className="w-3.5 h-3.5 shrink-0" /><span className="truncate">{t.confirmWithdrawBtn}</span></>}
         </button>
         <button type="button" onClick={() => onAction?.('CANCEL_ACTION')}
-          className="h-9 px-3.5 bg-white hover:bg-slate-50 text-slate-700 text-xs font-medium rounded-xl border border-slate-200/90 flex items-center gap-1 cursor-pointer transition-colors shadow-2xs">
-          <X className="w-3.5 h-3.5 text-slate-500" /><span>{t.cancel}</span>
+          className="h-9 px-3 sm:px-3.5 bg-white hover:bg-slate-50 text-slate-700 text-xs font-medium rounded-xl border border-slate-200/90 flex items-center justify-center gap-1 cursor-pointer transition-colors shadow-2xs shrink-0">
+          <X className="w-3.5 h-3.5 text-slate-500 shrink-0" /><span className="whitespace-nowrap">{t.cancel}</span>
         </button>
       </div>
     </div>
@@ -291,16 +291,16 @@ export const TrackingCard = ({ trackingData, onAction, lang = 'en' }) => {
   const STEPS = ['Submitted', 'Under Review', 'Department Assigned', 'In Progress', 'Resolved'];
   const sl = (trackingData.status || '').toLowerCase();
   return (
-    <div className="mt-2 p-3.5 bg-white border border-slate-200/90 rounded-2xl shadow-sm space-y-3 text-slate-800 animate-fade-in text-left">
+    <div className="mt-2 p-3 sm:p-3.5 bg-white border border-slate-200/90 rounded-2xl shadow-sm space-y-3 text-slate-800 animate-fade-in text-left w-full max-w-full overflow-hidden box-border">
       <div className="flex items-center justify-between gap-2">
         <span className="text-xs font-bold font-mono text-slate-900">{trackingData.challengeId}</span>
         <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-100 text-[#015a3a] border border-emerald-200">{trackingData.status || 'Under Review'}</span>
       </div>
       {trackingData.title && (
-        <div className="text-[12px] font-semibold text-slate-800 line-clamp-1">{trackingData.title}</div>
+        <div className="text-[12px] font-semibold text-slate-800 line-clamp-1 break-words">{trackingData.title}</div>
       )}
       {trackingData.description && trackingData.description !== trackingData.title && (
-        <p className="text-[11px] text-slate-500 line-clamp-2 leading-relaxed -mt-1">{trackingData.description}</p>
+        <p className="text-[11px] text-slate-500 line-clamp-2 leading-relaxed -mt-1 break-words">{trackingData.description}</p>
       )}
       <div className="space-y-2 pt-1">
         <div className="text-[10px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
@@ -322,20 +322,20 @@ export const TrackingCard = ({ trackingData, onAction, lang = 'en' }) => {
         </div>
       </div>
       {(trackingData.canWithdraw || trackingData.canDelete) && (
-        <div className="flex items-center gap-2 pt-2 border-t border-slate-100">
+        <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-slate-100">
           {trackingData.canWithdraw && (
             <button type="button" onClick={() => onAction?.('WITHDRAW', trackingData.challengeId)}
-              className="h-7 px-2.5 text-[11px] font-semibold text-amber-800 bg-amber-50 hover:bg-amber-100 border border-amber-200 rounded-lg flex items-center gap-1 cursor-pointer transition-colors">
-              <RotateCcw className="w-3 h-3" /><span>{t.withdrawBtn}</span>
+              className="h-7 px-2.5 text-[11px] font-semibold text-amber-800 bg-amber-50 hover:bg-amber-100 border border-amber-200 rounded-lg flex items-center gap-1 cursor-pointer transition-colors shrink-0">
+              <RotateCcw className="w-3 h-3 shrink-0" /><span className="truncate">{t.withdrawBtn}</span>
             </button>
           )}
           {trackingData.canDelete && (
             <button
               type="button"
               onClick={() => onAction?.('DELETE', trackingData.challengeId)}
-              className="h-7 px-2.5 text-[11px] font-semibold text-rose-700 bg-rose-50 hover:bg-rose-100 border border-rose-200 rounded-lg flex items-center gap-1 cursor-pointer transition-colors"
+              className="h-7 px-2.5 text-[11px] font-semibold text-rose-700 bg-rose-50 hover:bg-rose-100 border border-rose-200 rounded-lg flex items-center gap-1 cursor-pointer transition-colors shrink-0"
             >
-              <Trash2 className="w-3 h-3" /><span>{t.deleteBtn}</span>
+              <Trash2 className="w-3 h-3 shrink-0" /><span className="truncate">{t.deleteBtn}</span>
             </button>
           )}
         </div>

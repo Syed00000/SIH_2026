@@ -1,13 +1,9 @@
 import React from 'react';
 import { ViewWardModal } from './ViewWardModal.jsx';
 import { EditWardModal } from './EditWardModal.jsx';
-import { AddWardModal } from './AddWardModal.jsx';
 import { AllocateProblemToSpecificWardModal } from './AllocateProblemToSpecificWardModal.jsx';
 
 export const WardDirectoryModals = ({
-  isAddWardOpen,
-  setIsAddWardOpen,
-  onWardCreated,
   districtName,
   editingWard,
   setEditingWard,
@@ -21,12 +17,6 @@ export const WardDirectoryModals = ({
 }) => {
   return (
     <>
-      <AddWardModal
-        isOpen={isAddWardOpen}
-        onClose={() => setIsAddWardOpen(false)}
-        onWardCreated={onWardCreated}
-        defaultDistrict={districtName}
-      />
       <EditWardModal
         isOpen={Boolean(editingWard)}
         ward={editingWard}

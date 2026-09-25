@@ -44,7 +44,7 @@ const userSchema = new mongoose.Schema(
     role: {
       type: String,
       enum: {
-        values: ['CITIZEN', 'UNIVERSITY', 'INDUSTRY', 'GOVERNMENT', 'ADMIN', 'NODAL', 'FACULTY', 'DEPARTMENT', 'BLOCK', 'WARD'],
+        values: ['CITIZEN', 'UNIVERSITY', 'INDUSTRY', 'GOVERNMENT', 'ADMIN', 'NODAL', 'FACULTY', 'DEPARTMENT', 'BLOCK', 'WARD', 'TECHNICIAN', 'BUDGET_OFFICER'],
         message: '{VALUE} is not a valid role'
       },
       default: 'CITIZEN',
@@ -73,6 +73,14 @@ const userSchema = new mongoose.Schema(
       ngoDarpanId: { type: String, default: null, trim: true },
       primaryContactDesignation: { type: String, default: null, trim: true },
       supportSectors: { type: [String], default: [] },
+      deptId: { type: String, default: null, trim: true },
+      department: { type: String, default: null, trim: true },
+      category: { type: String, default: null, trim: true },
+      block: { type: String, default: null, trim: true },
+      panchayat: { type: String, default: null, trim: true },
+      code: { type: String, default: null, trim: true },
+      technicianId: { type: String, default: null, trim: true },
+      departmentId: { type: String, default: null, trim: true },
       adminDetails: {
         assignedDepartment: { type: String, default: null, trim: true },
         accessLevel: { type: String, default: null, trim: true },

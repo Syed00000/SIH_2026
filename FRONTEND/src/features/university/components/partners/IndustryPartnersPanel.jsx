@@ -132,7 +132,12 @@ export const IndustryPartnersPanel = () => {
         </button>
       </div>
 
-      <PartnersKpis total={totalCount} active={activeCount} pending={pendingCount} loading={loading} />
+      <PartnersKpis
+        total={totalCount}
+        active={activeCount}
+        pending={pendingCount}
+        loading={loading}
+      />
 
       <PartnersFilterBar
         search={search} setSearch={setSearch} industryFilter={industryFilter} setIndustryFilter={setIndustryFilter}

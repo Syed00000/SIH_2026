@@ -15,7 +15,7 @@ export const BudgetOfficerPortal = ({ user, onLogout }) => {
   const [refreshing, setRefreshing] = useState(false);
   const [bannerNotice, setBannerNotice] = useState('');
 
-  const officerId = user?.officerId || user?.id || user?._id || 'BO-1';
+  const officerId = user?.officerId || user?.profile?.officerId || user?.id || user?._id || 'BO-1';
   
   const loadTasks = async (isRef = false) => {
     try {

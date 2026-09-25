@@ -26,7 +26,9 @@ const configSchema = z.object({
   DEFAULT_WARD_PASSWORD: z.string().default(process.env.DEFAULT_WARD_PASSWORD || ''),
   DEFAULT_TECH_PASSWORD: z.string().default(process.env.DEFAULT_TECH_PASSWORD || ''),
   DEFAULT_NODAL_PASSWORD: z.string().default(process.env.DEFAULT_NODAL_PASSWORD || ''),
-  DEFAULT_BUDGET_OFFICER_PASSWORD: z.string().default(process.env.DEFAULT_BUDGET_OFFICER_PASSWORD || '')
+  DEFAULT_BUDGET_OFFICER_PASSWORD: z.string().default(process.env.DEFAULT_BUDGET_OFFICER_PASSWORD || ''),
+  CARTO_API_KEY: z.string().optional().default(process.env.CARTO_API_KEY || 'cb1_3yhz_1_e7b1c7f6e22a991f83004a14'),
+  MAPTILER_API_KEY: z.string().optional().default(process.env.MAPTILER_API_KEY || '')
 });
 
 const parseConfig = () => {
@@ -53,7 +55,9 @@ const parseConfig = () => {
     DEFAULT_WARD_PASSWORD: process.env.DEFAULT_WARD_PASSWORD,
     DEFAULT_TECH_PASSWORD: process.env.DEFAULT_TECH_PASSWORD,
     DEFAULT_NODAL_PASSWORD: process.env.DEFAULT_NODAL_PASSWORD,
-    DEFAULT_BUDGET_OFFICER_PASSWORD: process.env.DEFAULT_BUDGET_OFFICER_PASSWORD
+    DEFAULT_BUDGET_OFFICER_PASSWORD: process.env.DEFAULT_BUDGET_OFFICER_PASSWORD,
+    CARTO_API_KEY: process.env.CARTO_API_KEY,
+    MAPTILER_API_KEY: process.env.MAPTILER_API_KEY
   });
 
   if (!result.success) {
