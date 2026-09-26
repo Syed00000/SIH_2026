@@ -59,6 +59,19 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use('/uploads', express.static(path.resolve(__dirname, '../public/uploads')));
 
+app.get('/', (req, res) => {
+  const isDbConnected = mongoose.connection.readyState === 1;
+  res.status(200).json({
+    name: 'JoharSetu Government Innovation Portal API',
+    status: 'ACTIVE',
+    version: '1.0.0',
+    environment: process.env.NODE_ENV || 'production',
+    database: isDbConnected ? 'CONNECTED' : 'CONNECTING',
+    timestamp: new Date().toISOString()
+  });
+});
+
+app.get(['/favicon.ico', '/favicon.png'], (req, res) => res.status(204).end());
 
 app.get('/health', (req, res) => {
   const isDbConnected = mongoose.connection.readyState === 1;

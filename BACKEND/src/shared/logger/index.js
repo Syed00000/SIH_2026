@@ -1,10 +1,17 @@
 import pino from 'pino';
 import config from '../config/index.js';
 
-const isProduction = config.NODE_ENV === 'production';
+const isProduction =
+  config.NODE_ENV === 'production' ||
+  process.env.NODE_ENV === 'production' ||
+  Boolean(process.env.VERCEL) ||
+  Boolean(process.env.AWS_LAMBDA_FUNCTION_NAME);
+
+// Pino-pretty transport fails in serverless/worker-thread restricted environments like Vercel Lambda
+const usePrettyTransport = !isProduction && !process.env.VERCEL;
 
 const logger = pino({
-  level: config.LOG_LEVEL,
+  level: config.LOG_LEVEL || 'info',
   redact: {
     paths: [
       'req.headers.authorization',
@@ -23,7 +30,7 @@ const logger = pino({
     ],
     censor: '[REDACTED]'
   },
-  transport: !isProduction
+  transport: usePrettyTransport
     ? {
         target: 'pino-pretty',
         options: {
