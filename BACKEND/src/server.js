@@ -48,7 +48,9 @@ const listenWithRetry = (httpServer, port, host = null, maxRetries = 15, retryDe
 
       const onListening = () => {
         httpServer.removeListener('error', onError);
-        logger.info(`🚀 Server running and listening on http://localhost:${port}`);
+        const addr = httpServer.address();
+        const bind = typeof addr === 'string' ? addr : `port ${port}`;
+        logger.info(`🚀 Server running and listening on ${bind} (${config.NODE_ENV} mode)`);
         resolve();
       };
 

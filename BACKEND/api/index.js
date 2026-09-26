@@ -21,6 +21,11 @@ export default async function handler(req, res) {
     }
   }
 
-  // Forward request to Express app
-  return app(req, res);
+  // Forward request to Express app and wait until response finishes
+  return new Promise((resolve, reject) => {
+    res.on('finish', resolve);
+    res.on('close', resolve);
+    res.on('error', reject);
+    app(req, res);
+  });
 }
